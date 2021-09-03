@@ -1,0 +1,31 @@
+# Project Specific rules here
+
+# Temporary Files
+#---------------------------
+# vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+
+# Emacs
+.\#*
+
+# Backup files
+#---------------------------
+*~
+
+# OS dependent files
+#---------------------------
+.DS_Store
+Thumbs.db
+
+# Bundler specific
+#---------------------------
+/vendor/bundle/
+/.bundle/
+
+
+# for ROOT files
+*.root
