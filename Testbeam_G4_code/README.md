@@ -8,6 +8,8 @@ v2 : replace carbon cooling plate by stave
 
 The procedures to run the G4 : 
 1. decompress session7_solution_vX.zip
+
+
 under the G4 environment, 
 2. mkdir session7_solution_vX_build
 3. cd session7_solution_vX_build
