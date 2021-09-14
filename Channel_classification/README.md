@@ -1,1 +1,1 @@
-
+The zip file contents all the macro for channel classification for BNL ladders
