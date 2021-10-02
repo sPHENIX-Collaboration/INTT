@@ -35,24 +35,24 @@
 //extern G4double theoffset;
 class G4VPhysicalVolume;
 
-
 /// Detector construction class to define materials and geometry.
-
 class EDDetectorConstruction : public G4VUserDetectorConstruction
 {
+  
   //void movement (G4double theoffset) {theoffset=35.;}
   //extern G4double theoffset =35;
-  public:
-    EDDetectorConstruction();
-    //static double theoffset =35;
-    virtual ~EDDetectorConstruction();
-
-  public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual void ConstructSDandField();
+  
+public:
+  EDDetectorConstruction();
+  //static double theoffset =35;
+  virtual ~EDDetectorConstruction();
+  
+  virtual G4VPhysicalVolume* Construct();
+  virtual void ConstructSDandField();
   //   void Settheoffset( G4double theoffset) { fmovement = theoffset; }
   //   G4double Gettheoffset() const {return fmovement; }
-  // private:
+  
+private:
   // G4double fmovement;   
 };
 
