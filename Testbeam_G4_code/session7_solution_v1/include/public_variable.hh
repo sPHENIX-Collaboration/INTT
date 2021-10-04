@@ -1,3 +1,4 @@
+#pragma once
 //extern G4double theoffset ;
 class public_variable{
 public:
