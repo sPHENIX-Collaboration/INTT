@@ -59,9 +59,9 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //     
   // World
   //
-  G4double hx = 0.5*m;
-  G4double hy = 0.5*m;
-  G4double hz = 1.*m;
+  G4double hx = 0.2*m;
+  G4double hy = 0.1*m;
+  G4double hz = 0.4*m;
   
   // world volume
   G4Box* worldS = new G4Box("World", hx, hy, hz); 
@@ -213,12 +213,13 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   G4Box* INTT_Chip_area		= new G4Box("INTT_Chip_area", 4.5 * mm, 1.5 * mm, 0.16 * mm + 50 * um); 
     
   //G4VSolid *siinactive_box = new G4SubtractionSolid((boost::format("siinactive_box_%d_%d") % inttlayer % itype).str(),
+  G4double INTT_CFRP_thickness = 300 * um;
+
   //sifull_box, siactive_box, 0, G4ThreeVector(0, 0, 0));
-  G4double INTT_CFRP_tube_outer_radius = 1.5 * mm;
-  G4double INTT_CFRP_tube_inner_radius = 1.0 * mm;
+  G4double INTT_CFRP_tube_inner_radius = 1.5 * mm;
+  G4double INTT_CFRP_tube_outer_radius =  INTT_CFRP_tube_inner_radius + INTT_CFRP_thickness;
   G4double INTT_CFRP_tube_area_thickness = INTT_CFRP_tube_outer_radius * 2;
 
-  G4double INTT_CFRP_thickness = 300 * um;
   G4Box* INTT_CFRP	= new G4Box("INTT_carbonfiber",
 					    kLadder_horizontal_length / 2,
 					    //17.95 * mm,
@@ -226,7 +227,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 					    INTT_CFRP_thickness / 2);
   // 0.33227 cm
   G4double INTT_formed_CFRP_outer_length = 3.3227 * mm;
-  G4double INTT_formed_CFRP_straight_length = 14.7684 * mm;  
+  G4double INTT_formed_CFRP_straight_length = 14.7684 * mm;
   G4double INTT_formed_CFRP_thickness = INTT_CFRP_thickness;
   G4double INTT_formed_CFRP_block_thickness = INTT_CFRP_tube_outer_radius * 2  + INTT_formed_CFRP_thickness;
   G4Box* INTT_formed_CFRP_straight = new G4Box("INTT_formed_carbonfiber_straight",
@@ -270,24 +271,25 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
     
   G4Box* INTT_formed_CFRP = new G4Box("INTT_formed_carbonfiber",
 					     kLadder_horizontal_length / 2,
-					     //					     17.95*mm,
 					     INTT_formed_CFRP_straight_length / 2,
 					     INTT_formed_CFRP_thickness / 2);
 
   // for mother volue of the carbon fiber tune and the cooling water
   //G4double INTT_CFRP_tube_area_thickness = 4.32 * mm;
   G4Box* INTT_CFRP_tube_area = new G4Box( "INTT_carbonfiber_glue_solid",
-						 kLadder_horizontal_length / 2,
-						 3.0 * mm / 2,
-						 INTT_CFRP_tube_area_thickness / 2
-						 );
-
+					  kLadder_horizontal_length / 2,
+					  INTT_CFRP_tube_area_thickness / 2,
+					  INTT_CFRP_tube_area_thickness / 2
+					  );
+  
   G4Tubs* INTT_CFRP_tube	= new G4Tubs("INTT_carbonfiber_tube",
 					     INTT_CFRP_tube_inner_radius,
 					     INTT_CFRP_tube_outer_radius,
-					     116.1*mm, 0, 360 * degree);
+					     kLadder_horizontal_length/2, 0, 360 * degree);
   
-  G4Tubs* INTT_water		= new G4Tubs("INTT_water", 0*mm, 1.*mm, 116.1*mm, 0, 360*degree);
+  G4Tubs* INTT_water		= new G4Tubs("INTT_water",
+					     0*mm, INTT_CFRP_tube_inner_radius,
+					     kLadder_horizontal_length/2, 0, 360*degree);
 
   G4double INTT_form_vertical_length = ( kLadder_vertical_length - 2 * INTT_CFRP_tube_outer_radius ) / 2;
   G4double INTT_form_thickness = INTT_CFRP_tube_outer_radius * 2; // radius -> diameter
