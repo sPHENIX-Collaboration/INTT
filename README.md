@@ -17,3 +17,4 @@ General macros for the INTT and the ladder classification macros are here.
 ## Working Persons for This Repo
 - Genki Nukazuka (RBRC), genki.nukazuka@riken.jp, Aug/2021 - current
 - Cheng-Wei Shi (NTU), https://github.com/ChengWeiShih, Sep/2021 - current
+- Miu Morita (NWU), https://github.com/miumorita, Oct/2021 - current
