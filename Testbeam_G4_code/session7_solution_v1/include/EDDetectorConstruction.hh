@@ -32,6 +32,23 @@
 #define EDDetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "EDChamberSD.hh"
+#include "EDEmCalorimeterSD.hh"
+#include "G4NistManager.hh"
+#include "G4SDManager.hh"
+#include "G4Material.hh"
+#include "G4Box.hh"
+#include "G4Tubs.hh"
+#include "G4Trap.hh"
+#include "G4TwoVector.hh"
+#include "G4GenericTrap.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4LogicalVolume.hh"
+#include "G4PVPlacement.hh"
+#include "G4ProductionCuts.hh"
+#include "G4SystemOfUnits.hh"
+#include "public_variable.hh"
+
 //extern G4double theoffset;
 class G4VPhysicalVolume;
 
@@ -56,7 +73,6 @@ private:
   // G4double fmovement;   
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
 
