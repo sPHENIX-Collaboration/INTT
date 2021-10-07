@@ -30,6 +30,10 @@
 
 #include "EDDetectorConstruction.hh"
 
+// the ultra-stupic units
+const G4double EDDetectorConstruction::inch = 25.4; // 1 inch = 25.4 mm
+const G4double EDDetectorConstruction::ft = 304.8; // 1 ft = 304.8 mm  
+
 EDDetectorConstruction::EDDetectorConstruction()
   : G4VUserDetectorConstruction()
 {
@@ -41,13 +45,27 @@ EDDetectorConstruction::EDDetectorConstruction()
   // size of the world
   world_size[0] = 0.4 * m;
   world_size[1] = 0.2 * m;
-  world_size[2] = 0.4 * m;
+  world_size[2] = 0.7 * m;
 
   // size of the dark box
   //  INTT_testbeam_BOX_size[0] = 116.1*mm, 19.*mm, 170.1*mm);
-  INTT_testbeam_BOX_size[0] = 232.2 * mm;
-  INTT_testbeam_BOX_size[1] = 38.0 * mm;
-  INTT_testbeam_BOX_size[2] = 340.2 * mm;   
+  //  INTT_testbeam_BOX_size[0] = 232.2 * mm;
+  INTT_testbeam_BOX_size[0] = 12 * inch;
+  //  INTT_testbeam_BOX_size[1] = 38.0 * mm;
+  //INTT_testbeam_BOX_size[1] = 5 * inch;
+  INTT_testbeam_BOX_size[1] = 7 * inch;
+  INTT_testbeam_BOX_size[2] = 340.2 * mm;
+
+  // check whether the dark box is larger than the world or not
+  for( int i=0; i<3; i++ )
+    assert( world_size[i] > INTT_testbeam_BOX_size[i] );
+  
+  // silicon sensor
+  silicon_strip_width = 78.0 * um;
+  silicon_strip_thickness = 320.0 * um;
+  silicon_length_type_a = 16.0 * mm;
+  silicon_length_type_b = 20.0 * mm;
+
 }
 
 EDDetectorConstruction::~EDDetectorConstruction()
@@ -62,20 +80,23 @@ void EDDetectorConstruction::DefineMaterials()
 
   // Build materials
   DefaultMaterial = nistManager->FindOrBuildMaterial("G4_AIR",fromIsotopes );
+  nistManager->FindOrBuildMaterial("G4_Al",fromIsotopes );
+  nistManager->FindOrBuildMaterial("G4_Ag",fromIsotopes );
+  nistManager->FindOrBuildMaterial("G4_Cu",fromIsotopes );
   // There is no need to test if materials were built/found
   // as G4NistManager would issue an error otherwise
   // Try the code with "XYZ".      
 
-  G4int nel,natoms;
+  G4int nel, natoms;
   Silicon =  nistManager->FindOrBuildMaterial( "G4_Si",fromIsotopes );
 
   //vacuum 
   G4double atomicNumber = 1.;
-  G4double massOfMole = 1.008*g/mole;
-  G4double density = 1.e-25*g/cm3;
-  G4double temperature = 2.73*kelvin;
-  G4double pressure = 3.e-18*pascal;
-  G4Material* Vacuum = new G4Material("interGalactic", atomicNumber,massOfMole, density, kStateGas, temperature, pressure);
+  G4double massOfMole = 1.008 * g / mole;
+  G4double density = 1.e-25 * g / cm3;
+  G4double temperature = 2.73 * kelvin;
+  G4double pressure = 3.e-18 * pascal;
+  G4Material* Vacuum = new G4Material("interGalactic", atomicNumber, massOfMole, density, kStateGas, temperature, pressure);
   
   //element
   G4double fractionmass;
@@ -88,9 +109,9 @@ void EDDetectorConstruction::DefineMaterials()
   G4Element* elementC  = new G4Element("Carbon",    "C",  6.,  12.011*g/mole);
 
   //sci_BC-408
-  G4double d_PolyVinylToluene = 0.57*g/cm3;
-  G4double d_Anthracene = 1.28*g/cm3;
-  G4double d_BBHodo_Scinti = 1.023*g/cm3;
+  G4double d_PolyVinylToluene = 0.57* g / cm3;
+  G4double d_Anthracene = 1.28* g / cm3;
+  G4double d_BBHodo_Scinti = 1.023* g / cm3;
   G4Material* PolyVinylToluene = new G4Material( "PolyVinylToluene", d_PolyVinylToluene, 2 );
   PolyVinylToluene->AddElement(elC, fractionmass = 0.91471);
   PolyVinylToluene->AddElement(elH, fractionmass = 0.08529);
@@ -104,7 +125,7 @@ void EDDetectorConstruction::DefineMaterials()
   BBHodo_Scinti->AddMaterial(Anthracene, fractionmass = 0.64);
 
   //kapton
-  density = 1.42*g/cm3;
+  density = 1.42* g / cm3;
   Kapton = new G4Material("Kapton",density, nel=4);
   Kapton->AddElement(elH, fractionmass = 0.0264);
   Kapton->AddElement(elC, fractionmass = 0.6911);
@@ -123,7 +144,7 @@ void EDDetectorConstruction::DefineMaterials()
   Epoxy->AddElement(G4Element::GetElement("C"), natoms = 2);
   
   //carbon fiber
-  density = 0.145*g/cm3;
+  density = 0.145* g / cm3;
   CFRP = new G4Material("CFRP",density, nel=1);
   CFRP->AddElement(elC,1);
 
@@ -133,31 +154,31 @@ void EDDetectorConstruction::DefineMaterials()
   foam->AddElement(elementH, 0.10);
 
   //water
-  density = 1.000*g/cm3;
+  density = 1.000* g / cm3;
   Water = new G4Material("water",density,2);
   Water->AddElement(elH, natoms=2);
   Water->AddElement(elO, natoms=1);
 
-
+  // Silver epoxy glue LOCTITE ABLESTIK 2902 for the silicon sensors and FPHX chips of INTT
+  SilverEpoxyGlue = new G4Material("SilverEpoxyGlue", density = 3.2 * g / cm3, 2 );
+  SilverEpoxyGlue->AddMaterial(Epoxy, fractionmass = 0.79);
+  SilverEpoxyGlue->AddMaterial(G4Material::GetMaterial("G4_Ag"), fractionmass = 0.21);
+  
 }
 
 void EDDetectorConstruction::ConstructDarkBox( G4LogicalVolume* worldLog )
 {
 
   G4Box* INTT_testbeam_BOX	= new G4Box("INTT_testbeam_BOX",
-					    INTT_testbea_BOX_size[0] / 2,
-					    INTT_testbea_BOX_size[1] / 2,
-					    INTT_testbea_BOX_size[2] / 2 );
+					    INTT_testbeam_BOX_size[0] / 2,
+					    INTT_testbeam_BOX_size[1] / 2,
+					    INTT_testbeam_BOX_size[2] / 2 );
   
   INTT_testbeam_BOXLV
     = new G4LogicalVolume( INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
+  INTT_testbeam_BOXLV->SetVisAttributes( color_invisible );
   zpos_testbeam_box = 108.85 * mm;
-  //  G4double zpos_testbeam_box = 0;
   zpos_testbeam_box_1 = 108.85 * mm;  
-  //  G4double zpos_testbeam_box_1 = zpos_testbeam_box;
-  //fmovement = 35;
-  //G4double public_variable::theoffset = 35;
-  //G4cout<<" theoffset test in EDD : "<<theoffset<<G4endl;
   
   INTT_testbeam_BOXPV =
     new G4PVPlacement(0, 
@@ -168,6 +189,179 @@ void EDDetectorConstruction::ConstructDarkBox( G4LogicalVolume* worldLog )
 		      false,                   //no boolean operation
 		      0,                       //copy number
 		      checkOverlaps);
+
+  ////////////////////////////////
+  // walls of the dark box      //
+  ////////////////////////////////
+  G4double darkbox_wall_thickness = 0.51 * mm; // 24 gauge = 0.51 mm, what is gauge
+  G4Box* darkbox_wall_upstream = new G4Box( "darkbox_wall_upstream",
+					    INTT_testbeam_BOX_size[0] / 2 - darkbox_wall_thickness ,
+					    INTT_testbeam_BOX_size[1] / 2 - darkbox_wall_thickness ,
+					    darkbox_wall_thickness / 2 );
+  
+  auto darkbox_beam_window = new G4Box( "darkbox_beam_window",
+					this->silicon_strip_width * 256,
+					1 * cm,
+					darkbox_wall_thickness );
+					
+  auto darkbox_wall_upstream_window = new G4SubtractionSolid( "darkbox_beam_window", darkbox_wall_upstream, darkbox_beam_window );
+  auto darkbox_wall_upstreamLV = new G4LogicalVolume( darkbox_wall_upstream_window, G4Material::GetMaterial( "G4_Cu" ), "darkbox_wall_upstream" );
+  darkbox_wall_upstreamLV->SetVisAttributes( color_darkbox_wall );
+  new G4PVPlacement(0, G4ThreeVector(0, 0, -INTT_testbeam_BOX_size[2]/2 + darkbox_wall_thickness / 2  ), // rotation, position
+		    darkbox_wall_upstreamLV, "darkbox_wall_upstream", INTT_testbeam_BOXLV, // logical volume, name, mother volume
+		    false,                   0,  checkOverlaps); // boolean operation, copy number, check overlap
+
+  new G4PVPlacement(0, G4ThreeVector(0, 0, +INTT_testbeam_BOX_size[2]/2 - darkbox_wall_thickness / 2  ),
+		    darkbox_wall_upstreamLV, "darkbox_wall_downstream", INTT_testbeam_BOXLV,
+		    false,                   0,                         checkOverlaps);
+
+  // walls on the top and bottom
+  G4Box* darkbox_wall_tb = new G4Box( "darkbox_wall_tb",
+				      INTT_testbeam_BOX_size[0] / 2 - darkbox_wall_thickness ,
+				      darkbox_wall_thickness / 2,
+				      INTT_testbeam_BOX_size[2] / 2  - darkbox_wall_thickness);
+
+  auto darkbox_wall_tbLV = new G4LogicalVolume( darkbox_wall_tb, G4Material::GetMaterial( "G4_Cu" ), "darkbox_wall_tb" );
+  darkbox_wall_tbLV->SetVisAttributes( color_darkbox_wall );
+  // put on the bottom
+  new G4PVPlacement(0, G4ThreeVector(0, -INTT_testbeam_BOX_size[1]/2 + darkbox_wall_thickness / 2, 0  ),
+		    darkbox_wall_tbLV, "darkbox_wall_bottom", INTT_testbeam_BOXLV, 
+		    false,             0,                     checkOverlaps);
+
+  // put on the top
+  new G4PVPlacement(0, G4ThreeVector(0, +INTT_testbeam_BOX_size[1]/2 - darkbox_wall_thickness / 2, 0  ),
+		    darkbox_wall_tbLV, "darkbox_wall_top", INTT_testbeam_BOXLV, 
+		    false,             0,                     checkOverlaps);
+
+  // walls on the left and right
+  G4Box* darkbox_wall_lr = new G4Box( "darkbox_wall_lr",
+				      darkbox_wall_thickness / 2,
+				      INTT_testbeam_BOX_size[1] / 2 - darkbox_wall_thickness ,
+				      INTT_testbeam_BOX_size[2] / 2 - darkbox_wall_thickness );
+
+  auto darkbox_wall_lrLV = new G4LogicalVolume( darkbox_wall_lr, G4Material::GetMaterial( "G4_Cu" ), "darkbox_wall_lr" );
+  darkbox_wall_lrLV->SetVisAttributes( color_darkbox_wall );
+  // put on the left
+  new G4PVPlacement(0, G4ThreeVector(-INTT_testbeam_BOX_size[0]/2 + darkbox_wall_thickness / 2, 0, 0  ),
+		    darkbox_wall_lrLV, "darkbox_wall_right", INTT_testbeam_BOXLV, 
+		    false,             0,                     checkOverlaps);
+
+  // put on the right
+  new G4PVPlacement(0, G4ThreeVector(+INTT_testbeam_BOX_size[0]/2 - darkbox_wall_thickness / 2, 0, 0  ),
+		    darkbox_wall_lrLV, "darkbox_wall_left", INTT_testbeam_BOXLV, 
+		    false,             0,                     checkOverlaps);
+
+
+  ////////////////////////////////
+  // frames of the dark box     //
+  ////////////////////////////////
+  G4double frame_thickness = 1 * inch;
+  /*
+  G4Box* darkbox_frame_along_x = new G4Box( "darkbox_frame_along_x",
+					    INTT_testbeam_BOX_size[0] / 2,
+					    frame_thickness / 2,
+					    frame_thickness / 2 );
+  
+  auto darkbox_frame_along_xLV = new G4LogicalVolume( darkbox_frame_along_x, G4Material::GetMaterial( "G4_Al" ), "darkbox_frame_along_x" );
+  darkbox_frame_along_xLV->SetVisAttributes( color_darkbox_frame );
+
+  G4Box* darkbox_frame_along_y = new G4Box( "darkbox_frame_along_y",
+					    frame_thickness / 2,
+					    INTT_testbeam_BOX_size[1] / 2,
+					    frame_thickness / 2 );
+  
+  auto darkbox_frame_along_yLV = new G4LogicalVolume( darkbox_frame_along_y, G4Material::GetMaterial( "G4_Al" ), "darkbox_frame_along_y" );
+  darkbox_frame_along_yLV->SetVisAttributes( color_darkbox_frame );
+
+  G4Box* darkbox_frame_along_z = new G4Box( "darkbox_frame_along_z",
+					    frame_thickness / 2,
+					    frame_thickness / 2,
+					    INTT_testbeam_BOX_size[2] / 2 );
+
+  auto darkbox_frame_along_zLV = new G4LogicalVolume( darkbox_frame_along_z, G4Material::GetMaterial( "G4_Al" ), "darkbox_frame_along_z" );
+  darkbox_frame_along_zLV->SetVisAttributes( color_darkbox_frame );
+  */
+
+  // loop over 3 directions the frames goes
+  for( int direction=0; direction<3; direction++ )
+    {
+      G4String direction_word = "x";
+      G4double length[3] = { frame_thickness, frame_thickness, frame_thickness };
+      length[ direction ] = INTT_testbeam_BOX_size[direction] - darkbox_wall_thickness * 2;
+      
+      if( direction == 0 ) // frames along x
+	{
+	  direction_word = "x";
+	  length[direction] -= frame_thickness * 2; 
+
+	}
+      else if( direction == 1 ) // frames along y
+	{
+	  direction_word = "y";
+	  length[direction] -= frame_thickness * 2;
+
+	}
+      else if( direction == 2 ) // frames along z
+	{
+	  direction_word = "z";
+	
+	}
+
+      G4Box* darkbox_frame = new G4Box( "darkbox_frame_along_" + direction_word,
+					length[0] / 2, length[1] / 2, length[2] / 2 );
+      
+      auto darkbox_frameLV = new G4LogicalVolume( darkbox_frame, G4Material::GetMaterial( "G4_Al" ), "darkbox_frame_along_" + direction_word );
+      darkbox_frameLV->SetVisAttributes( color_darkbox_frame );
+
+      // loop over rest 2 directions to put the frame
+      for( int position1=0; position1<2; position1++ )
+	{
+	  for( int position2=0; position2<2; position2++ )
+	    {
+	      int position1_index = 1, position2_index = 2;
+	      G4String position1_word, position2_word;
+	      if( direction_word == "x" )
+		{
+		  position1_word = "y";
+		  position2_word = "z";
+		  position1_index = 1;
+		  position2_index = 2;
+		  
+		}
+	      else if( direction_word == "y" )
+		{
+		  position1_word = "z";
+		  position2_word = "x";
+		  position1_index = 2;
+		  position2_index = 0;
+
+		}
+	      else // z
+		{ 
+		  position1_word = "x";
+		  position2_word = "y";
+		  position1_index = 0;
+		  position2_index = 1;
+		}
+
+	      G4String name = "darkbox_frame_along_" + direction_word
+		+ "_" + position1_word + to_string(position1)
+		+ "_" + position2_word + to_string(position2);
+
+	      G4double position_values[3] = { 0.0 };
+	      position_values[ direction ] = 0 ;
+	      position_values[ position1_index ] = pow(-1, position1 ) * (INTT_testbeam_BOX_size[ position1_index ] / 2 - darkbox_wall_thickness - frame_thickness / 2 );
+	      position_values[ position2_index ] = pow(-1, position2 ) * (INTT_testbeam_BOX_size[ position2_index ] / 2 - darkbox_wall_thickness - frame_thickness / 2 );
+	      auto position = G4ThreeVector( position_values[0], position_values[1], position_values[2] );
+	      
+	      new G4PVPlacement(0, position,
+				darkbox_frameLV, name, INTT_testbeam_BOXLV, 
+				false,             0,                     checkOverlaps);
+	      
+	    }
+	}
+      
+    }
   
 }
   
@@ -175,6 +369,7 @@ void EDDetectorConstruction::ConstructDarkBox( G4LogicalVolume* worldLog )
 G4VPhysicalVolume* EDDetectorConstruction::Construct()
 {
   DefineMaterials();
+  DefineVisAttributes();
 
   /*
   // Get nist material manager
@@ -194,17 +389,13 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   
   //     
   // World
-  //
-  G4double hx = 0.2*m;
-  G4double hy = 0.1*m;
-  G4double hz = 0.4*m;
-  
   // world volume
-  G4Box* worldS = new G4Box("World", hx, hy, hz); 
+  G4Box* worldS = new G4Box("World", this->world_size[0]/2, this->world_size[1]/2, this->world_size[2]/2 ); 
       
   G4LogicalVolume* worldLog                         
     = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
-                                   
+  worldLog->SetVisAttributes( color_invisible );
+
   G4VPhysicalVolume* worldPV
     = new G4PVPlacement(0,                     //no rotation
 			G4ThreeVector(),       //at (0,0,0)
@@ -225,7 +416,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //vacuum 
   G4double atomicNumber = 1.;
   G4double massOfMole = 1.008*g/mole;
-  G4double density = 1.e-25*g/cm3;
+  G4double density = 1.e-25* g / cm3;
   G4double temperature = 2.73*kelvin;
   G4double pressure = 3.e-18*pascal;
   G4Material* Vacuum = new G4Material("interGalactic", atomicNumber,massOfMole, density, kStateGas, temperature, pressure);
@@ -241,9 +432,9 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   G4Element* elementC  = new G4Element("Carbon",    "C",  6.,  12.011*g/mole);
 
   //sci_BC-408
-  G4double d_PolyVinylToluene = 0.57*g/cm3;
-  G4double d_Anthracene = 1.28*g/cm3;
-  G4double d_BBHodo_Scinti = 1.023*g/cm3;
+  G4double d_PolyVinylToluene = 0.57* g / cm3;
+  G4double d_Anthracene = 1.28* g / cm3;
+  G4double d_BBHodo_Scinti = 1.023* g / cm3;
   G4Material* PolyVinylToluene = new G4Material( "PolyVinylToluene", d_PolyVinylToluene, 2 );
   PolyVinylToluene->AddElement(elC, fractionmass = 0.91471);
   PolyVinylToluene->AddElement(elH, fractionmass = 0.08529);
@@ -257,7 +448,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   BBHodo_Scinti->AddMaterial(Anthracene, fractionmass = 0.64);
 
   //kapton
-  density = 1.42*g/cm3;
+  density = 1.42* g / cm3;
   G4Material* Kapton = new G4Material("Kapton",density, nel=4);
   Kapton->AddElement(elH, fractionmass = 0.0264);
   Kapton->AddElement(elC, fractionmass = 0.6911);
@@ -276,7 +467,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   Epoxy->AddElement(G4Element::GetElement("C"), natoms = 2);
   
   //carbon fiber
-  density = 0.145*g/cm3;
+  density = 0.145* g / cm3;
   G4Material* CFRP = new G4Material("CFRP",density, nel=1);
   CFRP->AddElement(elC,1);
 
@@ -286,7 +477,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   foam->AddElement(elementH, 0.10);
 
   //water
-  density = 1.000*g/cm3;
+  density = 1.000* g / cm3;
   G4Material* Water = new G4Material("water",density,2);
   Water->AddElement(elH, natoms=2);
   Water->AddElement(elO, natoms=1);
@@ -337,13 +528,20 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   const G4double kLadder_vertical_length =  38 * mm;
   //  1.47684 cm
 
-  G4double si_thickness = 78 * um;
-  G4Box* INTT_si_box		= new G4Box("INTT_si_box", 0.3 * m, 0.3 * m , 0.3 * m);
+  //  G4Box* INTT_si_box		= new G4Box("INTT_si_box", 0.3 * m, 0.3 * m , 0.3 * m);
   G4Box* INTT_si		= new G4Box("INTT_si", 116.1 * mm, 11.25 * mm , 0.16 * mm);
   G4Box* INTT_si_test		= new G4Box("INTT_si_test", 116.1 * mm, 5.625 * mm , 0.16 * mm);
   
-  G4Box* INTT_si_typeA		= new G4Box("INTT_si_typeA", 8. * mm, 0.039 * mm , 0.16 * mm);
-  G4Box* INTT_si_typeB		= new G4Box("INTT_si_typeB", 10. * mm, 0.039 * mm , 0.16 * mm);
+  //  G4Box* INTT_si_typeA		= new G4Box("INTT_si_typeA", 8. * mm, 0.039 * mm , 0.16 * mm);
+  G4Box* INTT_si_typeA		= new G4Box("INTT_si_typeA",
+					    silicon_length_type_a / 2,
+					    silicon_strip_width / 2,
+					    silicon_strip_thickness / 2 );
+  //  G4Box* INTT_si_typeB		= new G4Box("INTT_si_typeB", 10. * mm, 0.039 * mm , 0.16 * mm);
+  G4Box* INTT_si_typeB		= new G4Box("INTT_si_typeB",
+					    silicon_length_type_b / 2,
+					    silicon_strip_width / 2,
+					    silicon_strip_thickness / 2 );
   
   G4Box* INTT_sci		= new G4Box("INTT_sci", 116.1 * mm, 11.25 * mm , 2.5 * mm);
   
@@ -496,8 +694,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   
   G4LogicalVolume* INTT_siLV_typeA
     = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
+  INTT_siLV_typeA->SetVisAttributes( color_silicon_active );  
+
   G4LogicalVolume* INTT_siLV_typeB
     = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");
+  INTT_siLV_typeB->SetVisAttributes( color_silicon_active );  
 
   // G4LogicalVolume*INTT_siLV_outer
   //   = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all_outer");
@@ -513,7 +714,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       
       G4double xpos, ypos;
       INTT_siLV_outer[l] = new G4LogicalVolume(INTT_si, Silicon, INTT_siLV_name[l]);
-
+      INTT_siLV_outer[l]->SetVisAttributes( color_silicon_inactive );
+      
       G4double gap = 35.0 * mm;
 
       //for silicon    
@@ -766,7 +968,12 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //  }  // end block for for loop
 
   G4LogicalVolume * INTT_sciLV = new G4LogicalVolume(INTT_sci, BBHodo_Scinti, "INTT_sciLV1");
-  G4double zpos = -58.75 * mm;   
+  INTT_sciLV->SetVisAttributes( color_scintillator );
+  
+  //G4double zpos = -58.75 * mm;   
+  G4double zpos = -58.75 * mm + 0.51 * mm;
+
+  // upstream
   new G4PVPlacement(0, 
                     G4ThreeVector(0, 0, zpos- zpos_testbeam_box), 
                     INTT_sciLV,            //its logical volume
@@ -776,7 +983,9 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
                     0,                       //copy number
                     checkOverlaps);
 
-  G4double zpos1 = 276.45 * mm;   
+  //G4double zpos1 = 276.45 * mm;   
+  G4double zpos1 = 276.45 * mm - 0.51 * mm;   
+  // downstream
   new G4PVPlacement(0, 
                     G4ThreeVector(0, 0, zpos1- zpos_testbeam_box), 
                     INTT_sciLV,            //its logical volume
@@ -789,8 +998,13 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   
   //for chip
   G4LogicalVolume* INTT_ChipLV = new G4LogicalVolume(INTT_Chip, Silicon, "INTT_ChipLV_name");
+  INTT_ChipLV->SetVisAttributes( color_FPHX );
   G4LogicalVolume* INTT_Chip_glueLV = new G4LogicalVolume(INTT_Chip_glue, Silicon, "INTT_Chip_glueLV_name");
+  INTT_Chip_glueLV->SetVisAttributes( color_glue );
+  
   G4LogicalVolume* INTT_Chip_areaLV = new G4LogicalVolume(INTT_Chip_area, Silicon, "INTT_Chip_areaLV_name");
+  INTT_Chip_areaLV->SetVisAttributes( color_invisible );
+  
   G4int counting_number_chip = 0;
 
   for (G4int l=0; l<kLadder_num; l++)
@@ -856,6 +1070,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       //for HDI copper
       INTT_HDI_copperLV[l]
 	= new G4LogicalVolume(INTT_HDI_copper, Copper, INTT_HDI_copperLV_name[l]);
+      INTT_HDI_copperLV[l]->SetVisAttributes( color_HDI_copper );
     
       G4double zpos = initialposition + l * gap;   
       new G4PVPlacement(0, 
@@ -872,6 +1087,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       //for HDI Kapton
       INTT_HDI_KaptonLV[l]
 	= new G4LogicalVolume(INTT_HDI_Kapton,Kapton, INTT_HDI_KaptonLV_name[l]);
+      INTT_HDI_KaptonLV[l]->SetVisAttributes( color_HDI_kapton );
     
       zpos = initialposition + l * gap;   
       new G4PVPlacement(0, 
@@ -897,7 +1113,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String stave_areaLV_name = "INTT_stave_area" + to_string( l + 1 );
       INTT_stave_areaLV[l]
 	= new G4LogicalVolume(INTT_stave_area, DefaultMaterial, stave_areaLV_name );
-    
+      INTT_stave_areaLV[l]->SetVisAttributes( color_invisible );
+      
       G4double zpos = initialposition + l * gap;   
       new G4PVPlacement(0, 
 			//G4ThreeVector(0, 9.725*mm, zpos- zpos_testbeam_box), 
@@ -912,6 +1129,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       //for flat carbon fiber layer
       INTT_CFRPLVf[l]
 	= new G4LogicalVolume(INTT_CFRP, CFRP, INTT_CFRPLVf_name[l] );
+      INTT_CFRPLVf[l]->SetVisAttributes( color_CFRP_carbon );
 
       G4double xpos_local = 0.0;
       G4double ypos_local = 0.0;
@@ -929,11 +1147,13 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       //for formed carbon fiber layer
       INTT_CFRPLVr[l]
 	= new G4LogicalVolume(INTT_CFRP,CFRP, INTT_CFRPLVr_name[l]);
+      INTT_CFRPLVr[l]->SetVisAttributes( color_CFRP_carbon );
 
       // the formed carbon, short outer part on the top
       G4String formed_CFRP_outer_partLV_name = "INTT_formed_carbonfiber_outer_top" + to_string(l+1);
       INTT_formed_CFRP_outer_partLV[l]
 	= new G4LogicalVolume(INTT_formed_CFRP_outer_part, CFRP, formed_CFRP_outer_partLV_name );
+      INTT_formed_CFRP_outer_partLV[l]->SetVisAttributes( color_CFRP_carbon );
 
       ypos_local = kLadder_vertical_length / 2 - INTT_formed_CFRP_outer_length / 2;
       zpos_local = -INTT_stave_area_thickness / 2 + INTT_CFRP_thickness * 3 / 2;
@@ -962,7 +1182,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String slant_upper_name = "INTT_formed_carbonfiber_slant_upper" + to_string(l+1);
       INTT_formed_CFRP_slant_partLV[l] = new G4LogicalVolume(INTT_formed_CFRP_slant,
 							     CFRP, slant_upper_name );
-			      
+      INTT_formed_CFRP_slant_partLV[l]->SetVisAttributes( color_CFRP_carbon );
+      
       ypos_local = INTT_formed_CFRP_straight_length / 2;
       zpos_local = -INTT_stave_area_thickness / 2 + INTT_formed_CFRP_thickness ;
       new G4PVPlacement(tubeRotation,
@@ -978,7 +1199,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String slant_lower_name = "INTT_formed_carbonfiber_slant_lower" + to_string(l+1);
       INTT_formed_CFRP_slant_partLV[l] = new G4LogicalVolume(INTT_formed_CFRP_slant,
 							     CFRP, slant_lower_name );
-			      
+      INTT_formed_CFRP_slant_partLV[l]->SetVisAttributes( color_CFRP_carbon );
+      
       ypos_local = -INTT_formed_CFRP_straight_length / 2;
       G4RotationMatrix* slant_lower_rotation = new G4RotationMatrix();
       slant_lower_rotation->rotateY( 90.0 * deg );
@@ -997,6 +1219,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String formed_CFRP_straightLV_name = "INTT_formed_carbonfiber_straight" + to_string(l+1);
       INTT_formed_CFRP_straightLV[l]
 	= new G4LogicalVolume(INTT_formed_CFRP_straight, CFRP, formed_CFRP_straightLV_name );
+      INTT_formed_CFRP_straightLV[l]->SetVisAttributes( color_CFRP_carbon );
 
       ypos_local = 0;
       zpos_local = INTT_stave_area_thickness / 2 - INTT_CFRP_thickness / 2;
@@ -1013,6 +1236,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String form_name = "INTT_form" + to_string( l+1 );
       INTT_foam_LV[l]
 	= new G4LogicalVolume(INTT_foam, foam, form_name );
+      INTT_foam_LV[l]->SetVisAttributes( color_CFRP_foam );    
     
       ypos_local = 0;
       //  zpos_local = -INTT_stave_area_thickness / 2 + INTT_CFRP_thickness + INTT_CFRP_tube_outer_radius;
@@ -1032,6 +1256,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       G4String tube_area_name = "INTT_carbonfiber_tube_areaLV" + to_string(l+1);
       INTT_CFRP_tube_areaLV[l] = new G4LogicalVolume(INTT_CFRP_tube_area,
 							    G4Material::GetMaterial("Epoxy"), tube_area_name );
+      INTT_CFRP_tube_areaLV[l]->SetVisAttributes( color_glue );
 			      
       xpos_local = INTT_CFRP_tube_area_thickness / 2;
       ypos_local = 0.0;
@@ -1049,6 +1274,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       // CFRP tube
       INTT_CFRP_tubeLV[l]
 	= new G4LogicalVolume(INTT_CFRP_tube,CFRP, INTT_CFRP_tubeLV_name[l]);
+      INTT_CFRP_tubeLV[l]->SetVisAttributes( color_CFRP_carbon );
     
       new G4PVPlacement(tubeRotation, 
 			G4ThreeVector(0, 0, 0), 
@@ -1062,6 +1288,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       // cooling water
       INTT_waterLV[l]
 	= new G4LogicalVolume(INTT_water,Water, INTT_waterLV_name[l]);
+      INTT_waterLV[l]->SetVisAttributes( color_CFRP_water );
     
       new G4PVPlacement(tubeRotation, 
 			G4ThreeVector(0, 0, 0), 
@@ -1117,3 +1344,23 @@ void EDDetectorConstruction::ConstructSDandField()
   // Sensitive detectors
   //
 }  
+
+void EDDetectorConstruction::DefineVisAttributes()
+{
+  // gapCol = new G4VisAttributes( true , G4Colour( 1, 1, 1, 1 ) ); // polystyrene
+  // gapCol->SetForceSolid( true );
+
+  color_invisible	= new G4VisAttributes( false, G4Colour( 0.0, 0.000, 0.0, 0.0 ) );
+  color_silicon_active	= new G4VisAttributes( true,  G4Colour( 1.0, 0.000, 0.0, 0.5 ) ); // transparent red
+  color_silicon_inactive= new G4VisAttributes( true,  G4Colour( 0.0, 0.000, 1.0, 0.5 ) ); // transparent blue
+  color_glue            = new G4VisAttributes( true,  G4Colour( 0.1, 0.100, 0.1, 0.4 ) );
+  color_FPHX		= new G4VisAttributes( true,  G4Colour( 1.0, 0.843, 0.0, 0.5 ) ); // HTML gold
+  color_HDI_copper	= new G4VisAttributes( true,  G4Colour( 0.7, 0.400, 0.0, 1.0 ) );
+  color_HDI_kapton	= new G4VisAttributes( true,  G4Colour( 0.0, 0.590, 1.0, 0.5 ) ); // blue
+  color_CFRP_carbon	= new G4VisAttributes( true,  G4Colour( 0.4, 0.400, 0.4, 1.0 ) ); // gray
+  color_CFRP_water	= new G4VisAttributes( true,  G4Colour::Blue() ); 
+  color_CFRP_foam	= new G4VisAttributes( true,  G4Colour( 0.9, 0.900, 0.9, 0.5 ) ); // white
+  color_scintillator     = new G4VisAttributes( true,  G4Colour( 0.0, 0.000, 0.6, 0.5 ) ); // blue?
+  color_darkbox_frame	= new G4VisAttributes( true,  G4Colour( 0.4, 0.400, 0.4, 0.4 ) );
+  color_darkbox_wall	= new G4VisAttributes( true,  G4Colour( 0.7, 0.400, 0.0, 0.1 ) );
+}
