@@ -32,13 +32,151 @@
 
 EDDetectorConstruction::EDDetectorConstruction()
   : G4VUserDetectorConstruction()
-{ }
+{
+
+  // Option to switch on/off checking of volumes overlaps
+  checkOverlaps = true;
+
+  // assign very primitive paraleters here
+  // size of the world
+  world_size[0] = 0.4 * m;
+  world_size[1] = 0.2 * m;
+  world_size[2] = 0.4 * m;
+
+  // size of the dark box
+  //  INTT_testbeam_BOX_size[0] = 116.1*mm, 19.*mm, 170.1*mm);
+  INTT_testbeam_BOX_size[0] = 232.2 * mm;
+  INTT_testbeam_BOX_size[1] = 38.0 * mm;
+  INTT_testbeam_BOX_size[2] = 340.2 * mm;   
+}
 
 EDDetectorConstruction::~EDDetectorConstruction()
 { }
 
+void EDDetectorConstruction::DefineMaterials()
+{
+
+  // Get nist material manager
+  G4NistManager* nistManager = G4NistManager::Instance();
+  G4bool fromIsotopes = false;  
+
+  // Build materials
+  DefaultMaterial = nistManager->FindOrBuildMaterial("G4_AIR",fromIsotopes );
+  // There is no need to test if materials were built/found
+  // as G4NistManager would issue an error otherwise
+  // Try the code with "XYZ".      
+
+  G4int nel,natoms;
+  Silicon =  nistManager->FindOrBuildMaterial( "G4_Si",fromIsotopes );
+
+  //vacuum 
+  G4double atomicNumber = 1.;
+  G4double massOfMole = 1.008*g/mole;
+  G4double density = 1.e-25*g/cm3;
+  G4double temperature = 2.73*kelvin;
+  G4double pressure = 3.e-18*pascal;
+  G4Material* Vacuum = new G4Material("interGalactic", atomicNumber,massOfMole, density, kStateGas, temperature, pressure);
+  
+  //element
+  G4double fractionmass;
+  G4NistManager *man = G4NistManager::Instance();
+  G4Element *elH = man->FindOrBuildElement("H");
+  G4Element *elC = man->FindOrBuildElement("C");
+  G4Element *elN = man->FindOrBuildElement("N");
+  G4Element *elO = man->FindOrBuildElement("O");
+  G4Element* elementH  = new G4Element("Hydrogen",  "H",  1.,  1.0079*g/mole);
+  G4Element* elementC  = new G4Element("Carbon",    "C",  6.,  12.011*g/mole);
+
+  //sci_BC-408
+  G4double d_PolyVinylToluene = 0.57*g/cm3;
+  G4double d_Anthracene = 1.28*g/cm3;
+  G4double d_BBHodo_Scinti = 1.023*g/cm3;
+  G4Material* PolyVinylToluene = new G4Material( "PolyVinylToluene", d_PolyVinylToluene, 2 );
+  PolyVinylToluene->AddElement(elC, fractionmass = 0.91471);
+  PolyVinylToluene->AddElement(elH, fractionmass = 0.08529);
+  
+  G4Material* Anthracene = new G4Material( "Anthracene", d_Anthracene, 2 );
+  Anthracene->AddElement(elC, fractionmass = 0.943447);
+  Anthracene->AddElement(elH, fractionmass = 0.056553);
+  
+  BBHodo_Scinti = new G4Material( "BBHodo_Scinti", d_BBHodo_Scinti,  2 );
+  BBHodo_Scinti->AddMaterial(PolyVinylToluene, fractionmass = 0.36);
+  BBHodo_Scinti->AddMaterial(Anthracene, fractionmass = 0.64);
+
+  //kapton
+  density = 1.42*g/cm3;
+  Kapton = new G4Material("Kapton",density, nel=4);
+  Kapton->AddElement(elH, fractionmass = 0.0264);
+  Kapton->AddElement(elC, fractionmass = 0.6911);
+  Kapton->AddElement(elN, fractionmass = 0.0733);
+  Kapton->AddElement(elO, fractionmass = 0.2092);
+
+  //Copper
+  density = 8.96 * g / cm3;
+  G4double a = 63.54 * g / mole;
+  Copper = new G4Material("Copper", 29.0, a, density);
+
+  // Glue for the carbon fiber
+  // actually, it's the same as one used in the sPHENIX Geant simulation
+  Epoxy = new G4Material("Epoxy", 1.2 * g / cm3, 2);
+  Epoxy->AddElement(G4Element::GetElement("H"), natoms = 2);
+  Epoxy->AddElement(G4Element::GetElement("C"), natoms = 2);
+  
+  //carbon fiber
+  density = 0.145*g/cm3;
+  CFRP = new G4Material("CFRP",density, nel=1);
+  CFRP->AddElement(elC,1);
+
+  // Foam: Polystyrene-based
+  foam = new G4Material("foam",0.05*g/cm3, 2);
+  foam->AddElement(elementC, 0.90);
+  foam->AddElement(elementH, 0.10);
+
+  //water
+  density = 1.000*g/cm3;
+  Water = new G4Material("water",density,2);
+  Water->AddElement(elH, natoms=2);
+  Water->AddElement(elO, natoms=1);
+
+
+}
+
+void EDDetectorConstruction::ConstructDarkBox( G4LogicalVolume* worldLog )
+{
+
+  G4Box* INTT_testbeam_BOX	= new G4Box("INTT_testbeam_BOX",
+					    INTT_testbea_BOX_size[0] / 2,
+					    INTT_testbea_BOX_size[1] / 2,
+					    INTT_testbea_BOX_size[2] / 2 );
+  
+  INTT_testbeam_BOXLV
+    = new G4LogicalVolume( INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
+  zpos_testbeam_box = 108.85 * mm;
+  //  G4double zpos_testbeam_box = 0;
+  zpos_testbeam_box_1 = 108.85 * mm;  
+  //  G4double zpos_testbeam_box_1 = zpos_testbeam_box;
+  //fmovement = 35;
+  //G4double public_variable::theoffset = 35;
+  //G4cout<<" theoffset test in EDD : "<<theoffset<<G4endl;
+  
+  INTT_testbeam_BOXPV =
+    new G4PVPlacement(0, 
+		      G4ThreeVector(0, 0, zpos_testbeam_box_1), 
+		      INTT_testbeam_BOXLV,            //its logical volume
+		      "INTT_testbeam_BOXLV",       //its name
+		      worldLog,                //its mother  volume
+		      false,                   //no boolean operation
+		      0,                       //copy number
+		      checkOverlaps);
+  
+}
+  
+
 G4VPhysicalVolume* EDDetectorConstruction::Construct()
-{  
+{
+  DefineMaterials();
+
+  /*
   // Get nist material manager
   G4NistManager* nistManager = G4NistManager::Instance();
   G4bool fromIsotopes = false;  
@@ -52,10 +190,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   // There is no need to test if materials were built/found
   // as G4NistManager would issue an error otherwise
   // Try the code with "XYZ".      
+  */
   
-  // Option to switch on/off checking of volumes overlaps
-  G4bool checkOverlaps = true;
-
   //     
   // World
   //
@@ -67,7 +203,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   G4Box* worldS = new G4Box("World", hx, hy, hz); 
       
   G4LogicalVolume* worldLog                         
-    = new G4LogicalVolume(worldS, air, "worldLog");
+    = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
                                    
   G4VPhysicalVolume* worldPV
     = new G4PVPlacement(0,                     //no rotation
@@ -79,9 +215,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 			0,                     //copy number
 			checkOverlaps);        //overlaps checking
 
+  this->ConstructDarkBox( worldLog );
+  /*
   G4int nel,natoms;
   std::cout << "===========================" << std::endl;
-  G4Material* silicon =  nistManager->FindOrBuildMaterial("G4_Si",false);
+  G4Material* Silicon =  nistManager->FindOrBuildMaterial("G4_Si",false);
   G4Material* Tungsten = nistManager->FindOrBuildMaterial("G4_W");
 
   //vacuum 
@@ -149,20 +287,21 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 
   //water
   density = 1.000*g/cm3;
-  G4Material* water = new G4Material("water",density,2);
-  water->AddElement(elH, natoms=2);
-  water->AddElement(elO, natoms=1);
-
+  G4Material* Water = new G4Material("water",density,2);
+  Water->AddElement(elH, natoms=2);
+  Water->AddElement(elO, natoms=1);
+  */
 
   //======================G4solid===============================================  
   const int kLadder_num = 4;
-  const bool kIs_silicon_off = false; // flag for debugging, turning all silicon strips off to save time
+  const bool kIs_silicon_off = true; // flag for debugging, turning all silicon strips off to save time
   
   //G4LogicalVolume* INTT_siLV[kLadder_num];
   vector < G4String > INTT_siLV_name, INTT_HDI_copperLV_name, INTT_HDI_KaptonLV_name,
     INTT_CFRPLVf_name, INTT_foam_LVup_name, INTT_foam_LVdown_name,
     INTT_CFRP_tubeLV_name, INTT_waterLV_name, INTT_CFRPLVr_name,
     INTT_CFRP_glueLV_name;
+
   for( int i=0; i<kLadder_num; i++ )
     {
       INTT_siLV_name.push_back		( G4String("INTT_siLV")			+ to_string(i+1) );
@@ -312,8 +451,6 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   G4double HDI_kapton_thickness = 380 * um;
   G4Box* INTT_HDI_Kapton	= new G4Box("INTT_HDI_Kapton", 116.1*mm, 19.*mm, HDI_kapton_thickness / 2);
 
-  G4Box* INTT_testbeam_BOX	= new G4Box("INTT_testbeam_BOX", 116.1*mm, 19.*mm, 170.1*mm);
-  
   G4int counting_number = 0;
 
   //===============================================================================================================
@@ -327,7 +464,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   testbeam_BOX_rotation_Y->rotateY( 90.0 * deg );
 
   //===============================================================================================================
-  // G4LogicalVolume * INTT_si_boxLV = new G4LogicalVolume(INTT_si_box, air, "INTT_si_boxPV");
+  // G4LogicalVolume * INTT_si_boxLV = new G4LogicalVolume(INTT_si_box, DefaultMaterial, "INTT_si_boxPV");
   // new G4PVPlacement(0, 
   //                   G4ThreeVector(0, 0, 0), 
   //                   INTT_si_boxLV,            //its logical volume
@@ -336,8 +473,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //                   false,                   //no boolean operation
   //                   0,                       //copy number
   //                   checkOverlaps);    
-
-  G4LogicalVolume * INTT_testbeam_BOXLV = new G4LogicalVolume(INTT_testbeam_BOX, air, "INTT_testbeam_BOXLV");
+  /*
+  G4LogicalVolume * INTT_testbeam_BOXLV = new G4LogicalVolume(INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
   G4double zpos_testbeam_box = 108.85 * mm;
   //  G4double zpos_testbeam_box = 0;
   G4double zpos_testbeam_box_1 = 108.85 * mm;  
@@ -355,14 +492,15 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 		      false,                   //no boolean operation
 		      0,                       //copy number
 		      checkOverlaps);
-
+  */
+  
   G4LogicalVolume* INTT_siLV_typeA
-    = new G4LogicalVolume(INTT_si_typeA, silicon, "INTT_siLV_all_typeA");
+    = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
   G4LogicalVolume* INTT_siLV_typeB
-    = new G4LogicalVolume(INTT_si_typeB, silicon, "INTT_siLV_all_typeB");
+    = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");
 
   // G4LogicalVolume*INTT_siLV_outer
-  //   = new G4LogicalVolume(INTT_si, silicon, "INTT_siLV_all_outer");
+  //   = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all_outer");
 
   // loop over all INTT ladders
   G4double initialposition = 100.0 * mm;
@@ -374,7 +512,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 	continue;
       
       G4double xpos, ypos;
-      INTT_siLV_outer[l] = new G4LogicalVolume(INTT_si, silicon, INTT_siLV_name[l]);
+      INTT_siLV_outer[l] = new G4LogicalVolume(INTT_si, Silicon, INTT_siLV_name[l]);
 
       G4double gap = 35.0 * mm;
 
@@ -514,7 +652,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
     }  // end block for for loop over all INTT ladders
 
   //  G4LogicalVolume*INTT_siLV
-  //    = new G4LogicalVolume(INTT_si, silicon, "INTT_siLV_all");
+  //    = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all");
   // for (G4int l=0;l<4;l++)
   // { 
   //  G4double gap = 35.*mm;
@@ -531,7 +669,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //                    checkOverlaps);
   // }  // end block for for loop
   // G4LogicalVolume*INTT_siLV_inside
-  //    = new G4LogicalVolume(INTT_si, silicon, "INTT_siLV_all_inside");
+  //    = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all_inside");
   //  new G4PVPlacement(0, 
   //                    G4ThreeVector(0, 0, 0), 
   //                    INTT_siLV_inside,            //its logical volume
@@ -541,9 +679,9 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
   //                    0,                       //copy number
   //                    checkOverlaps);
   //   G4LogicalVolume*INTT_siLV_typeA
-  //     = new G4LogicalVolume(INTT_si_typeA, silicon, "INTT_siLV_all_typeA");
+  //     = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
   //   G4LogicalVolume*INTT_siLV_typeB
-  //     = new G4LogicalVolume(INTT_si_typeB, silicon, "INTT_siLV_all_typeB");    
+  //     = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");    
   //  for (G4int l=0;l<4;l++)
   // { 
   //   G4double gap = 35.*mm;
@@ -650,9 +788,9 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 
   
   //for chip
-  G4LogicalVolume* INTT_ChipLV = new G4LogicalVolume(INTT_Chip, silicon, "INTT_ChipLV_name");
-  G4LogicalVolume* INTT_Chip_glueLV = new G4LogicalVolume(INTT_Chip_glue, silicon, "INTT_Chip_glueLV_name");
-  G4LogicalVolume* INTT_Chip_areaLV = new G4LogicalVolume(INTT_Chip_area, silicon, "INTT_Chip_areaLV_name");
+  G4LogicalVolume* INTT_ChipLV = new G4LogicalVolume(INTT_Chip, Silicon, "INTT_ChipLV_name");
+  G4LogicalVolume* INTT_Chip_glueLV = new G4LogicalVolume(INTT_Chip_glue, Silicon, "INTT_Chip_glueLV_name");
+  G4LogicalVolume* INTT_Chip_areaLV = new G4LogicalVolume(INTT_Chip_area, Silicon, "INTT_Chip_areaLV_name");
   G4int counting_number_chip = 0;
 
   for (G4int l=0; l<kLadder_num; l++)
@@ -704,7 +842,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 	}
 
       // INTT_ChipLV[l]
-      //   = new G4LogicalVolume(INTT_Chip, silicon, INTT_ChipLV_name[0]);  
+      //   = new G4LogicalVolume(INTT_Chip, Silicon, INTT_ChipLV_name[0]);  
     }  // end block for for loop
 
 
@@ -758,7 +896,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       //              flat CFRP plate, rohacell forms, CFRP tube, cooling water, and formed CFRP plate
       G4String stave_areaLV_name = "INTT_stave_area" + to_string( l + 1 );
       INTT_stave_areaLV[l]
-	= new G4LogicalVolume(INTT_stave_area, air, stave_areaLV_name );
+	= new G4LogicalVolume(INTT_stave_area, DefaultMaterial, stave_areaLV_name );
     
       G4double zpos = initialposition + l * gap;   
       new G4PVPlacement(0, 
@@ -923,7 +1061,7 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 
       // cooling water
       INTT_waterLV[l]
-	= new G4LogicalVolume(INTT_water,water, INTT_waterLV_name[l]);
+	= new G4LogicalVolume(INTT_water,Water, INTT_waterLV_name[l]);
     
       new G4PVPlacement(tubeRotation, 
 			G4ThreeVector(0, 0, 0), 

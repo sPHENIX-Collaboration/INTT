@@ -70,7 +70,32 @@ public:
   //   G4double Gettheoffset() const {return fmovement; }
   
 private:
-  // G4double fmovement;   
+
+  // Option to switch on/off checking of volumes overlaps
+  G4bool checkOverlaps = true;
+  
+  // G4double fmovement;
+  G4double world_size[3]; // x, y, z
+  G4double INTT_testbeam_BOX_size[3];  // x, y, z
+  G4double zpos_testbeam_box;
+  G4double zpos_testbeam_box_1;
+
+  G4Material* DefaultMaterial;
+  G4Material* Silicon;
+  G4Material* Kapton;
+  G4Material* Copper;
+  G4Material* Epoxy;
+  G4Material* foam;
+  G4Material* Water;
+  G4Material* CFRP;
+  G4Material* BBHodo_Scinti;
+
+  G4VPhysicalVolume * INTT_testbeam_BOXPV;
+
+  G4LogicalVolume * INTT_testbeam_BOXLV;
+  
+  void DefineMaterials();
+  void ConstructDarkBox( G4LogicalVolume* worldLog );
 };
 
 
