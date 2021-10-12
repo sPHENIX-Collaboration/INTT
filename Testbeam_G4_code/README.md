@@ -11,3 +11,6 @@ The procedures to run the G4 (under the G4 environment) :
 4. cmake ../session7_solution_vX
 5. make       #compile
 6. ./example      #this command is to open the TBrowser 
+
+
+The interface_v1.c is the code to convert the root file from G4 to the Testbench formate.
