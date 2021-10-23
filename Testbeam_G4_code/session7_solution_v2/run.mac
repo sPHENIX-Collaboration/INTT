@@ -1,0 +1,30 @@
+# Macro file for example ED
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+/run/initialize
+#
+# Limit thread output to 1 thread
+#/control/cout/ignoreThreadsExcept 0
+#
+# Dump particle processes
+#
+#/particle/select mu+
+#/particle/process/dump
+#
+#/particle/select mu-
+#/particle/process/dump
+#
+# Set particle production thresholds (cuts)
+#
+/run/setCut 1 mm
+/run/setCutForAGivenParticle e- 0.1 mm
+/run/setCutForAGivenParticle e+ 0.2 mm
+/run/setCutForAGivenParticle gamma 0.3 mm
+#
+# Run processing
+#
+#/gun/particle mu-
+/run/beamOn 6
+#/run/beamOn 1

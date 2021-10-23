@@ -77,15 +77,34 @@ EDRunAction::EDRunAction()
   // Creating ntuples
   //
   // ntuple id = 0
+  
+  //============================the original one store the center of strip====================================================       
+  // analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
+  // analysisManager->CreateNtupleIColumn("Event_ID");
+  // analysisManager->CreateNtupleIColumn("UpandDown");   // column id = 0 
+  // analysisManager->CreateNtupleDColumn("Xpos");    // column id = 1 
+  // analysisManager->CreateNtupleDColumn("Ypos");    // column id = 2
+  // analysisManager->CreateNtupleDColumn("Zpos");    // column id = 3 
+  // analysisManager->CreateNtupleIColumn("silicon_type");    // column id = 3   
+  // analysisManager->CreateNtupleDColumn("Edep");    // column id = 3 
+  // analysisManager->FinishNtuple();
+  //============================the original one store the center of strip====================================================       
+
+  
+
+  //============================NEW one, only store the ID====================================================        
   analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
   analysisManager->CreateNtupleIColumn("Event_ID");
   analysisManager->CreateNtupleIColumn("UpandDown");   // column id = 0 
-  analysisManager->CreateNtupleDColumn("Xpos");    // column id = 1 
-  analysisManager->CreateNtupleDColumn("Ypos");    // column id = 2
-  analysisManager->CreateNtupleDColumn("Zpos");    // column id = 3 
+  analysisManager->CreateNtupleIColumn("Xpos");    // column id = 1 
+  analysisManager->CreateNtupleIColumn("Ypos");    // column id = 2
+  analysisManager->CreateNtupleIColumn("Zpos");    // column id = 3 
   analysisManager->CreateNtupleIColumn("silicon_type");    // column id = 3   
   analysisManager->CreateNtupleDColumn("Edep");    // column id = 3 
   analysisManager->FinishNtuple();
+  //============================NEW one, only store the ID====================================================
+
+
 
   //ntuple id =1 
   analysisManager->CreateNtuple("Beam_angle", "Beam_angle");
@@ -95,9 +114,31 @@ EDRunAction::EDRunAction()
   analysisManager->CreateNtupleDColumn("Beam_Theta"); // colume id = 0
   analysisManager->CreateNtupleDColumn("Beam_Phi"); // colume id = 1
   analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
+  analysisManager->CreateNtupleDColumn("Beam_energy");
+  analysisManager->FinishNtuple();
+
+
+
+
+  analysisManager->CreateNtuple("event_particle", "event_particle");
+  analysisManager->CreateNtupleIColumn("PID_order"); // colume id = 0
+  analysisManager->CreateNtupleIColumn("PID"); // colume id = 0
+  analysisManager->CreateNtupleDColumn("PID_energy");
+  analysisManager->CreateNtupleDColumn("particle_X"); // colume id = 0
+  analysisManager->CreateNtupleDColumn("particle_Y");
+  analysisManager->CreateNtupleDColumn("particle_Z");
+  analysisManager->CreateNtupleIColumn("volume_type");
+  analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
   analysisManager->FinishNtuple();
 
   // ntuple id = 1
+
+  analysisManager->CreateNtuple("sci_trigger", "sci_trigger");
+  analysisManager->CreateNtupleIColumn("Event_ID");
+  analysisManager->CreateNtupleIColumn("sci_ID");
+  analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
+  analysisManager->FinishNtuple();    
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
