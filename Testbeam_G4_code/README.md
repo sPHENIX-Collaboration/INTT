@@ -1,6 +1,6 @@
 v1 (in release) : contents INTT modules * 4 (silicon sensor + HDI+ FPHX chips + carbon cooling plate) + trigger scintillator*2
 
-v2 : replace carbon cooling plate by stave
+v2 (latest version): replace carbon cooling plate by stave
 
 
 The procedures to run the G4 (under the G4 environment) : 
