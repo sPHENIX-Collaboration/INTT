@@ -1,4 +1,4 @@
-v1 : contents INTT modules * 4 (silicon sensor + HDI+ FPHX chips + carbon cooling plate) + trigger scintillator*2  (in release)
+v1 (in release) : contents INTT modules * 4 (silicon sensor + HDI+ FPHX chips + carbon cooling plate) + trigger scintillator*2
 
 v2 : replace carbon cooling plate by stave
 
