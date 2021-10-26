@@ -1,7 +1,11 @@
 v1 : contents INTT modules * 4 (silicon sensor + HDI+ FPHX chips + carbon cooling plate) + trigger scintillator*2 
 
 
-v2 : replace carbon cooling plate by stave
+v2 : 
+1. The position of stave is corrected.
+2. The glue layer between chip/sensor and HDI are added.
+3. one more scintillator counter is added. scintillator thickness : upstream 2.5mm *1 and downstream 5mm *2.
+4. The sensor structure is optimized.
 
 
 The procedures to run the G4 (under the G4 environment) : 
