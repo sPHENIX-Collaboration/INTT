@@ -67,7 +67,7 @@ void EDEmCalorimeterSD::Initialize(G4HCofThisEvent* hce)
     = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
   hce->AddHitsCollection( hcID, fHitsCollection ); 
 
-  for (G4int i=0; i<2; ++i) {
+  for (G4int i=0; i<3; ++i) {
     EDEmCalorimeterHit* newHit = new EDEmCalorimeterHit();
     newHit->SetLayerNumber(i);
     fHitsCollection->insert(newHit);

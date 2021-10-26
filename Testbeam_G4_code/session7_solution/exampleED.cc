@@ -43,7 +43,6 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-#include <random>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 namespace {
@@ -70,11 +69,6 @@ int main(int argc,char** argv)
   G4String session;
   G4String physicsListName;
   G4int nofThreads = 0;
-
-  // Change a seed of random number 
-  std::random_device rnd;
-  CLHEP::HepRandom::setTheSeed( rnd() );
-
   for ( G4int i=1; i<argc; i=i+2 ) {
     if      ( G4String(argv[i]) == "-m" ) macro = argv[i+1];
     else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
