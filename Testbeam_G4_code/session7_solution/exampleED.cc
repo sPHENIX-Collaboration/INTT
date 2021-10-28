@@ -28,6 +28,8 @@
 /// \file exampleED.cc
 /// \brief Main program of the ED example
 
+#include <random>
+
 #include "EDDetectorConstruction.hh"
 #include "EDActionInitialization.hh"
 
