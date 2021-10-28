@@ -96,7 +96,9 @@ private:
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
   G4double zpos_testbeam_box;
   G4double zpos_testbeam_box_1;
-
+  G4double darkbox_wall_thickness;
+  G4double frame_thickness;
+  
   G4double silicon_strip_width;
   G4double silicon_strip_thickness;
   G4double silicon_length_type_a;
