@@ -33,7 +33,18 @@
 const G4double EDDetectorConstruction::inch = 25.4; // 1 inch = 25.4 mm
 const G4double EDDetectorConstruction::ft = 304.8;  // 1 ft = 304.8 mm  
 
-EDDetectorConstruction::EDDetectorConstruction(): G4VUserDetectorConstruction()
+EDDetectorConstruction::EDDetectorConstruction()
+  : kSilicon_strip_width( 78.0 * um ),
+    kSilicon_strip_thickness( 320.0 * um ),
+    kSilicon_length_type_a( 16.0 * mm ),
+    kSilicon_length_type_b( 20.0 * mm ),
+    kFPHX_width( 2.7 * mm ),
+    kFPHX_thickness( 320.0 * um ),
+    kFPHX_length( 9.1 * mm ),
+    kSilver_epoxy_glue_silicon_thickness( 14 * um ),
+    kSilver_epoxy_glue_FPHX_thickness( 50 * um ),
+    kINTT_CFRP_thickness( 300 * um ),
+    G4VUserDetectorConstruction()
 {
 
     // Option to switch on/off checking of volumes overlaps
