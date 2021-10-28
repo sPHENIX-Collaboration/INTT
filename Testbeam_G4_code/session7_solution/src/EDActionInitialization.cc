@@ -33,31 +33,40 @@
 #include "EDEventAction.hh"
 #include "EDRunAction.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDActionInitialization::EDActionInitialization()
  : G4VUserActionInitialization()
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDActionInitialization::~EDActionInitialization()
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EDActionInitialization::BuildForMaster() const
 {
-  SetUserAction(new EDRunAction);
+  SetUserAction(new EDRunAction( new EDPrimaryGeneratorAction() ) );
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDActionInitialization::Build() const
 {
-  SetUserAction(new EDPrimaryGeneratorAction);
-  SetUserAction(new EDRunAction);
+  auto pga = new EDPrimaryGeneratorAction();  
+  SetUserAction( pga );
+  SetUserAction(new EDRunAction( pga ) );
   SetUserAction(new EDEventAction);
 }  
-
+/*
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  39   │ void B4cActionInitialization::BuildForMaster() const
+  40   │ {
+  41   │   SetUserAction( new B4RunAction( new B4PrimaryGeneratorAction() ) );
+  42   │ }
+  43   │
+  44   │ void B4cActionInitialization::Build() const
+  45   │ {
+  46   │   auto pga = new B4PrimaryGeneratorAction();
+  47   │   SetUserAction( pga );
+  48   │   //  SetUserAction(new B4PrimaryGeneratorAction);
+  49   │
+  50   │   SetUserAction( new B4RunAction( pga ) );
+  51   │   SetUserAction( new B4cEventAction );
+  52   │   SetUserAction( new TrackingAction( pga ) );
+  53   │ }
+*/

@@ -33,7 +33,18 @@
 const G4double EDDetectorConstruction::inch = 25.4; // 1 inch = 25.4 mm
 const G4double EDDetectorConstruction::ft = 304.8;  // 1 ft = 304.8 mm  
 
-EDDetectorConstruction::EDDetectorConstruction(): G4VUserDetectorConstruction()
+EDDetectorConstruction::EDDetectorConstruction()
+  : kSilicon_strip_width( 78.0 * um ),
+    kSilicon_strip_thickness( 320.0 * um ),
+    kSilicon_length_type_a( 16.0 * mm ),
+    kSilicon_length_type_b( 20.0 * mm ),
+    kFPHX_width( 2.7 * mm ),
+    kFPHX_thickness( 320.0 * um ),
+    kFPHX_length( 9.1 * mm ),
+    kSilver_epoxy_glue_silicon_thickness( 14 * um ),
+    kSilver_epoxy_glue_FPHX_thickness( 50 * um ),
+    kINTT_CFRP_thickness( 300 * um ),
+    G4VUserDetectorConstruction()
 {
 
     // Option to switch on/off checking of volumes overlaps
@@ -48,10 +59,9 @@ EDDetectorConstruction::EDDetectorConstruction(): G4VUserDetectorConstruction()
     // size of the dark box
     //  INTT_testbeam_BOX_size[0] = 116.1*mm, 19.*mm, 170.1*mm);
     //  INTT_testbeam_BOX_size[0] = 232.2 * mm;
-    INTT_testbeam_BOX_size[0] = 12 * inch;
+    INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch. In this simulation, half box should be enough
     //  INTT_testbeam_BOX_size[1] = 38.0 * mm;
-    //INTT_testbeam_BOX_size[1] = 5 * inch;
-    INTT_testbeam_BOX_size[1] = 7 * inch;
+    INTT_testbeam_BOX_size[1] = 5 * inch;
     INTT_testbeam_BOX_size[2] = 340.2 * mm;
 
     // check whether the dark box is larger than the world or not
@@ -756,7 +766,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
                 for (G4int l2 = 0; l2 < 13; l2++)
                 {
-
+		  int type;
                     if (l2 < 8)
                     {
 
@@ -772,12 +782,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                                 false);
 
                         the_position = INTT_testbeam_BOXPV->GetTranslation() +INTT_siLV_outer_allPV->GetTranslation() +chip_channelsPV->GetTranslation();
-
-                        G4cout << "copy test : " << counting_number <<
-                            " ID : " << l << " " << l1 << " " << l2 <<
-                            " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2] <<
-                            " up : " << 0 <<
-                            " type : " << 0 << G4endl;
+			
+			type = 0;
                         counting_number += 1;
                     }
                     else
@@ -795,13 +801,17 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                         the_position = INTT_testbeam_BOXPV->GetTranslation() +
                             INTT_siLV_outer_allPV->GetTranslation() +
                             chip_channelsPV->GetTranslation();
-                        G4cout << "copy test : " << counting_number <<
-                            " ID : " << l << " " << l1 << " " << l2 <<
-                            " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2] <<
-                            " up : " << 0 <<
-                            " type : " << 1 << G4endl;
+			type = 1;
                         counting_number += 1;
                     }
+
+		    // G4cout << "copy test : " << counting_number - 1
+		    // 	   << " ID : " << l << " " << l1 << " " << l2
+		    // 	   << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		    // 	   << " up : " << 0
+		    // 	   << " type : " << type
+		    // 	   << G4endl;
+		    
                 }
             }
             else
@@ -810,6 +820,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                 ypos = (0.055 + ((l1 - 128) *0.078)) *mm;
                 for (G4int l2 = 0; l2 < 13; l2++)
                 {
+
+		  int type;
                     if (l2 < 8)
                     {
 
@@ -827,11 +839,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                         the_position = INTT_testbeam_BOXPV->GetTranslation() +
                             INTT_siLV_outer_allPV->GetTranslation() +
                             chip_channelsPV->GetTranslation();
-                        G4cout << "copy test : " << counting_number <<
-                            " ID : " << l << " " << l1 << " " << l2 <<
-                            " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2] <<
-                            " up : " << 1 <<
-                            " type : " << 0 << G4endl;
+			type = 0;
                         counting_number += 1;
                     }
                     else
@@ -851,13 +859,16 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                         the_position = INTT_testbeam_BOXPV->GetTranslation() +
                             INTT_siLV_outer_allPV->GetTranslation() +
                             chip_channelsPV->GetTranslation();
-                        G4cout << "copy test : " << counting_number <<
-                            " ID : " << l << " " << l1 << " " << l2 <<
-                            " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2] <<
-                            " up : " << 1 <<
-                            " type : " << 1 << G4endl;
+			type = 1;
                         counting_number += 1;
                     }
+
+		    // G4cout << "copy test : " << counting_number - 1
+		    // 	   << " ID : " << l << " " << l1 << " " << l2
+		    // 	   << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		    // 	   << " up : " << 1 
+		    // 	   << " type : " << type << G4endl;
+		    
                 }
             }
         }

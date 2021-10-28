@@ -28,6 +28,8 @@
 /// \file exampleED.cc
 /// \brief Main program of the ED example
 
+#include <random>
+
 #include "EDDetectorConstruction.hh"
 #include "EDActionInitialization.hh"
 
@@ -43,8 +45,6 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
@@ -53,8 +53,6 @@ namespace {
     G4cerr << G4endl;
   }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc,char** argv)
 {
@@ -90,7 +88,6 @@ int main(int argc,char** argv)
   }  
 
   // Detect interactive mode (if no arguments) and define UI session
-  //
   G4UIExecutive* ui = 0;
   if ( ! macro.size() ) {
     ui = new G4UIExecutive(argc, argv, session);
@@ -108,28 +105,30 @@ int main(int argc,char** argv)
 #endif
 
   // Set mandatory initialization classes
-  //
   // Detector construction
   runManager->SetUserInitialization(new EDDetectorConstruction());
 
   // Physics list
-  if ( physicsListName.size() == 0 ) physicsListName = "FTFP_BERT";
+  if ( physicsListName.size() == 0 ) {
+    physicsListName = "FTFP_BERT";
+  }
+  
   G4PhysListFactory physListFactory;
   if ( ! physListFactory.IsReferencePhysList(physicsListName)) {
     G4cerr << " Physics list " << physicsListName 
            << " is not defined." << G4endl;
     return 1;
   } 
+
   G4VModularPhysicsList* physicsList 
     = physListFactory.GetReferencePhysList(physicsListName);
   physicsList->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicsList);
     
   // User action initialization
-  runManager->SetUserInitialization(new EDActionInitialization());
+  runManager->SetUserInitialization( new EDActionInitialization() );
 
   // Initialize visualization
-  //
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
@@ -141,7 +140,7 @@ int main(int argc,char** argv)
   if ( macro.size() ) {
     // batch mode
     G4String command = "/control/execute ";
-    UImanager->ApplyCommand(command+macro);
+    UImanager->ApplyCommand( command + macro );
   }
   else {
     // interactive mode : define UI session
@@ -158,5 +157,3 @@ int main(int argc,char** argv)
   delete visManager;
   delete runManager;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....

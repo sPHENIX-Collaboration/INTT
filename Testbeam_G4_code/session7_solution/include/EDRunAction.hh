@@ -33,22 +33,40 @@
 
 #include "G4UserRunAction.hh"
 #include "globals.hh"
+#include "G4GenericMessenger.hh"
+#include "G4UImanager.hh"
+#include "G4SystemOfUnits.hh"
+#include "EDAnalysis.hh"
+
+#include "G4Run.hh"
+#include "G4SystemOfUnits.hh"
+#include "EDPrimaryGeneratorAction.hh"
 
 class G4Run;
+class EDPrimaryGeneratorAction;
 
 /// Run action class
-
 class EDRunAction : public G4UserRunAction
 {
-  public:
-    EDRunAction();
-    virtual ~EDRunAction();
+public:
+  EDRunAction( EDPrimaryGeneratorAction* pga );
+  
+  virtual ~EDRunAction();
+  
+  static G4double beam_energy;//  = 800 * MeV;
+  virtual void BeginOfRunAction(const G4Run*);
+  virtual void   EndOfRunAction(const G4Run*);
+  
+private:
+  
+  G4String tag = "";
+  G4String output_dir = "";
 
-    virtual void BeginOfRunAction(const G4Run*);
-    virtual void   EndOfRunAction(const G4Run*);
+  bool isFirst = true; // it should be true in the initial state
+
+  G4GenericMessenger* fMessenger;
+  
+  void DefineCommands();
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-
