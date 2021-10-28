@@ -79,6 +79,17 @@ private:
 
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
+
+  const G4double kSilicon_strip_width; // along y-axis
+  const G4double kSilicon_strip_thickness; // along z-axis
+  const G4double kSilicon_length_type_a; // along x-axis
+  const G4double kSilicon_length_type_b; // along x-axis
+  const G4double kFPHX_width; // along y-axis
+  const G4double kFPHX_thickness; // along xz-axis
+  const G4double kFPHX_length; // along x-axis
+  const G4double kSilver_epoxy_glue_silicon_thickness;
+  const G4double kSilver_epoxy_glue_FPHX_thickness;
+  const G4double kINTT_CFRP_thickness;
   
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
