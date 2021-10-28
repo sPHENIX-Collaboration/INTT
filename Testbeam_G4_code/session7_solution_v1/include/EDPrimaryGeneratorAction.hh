@@ -33,6 +33,22 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
+#include "G4ParticleGun.hh"
+#include "G4ParticleTable.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4GenericMessenger.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4ios.hh"
+#include "G4MTRunManager.hh"
+#include "G4VSensitiveDetector.hh"
+#include "Randomize.hh"
+#include "EDAnalysis.hh"
+#include "EDRunAction.hh"
+//#include "G4MTRandGauss.hh"
+//#include <Random.h>
+//#include "RandGauss.h"
+//#include "TRandom.h"
+//#include "TMath.h"
 
 class G4Event;
 class G4ParticleGun;
@@ -55,8 +71,5 @@ class EDPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4bool          fRandom;         
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-
