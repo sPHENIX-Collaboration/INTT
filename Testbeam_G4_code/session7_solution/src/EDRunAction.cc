@@ -34,9 +34,7 @@
 #include "G4Run.hh"
 #include "G4SystemOfUnits.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-EDRunAction::EDRunAction()
+EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
 : G4UserRunAction()
 {
   // Create analysis manager
@@ -141,14 +139,10 @@ EDRunAction::EDRunAction()
 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDRunAction::~EDRunAction()
 {
   delete G4AnalysisManager::Instance();  
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDRunAction::BeginOfRunAction(const G4Run* /*run*/)
 { 
@@ -159,8 +153,6 @@ void EDRunAction::BeginOfRunAction(const G4Run* /*run*/)
   analysisManager->OpenFile(fileName);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EDRunAction::EndOfRunAction(const G4Run* /*run*/)
 {  
   // save histograms 
@@ -169,5 +161,3 @@ void EDRunAction::EndOfRunAction(const G4Run* /*run*/)
   analysisManager->Write();
   analysisManager->CloseFile();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
