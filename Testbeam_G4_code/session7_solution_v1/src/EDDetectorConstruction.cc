@@ -764,8 +764,8 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
       for (G4int l1=0; l1<256; l1++)
 	{
 
-	  if( l1 > 20 )
-	    continue;
+	  //if( l1 > 20 )
+	  //continue;
 	  
 	  if (l1<128)
 	    {
@@ -792,11 +792,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
 		      
-		      G4cout << "copy test : " << counting_number
-			     << " ID : " << l << " " << l1 << " " << l2
-			     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-			     << " up : " << 0
-			     << " type : " << 0 << G4endl;
+		      // G4cout << "copy test : " << counting_number
+		      // 	     << " ID : " << l << " " << l1 << " " << l2
+		      // 	     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		      // 	     << " up : " << 0
+		      // 	     << " type : " << 0 << G4endl			;
 		      counting_number+=1;
                     
 		    }
@@ -815,11 +815,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 		      the_position = INTT_testbeam_BOXPV->GetTranslation()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
-		      G4cout << "copy test : " << counting_number
-			     << " ID : " << l << " " << l1 << " " << l2
-			     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-			     << " up : " << 0
-			     << " type : " << 1 << G4endl;
+		      // G4cout << "copy test : " << counting_number
+		      // 	     << " ID : " << l << " " << l1 << " " << l2
+		      // 	     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		      // 	     << " up : " << 0
+		      // 	     << " type : " << 1 << G4endl;
 		      counting_number+=1;
 		      
 		    }  
@@ -848,11 +848,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 		      the_position = INTT_testbeam_BOXPV->GetTranslation()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
-		      G4cout << "copy test : " << counting_number
-			     << " ID : " << l << " " << l1 << " " << l2
-			     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-			     << " up : " << 1
-			     << " type : " << 0 << G4endl;
+		      // G4cout << "copy test : " << counting_number
+		      // 	     << " ID : " << l << " " << l1 << " " << l2
+		      // 	     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		      // 	     << " up : " << 1
+		      // 	     << " type : " << 0 << G4endl;
 		      counting_number+=1;
 
 		    }
@@ -873,11 +873,11 @@ G4VPhysicalVolume* EDDetectorConstruction::Construct()
 		      the_position = INTT_testbeam_BOXPV->GetTranslation()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
-		      G4cout << "copy test : " << counting_number
-			     << " ID : " << l << " " << l1 << " " << l2
-			     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-			     << " up : " << 1
-			     << " type : " << 1 << G4endl;
+		      // G4cout << "copy test : " << counting_number
+		      // 	     << " ID : " << l << " " << l1 << " " << l2
+		      // 	     << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
+		      // 	     << " up : " << 1
+		      // 	     << " type : " << 1 << G4endl;
 		      counting_number+=1;
 
 		    }  
