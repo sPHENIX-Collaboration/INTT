@@ -33,25 +33,17 @@
 #include "EDEventAction.hh"
 #include "EDRunAction.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDActionInitialization::EDActionInitialization()
  : G4VUserActionInitialization()
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDActionInitialization::~EDActionInitialization()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDActionInitialization::BuildForMaster() const
 {
   SetUserAction(new EDRunAction( new EDPrimaryGeneratorAction() ) );
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDActionInitialization::Build() const
 {
