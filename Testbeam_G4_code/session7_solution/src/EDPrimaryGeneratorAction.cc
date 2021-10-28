@@ -39,7 +39,8 @@
 #include "G4VSensitiveDetector.hh"
 #include "Randomize.hh"
 #include "EDAnalysis.hh"
-#include "G4MTRandGauss.hh"
+// #include <G4MTRandGauss.hh>
+#include <RandGauss.h>
 //#include <Random.h>
 //#include "RandGauss.h"
 //#include "TRandom.h"
@@ -58,8 +59,8 @@ EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
   fParticleGun  = new G4ParticleGun(nofParticles);
 
   // Define particle properties
-  G4String particleName = "proton";
-  //G4String particleName = "geantino";
+  G4String particleName = "mu-";
+  // G4String particleName = "geantino";
   //G4ThreeVector position(0*mm, 0*mm, -20167.*mm);   
   //G4ThreeVector momentum(0, 0, 120.*GeV);
   
@@ -112,12 +113,12 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     // G4double theta = G4UniformRand()*dtheta;
     // G4double phi = G4UniformRand()*dphi;
     //G4double theta = (1.62- THETAANGLE *0.00025)*deg;
-    G4double thetagaus=G4MTRandGauss::shoot(0,0.002);
+    G4double thetagaus=CLHEP::RandGauss::shoot(0,0.002);
     //G4double phigaus=G4MTRandGauss::shoot(90,0.002);
     G4double phigaus=G4UniformRand()*360;
-    G4double X_position=G4MTRandGauss::shoot(0,0.0559)*mm;
-    G4double Y_position=G4MTRandGauss::shoot(0,0.1182)*mm;
-    G4double energy_spectrum=G4MTRandGauss::shoot(120,2.4);
+    G4double X_position=CLHEP::RandGauss::shoot(0,0.0559)*mm;
+    G4double Y_position=CLHEP::RandGauss::shoot(0,0.1182)*mm;
+    G4double energy_spectrum=CLHEP::RandGauss::shoot(120,2.4);
 
 
     G4double theta =  thetagaus*deg;
@@ -136,14 +137,30 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     //==========================================the origianl one 2021/8/12==========================================
 
 
+    // G4double X_position_new = 25.1;
+    // G4double Y_position_new = 3;
+    // G4double Z_position_new = -200;
 
+    // G4double aaa [2]={3,7};
+    // G4double bbb [2]={200,0};
+    // G4double ccc [2]={200,100};
+
+    // fParticleGun->SetParticleMomentumDirection(
+    //   G4ThreeVector(0, aaa[eID],ccc[eID]));
+    // //fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-20167.*mm));
+    // fParticleGun->SetParticlePosition(G4ThreeVector(0*mm,0*mm,-1*bbb[eID]*mm));
+    // fParticleGun->SetParticleEnergy(120.*GeV);
+
+    G4double X_position_new [6]= {104,104,-104,-104,-107.1,25.1};
+    G4double Y_position_new [6]= {9,-9,9,-9,-9.961,0.055};
+    G4double Z_position_new [6]= {-200,-200,-200,-200,-200,-200.};    
 
 
     fParticleGun->SetParticleMomentumDirection(
       G4ThreeVector(0,0,1));
     //fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-20167.*mm));
-    fParticleGun->SetParticlePosition(G4ThreeVector(X_position,Y_position,-200.*mm));
-    fParticleGun->SetParticleEnergy(120*GeV);
+    fParticleGun->SetParticlePosition(G4ThreeVector(X_position_new[eID]*mm,Y_position_new[eID]*mm,Z_position_new[eID]*mm));
+    fParticleGun->SetParticleEnergy(1*GeV);
 
 
 
@@ -166,9 +183,9 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     //G4cout<<thetagaus<<" "<<X_position<<" "<<Y_position<<" "<<"???????"<<G4endl;
 
 
-    analysisManager->FillNtupleDColumn(fNtupleId, 0, sin(theta)*cos(phi));
-    analysisManager->FillNtupleDColumn(fNtupleId, 1, sin(theta)*sin(phi));
-    analysisManager->FillNtupleDColumn(fNtupleId, 2, cos(theta));
+    analysisManager->FillNtupleDColumn(fNtupleId, 0, X_position_new[eID]);
+    analysisManager->FillNtupleDColumn(fNtupleId, 1, Y_position_new[eID]);
+    analysisManager->FillNtupleDColumn(fNtupleId, 2, Z_position_new[eID]);
     analysisManager->FillNtupleDColumn(fNtupleId, 3, theta/pi*180.);
     //analysisManager->FillNtupleDColumn(fNtupleId, 3, thetagaus);
     analysisManager->FillNtupleDColumn(fNtupleId, 4, phi/pi*180.);

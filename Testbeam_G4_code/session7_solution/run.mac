@@ -26,5 +26,5 @@
 # Run processing
 #
 #/gun/particle mu-
-/run/beamOn 1000000
+/run/beamOn 6
 #/run/beamOn 1

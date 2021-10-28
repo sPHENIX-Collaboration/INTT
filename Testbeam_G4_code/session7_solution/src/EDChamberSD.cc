@@ -93,7 +93,7 @@ for (G4int i1=0; i1<zposition; i1++)
     {
       for (G4int i2=0; i2<yposition; i2++)
         {
-          if (i2<128)
+          if (i2<128) //Down, U14 ~ U26
             {
               for (G4int i3=0; i3<xposition; i3++)
                 {
@@ -116,14 +116,14 @@ for (G4int i1=0; i1<zposition; i1++)
                     }  
                 }
             }
-          else 
+          else //upper, U1 ~ U13 
             {
               for (G4int i3=0; i3<xposition; i3++)
                 {
                   if (i3<8)
                     {
                       EDChamberHit *newHit = new EDChamberHit();
-                      newHit->SetEncoderID(1,0,i1,i3,i2);
+                      newHit->SetEncoderID(1,0,i1,i3,i2-128);
                       fHitsCollection->insert(newHit);
                       //G4cout<<"TESTChmaberSD : "<<copyNo_counting<<" "<<i1<<" "<<i2<<" "<<i3<<" up : "<<1<<" type : "<<0<<G4endl;
                       copyNo_counting+=1;
@@ -131,7 +131,7 @@ for (G4int i1=0; i1<zposition; i1++)
                   else 
                     {
                       EDChamberHit *newHit = new EDChamberHit();
-                      newHit->SetEncoderID(1,1,i1,i3,i2);
+                      newHit->SetEncoderID(1,1,i1,i3,i2-128);
                       fHitsCollection->insert(newHit);
                       //G4cout<<"TESTChmaberSD : "<<copyNo_counting<<" "<<i1<<" "<<i2<<" "<<i3<<" up : "<<1<<" type : "<<1<<G4endl;
                       copyNo_counting+=1;
@@ -202,7 +202,7 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
     = step->GetPreStepPoint()->GetTouchable();
   G4VPhysicalVolume* motherPhysical = touchable->GetVolume(0); // mother
 
-  G4String motherPhysical_name_test = motherPhysical->GetName();
+  G4String motherPhysical_name_test = motherPhysical->GetName(); //step->GetPreStepPoint()->GetTouchable()->GetVolume(0)->GetName();
   if (eID_1%10000==0)G4cout<<"!!!! pre_TESTnameTEST : "<<motherPhysical_name_test<<G4endl;
   
   G4int copyNo =  step->GetPreStepPoint()->GetTouchable()->GetVolume(0)-> GetCopyNo();   //motherPhysical->GetCopyNo();   <- this is the original one
@@ -227,10 +227,10 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   G4double posX = step->GetTrack()->GetPosition().x();
   G4double posY = step->GetTrack()->GetPosition().y();
   G4double posZ = step->GetTrack()->GetPosition().z();
-  G4double edep = step->GetTotalEnergyDeposit();
+  G4double edep = step->GetTotalEnergyDeposit(); // it doesn't be classified as prePosition or posPosition
 
   G4double secondaryParticleKineticEnergy =  step->GetTrack()->GetKineticEnergy(); 
-  if (eID_1%10000==0)G4cout<<" event ID : "<<eID_1<<"  particle order : "<<particle_order<<"        PID "<<PDG<<"         energy : "<<secondaryParticleKineticEnergy<<"     volume : "<<volume_test<< "  position : " << posX<<"||"<<posY<<"||"<<posZ <<" copy number : "<<copyNo<<G4endl;
+  if (eID_1%10000==0)G4cout<<"Pos event ID : "<<eID_1<<"  particle order : "<<particle_order<<"        PID "<<PDG<<"         energy : "<<secondaryParticleKineticEnergy<<"     volume : "<<volume_test<< "  position : " << posX<<"||"<<posY<<"||"<<posZ <<" copy number : "<<copyNo<<G4endl;
   
   //if (volume_test=="INTT_siLV_all_typeA") {cout<<"testing "<<volume_test<<" "<<0<<endl;}
   //else if (volume_test=="INTT_siLV_all_typeB") {cout<<"testing "<<volume_test<<" "<<1<<endl;}
@@ -252,7 +252,7 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   if (eID_1%10000==0)G4cout<<" GetPostStepPointTEST "<<the_post_step_position[0]<<" "<<the_post_step_position[1]<<" "<<the_post_step_position[2]<<" "<<G4endl;
   
   G4ThreeVector thePosition =(step->GetPreStepPoint()->GetPosition()+step->GetPostStepPoint()->GetPosition())*0.5;
-  if (eID_1 % 10000 == 0)G4cout << " event ID : " << eID_1 << "  particle order : " << particle_order << "        PID " << PDG << "         edep : " << edep << "     volume : " << volume_test << "  position : " << thePosition[0] << "||" << thePosition[1] << "||" << thePosition[2] << G4endl;
+  if (eID_1 % 10000 == 0)G4cout << "Mid event ID : " << eID_1 << "  particle order : " << particle_order << "        PID " << PDG << "         edep : " << edep << "     volume : " << volume_test << "  position : " << thePosition[0] << "||" << thePosition[1] << "||" << thePosition[2] << G4endl;
   if (eID_1 % 10000 == 0)G4cout << "=======================================" << G4endl;
       //G4cout<<"GGGGGGGGGGGGGGGGGG "<<thePosition[0]<<" "<<thePosition[1]<<" "<<thePosition[2]<<" ENERGY : "<<edep<<" PID "<<PDG<<G4endl;
   G4ThreeVector columnPosition;
@@ -277,10 +277,10 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
   analysisManager->FillNtupleIColumn(2, 0, particle_order);
   analysisManager->FillNtupleIColumn(2, 1, PDG);
-  analysisManager->FillNtupleDColumn(2, 2, secondaryParticleKineticEnergy);
-  analysisManager->FillNtupleDColumn(2, 3, posX);
-  analysisManager->FillNtupleDColumn(2, 4, posY);
-  analysisManager->FillNtupleDColumn(2, 5, posZ);
+  analysisManager->FillNtupleDColumn(2, 2, secondaryParticleKineticEnergy);//Total energy, not edep
+  analysisManager->FillNtupleDColumn(2, 3, posX); //posPosition
+  analysisManager->FillNtupleDColumn(2, 4, posY); //posPosition
+  analysisManager->FillNtupleDColumn(2, 5, posZ); //posPosition
   analysisManager->FillNtupleIColumn(2, 6, volume_test_ID);
   analysisManager->FillNtupleIColumn(2, 7, eID_1);
   analysisManager->AddNtupleRow(2);
@@ -537,7 +537,7 @@ void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
 
         if (fupordown==1 && fsilicon_type ==1)
           {
-               sensorposition[0] = 25.1+(fxposition-0)*20.;
+               sensorposition[0] = 25.1+(fxposition-8)*20.;
                sensorposition[1] = 0.055+(fyposition-0)*0.078;
                sensorposition[2] = 100.+(fzposition-0)*35.;             
           }
@@ -549,7 +549,7 @@ void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
           } 
         else if (fupordown==0 && fsilicon_type ==1)
           {
-               sensorposition[0] = 25.1+(fxposition-0)*20.;
+               sensorposition[0] = 25.1+(fxposition-8)*20.;
                sensorposition[1] = -9.961+(fyposition-0)*0.078;
                sensorposition[2] = 100.+(fzposition-0)*35.;
           }   

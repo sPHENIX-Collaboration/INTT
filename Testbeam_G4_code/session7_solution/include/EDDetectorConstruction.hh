@@ -79,7 +79,7 @@ private:
 
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
-  
+
   const G4double kSilicon_strip_width; // along y-axis
   const G4double kSilicon_strip_thickness; // along z-axis
   const G4double kSilicon_length_type_a; // along x-axis
@@ -90,7 +90,7 @@ private:
   const G4double kSilver_epoxy_glue_silicon_thickness;
   const G4double kSilver_epoxy_glue_FPHX_thickness;
   const G4double kINTT_CFRP_thickness;
-
+  
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
@@ -98,8 +98,12 @@ private:
   G4double zpos_testbeam_box_1;
   G4double darkbox_wall_thickness;
   G4double frame_thickness;
-
-
+  
+  G4double silicon_strip_width;
+  G4double silicon_strip_thickness;
+  G4double silicon_length_type_a;
+  G4double silicon_length_type_b;
+  
   G4Material* DefaultMaterial;
   G4Material* Silicon;
   G4Material* Kapton;
@@ -110,6 +114,7 @@ private:
   G4Material* CFRP;
   G4Material* BBHodo_Scinti;
   G4Material* SilverEpoxyGlue;
+  G4Material* Tungsten;
   
   G4VPhysicalVolume * INTT_testbeam_BOXPV;
 
