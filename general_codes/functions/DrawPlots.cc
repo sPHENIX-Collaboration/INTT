@@ -50,7 +50,8 @@ void DrawPlots(string root_file, int usemod, string mode) {
   //////////////////////////////////////////////////////////////////////////////////////////////////
   if (mode == "calib")
     {
-      TCanvas *c1 = new TCanvas("c1", "amplitude vs ADC", 0, 0, 1625, 250);
+      string canvas_name = "ampl_vs_ADC_module" + to_string( usemod );
+      TCanvas *c1 = new TCanvas( canvas_name.c_str(), canvas_name.c_str(), 0, 0, 1625, 250);
 
       //////////////////////////////////////////////////////////////////////////////////////////////////
       // Idea to draw histogram of all chips faster:                                                  //
@@ -113,7 +114,7 @@ void DrawPlots(string root_file, int usemod, string mode) {
 
       // save the current canvas into a pdf file
       string output_adc_vs_ampl = root_file.substr(0, root_file.find_last_of(".root") - 4)
-	+ "_adcvsampl.pdf";
+	+ "_adcvsampl_module" + to_string( usemod ) + ".pdf";
       c1->Print(output_adc_vs_ampl.c_str());
     }
 
@@ -121,7 +122,8 @@ void DrawPlots(string root_file, int usemod, string mode) {
   // Amplitude vs Channel for each chip, only "calib" mode make sence                             //
   //////////////////////////////////////////////////////////////////////////////////////////////////
   if (mode == "calib") {
-    TCanvas *c2 = new TCanvas("c2", "channel_id vs amplitude", 0, 300, 1625, 250);
+    string canvas_name_c2 = "ch_vs_ampl_module" + to_string( usemod );
+    TCanvas *c2 = new TCanvas( canvas_name_c2.c_str(), canvas_name_c2.c_str(), 0, 300, 1625, 250);
     c2->Divide(13, 2);
 
     // 3D hist ( amplitude vs channel vs chip )  --> 2D hist of a chip ( amplitude vs channel) by making a profile on z-axis
@@ -202,14 +204,15 @@ void DrawPlots(string root_file, int usemod, string mode) {
     }
 
     string output_ampl_vs_chan = root_file.substr(0, root_file.find_last_of(".root") - 4)
-      + "_amplvschan.pdf";
+      + "_amplvschan_module" + to_string( usemod ) + ".pdf";
     c2->Print(output_ampl_vs_chan.c_str());
   }
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Channel distribution for each chip, any mode is OK                                           //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  TCanvas *c3 = new TCanvas("c3", "entry vs channel_id", 0, 560, 1625, 250);
+  string canvas_name_c3 = "channel_dist_module" + to_string( usemod );
+  TCanvas *c3 = new TCanvas( canvas_name_c3.c_str(), canvas_name_c3.c_str(), 0, 560, 1625, 250);
   TH2D* hist_ch_chip = new TH2D("ch_chip", "Channel vs Chip;Channel;Chip", 130, 0, 130, 26, 0, 26);
 
   string expression_ch_chip = string("chip_id:chan_id>>") + hist_ch_chip->GetName();
@@ -275,16 +278,17 @@ void DrawPlots(string root_file, int usemod, string mode) {
       }
   }
   string output_entry_vs_chan_pdf = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_entry_vs_channel_ID.pdf";
+    + "_entry_vs_channel_ID_module" + to_string( usemod ) + ".pdf";
   string output_entry_vs_chan_jpg = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_entry_vs_channel_ID.jpg";
+    + "_entry_vs_channel_ID_module" + to_string( usemod ) + ".jpg";
   c3->Print(output_entry_vs_chan_pdf.c_str());
   c3->Print(output_entry_vs_chan_jpg.c_str());
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Hit map ( chip vs channel ), any mode is OK                                                  //
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  TCanvas *c4 = new TCanvas("c4", "hit_map", 0, 700, 1625, 250);
+  string canvas_name_c4 = "hit_map_module" + to_string( usemod );
+  TCanvas *c4 = new TCanvas( canvas_name_c4.c_str(), canvas_name_c4.c_str(), 0, 700, 1625, 250);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
@@ -377,9 +381,8 @@ void DrawPlots(string root_file, int usemod, string mode) {
   }
 
   string output_hitmap = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_hitmap.pdf";
+    + "_hitmap_module" + to_string( usemod ) + ".pdf";
   c4->Print(output_hitmap.c_str());
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Plots for data with CAMAC data                                                               //
@@ -388,7 +391,8 @@ void DrawPlots(string root_file, int usemod, string mode) {
   // enter only if it's camac mode or camac_clustering mode
   if (mode == "camac" || mode == "camac_clustering" ) {
     gStyle->SetOptStat(true);
-    TCanvas *c5 = new TCanvas("c5", "camac", 400, 50, 1200, 800);
+    string canvas_name_c5 = "camac_parameters";
+    TCanvas *c5 = new TCanvas( canvas_name_c5.c_str(), canvas_name_c5.c_str(), 400, 50, 1200, 800);
 
     // get TTree for CAMAC data
     auto tree_camac = (TTree*)tf->Get("tree_camac");
@@ -456,6 +460,11 @@ void DrawPlots(string root_file, int usemod, string mode) {
 	    tree_camac->Draw(expression_ch.str().c_str(), "", "");
 	  } // end of if( event_num == 0 )
       } // end of loop over channels of a module
+
+      string output_camac = root_file.substr(0, root_file.find_last_of(".root") - 4)
+	+ "_camac_parameters.pdf";
+      c5->Print( output_camac.c_str() );
+
     } // end of loop over modules
 
   }
