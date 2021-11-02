@@ -31,6 +31,8 @@
 #ifndef EDPrimaryGeneratorAction_h
 #define EDPrimaryGeneratorAction_h 1
 
+#include <cmath> // for M_PI
+#include "G4GenericMessenger.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 #include "G4ParticleGun.hh"
@@ -50,7 +52,7 @@
 //#include "TRandom.h"
 //#include "TMath.h"
 #include "RandGauss.h"
-#include <cmath> // for M_PI
+#include "EDRunAction.hh"
 
 class G4Event;
 class G4ParticleGun;
@@ -70,7 +72,9 @@ class EDPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     G4GenericMessenger*  fMessenger;
     G4ParticleGun*  fParticleGun;  
-    G4bool          fRandom;         
+    G4bool          fRandom;
+  
+  void DefineCommands();
 };
 
 

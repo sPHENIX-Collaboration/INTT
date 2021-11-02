@@ -52,11 +52,13 @@ public:
   EDRunAction( EDPrimaryGeneratorAction* pga );
   
   virtual ~EDRunAction();
-  
+
+  G4bool is_first = true;
   static G4double beam_energy;//  = 800 * MeV;
-  virtual void BeginOfRunAction(const G4Run*);
-  virtual void   EndOfRunAction(const G4Run*);
-  
+  static G4bool is_beam_smearing;
+  virtual void BeginOfRunAction(const G4Run* );
+  virtual void   EndOfRunAction(const G4Run* );
+
 private:
   
   G4String tag = "";

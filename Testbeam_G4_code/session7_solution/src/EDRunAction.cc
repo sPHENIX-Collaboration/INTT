@@ -34,9 +34,13 @@
 #include "G4Run.hh"
 #include "G4SystemOfUnits.hh"
 
+G4double EDRunAction::beam_energy;
+G4bool EDRunAction::is_beam_smearing;
+
 EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
 : G4UserRunAction()
 {
+  DefineCommands();
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
   // in B4Analysis.hh
@@ -87,9 +91,7 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   // analysisManager->CreateNtupleDColumn("Edep");    // column id = 3 
   // analysisManager->FinishNtuple();
   //============================the original one store the center of strip====================================================       
-
   
-
   //============================NEW one, only store the ID====================================================        
   analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
   analysisManager->CreateNtupleIColumn("Event_ID");
@@ -102,8 +104,6 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->FinishNtuple();
   //============================NEW one, only store the ID====================================================
 
-
-
   //ntuple id =1 
   analysisManager->CreateNtuple("Beam_angle", "Beam_angle");
   analysisManager->CreateNtupleDColumn("Beam_X"); // colume id = 0
@@ -112,11 +112,8 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->CreateNtupleDColumn("Beam_Theta"); // colume id = 0
   analysisManager->CreateNtupleDColumn("Beam_Phi"); // colume id = 1
   analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
-  analysisManager->CreateNtupleDColumn("Beam_energy");
+  analysisManager->CreateNtupleDColumn("Beam_energy"); // in MeV
   analysisManager->FinishNtuple();
-
-
-
 
   analysisManager->CreateNtuple("event_particle", "event_particle");
   analysisManager->CreateNtupleIColumn("PID_order"); // colume id = 0
@@ -136,7 +133,6 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
-
 }
 
 EDRunAction::~EDRunAction()
@@ -144,16 +140,52 @@ EDRunAction::~EDRunAction()
   delete G4AnalysisManager::Instance();  
 }
 
-void EDRunAction::BeginOfRunAction(const G4Run* /*run*/)
-{ 
-  // Open an output file
-  //
-  G4String fileName = "ED";
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->OpenFile(fileName);
+void EDRunAction::DefineCommands()
+{
+  fMessenger
+    = new G4GenericMessenger(this, "/INTT/beam/", "Commands for beam in this application");
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the momentum spread
+  G4GenericMessenger::Command& setBeamSmearing
+    = fMessenger->DeclareProperty( "beamSmearing", is_beam_smearing );
+  setBeamSmearing.SetGuidance( "Switch to the realistic beam(true) or mono-energy beam at x=0 & y=0(false)." );
+  setBeamSmearing.SetParameterName( "beamSmearing", false ); // (name, is_omittable)
+  setBeamSmearing.SetDefaultValue( "false" );
 }
 
-void EDRunAction::EndOfRunAction(const G4Run* /*run*/)
+void EDRunAction::BeginOfRunAction(const G4Run* kRun )
+{
+
+  // Get analysis manager
+  auto analysisManager = G4AnalysisManager::Instance();  
+  auto UImanager = G4UImanager::GetUIpointer();
+  
+  if( this->is_first )
+    {
+      beam_energy =  UImanager->GetCurrentDoubleValue( "/gun/energy" ) * GeV; // GeV is used whatever I give? changed to MeV
+      is_first = false;
+    }
+
+  // define output name
+  G4String particle = UImanager->GetCurrentStringValue( "/gun/particle" );
+  std::stringstream ss;
+  ss << beam_energy / GeV;
+  G4String energy   = ss.str() + "GeV";
+  //  G4String event_num = UImanager->GetCurrentStringValue( "/gun/beamOn") + "events";
+
+  // if energy is less than 1, it should be in MeV
+  if( beam_energy < 1 ){
+    std::stringstream ss2;
+    ss2 << beam_energy << "MeV";
+    energy =  ss.str();
+  }
+
+  // Open an output file
+  G4String fileName = "ED";
+  analysisManager->OpenFile(fileName);  
+}
+
+void EDRunAction::EndOfRunAction(const G4Run* kRun )
 {  
   // save histograms 
   //
