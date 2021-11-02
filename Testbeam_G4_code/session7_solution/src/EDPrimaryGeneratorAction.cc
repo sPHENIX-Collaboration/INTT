@@ -29,22 +29,6 @@
 /// \brief Implementation of the EDPrimaryGeneratorAction class
 
 #include "EDPrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4GenericMessenger.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ios.hh"
-#include "G4MTRunManager.hh"
-#include "G4VSensitiveDetector.hh"
-#include "Randomize.hh"
-#include "EDAnalysis.hh"
-// #include <G4MTRandGauss.hh>
-#include <RandGauss.h>
-//#include <Random.h>
-//#include "RandGauss.h"
-//#include "TRandom.h"
-#include <cmath> // for M_PI
 
 EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
