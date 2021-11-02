@@ -556,37 +556,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     G4RotationMatrix *testbeam_BOX_rotation_Y = new G4RotationMatrix(); //phi angle
     testbeam_BOX_rotation_Y->rotateY(90.0 *deg);
 
-    //===============================================================================================================
-    // G4LogicalVolume *INTT_si_boxLV = new G4LogicalVolume(INTT_si_box, DefaultMaterial, "INTT_si_boxPV");
-    // new G4PVPlacement(0, 
-    //                   G4ThreeVector(0, 0, 0), 
-    //                   INTT_si_boxLV,             //its logical volume
-    //                   "INTT_si_boxPV",       //its name
-    //                   worldLog,                //its mother  volume
-    //                   false,                   //no boolean operation
-    //                   0,                       //copy number
-    //                   checkOverlaps);    
-    /*
-  G4LogicalVolume *INTT_testbeam_BOXLV = new G4LogicalVolume(INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
-  G4double zpos_testbeam_box = 108.85 * mm;
-  //  G4double zpos_testbeam_box = 0;
-  G4double zpos_testbeam_box_1 = 108.85 * mm;  
-  //  G4double zpos_testbeam_box_1 = zpos_testbeam_box;
-  //fmovement = 35;
-  //G4double public_variable::theoffset = 35;
-  //G4cout<<" theoffset test in EDD : "<<theoffset<<G4endl;
-
-  G4VPhysicalVolume *INTT_testbeam_BOXPV =
-    new G4PVPlacement(0, 
-          G4ThreeVector(0, 0, zpos_testbeam_box_1), 
-          INTT_testbeam_BOXLV,            //its logical volume
-          "INTT_testbeam_BOXLV",        //its name
-          worldLog,                 //its mother  volume
-          false,                    //no boolean operation
-          0,                        //copy number
-          checkOverlaps);
-  */
-
   //===============================================================================================================
   // logical volume constructions and placements
   //===============================================================================================================
@@ -637,9 +606,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
     G4LogicalVolume *INTT_siLV_gap = new G4LogicalVolume(INTT_si_gap,  DefaultMaterial, "INTT_siLV_gap");
     INTT_siLV_gap->SetVisAttributes(color_CFRP_foam);    
-
-    // G4LogicalVolume*INTT_siLV_outer
-    //   = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all_outer");
 
     // loop over all INTT ladders for the silicon strips
     for (G4int l = 0; l < kLadder_num; l++)
@@ -831,119 +797,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 	
     } // end block for for loop over all INTT ladders
 
-    //  G4LogicalVolume*INTT_siLV
-    //    = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all");
-    // for (G4int l=0;l < 4;l++)
-    // { 
-    //  G4double gap = 35.*mm;
-    //  G4double initialposition = 100.*mm;
-    //  //for silicon
-    //  G4double zpos = initialposition+l*gap;   
-    //  new G4PVPlacement(0, 
-    //                    G4ThreeVector(0, 0, zpos), 
-    //                    INTT_siLV,            //its logical volume
-    //                    "INTT_siLV_all",        //its name
-    //                    INTT_si_boxLV,                //its mother  volume
-    //                    false,                    //no boolean operation
-    //                    l,                        //copy number
-    //                    checkOverlaps);
-    // }  // end block for for loop
-    // G4LogicalVolume*INTT_siLV_inside
-    //    = new G4LogicalVolume(INTT_si, Silicon, "INTT_siLV_all_inside");
-    //  new G4PVPlacement(0, 
-    //                    G4ThreeVector(0, 0, 0), 
-    //                    INTT_siLV_inside,             //its logical volume
-    //                    "INTT_siLV_all_inside ",        //its name
-    //                    INTT_siLV,                //its mother  volume
-    //                    false,                    //no boolean operation
-    //                    0,                        //copy number
-    //                    checkOverlaps);
-    //   G4LogicalVolume*INTT_siLV_typeA
-    //     = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
-    //   G4LogicalVolume*INTT_siLV_typeB
-    //     = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");    
-    //  for (G4int l=0;l < 4;l++)
-    // { 
-    //   G4double gap = 35.*mm;
-    //   G4double initialposition = 100.*mm;
-    //   G4double ypos;
-    //   G4double xpos;
-    //    //for silicon  
-    //   G4double zpos = initialposition+l*gap;   
-    //   for (G4int l1=0; l1 < 256; l1++)
-    //     {
-    //       if (l1 < 128)
-    //         {
-    //           ypos=(-9.961+(l1 * 0.078))*mm;
-    //           for (G4int l2=0; l2 < 13; l2++)
-    //             { 
-    //               if (l2 < 8)
-    //                 {
-    //                     xpos=(-107.1+(l2 *16))*mm;
-    //                     new G4PVPlacement(0, 
-    //                                       G4ThreeVector(xpos, ypos, zpos), 
-    //                                       INTT_siLV_typeA,             //its logical volume
-    //                                       "INTT_siLV_all_typeA",       //its name
-    //                                       worldLog,                //its mother  volume
-    //                                       false,                   //no boolean operation
-    //                                       counting_number,                       //copy number
-    //                                       false);
-    //                     counting_number+=1;
-    //                     G4cout<<"copy test : "<<counting_number<<G4endl;
-    //                 }
-    //               else 
-    //                 {
-    //                     xpos=(25.1+((l2-8)*20))*mm;
-    //                     new G4PVPlacement(0, 
-    //                                       G4ThreeVector(xpos, ypos, zpos), 
-    //                                       INTT_siLV_typeB,             //its logical volume
-    //                                       "INTT_siLV_all_typeB",       //its name
-    //                                       worldLog,                //its mother  volume
-    //                                       false,                   //no boolean operation
-    //                                       counting_number,                       //copy number
-    //                                       false);
-    //                     counting_number+=1;
-    //                     G4cout<<"copy test : "<<counting_number<<G4endl;
-    //                 }  
-    //             }
-    //         }
-    //       else
-    //         {
-    //           ypos=(0.055+((l1-128)*0.078))*mm;
-    //           for (G4int l2=0; l2 < 13; l2++)
-    //             { 
-    //               if (l2 < 8)
-    //                 {
-    //                     xpos=(-107.1+(l2 *16))*mm;
-    //                     new G4PVPlacement(0, 
-    //                                       G4ThreeVector(xpos, ypos, zpos), 
-    //                                       INTT_siLV_typeA,             //its logical volume
-    //                                       "INTT_siLV_all_typeA",       //its name
-    //                                       worldLog,                //its mother  volume
-    //                                       false,                   //no boolean operation
-    //                                       counting_number,                       //copy number
-    //                                       false);
-    //                     counting_number+=1;
-    //                     G4cout<<"copy test : "<<counting_number<<G4endl;
-    //                 }
-    //               else 
-    //                 {
-    //                     xpos=(25.1+((l2-8)*20))*mm;
-    //                     new G4PVPlacement(0, 
-    //                                       G4ThreeVector(xpos, ypos, zpos), 
-    //                                       INTT_siLV_typeB,             //its logical volume
-    //                                       "INTT_siLV_all_typeB",       //its name
-    //                                       worldLog,                //its mother  volume
-    //                                       false,                   //no boolean operation
-    //                                       counting_number,                       //copy number
-    //                                       false);
-    //                     counting_number+=1;
-    //                     G4cout<<"copy test : "<<counting_number<<G4endl;
-    //                 }  
-    //             }
-    //         }  
-    //     }
-    //  }   // end block for for loop
 
     // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
     G4LogicalVolume *INTT_sci_thinLV = new G4LogicalVolume(INTT_sci_thin, BBHodo_Scinti, "INTT_sci_thinLV");
@@ -1351,8 +1204,6 @@ void EDDetectorConstruction::ConstructSDandField()
 
 void EDDetectorConstruction::DefineVisAttributes()
 {
-    // gapCol = new G4VisAttributes(true, G4Colour(1, 1, 1, 1));  // polystyrene
-    // gapCol->SetForceSolid(true);
 
     color_invisible		= new G4VisAttributes(false	, G4Colour(0.0, 0.000, 0.0, 0.0)	);
     color_silicon_active	= new G4VisAttributes(true	, G4Colour(1.0, 0.000, 0.0, 0.5)	); // transparent red
