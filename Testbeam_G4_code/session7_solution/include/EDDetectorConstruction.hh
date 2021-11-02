@@ -96,8 +96,8 @@ private:
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
   G4double zpos_testbeam_box;
   G4double zpos_testbeam_box_1;
-  G4double darkbox_wall_thickness;
-  G4double frame_thickness;
+  const G4double kDarkbox_wall_thickness_body;
+  const G4double kDarkbox_wall_thickness_side;
   
   G4double silicon_strip_width;
   G4double silicon_strip_thickness;
@@ -114,7 +114,7 @@ private:
   G4Material* CFRP;
   G4Material* BBHodo_Scinti;
   G4Material* SilverEpoxyGlue;
-  G4Material* Tungsten;
+  G4Material* DarkBox;
   
   G4VPhysicalVolume * INTT_testbeam_BOXPV;
 
@@ -132,7 +132,6 @@ private:
   G4VisAttributes* color_CFRP_foam;
   G4VisAttributes* color_scintillator;
   G4VisAttributes* color_darkbox_wall;
-  G4VisAttributes* color_darkbox_frame;
 
   void DefineVisAttributes();
   void DefineMaterials();
