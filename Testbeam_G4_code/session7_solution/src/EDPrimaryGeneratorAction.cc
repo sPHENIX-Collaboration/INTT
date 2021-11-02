@@ -29,22 +29,6 @@
 /// \brief Implementation of the EDPrimaryGeneratorAction class
 
 #include "EDPrimaryGeneratorAction.hh"
-#include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4GenericMessenger.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ios.hh"
-#include "G4MTRunManager.hh"
-#include "G4VSensitiveDetector.hh"
-#include "Randomize.hh"
-#include "EDAnalysis.hh"
-// #include <G4MTRandGauss.hh>
-#include <RandGauss.h>
-//#include <Random.h>
-//#include "RandGauss.h"
-//#include "TRandom.h"
-#include <cmath> // for M_PI
 
 EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
@@ -55,9 +39,9 @@ EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
   G4int nofParticles = 1;
   fParticleGun  = new G4ParticleGun(nofParticles);
 
+  DefineCommands();
   // Define particle properties
   G4String particleName = "e+";
-  // G4String particleName = "geantino";
   
   // Default particle kinematics
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -80,33 +64,65 @@ EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
 EDPrimaryGeneratorAction::~EDPrimaryGeneratorAction()
 {}
 
+void EDPrimaryGeneratorAction::DefineCommands()
+{
+  fMessenger
+    = new G4GenericMessenger(this, "/INTT/beam/", "Commands for beam in this application");
+    
+  //////////////////////////////////////////////////////////////////////////////
+  // Beam energy
+  // G4GenericMessenger::Command& setBeamEnergy
+  //   = fMessenger->DeclarePropertyWithUnit( "beamEnergy", "GeV", beam_energy );
+  // setBeamEnergy.SetGuidance( "Beam energy in the units of GeV" );
+  // setBeamEnergy.SetParameterName( "BeamEnergy", false ); // (name, is_omittable)
+  // setBeamEnergy.SetDefaultValue( 1.0 );
+  
+  return;
+}
+
 void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
+  auto UImanager = G4UImanager::GetUIpointer();
+
   //this function is called at the begining of ecah event
   G4int eID = 0;
   eID = event->GetEventID();
 
-  //G4cout<<"1111111111 "<<eID<<G4endl;
-
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   G4int fNtupleId = 1;
-  if ( 1==1 ) {
+  //  if ( 1==1 ) {
 
+    //G4double energy_spectrum = CLHEP::RandGauss::shoot( 1.0 ,2.4);
+    G4double energy_spectrum = EDRunAction::beam_energy;
+    
     // randomized direction
-    G4double dtheta = 2. * deg;
-    G4double dphi = 360 * deg;
+    //G4double dtheta = 2. * deg; // better not to introduce parameters for smearing without knowing what value should be used
+    G4double dtheta = 0.0 * deg;
+    //G4double dphi = 360 * deg;
+    G4double dphi = 0.0 * deg;
     
     // G4double theta = G4UniformRand() * dtheta;
     // G4double phi = G4UniformRand() * dphi;
     //G4double theta = (1.62- THETAANGLE  * 0.00025) * deg;
-    G4double thetagaus = CLHEP::RandGauss::shoot(0,0.002);
+    //    G4double thetagaus = CLHEP::RandGauss::shoot(0,0.002);
+    G4double thetagaus =  0.0 ;
     //G4double phigaus = G4MTRandGauss::shoot(90,0.002);
-    G4double phigaus = G4UniformRand() * 360;
+    //G4double phigaus = G4UniformRand() * 360;
+    G4double phigaus = 0.0 ; 
 
-    G4double X_position = CLHEP::RandGauss::shoot(0,0.0559) * mm;
-    G4double Y_position = CLHEP::RandGauss::shoot(0,0.1182) * mm;
-    G4double energy_spectrum = CLHEP::RandGauss::shoot(120,2.4);
+    //G4double X_position = CLHEP::RandGauss::shoot(0,0.0559) * mm;
+    G4double X_position = 0.0 * mm;
+    //G4double Y_position = CLHEP::RandGauss::shoot(0,0.1182) * mm;
+    G4double Y_position = 0.0 * mm;
 
+    // std::cerr << std::endl;
+    // std::cerr << std::string(100, '=' ) << std::endl;
+    // std::cerr << "Beam smearing: " << EDRunAction::is_beam_smearing << std::endl;
+    // std::cerr << "Beam energy: " << energy_spectrum << std::endl;
+    // std::cerr << "Beam particle: " << fParticleGun->GetParticleDefinition()->GetParticleName() << std::endl;
+    // std::cerr << std::string(100, '=' ) << std::endl;
+    // std::cerr << std::endl;
+      
     G4double theta =  thetagaus * deg;
     G4double phi =  phigaus * deg;
     //G4double theta = (126 * 0.01) * deg;
@@ -135,7 +151,6 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     //   G4ThreeVector(0, aaa[eID],ccc[eID]));
     // //fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-20167. * mm));
     // fParticleGun->SetParticlePosition(G4ThreeVector(0 * mm,0 * mm,-1 * bbb[eID] * mm));
-    // fParticleGun->SetParticleEnergy(120. * GeV);
 
     // what are they? for debugging?
     G4double X_position_new [6] = {104,104,-104,-104,-107.1,25.1};
@@ -144,9 +159,11 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 
     fParticleGun->SetParticleMomentumDirection( G4ThreeVector(0, 0, 1) );
     fParticleGun->SetParticlePosition( G4ThreeVector(0, 0, -1.0 * m) );
-    //    fParticleGun->SetParticlePosition(G4ThreeVector(X_position_new[eID] * mm,Y_position_new[eID] * mm,Z_position_new[eID] * mm));
-    fParticleGun->SetParticleEnergy(1 * GeV);
-
+    if( EDRunAction::is_beam_smearing )
+      {
+	fParticleGun->SetParticleEnergy( energy_spectrum );
+      }
+    
     //=================for testing==========================================  
     // fParticleGun->SetParticleMomentumDirection(
     //   G4ThreeVector(0,0,1));
@@ -156,7 +173,6 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 
     //=================for testing==========================================  
 
-    //G4cout<<" llllllllllll1 "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
     //G4cout<<thetagaus<<" "<<X_position<<" "<<Y_position<<" "<<"???????"<<G4endl;
 
     // analysisManager->FillNtupleDColumn(fNtupleId, 0, X_position_new[eID]);
@@ -170,19 +186,20 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     analysisManager->AddNtupleRow(fNtupleId);
     if ( eID % 10000 == 0)
       {
-        G4cout<<"!!!Event Process: "<<eID<<G4endl;
-        G4cout<<"!!!particle gun direction "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
-        G4cout<<"!!!theta : "<<theta / M_PI * 180.<<" phi : "<<phi / M_PI * 180.<<G4endl;
-        G4cout<<"!!!particle gun position "<<fParticleGun->GetParticlePosition()<<G4endl;
-        G4cout<<"!!!particle gun energy : "<<fParticleGun->GetParticleEnergy()<<G4endl;     
+        G4cout << "!!!Event Process: " << eID << G4endl;
+        G4cout << "!!!particle gun direction " << fParticleGun->GetParticleMomentumDirection() << G4endl;
+        G4cout << "!!!theta : " << theta / M_PI * 180. << " phi : " << phi / M_PI * 180. << G4endl;
+        G4cout << "!!!particle gun position " << fParticleGun->GetParticlePosition() << G4endl;
+        G4cout << "!!!particle gun energy : " << fParticleGun->GetParticleEnergy() << G4endl;     
       }
 
-  }
-  else {
-    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
-    //G4cout<<" llllllllllll2 "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
-  }  
-  //G4cout<<" particle gun direction "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
+  // }
+  // else {
+  //   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
+  //   //G4cout<<" llllllllllll2 "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
+  // }  
+  // //G4cout<<" particle gun direction "<<fParticleGun->GetParticleMomentumDirection()<<G4endl;
+
   fParticleGun->GeneratePrimaryVertex(event);
   if ( eID % 10000 == 0)
       {
