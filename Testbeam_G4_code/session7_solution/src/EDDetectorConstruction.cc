@@ -58,8 +58,8 @@ EDDetectorConstruction::EDDetectorConstruction()
     world_size[2] = 0.7 * m;
 
     // size of the dark box
-    INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch. In this simulation, half box should be enough
-    INTT_testbeam_BOX_size[1] = INTT_testbeam_BOX_size[2] = 6.54 * inch;
+    INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch = 635 mm. In this simulation, half box should be enough
+    INTT_testbeam_BOX_size[1] = INTT_testbeam_BOX_size[2] = 6.54 * inch; // = 166 mm
     
     // check whether the dark box is larger than the world or not
     for (int i = 0; i < 3; i++)
@@ -172,10 +172,10 @@ void EDDetectorConstruction::DefineMaterials()
 void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
 {
 
-  G4Box *INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
-				       this->INTT_testbeam_BOX_size[0] / 2,
-				       this->INTT_testbeam_BOX_size[1] / 2,
-				       this->INTT_testbeam_BOX_size[2] / 2);
+  auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
+				     this->INTT_testbeam_BOX_size[0] / 2,
+				     this->INTT_testbeam_BOX_size[1] / 2,
+				     this->INTT_testbeam_BOX_size[2] / 2);
   
   INTT_testbeam_BOXLV
     = new G4LogicalVolume(INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
@@ -187,7 +187,7 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
   
   INTT_testbeam_BOXPV =
     new G4PVPlacement(0,
-		      G4ThreeVector(0, 0, zpos_testbeam_box_1),
+		      G4ThreeVector(0, 0, 0),
 		      INTT_testbeam_BOXLV,  //its logical volume
 		      "INTT_testbeam_BOXLV",  //its name
 		      worldLog, //its mother  volume
@@ -195,26 +195,28 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
 		      0,  //copy number
 		      checkOverlaps);
 
+
+
   ////////////////////////////////
   // walls of the dark box      //
   ////////////////////////////////
-  // walls on the top and bottom /////////////////////////
-    G4Box *darkbox_wall_tb = new G4Box("darkbox_wall_tb",
-				       INTT_testbeam_BOX_size[0] / 2 - this->kDarkbox_wall_thickness_side,
-				       this->kDarkbox_wall_thickness_body / 2,
-				       INTT_testbeam_BOX_size[2] / 2 );
+  // walls on the top and bottom /////////////////////////////////////////////////////
+  G4Box *darkbox_wall_tb = new G4Box("darkbox_wall_tb",
+				     INTT_testbeam_BOX_size[0] / 2 - this->kDarkbox_wall_thickness_side,
+				     this->kDarkbox_wall_thickness_body / 2,
+				     INTT_testbeam_BOX_size[2] / 2 );
 
     auto darkbox_wall_tbLV = new G4LogicalVolume(darkbox_wall_tb, this->DarkBox, "darkbox_wall_tb");
     darkbox_wall_tbLV->SetVisAttributes(color_darkbox_wall);
     // put on the bottom
     new G4PVPlacement(0, G4ThreeVector(0, -INTT_testbeam_BOX_size[1] / 2 + this->kDarkbox_wall_thickness_body / 2, 0),
-        darkbox_wall_tbLV, "darkbox_wall_bottom", INTT_testbeam_BOXLV,
+		      darkbox_wall_tbLV, "darkbox_wall_bottom", INTT_testbeam_BOXLV,
         false, 0, checkOverlaps);
 
     // put on the top
     new G4PVPlacement(0, G4ThreeVector(0, +INTT_testbeam_BOX_size[1] / 2 - this->kDarkbox_wall_thickness_body / 2, 0),
         darkbox_wall_tbLV, "darkbox_wall_top", INTT_testbeam_BOXLV,
-        false, 0, checkOverlaps);
+        false, 1, checkOverlaps);
 
 
     // walls on the left and right /////////////////////////////////////////////////
@@ -233,7 +235,8 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
     // put on the right
     new G4PVPlacement(0, G4ThreeVector(+INTT_testbeam_BOX_size[0] / 2 - this->kDarkbox_wall_thickness_side / 2, 0, 0),
         darkbox_wall_lrLV, "darkbox_wall_left", INTT_testbeam_BOXLV,
-        false, 0, checkOverlaps);
+        false, 1, checkOverlaps);
+
 
     // walls on the upstream and downstream sides, beam windows are on them /////////////////////
     G4Box *darkbox_wall_upstream = new G4Box("darkbox_wall_upstream",
@@ -241,36 +244,40 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
 					     INTT_testbeam_BOX_size[1] / 2 - this->kDarkbox_wall_thickness_body,
 					     this->kDarkbox_wall_thickness_body / 2);
 
-    //! @TODO measure the dimension
+  //! @TODO measure the dimension
     auto darkbox_beam_window = new G4Box("darkbox_beam_window",
 					 this->kSilicon_length_type_a / 2 * 8 + this->kSilicon_length_type_b / 2 * 5, // horizontal direction, same as the active area for the moment
 					 1 * cm, // vertical direction
-					 kDarkbox_wall_thickness_body );
+					 kDarkbox_wall_thickness_body  );
 
     auto darkbox_wall_upstream_window = new G4SubtractionSolid("darkbox_beam_window", darkbox_wall_upstream, darkbox_beam_window);
-    auto darkbox_wall_upstreamLV = new G4LogicalVolume(darkbox_wall_upstream_window, this->DarkBox, "darkbox_wall_upstream");
+    auto darkbox_wall_upstreamLV = new G4LogicalVolume(darkbox_wall_upstream_window, this->DarkBox, "darkbox_wall_upstream_with_window");
     darkbox_wall_upstreamLV->SetVisAttributes(color_darkbox_wall);
+
     new G4PVPlacement(0, G4ThreeVector(0, 0, -1.0 * this->INTT_testbeam_BOX_size[2] / 2 + this->kDarkbox_wall_thickness_body / 2),  // rotation, position
         darkbox_wall_upstreamLV, "darkbox_wall_upstream", INTT_testbeam_BOXLV,  // logical volume, name, mother volume
         false, 0, checkOverlaps); // boolean operation, copy number, check overlap
 
     new G4PVPlacement(0, G4ThreeVector(0, 0, +INTT_testbeam_BOX_size[2] / 2 - this->kDarkbox_wall_thickness_body / 2),
         darkbox_wall_upstreamLV, "darkbox_wall_downstream", INTT_testbeam_BOXLV,
-        false, 0, checkOverlaps);
+        false, 1, checkOverlaps);
 
-}
+      }
 
 G4VPhysicalVolume *EDDetectorConstruction::Construct()
 {
   DefineMaterials();
   DefineVisAttributes();
 
-    // World
-    // world volume
-    G4Box *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
+  std::cerr << "Construction, world" << std::endl;
+
+  // World
+  // world volume
+  G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
 
     G4LogicalVolume *worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
-    worldLog->SetVisAttributes(color_invisible);
+    //    worldLog->SetVisAttributes(color_invisible);
+    worldLog->SetVisAttributes( color_darkbox_wall );
 
     G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
         G4ThreeVector(),  //at (0,0,0)
@@ -281,7 +288,10 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
         0,  //copy number
         checkOverlaps); //overlaps checking
 
+    std::cerr << "\tConstruction, darkbox" << std::endl;
+
     this->ConstructDarkBox(worldLog);
+
 
     //======================G4solid===============================================  
     const int kLadder_num = 4;
@@ -357,17 +367,12 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     //G4Box * INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, 25 *um);
     G4Box *INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
     G4Box *INTT_si_glue_typeB = new G4Box("INTT_si_glue_typeB", 51 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
-
-    G4double INTT_sci_thin_thickness = 2.5*mm;
-    G4double INTT_sci_thick_thickness = 5*mm;
-    G4Box *INTT_sci = new G4Box("INTT_sci", 116.1 *mm, 11.25 *mm, INTT_sci_thick_thickness/2.);
-    G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 116.1 *mm, 11.25 *mm, INTT_sci_thin_thickness/2.);
-
-  G4Box* INTT_Chip		= new G4Box("INTT_Chip",
+    
+    G4Box* INTT_Chip		= new G4Box("INTT_Chip",
 					    this->kFPHX_length/2, this->kFPHX_width/2, this->kFPHX_thickness/2 );
 
-  G4Box* INTT_Chip_glue		= new G4Box("INTT_Chip_glue",
-					    this->kFPHX_length/2, this->kFPHX_width/2, this->kSilver_epoxy_glue_FPHX_thickness / 2); 
+    G4Box* INTT_Chip_glue		= new G4Box("INTT_Chip_glue",
+						    this->kFPHX_length/2, this->kFPHX_width/2, this->kSilver_epoxy_glue_FPHX_thickness / 2); 
 
   // G4Box *INTT_Chip = new G4Box("INTT_Chip", 4.5 *mm, 1.5 *mm, 0.16 *mm);
   //   G4Box *INTT_Chip_glue = new G4Box("INTT_Chip_glue", 4.5 *mm, 1.5 *mm, 25 *um);
@@ -411,6 +416,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     G4double trap_y_length = kLadder_vertical_length - 2 * INTT_formed_CFRP_outer_length;
     vector<G4TwoVector> form_trap_vectors;
 
+    
   ////////////////////////////////////////////////////////////
   // the foam parts (rohacell), cross-section in y-z plane:
   //   ^ y-axis (vertical axis)
@@ -607,6 +613,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     G4LogicalVolume *INTT_siLV_gap = new G4LogicalVolume(INTT_si_gap,  DefaultMaterial, "INTT_siLV_gap");
     INTT_siLV_gap->SetVisAttributes(color_CFRP_foam);    
 
+    std::cerr << "\tConstruction, strip" << std::endl;
+
     // loop over all INTT ladders for the silicon strips
     for (G4int l = 0; l < kLadder_num; l++)
     {
@@ -797,49 +805,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 	
     } // end block for for loop over all INTT ladders
 
-
-    // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
-    G4LogicalVolume *INTT_sci_thinLV = new G4LogicalVolume(INTT_sci_thin, BBHodo_Scinti, "INTT_sci_thinLV");
-    INTT_sci_thinLV->SetVisAttributes(color_scintillator);
-
-    G4double zpos = -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
-      
-    new G4PVPlacement(0,
-		      G4ThreeVector(0, 0, zpos ), 
-		      INTT_sci_thinLV, //its logical volume
-		      "INTT_sci_thinLV",  //its name
-		      worldLog,  //its mother  volume
-		      false,  //no boolean operation
-		      0,  //copy number
-		      checkOverlaps);
-
-    // for the thicker trigger scintillators, to be put on the downstream surface of the darkbox
-    G4LogicalVolume *INTT_sciLV = new G4LogicalVolume(INTT_sci, BBHodo_Scinti, "INTT_sciLV");
-    INTT_sciLV->SetVisAttributes(color_scintillator);
-
-    zpos = this->INTT_testbeam_BOX_size[2] / 2 + INTT_sci_thick_thickness / 2;
-    new G4PVPlacement(0,
-		      G4ThreeVector(0, 0, zpos ), 
-        INTT_sciLV, //its logical volume
-        "INTT_sciLV_middle",  //its name
-        worldLog,  //its mother  volume
-        false,  //no boolean operation
-        1,  //copy number
-        checkOverlaps);
-
-    // to be written in better way
-    G4double distance_middle_downstream_scintillators = 0.5 * mm;
-    zpos += INTT_sci_thick_thickness + distance_middle_downstream_scintillators;
-    new G4PVPlacement(0,
-		      G4ThreeVector(0, 0, zpos ),
-        INTT_sciLV, //its logical volume
-        "INTT_sciLV_downstream",  //its name
-        worldLog,  //its mother  volume
-        false,  //no boolean operation
-        2,  //copy number
-        checkOverlaps);
-
-
     //for chip
     G4LogicalVolume *INTT_ChipLV = new G4LogicalVolume(INTT_Chip, Silicon, "INTT_ChipLV_name");
     INTT_ChipLV->SetVisAttributes(color_FPHX);
@@ -849,8 +814,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     G4LogicalVolume *INTT_Chip_areaLV = new G4LogicalVolume(INTT_Chip_area, Silicon, "INTT_Chip_areaLV_name");
     INTT_Chip_areaLV->SetVisAttributes(color_invisible);
 
+    std::cerr << "\tConstruction, strip" << std::endl;
     G4int counting_number_chip = 0;
-
     for (G4int l = 0; l < kLadder_num; l++)
     {
 
@@ -938,6 +903,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
         //   = new G4LogicalVolume(INTT_Chip, Silicon, INTT_ChipLV_name[0]);  
     } // end block for for loop
 
+    std::cerr << "\tConstruction, stave" << std::endl;
     // loop over all INTT ladders to create HDI cables and the carbon staves
     for (G4int l = 0; l < kLadder_num; l++)
     {
@@ -1158,6 +1124,60 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
         ////////////////////////////////////////////////////////////
     } // end block for for loop
 
+    G4double INTT_sci_thin_thickness = 2.5 * mm;
+    G4double INTT_sci_thick_thickness = 5 * mm;    
+
+    G4Box *INTT_sci = new G4Box("INTT_sci", 230.0 / 2 * mm, 24.0 / 2 * mm, INTT_sci_thick_thickness/2.);
+    // G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 116.1 *mm, 11.25 *mm, INTT_sci_thin_thickness/2.); // obsolete
+    G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 230.0 / 2 * mm, 24.0 / 2 * mm, INTT_sci_thin_thickness/2.);
+
+    // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
+    G4LogicalVolume *INTT_sci_thinLV = new G4LogicalVolume(INTT_sci_thin, BBHodo_Scinti, "INTT_sci_thinLV");
+    INTT_sci_thinLV->SetVisAttributes(color_scintillator);
+
+    G4double distance_darkbox_upstream_scintillator = 117.0 * mm;
+    G4double zpos_sci = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
+    std::cerr << "\tConstruction, sci" << std::endl;
+    new G4PVPlacement(0,
+		      G4ThreeVector(0, 0, zpos_sci ), 
+		      INTT_sci_thinLV, //its logical volume
+		      "INTT_sci_thinLV",  //its name
+		      worldLog,  //its mother  volume
+		      false,  //no boolean operation
+		      0,  //copy number
+		      checkOverlaps);
+
+    // for the thicker trigger scintillators, to be put on the downstream surface of the darkbox
+    G4LogicalVolume *INTT_sciLV = new G4LogicalVolume(INTT_sci, BBHodo_Scinti, "INTT_sciLV1");
+    INTT_sciLV->SetVisAttributes(color_scintillator);
+
+    G4double distance_darkbox_middle_scintillator = 57.0 * mm;
+    zpos_sci = this->INTT_testbeam_BOX_size[2] / 2 + distance_darkbox_middle_scintillator + INTT_sci_thick_thickness / 2;
+
+    new G4PVPlacement(0,
+		      G4ThreeVector(0, 0, zpos_sci ), 
+        INTT_sciLV, //its logical volume
+		      //"INTT_sciLV_middle",  //its name
+		      "INTT_sciLV1",  //its name
+        worldLog,  //its mother  volume
+        false,  //no boolean operation
+		      0,  //copy number
+        checkOverlaps);
+
+    // to be written in better way
+    G4double distance_middle_downstream_scintillators = 30 * mm;
+    zpos_sci += INTT_sci_thick_thickness + distance_middle_downstream_scintillators;
+
+    new G4PVPlacement(0,
+		      G4ThreeVector(0, 0, zpos_sci ),
+        INTT_sciLV, //its logical volume
+		      //"INTT_sciLV_downstream",  //its name
+		      "INTT_sciLV1",  //its name
+        worldLog,  //its mother  volume
+        false,  //no boolean operation
+	1,  //copy number
+        checkOverlaps);
+    std::cerr << "\tConstruction, end" << std::endl;    
     //always return the physical World
     return worldPV;
 }
@@ -1169,6 +1189,7 @@ void EDDetectorConstruction::ConstructSDandField()
     // G4String INTT_siSD_HitsCollection_name[4]={"INTT_siSD_HitsCollection_1","INTT_siSD_HitsCollection_2","INTT_siSD_HitsCollection_3","INTT_siSD_HitsCollection_4"};
     // G4String INTT_siLV_name[4]={"INTT_siLV1","INTT_siLV2","INTT_siLV3","INTT_siLV4"};
 
+
     EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
     G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);
     SetSensitiveDetector("INTT_siLV_all_typeA", chamber1SD);
@@ -1177,29 +1198,27 @@ void EDDetectorConstruction::ConstructSDandField()
     G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD);
     SetSensitiveDetector("INTT_siLV_all_typeB", chamber2SD);
 
+    
     EDEmCalorimeterSD *calorimeterSD1 = new EDEmCalorimeterSD("EmCalorimeterSD1", "EmCalorimeterHitsCollection1");
     G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD1);
     SetSensitiveDetector("INTT_sci_thinLV", calorimeterSD1);
     
     EDEmCalorimeterSD *calorimeterSD = new EDEmCalorimeterSD("EmCalorimeterSD", "EmCalorimeterHitsCollection");
     G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD);
-    SetSensitiveDetector("INTT_sciLV", calorimeterSD);
-    
+    SetSensitiveDetector("INTT_sciLV1", calorimeterSD);
+
     // EDChamberSD* trigger_1 = new EDChamberSD("Trigger_1", "Trigger_1HitsCollection", 1);
     // G4SDManager::GetSDMpointer()->AddNewDetector(trigger_1);
     // SetSensitiveDetector("INTT_sciLV1", trigger_1);
 
-    /*for (int i2=0; i2 < 4; i2++)
-      {
-      INTT_siSD[i2]=new EDChamberSD(INTT_siSD_name[i2],INTT_siSD_HitsCollection_name[i2],i2);
-      G4SDManager::GetSDMpointer()->AddNewDetector(INTT_siSD[i2]);
-      SetSensitiveDetector(INTT_siLV_name[i2], INTT_siSD[i2]);
-      }*/
+    // for (int i2=0; i2 < 4; i2++)
+    //   {
+    //   INTT_siSD[i2]=new EDChamberSD(INTT_siSD_name[i2],INTT_siSD_HitsCollection_name[i2],i2);
+    //   G4SDManager::GetSDMpointer()->AddNewDetector(INTT_siSD[i2]);
+    //   SetSensitiveDetector(INTT_siLV_name[i2], INTT_siSD[i2]);
+    //   }
     // G4SDManager::GetSDMpointer()->SetVerboseLevel(1);
 
-    // 
-    // Sensitive detectors
-    //
 }
 
 void EDDetectorConstruction::DefineVisAttributes()
