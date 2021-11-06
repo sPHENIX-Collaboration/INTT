@@ -61,8 +61,8 @@ vector < int > GetModules( string usemod )
     modules.push_back( module );
 
   cout << " Modules to be used: ";
-  for( auto& it : modules )
-    cout << it << " ";
+  for( int i=0; i<modules.size(); i++ )
+    cout << modules[i] << " ";
 
   cout << endl;
   return modules;
@@ -91,7 +91,7 @@ int check_chip_prototypeMaximum7
  string fname,
  string usemod,
  string mode,
- string cut
+ string cut = ""
  )
 {
   ShowMessage();

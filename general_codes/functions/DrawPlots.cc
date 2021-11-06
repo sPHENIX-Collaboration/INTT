@@ -45,12 +45,15 @@ void DrawPlots(string root_file, int usemod, string mode) {
   stringstream cut_base; // useful class to generate string using non-string and char parameters
   cut_base << "ampl<70 " << "&& module==" << usemod << " && chan_id<128 && chip_id<27";
 
+  stringstream ss;
+  ss << usemod;
+  
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Amplitude vs ADC for each chip, only "calib" mode make sence                                 //
   //////////////////////////////////////////////////////////////////////////////////////////////////
   if (mode == "calib")
     {
-      string canvas_name = "ampl_vs_ADC_module" + to_string( usemod );
+      string canvas_name = string("ampl_vs_ADC_module") + ss.str();
       TCanvas *c1 = new TCanvas( canvas_name.c_str(), canvas_name.c_str(), 0, 0, 1625, 250);
 
       //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +117,7 @@ void DrawPlots(string root_file, int usemod, string mode) {
 
       // save the current canvas into a pdf file
       string output_adc_vs_ampl = root_file.substr(0, root_file.find_last_of(".root") - 4)
-	+ "_adcvsampl_module" + to_string( usemod ) + ".pdf";
+	+ "_adcvsampl_module" + ss.str() + ".pdf";
       c1->Print(output_adc_vs_ampl.c_str());
     }
 
@@ -122,7 +125,7 @@ void DrawPlots(string root_file, int usemod, string mode) {
   // Amplitude vs Channel for each chip, only "calib" mode make sence                             //
   //////////////////////////////////////////////////////////////////////////////////////////////////
   if (mode == "calib") {
-    string canvas_name_c2 = "ch_vs_ampl_module" + to_string( usemod );
+    string canvas_name_c2 = string("ch_vs_ampl_module") + ss.str().c_str();
     TCanvas *c2 = new TCanvas( canvas_name_c2.c_str(), canvas_name_c2.c_str(), 0, 300, 1625, 250);
     c2->Divide(13, 2);
 
@@ -204,14 +207,14 @@ void DrawPlots(string root_file, int usemod, string mode) {
     }
 
     string output_ampl_vs_chan = root_file.substr(0, root_file.find_last_of(".root") - 4)
-      + "_amplvschan_module" + to_string( usemod ) + ".pdf";
+      + "_amplvschan_module" + ss.str().c_str() + ".pdf";
     c2->Print(output_ampl_vs_chan.c_str());
   }
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Channel distribution for each chip, any mode is OK                                           //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  string canvas_name_c3 = "channel_dist_module" + to_string( usemod );
+  string canvas_name_c3 = string("channel_dist_module") + ss.str().c_str();
   TCanvas *c3 = new TCanvas( canvas_name_c3.c_str(), canvas_name_c3.c_str(), 0, 560, 1625, 250);
   TH2D* hist_ch_chip = new TH2D("ch_chip", "Channel vs Chip;Channel;Chip", 130, 0, 130, 26, 0, 26);
 
@@ -278,16 +281,16 @@ void DrawPlots(string root_file, int usemod, string mode) {
       }
   }
   string output_entry_vs_chan_pdf = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_entry_vs_channel_ID_module" + to_string( usemod ) + ".pdf";
+    + "_entry_vs_channel_ID_module" + ss.str().c_str() + ".pdf";
   string output_entry_vs_chan_jpg = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_entry_vs_channel_ID_module" + to_string( usemod ) + ".jpg";
+    + "_entry_vs_channel_ID_module" + ss.str().c_str() + ".jpg";
   c3->Print(output_entry_vs_chan_pdf.c_str());
   c3->Print(output_entry_vs_chan_jpg.c_str());
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Hit map ( chip vs channel ), any mode is OK                                                  //
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  string canvas_name_c4 = "hit_map_module" + to_string( usemod );
+  string canvas_name_c4 = string("hit_map_module") + ss.str().c_str();
   TCanvas *c4 = new TCanvas( canvas_name_c4.c_str(), canvas_name_c4.c_str(), 0, 700, 1625, 250);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +384,7 @@ void DrawPlots(string root_file, int usemod, string mode) {
   }
 
   string output_hitmap = root_file.substr(0, root_file.find_last_of(".root") - 4)
-    + "_hitmap_module" + to_string( usemod ) + ".pdf";
+    + "_hitmap_module" + ss.str().c_str() + ".pdf";
   c4->Print(output_hitmap.c_str());
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
