@@ -45,53 +45,20 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   // The choice of analysis technology is done via selectin of a namespace
   // in B4Analysis.hh
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->SetVerboseLevel(1);
+  analysisManager->SetVerboseLevel(0);
+  analysisManager->SetNtupleMerging(true);
   G4cout << "Using " << analysisManager->GetType() 
          << " analysis manager" << G4endl;
 
   // Creating histograms per layer
-  //
-  /*for ( G4int i=0; i<10; ++i) {
-    std::ostringstream os;
-    os << i;
-    G4String hname = "Layer";
-    hname += os.str();
-    G4String htitle = "Edep [MeV] in layer ";
-    htitle += os.str();
-    htitle += " in EmCalorimeter"; 
-    analysisManager->CreateH1(hname, htitle, 100, 0., 800);
-  } */ 
-
   // Creating histograms for summary data
-  // histogram 10 
-  /*analysisManager->CreateH1("AllCharged", "Charged Edep [MeV] in all layers" , 
-                            150, 0., 1500);
-  // histogram 11 
-  analysisManager->CreateH1("AllNeutral", "Neutral Edep [MeV] in all layers" , 
-                            100, 0., 100);
-  // histogram 12 
-  analysisManager->CreateH1("EdepPrimary", "Edep [MeV] by primary in calorimeter" , 
-                            150, 0., 1500);
-  // histogram 13 
-  analysisManager->CreateH1("EdepOthers", "Edep [MeV] by non-primary in calorimeter" , 
-                            150, 0., 1500);*/
+  // analysisManager->CreateH1("AllCharged", "Charged Edep [MeV] in all layers" , 
+  //                           150, 0., 1500);
 
   // Creating ntuples
   //
   // ntuple id = 0
-  
-  //============================the original one store the center of strip====================================================       
-  // analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
-  // analysisManager->CreateNtupleIColumn("Event_ID");
-  // analysisManager->CreateNtupleIColumn("UpandDown");   // column id = 0 
-  // analysisManager->CreateNtupleDColumn("Xpos");    // column id = 1 
-  // analysisManager->CreateNtupleDColumn("Ypos");    // column id = 2
-  // analysisManager->CreateNtupleDColumn("Zpos");    // column id = 3 
-  // analysisManager->CreateNtupleIColumn("silicon_type");    // column id = 3   
-  // analysisManager->CreateNtupleDColumn("Edep");    // column id = 3 
-  // analysisManager->FinishNtuple();
-  //============================the original one store the center of strip====================================================       
-  
+
   //============================NEW one, only store the ID====================================================        
   analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
   analysisManager->CreateNtupleIColumn("Event_ID");
@@ -133,6 +100,8 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
+
+  
 }
 
 EDRunAction::~EDRunAction()
@@ -155,6 +124,7 @@ void EDRunAction::DefineCommands()
 
 void EDRunAction::BeginOfRunAction(const G4Run* kRun )
 {
+
 
   // Get analysis manager
   auto analysisManager = G4AnalysisManager::Instance();  
@@ -183,13 +153,19 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   // Open an output file
   G4String fileName = "ED";
   analysisManager->OpenFile(fileName);  
+
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )
-{  
+{
+
+
+  //  std::cerr << "void EDRunAction::EndOfRunAction(const G4Run* kRun )" ;
   // save histograms 
   //
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->Write();
   analysisManager->CloseFile();
+  
+  //std::cerr << " -> ends" << std::endl;
 }
