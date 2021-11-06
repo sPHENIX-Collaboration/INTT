@@ -38,11 +38,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4SystemOfUnits.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4ThreadLocal G4Allocator<EDChamberHit>* EDChamberHitAllocator = 0;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EDChamberHit::EDChamberHit()
   : G4VHit(),
@@ -54,32 +50,22 @@ EDChamberHit::EDChamberHit()
     fEdep(0.)
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDChamberHit::~EDChamberHit()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EDChamberHit::EDChamberHit(const EDChamberHit& /*right*/)
  : G4VHit() 
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const EDChamberHit& EDChamberHit::operator=(const EDChamberHit& /*right*/)
 {
   return *this;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 int EDChamberHit::operator==(const EDChamberHit& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDChamberHit::Print()
 {  
@@ -90,8 +76,6 @@ void EDChamberHit::Print()
          <<" sensor type "   <<fsilicon_type
           << G4endl; 
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDChamberHit::Draw()
 {
@@ -107,5 +91,3 @@ void EDChamberHit::Draw()
     pVVisManager->Draw(circle);
   }
 }
-  
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

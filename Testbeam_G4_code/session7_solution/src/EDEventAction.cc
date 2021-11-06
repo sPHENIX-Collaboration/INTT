@@ -33,39 +33,37 @@
 #include "G4Event.hh"
 #include "G4ios.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDEventAction::EDEventAction()
  : G4UserEventAction(),
    fVerbose(true)
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDEventAction::~EDEventAction()
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EDEventAction::BeginOfEventAction(const G4Event* event)
 {
-  if ( false ) 
-  {
-    //G4cout << ">>> Start event: " << event->GetEventID() << G4endl;
-  }  
-}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  //std::cerr << "void EDEventAction::BeginOfEventAction(const G4Event* event)";
+  // if ( false ) 
+  // {
+  //   //G4cout << ">>> Start event: " << event->GetEventID() << G4endl;
+  // }
+  //  std::cerr << "----------> ends" << std::endl;
+}
 
 void EDEventAction::EndOfEventAction(const G4Event* event)
 {
-  if ( false ) 
-  {
-    //G4cout << ">>> End event: " << event->GetEventID() << G4endl;
-  }  
+  //  std::cerr << "void EDEventAction::EndOfEventAction(const G4Event* event)";
+  // if ( false ) 
+  // {
+  //   //G4cout << ">>> End event: " << event->GetEventID() << G4endl;
+  // }  
   // G4int eID = event->GetEventID();
   // if ( eID % 20000 == 0)
   //   G4cout << "Event Process: " << eID << G4endl;
+
+  //  std::cerr << "  ----> ends" << std::endl;
+  //std::cerr << std::endl;
 }    
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
