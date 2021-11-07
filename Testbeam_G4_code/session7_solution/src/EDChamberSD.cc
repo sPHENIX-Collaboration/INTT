@@ -234,7 +234,6 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   if (eID_1 % 10000 == 0)G4cout << "=======================================" << G4endl;
       //G4cout<<"GGGGGGGGGGGGGGGGGG "<<thePosition[0]<<" "<<thePosition[1]<<" "<<thePosition[2]<<" ENERGY : "<<edep<<" PID "<<PDG<<G4endl;
   G4ThreeVector columnPosition;
-  G4double pi=3.14159265358979323846;
   G4double      phiposition_S1;
   G4double Zseparation;
   G4double Zseparation_1; 
