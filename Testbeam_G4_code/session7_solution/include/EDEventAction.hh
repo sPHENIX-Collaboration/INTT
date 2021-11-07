@@ -49,8 +49,4 @@ class EDEventAction : public G4UserEventAction
     G4bool fVerbose;         
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#endif
-
-    
+#endif    

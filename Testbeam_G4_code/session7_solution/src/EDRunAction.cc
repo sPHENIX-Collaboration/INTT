@@ -36,62 +36,30 @@
 
 G4double EDRunAction::beam_energy;
 G4bool EDRunAction::is_beam_smearing;
+ELPHEBeam* EDRunAction::beam;
 
-EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
-: G4UserRunAction()
+EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga ) :
+  G4UserRunAction()
 {
   DefineCommands();
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
   // in B4Analysis.hh
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->SetVerboseLevel(1);
+  analysisManager->SetVerboseLevel(0);
+  analysisManager->SetNtupleMerging(true);
   G4cout << "Using " << analysisManager->GetType() 
          << " analysis manager" << G4endl;
 
   // Creating histograms per layer
-  //
-  /*for ( G4int i=0; i<10; ++i) {
-    std::ostringstream os;
-    os << i;
-    G4String hname = "Layer";
-    hname += os.str();
-    G4String htitle = "Edep [MeV] in layer ";
-    htitle += os.str();
-    htitle += " in EmCalorimeter"; 
-    analysisManager->CreateH1(hname, htitle, 100, 0., 800);
-  } */ 
-
   // Creating histograms for summary data
-  // histogram 10 
-  /*analysisManager->CreateH1("AllCharged", "Charged Edep [MeV] in all layers" , 
-                            150, 0., 1500);
-  // histogram 11 
-  analysisManager->CreateH1("AllNeutral", "Neutral Edep [MeV] in all layers" , 
-                            100, 0., 100);
-  // histogram 12 
-  analysisManager->CreateH1("EdepPrimary", "Edep [MeV] by primary in calorimeter" , 
-                            150, 0., 1500);
-  // histogram 13 
-  analysisManager->CreateH1("EdepOthers", "Edep [MeV] by non-primary in calorimeter" , 
-                            150, 0., 1500);*/
+  // analysisManager->CreateH1("AllCharged", "Charged Edep [MeV] in all layers" , 
+  //                           150, 0., 1500);
 
   // Creating ntuples
   //
   // ntuple id = 0
-  
-  //============================the original one store the center of strip====================================================       
-  // analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
-  // analysisManager->CreateNtupleIColumn("Event_ID");
-  // analysisManager->CreateNtupleIColumn("UpandDown");   // column id = 0 
-  // analysisManager->CreateNtupleDColumn("Xpos");    // column id = 1 
-  // analysisManager->CreateNtupleDColumn("Ypos");    // column id = 2
-  // analysisManager->CreateNtupleDColumn("Zpos");    // column id = 3 
-  // analysisManager->CreateNtupleIColumn("silicon_type");    // column id = 3   
-  // analysisManager->CreateNtupleDColumn("Edep");    // column id = 3 
-  // analysisManager->FinishNtuple();
-  //============================the original one store the center of strip====================================================       
-  
+
   //============================NEW one, only store the ID====================================================        
   analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
   analysisManager->CreateNtupleIColumn("Event_ID");
@@ -133,6 +101,7 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
+
 }
 
 EDRunAction::~EDRunAction()
@@ -151,6 +120,33 @@ void EDRunAction::DefineCommands()
   setBeamSmearing.SetGuidance( "Switch to the realistic beam(true) or mono-energy beam at x=0 & y=0(false)." );
   setBeamSmearing.SetParameterName( "beamSmearing", false ); // (name, is_omittable)
   setBeamSmearing.SetDefaultValue( "false" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the beam line
+  G4GenericMessenger::Command& setBeamLine
+    = fMessenger->DeclareProperty( "beamLine", beam_line );
+  setBeamLine.SetGuidance( "Selection of the beam line. -23 and -30 are available." );
+  setBeamLine.SetParameterName( "beamLine", true ); // (name, is_omittable)
+  setBeamLine.SetDefaultValue( "-23" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the production target
+  G4GenericMessenger::Command& setProductionTarget
+    = fMessenger->DeclareProperty( "productionTarget", production_target );
+  setProductionTarget.SetGuidance( "Selection of th production target. Au_20um, W_200um, and Cu_8mm are available." );
+  setProductionTarget.SetParameterName( "productionTarget", true ); // (name, is_omittable)
+  setProductionTarget.SetDefaultValue( "Au_20um" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the x_p limitation (restriction of horizontal position of the beam)
+  G4GenericMessenger::Command& setPositionRestriction
+    = fMessenger->DeclareProperty( "positionRestriction", position_restriction );
+  setPositionRestriction.SetGuidance( "Selection of position restrictioin of the beam. 0(no), 1(weak), 2(moderate), and 3(strong) are available." );
+  setPositionRestriction.SetParameterName( "positionRestriction", true ); // (name, is_omittable)
+  setPositionRestriction.SetDefaultValue( "0" );
+
+
+
 }
 
 void EDRunAction::BeginOfRunAction(const G4Run* kRun )
@@ -183,13 +179,21 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   // Open an output file
   G4String fileName = "ED";
   analysisManager->OpenFile(fileName);  
+
+  this->beam = new ELPHEBeam( beam_line, production_target, position_restriction, this->beam_energy );
+  beam->Print( 0 );  
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )
-{  
+{
+
+
+  //  std::cerr << "void EDRunAction::EndOfRunAction(const G4Run* kRun )" ;
   // save histograms 
   //
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->Write();
   analysisManager->CloseFile();
+  
+  //std::cerr << " -> ends" << std::endl;
 }

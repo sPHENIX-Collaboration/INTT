@@ -49,8 +49,6 @@ namespace {
 
 G4double* myGlobalValue = new G4double(1.);
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDChamberSD::EDChamberSD(const G4String& name, 
                          const G4String& hitsCollectionName,
                          G4int ntupleId
@@ -64,12 +62,8 @@ EDChamberSD::EDChamberSD(const G4String& name,
   //VEncoder*theEncoder = new Encoder64Cal();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDChamberSD::~EDChamberSD()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDChamberSD::Initialize(G4HCofThisEvent* hce)
 {
@@ -143,20 +137,6 @@ for (G4int i1=0; i1<zposition; i1++)
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // for (G4int i1=0; i1<upordown; i1++)
   //   {
   //     for (G4int i2=0; i2<silicon_type; i2++)
@@ -176,8 +156,6 @@ for (G4int i1=0; i1<zposition; i1++)
   //       }
   //   }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4bool EDChamberSD::ProcessHits(G4Step* step, 
                                 G4TouchableHistory* /*history*/)
@@ -256,7 +234,6 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   if (eID_1 % 10000 == 0)G4cout << "=======================================" << G4endl;
       //G4cout<<"GGGGGGGGGGGGGGGGGG "<<thePosition[0]<<" "<<thePosition[1]<<" "<<thePosition[2]<<" ENERGY : "<<edep<<" PID "<<PDG<<G4endl;
   G4ThreeVector columnPosition;
-  G4double pi=3.14159265358979323846;
   G4double      phiposition_S1;
   G4double Zseparation;
   G4double Zseparation_1; 
@@ -387,37 +364,6 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
     //G4cout<<"Iamtest~~~~~~~~"<<upordown<<" "<<silicon_type<<" "<<xposition<<" "<<yposition<<" "<<zposition<<G4endl;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Change the following line to get the charge of the tracked particle
   //G4double charge = step->GetTrack()->GetDefinition()->GetPDGCharge();
   //if ( charge == 0. ) return false;
@@ -502,10 +448,10 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   return false;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
 {
+  //  std::cerr << "void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)";
+  
   G4int eID=0;
   const G4Event* evt=G4MTRunManager::GetRunManager()->GetCurrentEvent();
   if (evt) eID=evt->GetEventID();
@@ -559,7 +505,7 @@ void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
                sensorposition[1] = -9.961+(fyposition-0)*0.078;
                sensorposition[2] = 100.+(fzposition-0)*35.;            
           } 
-
+	
         //G4cout<<"particle hit ID 1:      "<<i<<" "<<fupordown<<" "<<fsilicon_type<<G4endl;
         //G4cout<<"particle hit ID 2:      "<<fxposition<<" "<<fyposition<<" "<<fzposition<<G4endl;
         //G4cout<<"particle hit position : "<<sensorposition[0]<<" "<<sensorposition[1]<<" "<<sensorposition[2]<<" ENERGY deposit : "<<fEdep<<G4endl;
@@ -587,6 +533,6 @@ void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
         
       }
     }
-}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  //std::cerr << "     ------> ends" << std::endl;
+}

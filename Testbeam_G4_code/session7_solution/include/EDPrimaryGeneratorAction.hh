@@ -51,8 +51,9 @@
 //#include "RandGauss.h"
 //#include "TRandom.h"
 //#include "TMath.h"
-#include "RandGauss.h"
+//#include "RandGauss.h"
 #include "EDRunAction.hh"
+#include "ELPHEBeam.hh"
 
 class G4Event;
 class G4ParticleGun;

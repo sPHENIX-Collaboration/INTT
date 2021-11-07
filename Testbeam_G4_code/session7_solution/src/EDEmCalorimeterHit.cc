@@ -35,11 +35,7 @@
 
 #include <iomanip>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4ThreadLocal G4Allocator<EDEmCalorimeterHit>* EDEmCalorimeterHitAllocator = 0;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EDEmCalorimeterHit::EDEmCalorimeterHit()
  : G4VHit(),
@@ -47,18 +43,12 @@ EDEmCalorimeterHit::EDEmCalorimeterHit()
    fEdep(0.)
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDEmCalorimeterHit::~EDEmCalorimeterHit()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EDEmCalorimeterHit::EDEmCalorimeterHit(const EDEmCalorimeterHit& /*right*/)
  : G4VHit() 
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const EDEmCalorimeterHit& 
 EDEmCalorimeterHit::operator=(const EDEmCalorimeterHit& /*right*/)
@@ -66,14 +56,10 @@ EDEmCalorimeterHit::operator=(const EDEmCalorimeterHit& /*right*/)
   return *this;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 int EDEmCalorimeterHit::operator==(const EDEmCalorimeterHit& /*right*/) const
 {
   return 0;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDEmCalorimeterHit::Print()
 {
@@ -82,7 +68,3 @@ void EDEmCalorimeterHit::Print()
            << "  Edep: " << std::setw(7) << G4BestUnit(fEdep,"Energy") << G4endl;
   }          
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-

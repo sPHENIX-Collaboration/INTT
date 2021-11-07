@@ -30,17 +30,6 @@
 //
 
 #include "EDEmCalorimeterSD.hh"
-#include "EDAnalysis.hh"
-#include "G4MTRunManager.hh"
-
-#include "G4HCofThisEvent.hh"
-#include "G4SDManager.hh"
-#include "G4VTouchable.hh"
-#include "G4Step.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ios.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EDEmCalorimeterSD::EDEmCalorimeterSD(const G4String& name, 
                                      const G4String& hitsCollectionName)
@@ -50,12 +39,8 @@ EDEmCalorimeterSD::EDEmCalorimeterSD(const G4String& name,
   collectionName.insert(hitsCollectionName);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EDEmCalorimeterSD::~EDEmCalorimeterSD()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EDEmCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 {
@@ -74,15 +59,13 @@ void EDEmCalorimeterSD::Initialize(G4HCofThisEvent* hce)
   } 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
                                       G4TouchableHistory* /*history*/)
 {
   
-  G4int eID_1=0;
-  const G4Event* evt_1=G4MTRunManager::GetRunManager()->GetCurrentEvent();
-  if (evt_1) eID_1=evt_1->GetEventID();
+  G4int eID_1 = 0;
+  const G4Event* evt_1 = G4MTRunManager::GetRunManager()->GetCurrentEvent();
+  if (evt_1) eID_1 = evt_1->GetEventID();
 
   const G4VTouchable* touchable
     = step->GetPreStepPoint()->GetTouchable();
@@ -90,12 +73,12 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
 
   G4double edep = step->GetTotalEnergyDeposit();
 
-  G4String motherPhysical_name_test = motherPhysical->GetName();
-  if (eID_1%10000==0)G4cout<<"!!!! SCI pre_TESTnameTEST : "<<motherPhysical_name_test<<G4endl;
+  // G4String motherPhysical_name_test = motherPhysical->GetName(); // not used anymore 
+  // if (eID_1%10000==0)G4cout<<"!!!! SCI pre_TESTnameTEST : "<<motherPhysical_name_test<<G4endl; // not used anymore 
   
-  G4int copyNo =  step->GetPreStepPoint()->GetTouchable()->GetVolume(0)-> GetCopyNo();   //motherPhysical->GetCopyNo();   <- this is the original one
+  G4int copyNo = motherPhysical->GetCopyNo();
+  // G4int copyNo =  touchable->GetVolume(0)-> GetCopyNo();   // test
   if (eID_1%10000==0)G4cout<<"!!!! SCI pre_getcopynumberTEST : "<<copyNo<<" edep : "<<edep<<G4endl;
-
 
   EDEmCalorimeterHit* HitThisUnit = (*fHitsCollection)[copyNo];
   HitThisUnit->AddEdep(edep);
@@ -146,17 +129,16 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
   return true;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EDEmCalorimeterSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
 {
-
+  //  std::cerr << "void EDEmCalorimeterSD::EndOfEvent(G4HCofThisEvent* /*hce*/)";
   G4int eID=0;
   const G4Event* evt=G4MTRunManager::GetRunManager()->GetCurrentEvent();
   if (evt) eID=evt->GetEventID();
 
   G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
   G4int n_hit = fHitsCollection->entries();
+
   for (G4int i = 0; i < n_hit; i++) 
     {
       G4double fEdep = (*fHitsCollection)[i]->GetEnergyDeposit();
@@ -175,7 +157,7 @@ void EDEmCalorimeterSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
 
     }
 
-
+  //  std::cerr << "  ----> ends" << std::endl;
   // Suppress heavy print:
   // G4cout << "\n-------->" <<  fHitsCollection->GetName() 
   //        << ": in this event: " << G4endl;
@@ -193,5 +175,3 @@ void EDEmCalorimeterSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
     if ( edep > 0. ) analysisManager->FillH1(i, edep/MeV);
   }*/
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

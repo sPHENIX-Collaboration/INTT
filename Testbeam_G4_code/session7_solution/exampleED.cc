@@ -68,25 +68,33 @@ int main(int argc,char** argv)
   G4String physicsListName;
   G4int nofThreads = 0;
 
+  // Choose the Random engine
+  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+
   // Change a seed of random number
   std::random_device rnd;
   CLHEP::HepRandom::setTheSeed( rnd() );
   
-  for ( G4int i=1; i<argc; i=i+2 ) {
-    if      ( G4String(argv[i]) == "-m" ) macro = argv[i+1];
-    else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
-    else if ( G4String(argv[i]) == "-p" ) physicsListName = argv[i+1];
+  for ( G4int i=1; i<argc; i=i+2 )
+    {
+      if( G4String(argv[i]) == "-m" )
+	macro = argv[i+1];
+      else if ( G4String(argv[i]) == "-u" )
+	session = argv[i+1];
+      else if ( G4String(argv[i]) == "-p" )
+	physicsListName = argv[i+1];
 #ifdef G4MULTITHREADED
-    else if ( G4String(argv[i]) == "-t" ) {
-      nofThreads = G4UIcommand::ConvertToInt(argv[i+1]);
-    }
+      else if ( G4String(argv[i]) == "-t" )
+	{
+	  nofThreads = G4UIcommand::ConvertToInt(argv[i+1]);
+	}
 #endif
-    else {
-      PrintUsage();
-      return 1;
+      else {
+	PrintUsage();
+	return 1;
+      }
     }
-  }  
-
+  
   // Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
   if ( ! macro.size() ) {
@@ -94,7 +102,6 @@ int main(int argc,char** argv)
   }
 
   // Construct the run manager
-  //
 #ifdef G4MULTITHREADED
   G4MTRunManager * runManager = new G4MTRunManager;
   if ( nofThreads > 0 ) { 
@@ -122,7 +129,7 @@ int main(int argc,char** argv)
 
   G4VModularPhysicsList* physicsList 
     = physListFactory.GetReferencePhysList(physicsListName);
-  physicsList->SetVerboseLevel(1);
+  physicsList->SetVerboseLevel(0);
   runManager->SetUserInitialization(physicsList);
     
   // User action initialization
@@ -145,6 +152,7 @@ int main(int argc,char** argv)
   else {
     // interactive mode : define UI session
     UImanager->ApplyCommand("/control/execute init_vis.mac"); 
+    //    UImanager->ApplyCommand("/control/execute run.mac");  // for debugging
     ui->SessionStart();
     delete ui;
   }
