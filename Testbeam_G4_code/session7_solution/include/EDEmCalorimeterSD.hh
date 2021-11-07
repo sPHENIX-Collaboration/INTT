@@ -34,6 +34,15 @@
 
 #include "G4VSensitiveDetector.hh"
 #include "EDEmCalorimeterHit.hh"
+#include "EDAnalysis.hh"
+#include "G4MTRunManager.hh"
+
+#include "G4HCofThisEvent.hh"
+#include "G4SDManager.hh"
+#include "G4VTouchable.hh"
+#include "G4Step.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4ios.hh"
 
 class G4Step;
 class G4HCofThisEvent;

@@ -37,6 +37,7 @@
 #include "G4UImanager.hh"
 #include "G4SystemOfUnits.hh"
 #include "EDAnalysis.hh"
+#include "ELPHEBeam.hh"
 
 #include "G4Run.hh"
 #include "G4SystemOfUnits.hh"
@@ -56,6 +57,11 @@ public:
   G4bool is_first = true;
   static G4double beam_energy;//  = 800 * MeV;
   static G4bool is_beam_smearing;
+  static ELPHEBeam* beam;
+  std::string beam_line;
+  std::string production_target;
+  int position_restriction;
+
   virtual void BeginOfRunAction(const G4Run* );
   virtual void   EndOfRunAction(const G4Run* );
 
@@ -67,7 +73,6 @@ private:
   bool isFirst = true; // it should be true in the initial state
 
   G4GenericMessenger* fMessenger;
-  
   void DefineCommands();
 };
 

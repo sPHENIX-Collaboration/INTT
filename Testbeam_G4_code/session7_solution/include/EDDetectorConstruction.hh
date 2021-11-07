@@ -98,11 +98,7 @@ private:
   G4double zpos_testbeam_box_1;
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
-  
-  G4double silicon_strip_width;
-  G4double silicon_strip_thickness;
-  G4double silicon_length_type_a;
-  G4double silicon_length_type_b;
+  const G4double kDarkbox_stage_width; // width of the movable stage
   
   G4Material* DefaultMaterial;
   G4Material* Silicon;

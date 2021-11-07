@@ -15,6 +15,10 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+find_package(ROOT)
+include(${ROOT_USE_FILE})
+include_directories(${ROOT_INCLUDE_DIRS})
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
@@ -34,7 +38,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(exampleED exampleED.cc ${sources} ${headers})
-target_link_libraries(exampleED ${Geant4_LIBRARIES})
+target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -46,6 +50,9 @@ set(EXAMPLEED_SCRIPTS
   run.mac
   run.png
   vis.mac
+  beam_parameter/Au_20um.root
+#  beam_parameter/W_200um.root
+#  beam_parameter/Cu_8mm.root
   )
 
 foreach(_script ${EXAMPLEED_SCRIPTS})
