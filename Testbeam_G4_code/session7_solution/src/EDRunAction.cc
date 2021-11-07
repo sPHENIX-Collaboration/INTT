@@ -36,9 +36,10 @@
 
 G4double EDRunAction::beam_energy;
 G4bool EDRunAction::is_beam_smearing;
+ELPHEBeam* EDRunAction::beam;
 
-EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
-: G4UserRunAction()
+EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga ) :
+  G4UserRunAction()
 {
   DefineCommands();
   // Create analysis manager
@@ -101,7 +102,6 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga )
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
 
-  
 }
 
 EDRunAction::~EDRunAction()
@@ -120,11 +120,37 @@ void EDRunAction::DefineCommands()
   setBeamSmearing.SetGuidance( "Switch to the realistic beam(true) or mono-energy beam at x=0 & y=0(false)." );
   setBeamSmearing.SetParameterName( "beamSmearing", false ); // (name, is_omittable)
   setBeamSmearing.SetDefaultValue( "false" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the beam line
+  G4GenericMessenger::Command& setBeamLine
+    = fMessenger->DeclareProperty( "beamLine", beam_line );
+  setBeamLine.SetGuidance( "Selection of the beam line. -23 and -30 are available." );
+  setBeamLine.SetParameterName( "beamLine", true ); // (name, is_omittable)
+  setBeamLine.SetDefaultValue( "-23" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the production target
+  G4GenericMessenger::Command& setProductionTarget
+    = fMessenger->DeclareProperty( "productionTarget", production_target );
+  setProductionTarget.SetGuidance( "Selection of th production target. Au_20um, W_200um, and Cu_8mm are available." );
+  setProductionTarget.SetParameterName( "productionTarget", true ); // (name, is_omittable)
+  setProductionTarget.SetDefaultValue( "Au_20um" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the x_p limitation (restriction of horizontal position of the beam)
+  G4GenericMessenger::Command& setPositionRestriction
+    = fMessenger->DeclareProperty( "positionRestriction", position_restriction );
+  setPositionRestriction.SetGuidance( "Selection of position restrictioin of the beam. 0(no), 1(weak), 2(moderate), and 3(strong) are available." );
+  setPositionRestriction.SetParameterName( "positionRestriction", true ); // (name, is_omittable)
+  setPositionRestriction.SetDefaultValue( "0" );
+
+
+
 }
 
 void EDRunAction::BeginOfRunAction(const G4Run* kRun )
 {
-
 
   // Get analysis manager
   auto analysisManager = G4AnalysisManager::Instance();  
@@ -154,6 +180,8 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   G4String fileName = "ED";
   analysisManager->OpenFile(fileName);  
 
+  this->beam = new ELPHEBeam( beam_line, production_target, position_restriction, this->beam_energy );
+  beam->Print( 0 );  
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )

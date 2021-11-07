@@ -151,8 +151,8 @@ int main(int argc,char** argv)
   }
   else {
     // interactive mode : define UI session
-    //UImanager->ApplyCommand("/control/execute init_vis.mac"); 
-    UImanager->ApplyCommand("/control/execute run.mac");  // for debugging
+    UImanager->ApplyCommand("/control/execute init_vis.mac"); 
+    //    UImanager->ApplyCommand("/control/execute run.mac");  // for debugging
     ui->SessionStart();
     delete ui;
   }

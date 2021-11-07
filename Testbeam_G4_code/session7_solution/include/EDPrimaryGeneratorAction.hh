@@ -53,6 +53,7 @@
 //#include "TMath.h"
 //#include "RandGauss.h"
 #include "EDRunAction.hh"
+#include "ELPHEBeam.hh"
 
 class G4Event;
 class G4ParticleGun;
