@@ -22,9 +22,6 @@
 // *use  in  resulting  scientific  publications,  and indicate your *
 // *acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
-//
-// $Id$
-//
 /// \file EDDetectorConstruction.cc
 /// \brief Implementation of the EDDetectorConstruction class
 #include "EDDetectorConstruction.hh"
@@ -56,7 +53,7 @@ EDDetectorConstruction::EDDetectorConstruction()
   // size of the world
   world_size[0] = this->kDarkbox_stage_width;
   world_size[1] = 0.2 * m;
-  world_size[2] = this->kDarkbox_stage_width;
+  world_size[2] = this->kDarkbox_stage_width + 2 * m;
 
   // size of the dark box
   INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch = 635 mm. In this simulation, half box should be enough
@@ -66,9 +63,54 @@ EDDetectorConstruction::EDDetectorConstruction()
   for (int i = 0; i < 3; i++)
     assert(world_size[i] > INTT_testbeam_BOX_size[i]);
 
+  DefineMaterials();
+  DefineVisAttributes();
+  DefineCommands();
 }
 
 EDDetectorConstruction::~EDDetectorConstruction() {}
+
+void EDDetectorConstruction::DefineCommands()
+{
+  fMessenger
+    = new G4GenericMessenger(this, "/INTT/geom/", "Commands for the geometry in this application");
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch to construct the additional plate
+  // Usage: /INTT/geom/constructPlate
+  // Note: Material, thickness, and distance for the plate need to be set in advance
+  auto &constructPlate_command = fMessenger->DeclareMethod( "constructPlate", &EDDetectorConstruction::ConstructPlate, "" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the additional plate thickness
+  G4GenericMessenger::Command& setPlateMaterial
+    = fMessenger->DeclareProperty( "setPlateMaterial", this->plate_material );
+  setPlateMaterial.SetGuidance( "Set the material of the additional plate" );
+  setPlateMaterial.SetParameterName( "plateMaterial", false ); // (name, is_omittable)
+  setPlateMaterial.SetDefaultValue( "G4_Pb" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the additional plate thickness
+  G4GenericMessenger::Command& setPlateThickness
+    = fMessenger->DeclarePropertyWithUnit( "setPlateThickness", "mm", this->plate_thickness );
+  setPlateThickness.SetGuidance( "Set the thickness of the additional plate" );
+  setPlateThickness.SetParameterName( "plateThickess", false ); // (name, is_omittable)
+  setPlateThickness.SetDefaultValue( "0" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch for the distance from the upstream trigger scintillator to the additional plate
+  G4GenericMessenger::Command& setPlatedistance
+    = fMessenger->DeclarePropertyWithUnit( "setPlateDistance", "cm", this->plate_distance );
+  setPlatedistance.SetGuidance( "Set the distance of the additional plate from the upstream trigger scintillator" );
+  setPlatedistance.SetParameterName( "plateDistance", false ); // (name, is_omittable)
+  setPlatedistance.SetDefaultValue( "0" );
+
+  // # switch to rotate the setup around the vertical axis (planning)
+  // # Usage: /INTT/geom/rotateSetup [rotation angle] [unit]
+
+  // # selection of the trigger scintillator configuration (but how?)
+  // # Usage: /INTT/geom/???
+}
 
 void EDDetectorConstruction::DefineMaterials()
 {
@@ -82,12 +124,12 @@ void EDDetectorConstruction::DefineMaterials()
   nistManager->FindOrBuildMaterial("G4_Al", fromIsotopes);
   nistManager->FindOrBuildMaterial("G4_Ag", fromIsotopes);
   nistManager->FindOrBuildMaterial("G4_Cu", fromIsotopes);
+  Silicon = nistManager->FindOrBuildMaterial("G4_Si", fromIsotopes);
   // There is no need to test if materials were built/found
   // as G4NistManager would issue an error otherwise
   // Try the code with "XYZ".      
 
   G4int nel, natoms;
-  Silicon = nistManager->FindOrBuildMaterial("G4_Si", fromIsotopes);
 
   //vacuum 
   G4double atomicNumber = 1.;
@@ -164,21 +206,20 @@ void EDDetectorConstruction::DefineMaterials()
   SilverEpoxyGlue->AddMaterial(G4Material::GetMaterial("G4_Ag"), fractionmass = 0.21);
 
   // material of the darkbox (polyacetal)
-  DarkBox = new G4Material("SilverEpoxyGlue", density = 1.42 *g / cm3, 3);
+  DarkBox = new G4Material("darkbox", density = 1.42 *g / cm3, 3);
   DarkBox->AddElement(G4Element::GetElement("H"), natoms = 2);
   DarkBox->AddElement(G4Element::GetElement("C"), natoms = 1);
   DarkBox->AddElement(G4Element::GetElement("O"), natoms = 1);
 }
 
-void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
+void EDDetectorConstruction::ConstructDarkBox()
 {
 
   auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
 				     this->kDarkbox_stage_width / 2,
-				     //this->INTT_testbeam_BOX_size[0] / 2,
 				     this->INTT_testbeam_BOX_size[1] / 2,
-				     //this->INTT_testbeam_BOX_size[2] / 2 +  0.25 * m);
-				     this->kDarkbox_stage_width / 2 ); // width of the movable stage
+				     this->INTT_testbeam_BOX_size[2] / 2 +  1 * m);
+				     //this->kDarkbox_stage_width / 2 );
   
   INTT_testbeam_BOXLV
     = new G4LogicalVolume(INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
@@ -189,7 +230,7 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
 		      G4ThreeVector(0, 0, 0),
 		      INTT_testbeam_BOXLV,  //its logical volume
 		      "INTT_testbeam_BOXLV",  //its name
-		      worldLog, //its mother  volume
+		      this->worldLog, //its mother  volume
 		      false,  //no boolean operation
 		      0,  //copy number
 		      checkOverlaps);
@@ -264,27 +305,24 @@ void EDDetectorConstruction::ConstructDarkBox(G4LogicalVolume *worldLog)
 
 G4VPhysicalVolume *EDDetectorConstruction::Construct()
 {
-  DefineMaterials();
-  DefineVisAttributes();
-
   // World
   // world volume
   G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
   
-  G4LogicalVolume *worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
-  worldLog->SetVisAttributes(color_invisible);
+  this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
+  this->worldLog->SetVisAttributes(color_invisible);
 
   G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
 						 G4ThreeVector(),  //at (0,0,0)
-						 worldLog, //its logical volume
+						 this->worldLog, //its logical volume
 						 "worldLog", //its name
 						 0,  //its mother  volume
 						 false,  //no boolean operation
 						 0,  //copy number
 						 checkOverlaps); //overlaps checking
 
-  this->ConstructDarkBox(worldLog);
 
+  this->ConstructDarkBox();
 
   //======================G4solid===============================================  
   const int kLadder_num = 4;
@@ -344,20 +382,16 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   // the gap between the silicon type-A and type-B
   G4Box *INTT_si_gap = new G4Box("INTT_si_gap", 0.1 *mm, 11.25 *mm, this->kSilicon_strip_thickness / 2 );
 
-  //  G4Box* INTT_si_typeA    = new G4Box("INTT_si_typeA", 8. *mm, 0.039 *mm, 0.16 *mm);
   G4Box *INTT_si_typeA = new G4Box("INTT_si_typeA",
 				   this->kSilicon_length_type_a / 2,
 				   this->kSilicon_strip_width / 2,
 				   this->kSilicon_strip_thickness / 2);
-  //  G4Box* INTT_si_typeB    = new G4Box("INTT_si_typeB", 10. *mm, 0.039 *mm, 0.16 *mm);
   G4Box *INTT_si_typeB = new G4Box("INTT_si_typeB",
 				   this->kSilicon_length_type_b / 2,
 				   this->kSilicon_strip_width / 2,
 				   this->kSilicon_strip_thickness / 2);
 
   //! @TODO which thickness 14 um or 50 um should be used for the silicon sensors?
-  // G4Box * INTT_si_glue = new G4Box("INTT_si_glue", 116.1 *mm, 11.25 *mm, 25 *um);
-  //G4Box * INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, 25 *um);
   G4Box *INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
   G4Box *INTT_si_glue_typeB = new G4Box("INTT_si_glue_typeB", 51 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
     
@@ -367,14 +401,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   G4Box* INTT_Chip_glue		= new G4Box("INTT_Chip_glue",
 					    this->kFPHX_length/2, this->kFPHX_width/2, this->kSilver_epoxy_glue_FPHX_thickness / 2); 
 
-  // G4Box *INTT_Chip = new G4Box("INTT_Chip", 4.5 *mm, 1.5 *mm, 0.16 *mm);
-  //   G4Box *INTT_Chip_glue = new G4Box("INTT_Chip_glue", 4.5 *mm, 1.5 *mm, 25 *um);
-  //   G4Box *INTT_Chip_area = new G4Box("INTT_Chip_area", 4.5 *mm, 1.5 *mm, 0.16 *mm + 25 *um);
-  //G4Box* INTT_Chip_area = new G4Box("INTT_Chip_area", 4.5 * mm, 1.5 * mm, 0.16 * mm + 50 * um); 
   G4Box* INTT_Chip_area = new G4Box("INTT_Chip_area", this->kFPHX_length/2, this->kFPHX_width/2, this->kFPHX_thickness + this->kSilver_epoxy_glue_FPHX_thickness );
-  //G4VSolid *siinactive_box = new G4SubtractionSolid((boost::format("siinactive_box_%d_%d") % inttlayer % itype).str(),
 
-  //sifull_box, siactive_box, 0, G4ThreeVector(0, 0, 0));
   G4double INTT_CFRP_tube_inner_radius = 1.5 * mm;
   G4double INTT_CFRP_tube_outer_radius = INTT_CFRP_tube_inner_radius + kINTT_CFRP_thickness;
   G4double INTT_CFRP_tube_area_thickness = INTT_CFRP_tube_outer_radius * 2;
@@ -407,8 +435,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
   // the foam parts (rohacell)
   G4double trap_y_length = kLadder_vertical_length - 2 * INTT_formed_CFRP_outer_length;
-  vector<G4TwoVector> form_trap_vectors;
-
+  vector < G4TwoVector > form_trap_vectors;
     
   ////////////////////////////////////////////////////////////
   // the foam parts (rohacell), cross-section in y-z plane:
@@ -1172,6 +1199,37 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   return worldPV;
 }
 
+void EDDetectorConstruction::ConstructPlate()
+{
+  
+  // Get nist material manager
+  G4NistManager *nistManager = G4NistManager::Instance();
+  G4bool fromIsotopes = false;
+  nistManager->FindOrBuildMaterial(this->plate_material, fromIsotopes);
+
+  G4Box *plate_box = new G4Box("plate",
+			       this->INTT_testbeam_BOX_size[0] / 2,
+			       this->INTT_testbeam_BOX_size[1] / 2,
+			       this->plate_thickness / 2 );
+
+  // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
+  G4LogicalVolume *plate_LV = new G4LogicalVolume(plate_box, G4Material::GetMaterial( this->plate_material ), "plateLV");
+  plate_LV->SetVisAttributes( color_plate );
+
+  G4double distance_darkbox_upstream_scintillator = 117.0 * mm;
+  G4double zpos = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - this->plate_distance;
+
+  new G4PVPlacement(0,
+		    G4ThreeVector(0, 0, zpos ),
+		    plate_LV, //its logical volume
+		    "plate",  //its name
+		    this->INTT_testbeam_BOXLV,
+		    false,  //no boolean operation
+		    0,  //copy number
+		    checkOverlaps);
+  
+}
+
 void EDDetectorConstruction::ConstructSDandField()
 {
   // EDChamberSD*INTT_siSD[4];
@@ -1225,4 +1283,5 @@ void EDDetectorConstruction::DefineVisAttributes()
   color_CFRP_foam		= new G4VisAttributes(true	, G4Colour(0.9, 0.900, 0.9, 0.5)	);  // white
   color_scintillator		= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 0.6, 0.5)	); // blue?
   color_darkbox_wall		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.1)	); // transparent black
+  color_plate    		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.8)	); // transparent black
 }

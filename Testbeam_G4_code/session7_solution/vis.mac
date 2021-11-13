@@ -98,3 +98,33 @@
 # In this View menu, add a button for setting a viewPoint and ask for it (define a command without parameters)
 /gui/addButton menu_view "custom viewpoint" "/vis/viewer/set/viewpointThetaPhi"
 
+################################################################
+# Run processing                                               #
+################################################################
+/gun/energy 800 MeV
+/gun/particle e+
+/vis/ogl/set/displayListLimit 999999
+
+################################################################
+# parameters for INTT                                          #
+################################################################
+/INTT/beam/beamSmearing false
+# /INTT/beam/beamSmearing true
+
+/INTT/beam/beamLine -23
+# /INTT/beam/beamLine -30
+
+/INTT/beam/productionTarget Au_20um
+#/INTT/beam/productionTarget W_200um
+#/INTT/beam/productionTarget Cu_8mm
+
+/INTT/beam/positionRestriction 0
+# /INTT/beam/positionRestriction 1
+# /INTT/beam/positionRestriction 2
+# /INTT/beam/positionRestriction 3
+
+/INTT/geom/setPlateMaterial G4_Pb
+/INTT/geom/setPlateThickness 10 cm
+/INTT/geom/setPlateDistance 12 cm
+/INTT/geom/constructPlate
+# /INTT/geom/constructPlate
