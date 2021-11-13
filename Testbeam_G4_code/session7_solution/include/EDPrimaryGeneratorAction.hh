@@ -32,7 +32,6 @@
 #define EDPrimaryGeneratorAction_h 1
 
 #include <cmath> // for M_PI
-#include "G4GenericMessenger.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 #include "G4ParticleGun.hh"
