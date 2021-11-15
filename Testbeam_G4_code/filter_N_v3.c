@@ -1,6 +1,10 @@
 //----------------------------------------------------------------------------------------------------------------
 // Note by Cheng-Wei Shih @ NCU 2021/11/11
 //
+//
+// New feature 2021/11/13 : a new branch is added in the tree_both to record whether this event has double saving event or not. 
+// New feature 2021/11/14 : a new branch is added in the tree_both to save the read event ID for quick check
+//
 // 1.The purpose of the macro : to filter the "double saving event" in one event, in principle it should not happen. 
 //   You can check the slide in the link : https://indico.bnl.gov/event/13810/#1-the-progress-for-testbeam-20 
 //
@@ -29,16 +33,16 @@
 //    the information of the first double-saving event will be overweitten by the second double-saving event;
 //
 // 7. the parameter you may want to tune : 
-//    A : file_name @ line 41  -> the root file you would like filter.  !!! Caution : remember to remove ".root"
-//    B : path_in   @ line 42  -> the direction of file
-//    C : the output file name after filtering @ line 181
-//    D : the module ID for each layer @ line 131
+//    A : file_name @ line 45  -> the root file you would like filter.  !!! Caution : remember to remove ".root"
+//    B : path_in   @ line 46  -> the direction of file
+//    C : the output file name after filtering @ line 187
+//    D : the module ID for each layer @ line 135
 //----------------------------------------------------------------------------------------------------------------
 
-void filter_N_v2 ()
+void filter_N_v3 ()
 {
 	//===================================option===========================================
-	TString file_name = "electron_100W_1_converttest";
+	TString file_name = "electron_100W_1_convert";
 	TString path_in = "/data4/chengwei/Geant4/INTT_simulation/G4/for_CW/data/";
 	//===================================option===========================================
 	
@@ -150,6 +154,8 @@ void filter_N_v2 ()
 	vector<int> bco_full_array; bco_full_array.clear();
 	vector<int> event_array;    event_array.clear();
 	int vec_element;
+	bool DSE_element = 0; // the default is 0 that means "not a double saving event"
+	int eID_element = 0; //the true event ID, from 0 ~ ....
 
 	//the 3 dimensional array to filter the double-saving event
 	int vec_adc_filter[4][26][128];
@@ -178,7 +184,7 @@ void filter_N_v2 ()
 	//the file name of the output root file
 	//based on current macro, we don't need to define the tree and tree_camac in advance. 
 	//these 2 trees will be cloned with the orignal tree
-	TFile *file_output = new TFile(path_in+file_name+"_filter_test.root", "RECREATE");
+	TFile *file_output = new TFile(path_in+file_name+"_filter.root", "RECREATE");
 	// TTree * tree_output1 = new TTree("tree", "tree");
 	// TTree * tree_output2;
 	TTree *tree_output3 = new TTree("tree_both", "tree_both");
@@ -204,6 +210,8 @@ void filter_N_v2 ()
 	tree_output3->Branch("bco_full"  ,&bco_full_array);
 	tree_output3->Branch("event"     ,&event_array);
 	tree_output3->Branch("nele"      ,&vec_element);
+	tree_output3->Branch("DSE"       ,&DSE_element); // Double Saving Event check 
+	tree_output3->Branch("eID"       ,&eID_element); // the line to save the real eID for quick check
 	//======================preparation of recreate================================
 
 	//=====start=================the part of tree filter, not used now================================
@@ -430,7 +438,9 @@ void filter_N_v2 ()
 	{
 		if (i%3000==0){cout<<"we are working on tree_both filter : "<<i<<endl;}
 
-		tree_both_in -> GetEntry (i);
+		eID_element = i ;
+
+		tree_both_in -> GetEntry (i); // save event ID for quick checking
 		unsigned int lenvec = vec_adc->size(); // the # of element in each event
 
 		// here we clone the information from camac_tdc, camac_adc, INTT_evnet of tree_both (they don't need to be checked)
@@ -446,6 +456,7 @@ void filter_N_v2 ()
 			//the first selection is module ID
 			if (vec_module->at(j) == module_l0)
 			{
+				if (vec_adc_filter [0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] != -1 ){DSE_element = 1;}
 				//                layer     chip                channel
 				vec_adc_filter     [0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] =  (vec_adc->at(j));
 				vec_ampl_filter    [0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] =  (vec_ampl->at(j));
@@ -457,9 +468,11 @@ void filter_N_v2 ()
 				vec_bco_filter     [0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] =  (vec_bco->at(j));
 				vec_bco_full_filter[0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] =  (vec_bco_full->at(j));
 				vec_event_filter   [0][vec_chip_id->at(j)-1][vec_chan_id->at(j)] =  (vec_event->at(j));	
+
 			}
 			else if (vec_module->at(j) == module_l1)
 			{
+				if (vec_adc_filter [1][vec_chip_id->at(j)-1][vec_chan_id->at(j)] != -1 ){DSE_element = 1;}
 				vec_adc_filter     [1][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_adc->at(j));
 				vec_ampl_filter    [1][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_ampl->at(j));
 				vec_chip_id_filter [1][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_chip_id->at(j));
@@ -474,6 +487,7 @@ void filter_N_v2 ()
 
 			else if (vec_module->at(j) == module_l2)
 			{
+				if (vec_adc_filter [2][vec_chip_id->at(j)-1][vec_chan_id->at(j)] != -1 ){DSE_element = 1;}
 				vec_adc_filter     [2][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_adc->at(j));
 				vec_ampl_filter    [2][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_ampl->at(j));
 				vec_chip_id_filter [2][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_chip_id->at(j));
@@ -488,6 +502,7 @@ void filter_N_v2 ()
 
 			else if (vec_module->at(j) == module_l3)
 			{
+				if (vec_adc_filter [3][vec_chip_id->at(j)-1][vec_chan_id->at(j)] != -1 ){DSE_element = 1;}
 				vec_adc_filter     [3][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_adc->at(j));
 				vec_ampl_filter    [3][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_ampl->at(j));
 				vec_chip_id_filter [3][vec_chip_id->at(j)-1][vec_chan_id->at(j)] = (vec_chip_id->at(j));
@@ -547,6 +562,7 @@ void filter_N_v2 ()
 		bco_full_array.clear();
 		event_array.clear();
 
+		DSE_element = 0;
 
 		//the way to reset these 3 dimensional arraies, very quick.
 		memset (vec_adc_filter     ,-1,sizeof(vec_adc_filter));
