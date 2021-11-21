@@ -1,3 +1,5 @@
+See [the installation guide](HOWTORUN.md).
+
 G4 model contents INTT modules * 4 (silicon sensor + HDI+ FPHX chips + carbon cooling plate) + trigger scintillator*2 
 1. The position of stave is corrected.
 2. The glue layer between chip/sensor and HDI are added.
