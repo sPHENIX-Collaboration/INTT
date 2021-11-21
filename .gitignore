@@ -30,6 +30,8 @@ Thumbs.db
 # for ROOT files
 *.root
 
+## but some ROOT files are necessary
+!/Testbeam_G4_code/session7_solution/beam_parameter/*.root
 
 # Prerequisites
 *.d
