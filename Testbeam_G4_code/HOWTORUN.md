@@ -64,6 +64,13 @@ Let me postpone this...
   - if you see something but they are not an error, installation of Geant4 was done.
 10. It's good to modify the ${HOME}/.bashrc (it depends on which shell you use. It may be .cshrc for C-Shell users or .zshrc for Z-Shell users ( the default shell of Mac is Z-Shell)).
   - Add ```source [install_directory]/bin/geant4.(c)sh``` to your .bashrc
+  - If you use Z-Shell (it's Mac's default), you need to move to the direcory, therefore
+```
+cd [install_directory]/bin
+source geant4.sh
+cd ${HOME}
+```
+should be OK.
 
 ### Compiling this simulation application
 1. Download codes
