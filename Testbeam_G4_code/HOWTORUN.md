@@ -72,9 +72,6 @@ cd ${HOME}
 ```
 should be OK.
 
-#### Tips
-- [Geant4 tutorian in Japanese](https://wiki.kek.jp/display/geant4)
-
 ### Compiling this simulation application
 1. Download codes
   - ```$ git clone git@github.com:sPHENIX-Collaboration/INTT.git```
@@ -91,4 +88,41 @@ should be OK.
   - if GUI starts successfully, the compiling was done.
 
 ## FAQ
-write your questions
+
+I entered below command.
+
+```cmake -DCMAKE_INSTALL_PREFIX=../install -DGEANT4_INSTALL_DATA=ON -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_INVENTOR_QT:BOOL=ON -DGEANT4_USE_QT:BOOL=ON  ../geant4_10_07_p03```
+
+
+Error message　is below
+
+```
+  CMake Error at cmake/Modules/G4InterfaceOptions.cmake:114 (find_package):
+  By not providing "FindCoin.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "Coin", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "Coin" (requested
+  version 4.0.0) with any of the following names:
+
+    CoinConfig.cmake
+    coin-config.cmake
+
+  Add the installation prefix of "Coin" to CMAKE_PREFIX_PATH or set
+  "Coin_DIR" to a directory containing one of the above files.  If "Coin"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+Call Stack (most recent call first):
+  cmake/Modules/G4CMakeMain.cmake:64 (include)
+  CMakeLists.txt:51 (include)
+
+
+-- Configuring incomplete, errors occurred!
+See also "/Users/hikaru/Desktop/Geant4/bulid/CMakeFiles/CMakeOutput.log".
+See also "/Users/hikaru/Desktop/Geant4/bulid/CMakeFiles/CMakeError.log".
+```
+
+
+
+by H.Imai
+
