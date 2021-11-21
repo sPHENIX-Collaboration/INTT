@@ -71,7 +71,9 @@ source geant4.sh
 cd ${HOME}
 ```
 should be OK.
-[Geant4 tutorian in Japanese](https://wiki.kek.jp/display/geant4)
+
+#### Tips
+- [Geant4 tutorian in Japanese](https://wiki.kek.jp/display/geant4)
 
 ### Compiling this simulation application
 1. Download codes
