@@ -46,7 +46,15 @@ Let me postpone this...
   - ```$ make -j [number_of_process]```
   - here, [number_of_process] should be the same or less than the number of your CPU. For example, in the case of Intel Core-i5 1035G1(Ice Lake), it has 4 cores. 8 threads are available. So you can give "8" or less to the option.
 6. Compilation was done if you see such outputs at the end of compilation:
-
+```CXX object source/CMakeFiles/G4physicslists.dir/physics_lists/util/src/G4HadParticles.cc.o
+[100%] Building CXX object source/CMakeFiles/G4physicslists.dir/physics_lists/util/src/G4HadProcesses.cc.o
+[100%] Building CXX object source/CMakeFiles/G4physicslists.dir/physics_lists/util/src/G4PhysListUtil.cc.o
+[100%] Building CXX object source/CMakeFiles/G4physicslists.dir/physics_lists/util/src/G4WarnPLStatus.cc.o
+[100%] Linking CXX shared library ../BuildProducts/lib/libG4physicslists.dylib
+[100%] Built target G4physicslists
+/Applications/CMake.app/Contents/bin/cmake -E cmake_progress_start /Users/genki/soft/Geant4/4.10.7.p02/build3/CMakeFiles 0
+```
+  - it took 18 min with Intel Core-i7 (6 cores, 12 threads) and ```-j 10```.
 7. Install Geant4
   - ```$ make install```
 8. Installation is basically done. You also need to set some environmental variables by executing the geant4.sh (or gean4.csh fr C-Shell users):
