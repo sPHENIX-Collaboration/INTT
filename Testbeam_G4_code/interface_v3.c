@@ -67,10 +67,10 @@
 void interface_v3 (TString file_name) // file_name is fed from outside
 {
 	//the direction of the data
-	TString folder_name = "/data4/chengwei/Geant4/INTT_simulation/G4/for_CW/data";
-	//use TFile, TTree to open the tree 
-	TFile *f1 = TFile::Open(Form("%s/%s.root", folder_name.Data(), file_name.Data()));
-	// Chamber1 -> the tree to save the information of INTT ladders in  G4
+        TString folder_name = "/data4/chengwei/Geant4/INTT_simulation/G4/for_CW/data";
+        //use TFile, TTree to open the tree
+        TFile *f1 = TFile::Open(Form("%s/%s.root", folder_name.Data(), file_name.Data()));
+ 	// Chamber1 -> the tree to save the information of INTT ladders in  G4
 	TTree *Gettree = (TTree *)f1->Get("Chamber1");
 	// sci_trigger -> the tree to save the information of scintillators in G4
 	TTree *Gettree_sci = (TTree *)f1->Get("sci_trigger");
@@ -145,10 +145,11 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 	double ev_DAC_convert;
 	
 	// the random generator for bco and bco_full
-	TRandom *rand_bco = new TRandom3 ();
-	TRandom *rand_bcofull = new TRandom3 ();
-	int Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
-	int Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
+	TRandom *rand_bcofull = new TRandom3 ( 0 );
+	UInt16 Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
+	//int Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
+	UInt16 Frand_bco = Frand_bcofull & UInt16( 255 ); // take the lowest 7 bits from the BCO full
+	
 	int event_count=0;
 	vector<int> camac_adc; camac_adc.clear();
 	vector<int> camac_tdc; camac_tdc.clear();
@@ -158,11 +159,11 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 
 	// the random generator for camac_tdc
 	// the range I use is beased on the cosmic test result from NWU
-	TRandom *rand_tdc1 = new TRandom3 ();
-	TRandom *rand_tdc2 = new TRandom3 ();
-	TRandom *rand_tdc3 = new TRandom3 ();
-	TRandom *rand_tdc6 = new TRandom3 ();
-	TRandom *rand_INTT_event = new TRandom3 ();
+	TRandom *rand_tdc1 = new TRandom3 ( 0 );
+	TRandom *rand_tdc2 = new TRandom3 ( 0 );
+	TRandom *rand_tdc3 = new TRandom3 ( 0 );
+	TRandom *rand_tdc6 = new TRandom3 ( 0 );
+	TRandom *rand_INTT_event = new TRandom3 ( 0 );
 	int Frand_tdc1 = int (rand_tdc1->Gaus(148,12.5));
 	int Frand_tdc2 = int (rand_tdc2->Gaus(139.7,0.87));
 	int Frand_tdc3 = int (rand_tdc3->Gaus(128,12.3));
@@ -184,8 +185,10 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 	vector<int> module_array;   module_array.clear();
 	vector<int> chan_id_array;  chan_id_array.clear();
 	vector<int> fem_id_array;   fem_id_array.clear();
-	vector<int>	bco_array;      bco_array.clear();
-	vector<int> bco_full_array; bco_full_array.clear();
+	//vector<int>	bco_array;      bco_array.clear();
+	vector<UInt16>	bco_array;      bco_array.clear();
+	//	vector<int> bco_full_array; bco_full_array.clear();
+	vector<UInt16> bco_full_array; bco_full_array.clear();
 	vector<int> event_array;    event_array.clear();
 
 	// vector<vector<int>> adc_array_all;      adc_array_all.clear();
@@ -329,7 +332,7 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 	cout<<"sci event after event classify : "<<sci_array.size()<<endl; 
 
 	//the random generator for focibly reducing the layer efficiency
-	TRandom *skip_event = new TRandom3 ();
+	TRandom *skip_event = new TRandom3(); //  ( 0 ); // use this to have randomly-initialized random number
 	double Fskip_event;
 
 	for (int i=0; i<sci_array.size(); i++)
@@ -469,8 +472,9 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 						}
 						else // Once the "Event_id of G4" changes, the random generator will generates a new bco and bco_full
 						{
-							Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
+						  //Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
 							Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
+							Frand_bco = Frand_bcofull & UInt16( 255 ); // take the lowest 7 bits from the BCO full
 							bco=Frand_bco;
 							bco_full=Frand_bcofull;
 							event_buffer=Event_ID;
