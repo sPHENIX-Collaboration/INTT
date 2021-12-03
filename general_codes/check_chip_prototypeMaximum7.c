@@ -6,71 +6,41 @@
   @details INTT data with camac system for the external trigger. If no camac data, use other version.
 */
 
+#include <algorithm>
 #include <iomanip>
 #include "functions/getFileSize.hh"
 #include "functions/DrawPlots.hh"
-#include "functions/FindLatestFile.hh"
-#include "functions/INTTHit.hh"
-
 #include "functions/DrawHitMap.c"
-
 
 // Data in a .dat file is decode and filled to a TTree. A path to the ROOT file is returned. If error occured, "" is returned.
 // string MakeTree(string fname, int usemod = 3, int maxbuf = 0, int n_meas = 64, float maxscale = 200., bool decoded_output = false);
 //string MakeTree(string fname, int usemod = 3, int maxbuf = 0, bool decoded_output = false);
 string MakeTree(string fname, int usemod = 3, string mode = "calib", string cut = "", bool decoded_output = false);
-
-void MakeCluster( vector < int >& adcs,
-		  vector < float >& adc_voltages,
-		  vector < int >& ampls,
-		  vector < int >& chip_ids,
-		  vector < int >& fpga_ids,
-		  vector < int >& modules,
-		  vector < int >& chan_ids,
-		  vector < int >& fem_ids,
-		  vector < int >& bcos,
-		  vector < int >& bco_fulls,
-		  vector < int >& events,
-		  vector < int >& nhits_in_cluster,
-		  int module );
 		   
-
 void ShowMessage();
 
-/*!
-  @fn int GetModules
-  @brief Module numbers in the argument are extracted and returned as a vector < int >
-  @param usemod module numbers sparated by commas and/or spaces
-  @details
-*/
 vector < int > GetModules( string usemod )
 {
   vector < int > modules;
 
-  // all commas are replaced with a space
-  while( usemod.find( "," ) != string::npos )
+  int pos = usemod.find_first_of( "," );
+  while( pos != string::npos  )
     {
-      int pos_comma = usemod.find( "," );
-      usemod = usemod.substr(0, pos_comma ) + " " + usemod.substr( pos_comma + 1, usemod.size() );
-
+      usemod = usemod.substr(0, pos ) + " " + usemod.substr( pos+1, usemod.size() );
+      pos = usemod.find_first_of( "," );
     }
 
-  stringstream ss( usemod );
-  int module;
-  while( ss >> module )
-    modules.push_back( module );
+  istringstream iss( usemod );
+  int temp;
+  while( iss >> temp )
+    modules.push_back( temp );
 
-  cout << " Modules to be used: ";
-  for( int i=0; i<modules.size(); i++ )
-    cout << modules[i] << " ";
-
-  cout << endl;
-  return modules;
+  return  modules;
 }
 
 
 /*!
-  @fn int check_chip_prototypeMaximam7
+  @fn int check_chip_prototypeMaximum7
   @brief 
   @param fname A name of dat file OR a path to the directory. 
   @param usemod The module ID
@@ -88,16 +58,17 @@ vector < int > GetModules( string usemod )
 */
 int check_chip_prototypeMaximum7
 (
- string fname,
- string usemod,
- string mode,
+ string fname = "C:\root_5.34.36\macros", // a path to the data file
+ string usemod = "3", // ID of the module
+ string mode = "calib",
  string cut = ""
+ //	int maxbuf = 0,
+ //int n_meas = 64,
+ //	float maxscale = 200.
  )
 {
   ShowMessage();
 
-  vector < int > modules = GetModules( usemod );
-  
   if (mode != "calib" && mode != "external" && mode != "camac" && mode != "camac_clustering")
     {
       ShowMessage();
@@ -107,39 +78,25 @@ int check_chip_prototypeMaximum7
   // read the data file, decode the data, fill data to TTree, and save the TTree into a ROOT file
   bool decoded_out = false;
   //decoded_out = true;
-  
+
   // for example: data/INTT_test_bench/camac_integration/nwu_fphx_raw_20201113-0137_0.dat -> nwu_fphx_raw_20201113-0137_0.dat
   string file_name = fname.substr( fname.find_last_of( "/" )+1, fname.size()-fname.find_last_of( "/" ) );
 
   // for example: nwu_fphx_raw_20201113-0137_0.dat -> dat
   string file_suffix = file_name.substr( file_name.find_last_of( "." ) + 1 , file_name.size() - file_name.find_last_of( "." ) );
 
-  // if given thing is not a dat file, use the latest dat file in the directory
-  if( file_suffix != "dat" )
-    fname = FindLatestFile( fname.substr( 0, fname.find_last_of("/") + 1 ) );
-
   //const string root_file = MakeTree(fname, usemod, maxbuf, n_meas, maxscale, decoded_out);
-  string root_file = MakeTree(fname, usemod[0], mode, cut, decoded_out);
-  //return 0;
-  cout << " - " << root_file << " generated" << endl;
-  
+  string root_file = MakeTree(fname, 0, mode, cut, decoded_out);
+
+  vector < int > modules = GetModules( usemod );  
   // If there was no error in MakeTree, draw some plots!
   if (root_file != "")
     for( int i=0; i<modules.size(); i++ )
-      DrawPlots(root_file, modules[i], mode);
-  
+      DrawPlots(root_file, modules[i], mode); 
+
   gStyle->SetOptStat();
   gStyle->SetOptFit();
   return 0;
-}
-
-/*!
-  @fn int check_chip_prototypeMaximum7( string fname,  int usemod,  string mode, string cut )
-  @brief checking functions with the same arguments as before. It's for backword compatibility
-*/
-int check_chip_prototypeMaximum7( string fname,  int usemod,  string mode, string cut )
-{
-  return check_chip_prototypeMaximum7( fname, to_string(usemod), mode, cut );
 }
 
 /*
@@ -175,18 +132,8 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 
   // save TTree into a root file
   const char* filename = output.c_str();
+  return filename;
   TFile *file = new TFile(filename, "RECREATE");
-
-  string output_decoded = fname; // conversion fron const char* to string to use string::substr and string::find_last_of
-  output_decoded = output.substr(0, output.find_last_of(".dat") - 4) + "_decoded.dat";
-  ofstream ofs;
-
-  if (decoded_output) {
-    cout << "decoded output file = " << output_decoded << endl;
-    ofs = ofstream(output_decoded);
-  }
-
-  // return output; // quick solution to get the path to the output file without decoding, it means the ROOT file already exists 
 
   //--------------------------------------------------------------------------------------------------
   // made TTree to be filled with data
@@ -364,22 +311,6 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 	word1 = 102;
       }
 
-    // if decoded output is required, write data
-    if (decoded_output) {
-      /*
-	for (int j = 0; j < 3; j++) {
-	ofs << setw(11) << data[index + j] << " ";
-	cout << data[index + j] << " ";
-	}*/
-      ofs << endl; // break line 
-      /*
-	cout << data[index + 1] << " "
-	<< data[index + buflen - 2] << " "
-	<< data[index + buflen - 1] << " "
-	<< endl;
-      */
-    }
-
 #endif
 
     if (word1 == 0xFFFFFFFF && word2 == 0xFFFFFFFF) {
@@ -462,7 +393,7 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
       if( mode != "calib" && mode != "external" )
 	{
 
-	  cout << "------------------------------------------=" << endl;
+	  //cout << "------------------------------------------=" << endl;
 	  
 	  int camac_ADC_num = data[index_camac];
 	  //cout << "CAMAC ADC num: " << camac_ADC_num << endl;
@@ -592,7 +523,7 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 		  else
 		    module = 6;
 		}
-
+	       
 		// assign data to each variable to fill TTree
 		mchip = 0;
 		ampl = (data[index] >> 24) & 0x7F;
@@ -659,7 +590,7 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 	      if ((chip_id < 9) && (chip_id != 0))
 		chiphit[chip_id - 1]++;
 	    }
-	    
+
 	    bcos      .push_back( bco      );
 	    adcs      .push_back( adc      );
 	    ampls.     push_back( ampl     );
@@ -669,8 +600,9 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 	    fem_ids   .push_back( fem_id   );
 	    chan_ids  .push_back( chan_id  );
 	    bco_fulls .push_back( bco_full );
-	    events    .push_back( event    );
+	    events    .push_back( ievent    );
 
+	    cout << ievent << "\t" << adc << endl;
 	    tree->Fill();
 
 	    //Note:  we seem to get some odd chip_ids out of the new DAQ VHDL code
@@ -687,20 +619,6 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
       } else {
 	is_INTT = true;
       }
-
-      /*
-      cout << endl;
-      cout << "-- CAMAC Data: ADC ";
-      for( const auto& it : camac_adcs )
-	cout << setw(3) << it << " ";
-
-      cout << ",   TDC ";
-      for( const auto& it : camac_tdcs )
-	cout << setw(3) << it << " ";
-
-      cout << " -----------------------------------" << endl;
-      */
-
       
       // make flag whether is event consists of a single bco or not
       if( bcos.size() != 0 ) // skip here if no INTT event is 
@@ -714,31 +632,9 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
 	    is_single_bco_event = true;
 	  else
 	    is_single_bco_event = false;
-
-	  /*
-	  for( const auto& it : bcos )
-	    {
-	      // if this bco is not the same as bco of the first INTT event, set the flag false and break
-	      if( abs(first_bco - it) > 2 ) // 
-		{
-		  is_single_bco_event = false;
-		  break;
-		}
-	      else
-		{
-		  is_single_bco_event = true;
-		}
-	      
-	    }
-	  */
 	  
 	}
 
-      if( mode == "camac_clustering" )
-	MakeCluster( adcs     , adc_voltages, ampls   , chip_ids, fpga_ids,
-		     modules  , chan_ids, fem_ids , bcos    ,
-		     bco_fulls, events, nhits_in_cluster, usemod );
-      
       tree_both->Fill();
       
       // fill TTree for only CAMAC data if CAMAC data exits
@@ -765,9 +661,6 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
   cout << "inoise   = " << inoise << endl;
   cout << "ihealthy = " << ihealthy << endl;
 
-  if (decoded_output)
-    ofs.close();
-
   cout << "Tree entries: " << tree->GetEntries() << endl;
   cout << "Clock data num: " << clock_data_num << endl;
 
@@ -783,108 +676,6 @@ string MakeTree(string fname, int usemod, string mode, string cut, bool decoded_
   return filename;
 }
 
-
-void MakeCluster( 
-		 vector < int >& adcs,
-		 vector < float >& adc_voltages,
-		 vector < int >& ampls,
-		 vector < int >& chip_ids,
-		 vector < int >& fpga_ids,
-		 vector < int >& modules,
-		 vector < int >& chan_ids,
-		 vector < int >& fem_ids,
-		 vector < int >& bcos,
-		 vector < int >& bco_fulls,
-		 vector < int >& events,
-		 vector < int >& nhits_in_cluster,
-		 int module
-		  )
-{
-
-  int dac[8] = {10, 23, 48, 98, 148, 172, 223, 248};
-
-  bool there_is_noise = false;
-  const int kHit_num = adcs.size();
-  INTTHit* hits[kHit_num];		//vector < INTTHit* > hits;
-  for( int i=0; i<kHit_num; i++ )
-    {
-      hits[i] = new INTTHit(adcs[i], ampls[i], chip_ids[i], fpga_ids[i],
-			    modules[i], chan_ids[i], fem_ids[i], bcos[i],
-			    bco_fulls[i], events[i], dac);
-
-      // Note: condition for the moment:
-      //   fem_id == 8, fpga_id == 0, module == 6, ampl == 0, 
-      if( ampls[i] != 0 || fpga_ids[i] != 0 || modules[i] != module || fem_ids[i] != 8 )
-	{
-	  hits[i]->SetIgnored( true );
-	  //cout << "it's noise!" << endl;
-	  //hits[i]->Print();
-	  there_is_noise = true;
-	}
-
-      if( there_is_noise )
-	if( 1 < kHit_num )
-	  hits[i]->PrintInOneLine();
-
-    }
-
-  for( int i=0; i<kHit_num; i++ )
-    for( int j=i+1; j<kHit_num; j++ )
-      hits[i]->Clustering( hits[j] );
-
-  
-#if defined( __linux__ ) || defined( __APPLE__)
-
-  bcos.erase		( bcos.begin()		, bcos.end()       );
-  adcs.erase		( adcs.begin()		, adcs.end()       );
-  adc_voltages.erase    ( adc_voltages.begin()  , adc_voltages.end() );
-  ampls.erase		( ampls.begin()		, ampls.end()      );
-  chip_ids.erase	( chip_ids.begin()	, chip_ids.end()   );
-  fpga_ids.erase	( fpga_ids.begin()	, fpga_ids.end()   );
-  modules.erase  	( modules.begin()	, modules.end()    );
-  fem_ids.erase 	( fem_ids.begin()	, fem_ids.end()    );
-  chan_ids.erase	( chan_ids.begin()	, chan_ids.end()   );
-  bco_fulls.erase	( bco_fulls.begin()	, bco_fulls.end()  );
-  events.erase	( events.begin()	, events.end()     );
-  nhits_in_cluster.erase(nhits_in_cluster.begin(), nhits_in_cluster.end() );
-
-  for( int i=0; i<kHit_num; i++ )
-    {
-      // if this INTTHit isn't included to another INTTHit to form a cluster, add data to vectors
-      if (hits[i]->GetClusteringStatus() > -1 )
-	{
-
-	  if( there_is_noise )
-	    if( 1 < kHit_num )
-	      hits[i]->Print();
-	  
-	bcos.			push_back( hits[i]->bco_ );
-	adcs.			push_back( hits[i]->adc_ );
-	adc_voltages.		push_back( hits[i]->GetClusterADCVoltage() );
-	ampls.			push_back( hits[i]->ampl_ );
-	chip_ids.		push_back( hits[i]->chip_id_ );
-	fpga_ids.		push_back( hits[i]->fpga_id_ );
-	modules.		push_back( hits[i]->module_ );
-	fem_ids.		push_back( hits[i]->fem_id_ );
-	chan_ids.		push_back( hits[i]->chan_id_ );
-	bco_fulls.		push_back( hits[i]->bco_full_ );
-	events.			push_back( hits[i]->event_ );
-	nhits_in_cluster.	push_back( hits[i]->cluster_channels_.size() );
-
-	if( hits[i]->fem_id_ != 8 )
-	  {
-	    //cout << "@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
-	    //hits[i]->Print();
-	  }
-	}
-    }
-
-  //  if( there_is_noise )
-  //cout << endl << endl << string(100, '-' ) << endl;
-  
-#endif // defined( __linux__ ) || defined( __APPLE__)
-}
-
 void ShowLine(int width, string words ){
   //  int  header = 4;
   cout << " |"
@@ -897,16 +688,15 @@ void ShowMessage(){
   int width = 130;
   cout << " +" << string(width-3, '-') << "+" << endl;
   ShowLine( width, " check_chip_prototypeMaximum7.c" );
-  ShowLine( width, " It worls for calibration data and data with the external trigger system by CAMAC" );
+  ShowLine( width, " It's for data with the external trigger system by CAMAC" );
   ShowLine(width, "");
   ShowLine( width, " Usage: .x check_chip_prototypeMaximum7.c( file_name, module_num, mode, cut)" );
   ShowLine(width, "    where file_name: name of the data file (.dat)");
-  ShowLine(width, "         module_num: ID of the module in use, integer or string can be used");
+  ShowLine(width, "         module_num: ID of the module in use");
   ShowLine(width, "               mode: mode of operation. Following modes are accepted: ");
   ShowLine(width, "");
   ShowLine(width, "                     calib: for calibration data");
   ShowLine(width, "                  external: for externaly triggered data, for example self-trigger, source, and cosmic ray measurements");
   ShowLine(width, "                     camac: for data with the CAMAC DAQ");
-  ShowLine(width, "          camac_clustering: for data with the CAMAC DAQ, Clustring is also done. It dosen't work on Windows well.");
   cout << " +" << string(width-3, '-') << "+" << endl;
 }
