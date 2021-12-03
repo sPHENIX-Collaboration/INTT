@@ -146,9 +146,9 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 	
 	// the random generator for bco and bco_full
 	TRandom *rand_bcofull = new TRandom3 ( 0 );
-	UInt16 Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
+	UInt_t Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
 	//int Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
-	UInt16 Frand_bco = Frand_bcofull & UInt16( 255 ); // take the lowest 7 bits from the BCO full
+	UInt_t Frand_bco = Frand_bcofull & UInt_t( 255 ); // take the lowest 7 bits from the BCO full
 	
 	int event_count=0;
 	vector<int> camac_adc; camac_adc.clear();
@@ -186,9 +186,9 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 	vector<int> chan_id_array;  chan_id_array.clear();
 	vector<int> fem_id_array;   fem_id_array.clear();
 	//vector<int>	bco_array;      bco_array.clear();
-	vector<UInt16>	bco_array;      bco_array.clear();
+	vector<UInt_t>	bco_array;      bco_array.clear();
 	//	vector<int> bco_full_array; bco_full_array.clear();
-	vector<UInt16> bco_full_array; bco_full_array.clear();
+	vector<UInt_t> bco_full_array; bco_full_array.clear();
 	vector<int> event_array;    event_array.clear();
 
 	// vector<vector<int>> adc_array_all;      adc_array_all.clear();
@@ -474,7 +474,7 @@ void interface_v3 (TString file_name) // file_name is fed from outside
 						{
 						  //Frand_bco =  int(rand_bco->Uniform(0.,128.)); //0 ~ 127
 							Frand_bcofull = int(rand_bcofull->Uniform(0.,65536.)); //0 ~ 65535
-							Frand_bco = Frand_bcofull & UInt16( 255 ); // take the lowest 7 bits from the BCO full
+							Frand_bco = Frand_bcofull & UInt_t( 255 ); // take the lowest 7 bits from the BCO full
 							bco=Frand_bco;
 							bco_full=Frand_bcofull;
 							event_buffer=Event_ID;
