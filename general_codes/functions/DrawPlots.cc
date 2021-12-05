@@ -210,6 +210,7 @@ void DrawPlots(string root_file, int usemod, string mode) {
       + "_amplvschan_module" + ss.str().c_str() + ".pdf";
     c2->Print(output_ampl_vs_chan.c_str());
   }
+  
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Channel distribution for each chip, any mode is OK                                           //
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,10 +289,84 @@ void DrawPlots(string root_file, int usemod, string mode) {
   c3->Print(output_entry_vs_chan_jpg.c_str());
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ADC distribution for each chip, any mode is OK                                           //
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  string canvas_name_c5 = string("adc") + ss.str().c_str();
+  TCanvas *c5 = new TCanvas( canvas_name_c5.c_str(), canvas_name_c5.c_str(), 0, 700, 1625, 250);
+  TH2D* hist_adc_chip = new TH2D("adc_chip", "ADC vs Chip;Adc;Chip", 8, 0, 8, 26, 0, 26);
+
+  string expression_adc_chip = string("chip_id:adc>>") + hist_adc_chip->GetName();
+  tree->Draw(expression_adc_chip.c_str(), cut_base.str().c_str(), "goff");
+
+  c5->Divide(13, 2);
+  vector < int > bin_contents_adc;
+  for (int i = 0; i < 26; i++) {
+    c5->cd(i + 1);
+
+    auto hist_adc = hist_adc_chip->ProjectionX(Form("adc_chip%d", chip_order[i]), chip_order[i] + 1, chip_order[i] + 1, "goff");
+    hist_adc->SetTitle(Form("chip_id==%d", chip_order[i]));
+    hist_adc->SetFillColor( hist_adc->GetLineColor() );
+    hist_adc->SetFillStyle( 1001 );
+
+
+    hist_adc->Draw();
+    gPad->SetLogy(true);
+    hist_adc->GetXaxis()->SetLabelSize(0.08);
+    hist_adc->GetYaxis()->SetLabelSize(0.1);
+    //gPad->SetLogy(true);
+
+    gPad->Update();
+    auto pave_title = (TPaveText*)gPad->GetPrimitive("title");
+    pave_title->SetTextSize(0.1);
+    pave_title->SetTextAlign(23);
+    pave_title->Draw();
+
+    // store all bin content into a vector to set the same range to the all y-axis
+    for (int j = 0; j < hist_adc->GetNbinsX(); j++)
+      if( hist_adc->GetBinContent(j) != 0 )
+	bin_contents_adc.push_back(hist_adc->GetBinContent(j));
+  }
+
+  // if non-zero element is in the vector, set range of the y-axis
+  if (bin_contents_adc.size() != 0) {
+
+    // get min and max element in the vector 
+    int ymin = *min_element(bin_contents_adc.begin(), bin_contents_adc.end());
+    int ymax = *max_element(bin_contents_adc.begin(), bin_contents_adc.end());
+
+    // if min and max are the same, add 1 to max to avoid error
+    if (ymin == ymax)
+      ymax += 1;
+
+    // loop over all chip to set the same range to each y-axis
+    for (int i = 0; i < 26; i++)
+      {
+
+	c5->cd( i + 1 );
+
+	// get histogram in this pad
+	auto hist = (TH1D*)gPad->GetPrimitive(Form("adc_chip%d", chip_order[i]));
+	//hist->GetYaxis()->SetRangeUser(ymin, ymax);
+
+	if( mode == "calib" ){
+	  gPad->SetLogy(false);
+	  hist->GetYaxis()->SetRangeUser( 0.0, 450.0 ); // it's better to use fixed-range for calibration measurements
+	}
+	else if( mode == "camac" )
+	  hist->GetYaxis()->SetRangeUser(ymin, ymax);
+
+      }
+  }
+  string output_entry_vs_adc_pdf = root_file.substr(0, root_file.find_last_of(".root") - 4)
+    + "_entry_vs_adc_ID_module" + ss.str().c_str() + ".pdf";
+  c5->Print(output_entry_vs_adc_pdf.c_str());
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
   // Hit map ( chip vs channel ), any mode is OK                                                  //
   //////////////////////////////////////////////////////////////////////////////////////////////////
   string canvas_name_c4 = string("hit_map_module") + ss.str().c_str();
-  TCanvas *c4 = new TCanvas( canvas_name_c4.c_str(), canvas_name_c4.c_str(), 0, 700, 1625, 250);
+  TCanvas *c4 = new TCanvas( canvas_name_c4.c_str(), canvas_name_c4.c_str(), 0, 750, 1625, 250);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
