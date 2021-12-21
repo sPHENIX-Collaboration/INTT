@@ -58,7 +58,7 @@ EDDetectorConstruction::EDDetectorConstruction()
   // size of the dark box
   INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch = 635 mm. In this simulation, half box should be enough
   INTT_testbeam_BOX_size[1] = INTT_testbeam_BOX_size[2] = 6.54 * inch; // = 166 mm
-    
+
   // check whether the dark box is larger than the world or not
   for (int i = 0; i < 3; i++)
     assert(world_size[i] > INTT_testbeam_BOX_size[i]);
@@ -214,6 +214,7 @@ void EDDetectorConstruction::DefineMaterials()
 
 void EDDetectorConstruction::ConstructDarkBox()
 {
+  auto run_manager = G4RunManager::GetRunManager();
 
   auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
 				     this->kDarkbox_stage_width / 2,
@@ -308,7 +309,9 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   // World
   // world volume
   G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
-  
+
+  auto run_manager = G4RunManager::GetRunManager();
+
   this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
   this->worldLog->SetVisAttributes(color_invisible);
 
@@ -624,6 +627,14 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   G4LogicalVolume *INTT_siLV_typeB = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");
   INTT_siLV_typeB->SetVisAttributes(color_silicon_active);
 
+  G4LogicalVolume *INTT_siLV_typeA_not_used = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA_not_used");
+  //  INTT_siLV_typeA_not_used->SetVisAttributes(color_silicon_active);
+  INTT_siLV_typeA_not_used->SetVisAttributes(color_glue);
+
+  G4LogicalVolume *INTT_siLV_typeB_not_used = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB_not_used");
+  //INTT_siLV_typeB_not_used->SetVisAttributes(color_silicon_active);
+  INTT_siLV_typeB_not_used->SetVisAttributes(color_glue);
+
   G4LogicalVolume *INTT_siLV_glue_typeA = new G4LogicalVolume(INTT_si_glue_typeA, SilverEpoxyGlue, "INTT_siLV_glue_typeA");
   INTT_siLV_glue_typeA->SetVisAttributes(color_glue);
 
@@ -652,7 +663,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
       G4VPhysicalVolume *INTT_siLV_outer_allPV =
 	new G4PVPlacement(0,
-			  // G4ThreeVector(0, 0, zpos - zpos_testbeam_box),
 			  G4ThreeVector(0, 0, zpos), 
 			  INTT_siLV_outer[l], //its logical volume
 			  INTT_siLV_name[l],  //its name
@@ -686,39 +696,73 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 	      for (G4int l2 = 0; l2 < 13; l2++)
                 {
 		  int type;
+		  G4VPhysicalVolume *chip_channelsPV;
 		  if (l2 < 8)
                     {
 
 		      xpos = (-107.1 + (l2 *16)) * mm;
-		      G4VPhysicalVolume *chip_channelsPV =
-			new G4PVPlacement(0,
-					  G4ThreeVector(xpos, ypos, 0),
-					  INTT_siLV_typeA,  //its logical volume
-					  "INTT_siLV_all_typeA",  //its name
-					  INTT_siLV_outer[l], //its mother  volume
-					  false,  //no boolean operation
-					  counting_number,  //copy number
-					  false);
 
+		      if( l != 0 ) // active ladders
+			{
+
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeA,  //its logical volume
+					      "INTT_siLV_all_typeA",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
+		      else
+			{
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeA_not_used,  //its logical volume
+					      "INTT_siLV_all_typeA_not_used",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			  
+			}
 		      the_position = INTT_testbeam_BOXPV->GetTranslation()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
-			
+		      
 		      type = 0;
 		      counting_number += 1;
                     }
 		  else
                     {
 		      xpos = (25.1 + ((l2 - 8) *20)) * mm;
-		      G4VPhysicalVolume *chip_channelsPV =
-			new G4PVPlacement(0,
-					  G4ThreeVector(xpos, ypos, 0),
-					  INTT_siLV_typeB,  //its logical volume
-					  "INTT_siLV_all_typeB",  //its name
-					  INTT_siLV_outer[l], //its mother  volume
-					  false,  //no boolean operation
-					  counting_number,  //copy number
-					  false);
+		      if( l != 0 ) // active ladders
+			{
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeB,  //its logical volume
+					      "INTT_siLV_all_typeB",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
+		      else
+			{
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeB_not_used,  //its logical volume
+					      "INTT_siLV_all_typeB_not_used",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
+		      
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
 			chip_channelsPV->GetTranslation();
@@ -743,19 +787,36 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                 {
 
 		  int type;
+		  G4VPhysicalVolume *chip_channelsPV;
 		  if (l2 < 8)
                     {
 
 		      xpos = (-107.1 + (l2 *16)) *mm;
-		      G4VPhysicalVolume *chip_channelsPV =
-			new G4PVPlacement(0,
-					  G4ThreeVector(xpos, ypos, 0),
-					  INTT_siLV_typeA,  //its logical volume
-					  "INTT_siLV_all_typeA",  //its name
-					  INTT_siLV_outer[l], //its mother  volume
-					  false,  //no boolean operation
-					  counting_number,  //copy number
-					  false);
+		      if( l != 0 ) // active ladders
+			{
+			  chip_channelsPV = 
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeA,  //its logical volume
+					      "INTT_siLV_all_typeA",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
+		      else
+			{
+			  chip_channelsPV = 
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeA_not_used,  //its logical volume
+					      "INTT_siLV_all_typeA_not_used",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+
+			}
 
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
@@ -767,15 +828,30 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
                     {
 
 		      xpos = (25.1 + ((l2 - 8) *20)) *mm;
-		      G4VPhysicalVolume *chip_channelsPV =
-			new G4PVPlacement(0,
-					  G4ThreeVector(xpos, ypos, 0),
-					  INTT_siLV_typeB,  //its logical volume
-					  "INTT_siLV_all_typeB",  //its name
-					  INTT_siLV_outer[l], //its mother  volume
-					  false,  //no boolean operation
-					  counting_number,  //copy number
-					  false);
+		      if( l != 0 ) // active ladders
+			{
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeB,  //its logical volume
+					      "INTT_siLV_all_typeB",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
+		      else
+			{
+			  chip_channelsPV =
+			    new G4PVPlacement(0,
+					      G4ThreeVector(xpos, ypos, 0),
+					      INTT_siLV_typeB_not_used,  //its logical volume
+					      "INTT_siLV_all_typeB_not_used",  //its name
+					      INTT_siLV_outer[l], //its mother  volume
+					      false,  //no boolean operation
+					      counting_number,  //copy number
+					      false);
+			}
 
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
@@ -800,7 +876,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       zpos += this->kSilicon_strip_thickness / 2 + this->kSilver_epoxy_glue_FPHX_thickness / 2;
       G4VPhysicalVolume *INTT_siLV_glue_typeA_PV =
 	new G4PVPlacement(0,
-			  //G4ThreeVector(-51.1 * mm, 0, (zpos+25*um+160*um) - zpos_testbeam_box),
 			  G4ThreeVector(-51.1 * mm, 0, zpos ),
 			  INTT_siLV_glue_typeA, //its logical volume
 			  INTT_siLV_glue_typeA_name[l],  //its name
@@ -812,7 +887,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       // the silver epoxy glue for the silcon chip type-A
       G4VPhysicalVolume *INTT_siLV_glue_typeB_PV =
 	new G4PVPlacement(0,
-			  //G4ThreeVector(65.1 * mm, 0, (zpos+25*um+160*um) - zpos_testbeam_box),
 			  G4ThreeVector(65.1 * mm, 0, zpos ),
 			  INTT_siLV_glue_typeB, //its logical volume
 			  INTT_siLV_glue_typeB_name[l],  //its name
@@ -848,7 +922,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		  auto chip_position
 		    = G4ThreeVector(-1 *(116.1 - 5 - 4.5 - l2 * 16.) *mm,
 				    (19 - 3.775 - 1.5 - l1 * 27.45) *mm,
-				    //zpos - zpos_testbeam_box);
 				    zpos );
 		  new G4PVPlacement(0,
 				    chip_position,
@@ -862,7 +935,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		  auto chip_position_glue
 		    = G4ThreeVector(-1 *(116.1 - 5 - 4.5 - l2 * 16.) *mm,
 				    (19 - 3.775 - 1.5 - l1 * 27.45) *mm,
-				    //(zpos+160*um+25*um) - zpos_testbeam_box);
 				    (zpos + 160 * um + 25 * um) );
 
 		  G4VPhysicalVolume *INTT_chip_gluePV =
@@ -883,7 +955,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		  auto chip_position
 		    = G4ThreeVector(-1 *(116.1 - 141.7 - (l2 - 8) *20) *mm,
 				    (19 - 3.775 - 1.5 - l1 * 27.45) *mm,
-				    zpos - zpos_testbeam_box);
+				    zpos );
 		  new G4PVPlacement(0,
 				    chip_position,
 				    INTT_ChipLV,  //its logical volume
@@ -897,7 +969,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		  auto chip_position_glue
 		    = G4ThreeVector(-1 *(116.1 - 141.7 - (l2 - 8) *20) *mm,
 				    (19 - 3.775 - 1.5 - l1 * 27.45) *mm,
-				    //(zpos+160*um+25*um) - zpos_testbeam_box);
 				    (zpos + 160 * um + 25 * um) );
 
 		  G4VPhysicalVolume *INTT_chip_gluePV =
@@ -933,7 +1004,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 	+ HDI_copper_thickness / 2; // move to the center of the copper layer of the HDI
 
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos - zpos_testbeam_box),
+			G4ThreeVector(0, 0, zpos ),
 			INTT_HDI_copperLV[l], //its logical volume
 			INTT_HDI_copperLV_name[l],  //its name
 			INTT_testbeam_BOXLV,  //its mother  volume
@@ -947,7 +1018,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
       zpos += HDI_copper_thickness / 2 +  HDI_kapton_thickness / 2;
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos - zpos_testbeam_box),
+			G4ThreeVector(0, 0, zpos ),
 			INTT_HDI_KaptonLV[l], //its logical volume
 			INTT_HDI_KaptonLV_name[l],  //its name
 			INTT_testbeam_BOXLV,  //its mother  volume
@@ -963,8 +1034,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
       zpos += HDI_kapton_thickness / 2 + INTT_stave_area_thickness / 2;
       new G4PVPlacement(0,
-			//G4ThreeVector(0, 9.725*mm, zpos- zpos_testbeam_box), 
-			G4ThreeVector(0, 0, zpos - zpos_testbeam_box),
+			G4ThreeVector(0, 0, zpos ),
 			INTT_stave_areaLV[l], //its logical volume
 			stave_areaLV_name,
 			INTT_testbeam_BOXLV,  //its mother  volume
@@ -980,7 +1050,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       G4double ypos_local = 0.0;
       G4double zpos_local = -INTT_stave_area_thickness / 2 + kINTT_CFRP_thickness / 2;
       new G4PVPlacement(0,
-			///     G4ThreeVector(0, 0, zpos- zpos_testbeam_box), 
 			G4ThreeVector(xpos_local, ypos_local, zpos_local),
 			INTT_CFRPLVf[l],  //its logical volume
 			INTT_CFRPLVf_name[l], //its name
@@ -1192,7 +1261,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		    "sci_downstream",  //its name
 		    INTT_testbeam_BOXLV,
 		    false,  //no boolean operation
-		    0,  //copy number
+		    1,  //copy number
 		    checkOverlaps);
 
   //always return the physical World
@@ -1236,7 +1305,6 @@ void EDDetectorConstruction::ConstructSDandField()
   // G4String INTT_siSD_name[4]={"INTT_siSD_1","INTT_siSD_2","INTT_siSD_3","INTT_siSD_4"};
   // G4String INTT_siSD_HitsCollection_name[4]={"INTT_siSD_HitsCollection_1","INTT_siSD_HitsCollection_2","INTT_siSD_HitsCollection_3","INTT_siSD_HitsCollection_4"};
   // G4String INTT_siLV_name[4]={"INTT_siLV1","INTT_siLV2","INTT_siLV3","INTT_siLV4"};
-
 
   EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
   G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);

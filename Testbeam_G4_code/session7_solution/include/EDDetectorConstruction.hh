@@ -36,6 +36,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4GenericMessenger.hh"
 #include "G4VisAttributes.hh"
+#include "G4RunManager.hh"
 
 #include "G4NistManager.hh"
 #include "G4SDManager.hh"
@@ -56,6 +57,7 @@
 #include "G4Tokenizer.hh"
 #include "public_variable.hh"
 
+#include "TBRIK.h"
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"
 
@@ -102,7 +104,6 @@ private:
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
-  G4double zpos_testbeam_box;
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
   const G4double kDarkbox_stage_width; // width of the movable stage
