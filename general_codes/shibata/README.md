@@ -27,7 +27,7 @@ t.next();
 ```
 This function show and fill t data members per bco and bcofull (The first INTT hit with a CAMAC trigger signal) Example output plots are below.
 
-<img src="https://github.com/mikashibata/INTT/blob/main/general_codes/shibata/hitmap.png" width="500">
+<img src="https://github.com/sPHENIX-Collaboration/INTT/blob/main/general_codes/shibata/hitmap.png" width="500">
 
 To check the efficiency calculation,
 ```
@@ -35,7 +35,7 @@ t.next_continue();
 ```
 This function loop t.next() on all entries (The first INTT hit with a CAMAC trigger signal) Example output plots are below.
 
-<img src="https://github.com/mikashibata/INTT/blob/main/general_codes/shibata/efficiency.png" width="500">
+<img src="https://github.com/sPHENIX-Collaboration/INTT/blob/main/general_codes/shibata/efficiency.png" width="500">
 
 You will see the result of efficiency on the terminal. Example result is below.
 
