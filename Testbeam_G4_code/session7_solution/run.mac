@@ -15,8 +15,8 @@
 #/particle/select mu-
 #/particle/process/dump
 
-/particle/select e-
-/particle/process/dump
+#/particle/select e-
+#/particle/process/dump
 
 # Set particle production thresholds (cuts)
 /run/setCut 1 mm
@@ -24,11 +24,19 @@
 /run/setCutForAGivenParticle e+ 0.2 mm
 /run/setCutForAGivenParticle gamma 0.3 mm
 
+################################################################
+# Debugging commands                                           #
+################################################################
+/run/verbose 0
+/hits/verbose 0 # for HitsCollection and SensitiveDetector
+/event/verbose 0 # for event and step
+/tracking/verbose 0 # for tracking action
+# /random/setSeeds 200
 
 ################################################################
 # Run processing                                               #
 ################################################################
-/gun/energy 800 MeV
+/gun/energy 1 GeV
 /gun/particle e+
 
 ################################################################
@@ -38,7 +46,7 @@
 # switch to use mono-energy beam at (x=0, y=0) (false), or realistic beam (momentum spread, x-y distribution)
 # Usage: /INTT/beam/beamSmearing [false or true]
 /INTT/beam/beamSmearing false
-/INTT/beam/beamSmearing true
+#/INTT/beam/beamSmearing true
 
 #---------------------------------------------------------------------------
 # selection of the beamline, -23 and -30 are available. Use -23 if you are not sure.
@@ -68,7 +76,7 @@
 /INTT/geom/setPlateMaterial G4_Pb
 /INTT/geom/setPlateThickness 10 mm
 /INTT/geom/setPlateDistance 10 cm
-/INTT/geom/constructPlate
+# /INTT/geom/constructPlate
 
 #---------------------------------------------------------------------------
 # switch to rotate the setup around the vertical axis
@@ -82,7 +90,6 @@
 # switch to set the detection efficienty of the INTT ladders
 # Usage: /INTT/ana/efficiency [efficiency of the ladder0] [efficiency of the ladder2] [efficiency of the ladder3] [efficiency of the ladder4]
 # /INTT/ana/efficiency 1.0 1.0 1.0 1.0
-
 
 ################################################################
 # Start the run                                                #

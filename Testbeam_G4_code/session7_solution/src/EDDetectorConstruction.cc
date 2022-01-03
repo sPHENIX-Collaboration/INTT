@@ -51,9 +51,16 @@ EDDetectorConstruction::EDDetectorConstruction()
 
   // assign very primitive paraleters here
   // size of the world
-  world_size[0] = this->kDarkbox_stage_width;
-  world_size[1] = 0.2 * m;
+  world_size[0] = this->kDarkbox_stage_width * 1.5;
+  world_size[1] = world_size[0];
   world_size[2] = this->kDarkbox_stage_width + 2 * m;
+
+  // size of the experimental area
+  //  experimental_size[0] = this->kDarkbox_stage_width;
+  experimental_size[0] = world_size[0] / 1.5;
+  //experimental_size[1] = 0.2 * m;
+  experimental_size[1] = world_size[1] / 1.5;
+  experimental_size[2] = 1 * m;//this->kDarkbox_stage_width + 1 * m;
 
   // size of the dark box
   INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch = 635 mm. In this simulation, half box should be enough
@@ -212,14 +219,16 @@ void EDDetectorConstruction::DefineMaterials()
   DarkBox->AddElement(G4Element::GetElement("O"), natoms = 1);
 }
 
+
 void EDDetectorConstruction::ConstructDarkBox()
 {
   auto run_manager = G4RunManager::GetRunManager();
 
   auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
-				     this->kDarkbox_stage_width / 2,
+				     //this->kDarkbox_stage_width / 2,
+				     this->INTT_testbeam_BOX_size[0] / 2,
 				     this->INTT_testbeam_BOX_size[1] / 2,
-				     this->INTT_testbeam_BOX_size[2] / 2 +  1 * m);
+				     this->INTT_testbeam_BOX_size[2] / 2 );
 				     //this->kDarkbox_stage_width / 2 );
   
   INTT_testbeam_BOXLV
@@ -231,7 +240,8 @@ void EDDetectorConstruction::ConstructDarkBox()
 		      G4ThreeVector(0, 0, 0),
 		      INTT_testbeam_BOXLV,  //its logical volume
 		      "INTT_testbeam_BOXLV",  //its name
-		      this->worldLog, //its mother  volume
+		      //this->worldLog, //its mother  volume
+		      this->experimental_areaLV,
 		      false,  //no boolean operation
 		      0,  //copy number
 		      checkOverlaps);
@@ -304,29 +314,8 @@ void EDDetectorConstruction::ConstructDarkBox()
 
 }
 
-G4VPhysicalVolume *EDDetectorConstruction::Construct()
+void EDDetectorConstruction::ConstructLadders()
 {
-  // World
-  // world volume
-  G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
-
-  auto run_manager = G4RunManager::GetRunManager();
-
-  this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
-  this->worldLog->SetVisAttributes(color_invisible);
-
-  G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
-						 G4ThreeVector(),  //at (0,0,0)
-						 this->worldLog, //its logical volume
-						 "worldLog", //its name
-						 0,  //its mother  volume
-						 false,  //no boolean operation
-						 0,  //copy number
-						 checkOverlaps); //overlaps checking
-
-
-  this->ConstructDarkBox();
-
   //======================G4solid===============================================  
   const int kLadder_num = 4;
   const bool kIs_silicon_off = false;  // flag for debugging, turning all silicon strips off to save time
@@ -1209,6 +1198,11 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       ////////////////////////////////////////////////////////////
     } // end block for for loop
 
+}
+
+void EDDetectorConstruction::ConstructTriggers()
+{
+
   ////////////////////////////////////////////////////////////
   // Trigger scintillators ///////////////////////////////////
   ////////////////////////////////////////////////////////////
@@ -1228,7 +1222,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		    G4ThreeVector(0, 0, zpos_sci ), 
 		    INTT_sci_thinLV, //its logical volume
 		    "sci_thin_upstream",  //its name
-		    INTT_testbeam_BOXLV,
+		    //INTT_testbeam_BOXLV,
+		    this->experimental_areaLV,
 		    false,  //no boolean operation
 		    0,  //copy number
 		    checkOverlaps);
@@ -1246,7 +1241,8 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		    G4ThreeVector(0, 0, zpos_sci ), 
 		    INTT_sciLV, //its logical volume
 		    "sci_middle",  //its name
-		    INTT_testbeam_BOXLV,
+		    //INTT_testbeam_BOXLV,
+		    this->experimental_areaLV,
 		    false,  //no boolean operation
 		    0,  //copy number
 		    checkOverlaps);
@@ -1259,11 +1255,54 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 		    G4ThreeVector(0, 0, zpos_sci ),
 		    INTT_sciLV, //its logical volume
 		    "sci_downstream",  //its name
-		    INTT_testbeam_BOXLV,
+		    //INTT_testbeam_BOXLV,
+		    this->experimental_areaLV,
 		    false,  //no boolean operation
 		    1,  //copy number
 		    checkOverlaps);
+}
 
+G4VPhysicalVolume *EDDetectorConstruction::Construct()
+{
+  // World
+  // world volume
+  G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
+
+  auto run_manager = G4RunManager::GetRunManager();
+
+  this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
+  this->worldLog->SetVisAttributes(color_invisible);
+
+  G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
+						 G4ThreeVector(),  //at (0,0,0)
+						 this->worldLog, //its logical volume
+						 "worldLog", //its name
+						 0,  //its mother  volume
+						 false,  //no boolean operation
+						 0,  //copy number
+						 checkOverlaps); //overlaps checking
+
+  // experimental area
+  G4VSolid *experimental_box = new G4Box("ExperimentalBox", this->experimental_size[0] / 2, this->experimental_size[1] / 2, this->experimental_size[2] / 2);
+  this->experimental_areaLV = new G4LogicalVolume(experimental_box, DefaultMaterial, "experimental_areaLV");
+  this->experimental_areaLV->SetVisAttributes(color_invisible);
+
+  //G4double xpos = 
+  G4ThreeVector experimental_position( 0, 0, 0 );
+  G4VPhysicalVolume *experimental_areaPV = new G4PVPlacement(0, //no rotation
+							     experimental_position,
+							     this->experimental_areaLV, //its logical volume
+							     "experimental_area", //its name
+							     this->worldLog,  //its mother  volume
+							     false,  //no boolean operation
+							     0,  //copy number
+							     checkOverlaps); //overlaps checking
+
+  
+  this->ConstructDarkBox();
+  this->ConstructLadders();
+  this->ConstructTriggers();
+  //this->ConstructPlate();
   //always return the physical World
   return worldPV;
 }
@@ -1271,11 +1310,16 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 void EDDetectorConstruction::ConstructPlate()
 {
   
+  // this->plate_thickness = 1 * cm;
+  // this->plate_distance = 40.5 * cm;
+  // this->plate_material = "G4_Pb";
+
   // Get nist material manager
   G4NistManager *nistManager = G4NistManager::Instance();
   G4bool fromIsotopes = false;
   nistManager->FindOrBuildMaterial(this->plate_material, fromIsotopes);
 
+  
   G4Box *plate_box = new G4Box("plate",
 			       this->INTT_testbeam_BOX_size[0] / 2,
 			       this->INTT_testbeam_BOX_size[1] / 2,
@@ -1285,14 +1329,15 @@ void EDDetectorConstruction::ConstructPlate()
   G4LogicalVolume *plate_LV = new G4LogicalVolume(plate_box, G4Material::GetMaterial( this->plate_material ), "plateLV");
   plate_LV->SetVisAttributes( color_plate );
 
+  // distance from the beam window of the dark box to this lead plate: 40.5 cm
   G4double distance_darkbox_upstream_scintillator = 117.0 * mm;
-  G4double zpos = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - this->plate_distance;
+  G4double zpos = -this->INTT_testbeam_BOX_size[2] / 2 - this->plate_distance;
 
   new G4PVPlacement(0,
 		    G4ThreeVector(0, 0, zpos ),
 		    plate_LV, //its logical volume
 		    "plate",  //its name
-		    this->INTT_testbeam_BOXLV,
+		    this->experimental_areaLV,
 		    false,  //no boolean operation
 		    0,  //copy number
 		    checkOverlaps);
@@ -1321,7 +1366,7 @@ void EDDetectorConstruction::ConstructSDandField()
   EDEmCalorimeterSD *calorimeterSD = new EDEmCalorimeterSD("EmCalorimeterSD", "EmCalorimeterHitsCollection");
   G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD);
   SetSensitiveDetector("INTT_sciLV1", calorimeterSD);
-    
+  
   // EDChamberSD* trigger_1 = new EDChamberSD("Trigger_1", "Trigger_1HitsCollection", 1);
   // G4SDManager::GetSDMpointer()->AddNewDetector(trigger_1);
   // SetSensitiveDetector("INTT_sciLV1", trigger_1);
@@ -1339,7 +1384,11 @@ void EDDetectorConstruction::ConstructSDandField()
 void EDDetectorConstruction::DefineVisAttributes()
 {
 
-  color_invisible		= new G4VisAttributes(false	, G4Colour(0.0, 0.000, 0.0, 0.0)	);
+  //  color_invisible		= new G4VisAttributes(false	, G4Colour(0.0, 0.000, 0.0, 0.0)	);
+  color_invisible		= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 0.0, 1.0)	);
+  //color_invisible		= new G4VisAttributes(true	, G4Colour(1.0, 1.0, 1.0, 1.0)          );
+  color_invisible->SetForceWireframe( true );
+  
   color_silicon_active	= new G4VisAttributes(true	, G4Colour(1.0, 0.000, 0.0, 0.5)	); // transparent red
   color_silicon_inactive	= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 1.0, 0.5)	); // transparent blue
   color_glue			= new G4VisAttributes(true	, G4Colour(0.1, 0.100, 0.1, 0.4)	);

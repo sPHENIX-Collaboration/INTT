@@ -29,12 +29,10 @@
 /// \brief Implementation of the EDActionInitialization class
 
 #include "EDActionInitialization.hh"
-#include "EDPrimaryGeneratorAction.hh"
-#include "EDEventAction.hh"
-#include "EDRunAction.hh"
 
-EDActionInitialization::EDActionInitialization()
- : G4VUserActionInitialization()
+EDActionInitialization::EDActionInitialization( EDDetectorConstruction* fDetConstruction_arg )
+  : G4VUserActionInitialization(),
+    fDetConstruction( fDetConstruction_arg )
 {}
 
 EDActionInitialization::~EDActionInitialization()
@@ -42,7 +40,16 @@ EDActionInitialization::~EDActionInitialization()
 
 void EDActionInitialization::BuildForMaster() const
 {
-  SetUserAction(new EDRunAction( new EDPrimaryGeneratorAction() ) );
+
+  OutputManager* output = new OutputManager();
+  
+  SetUserAction(
+		new EDRunAction(
+				new EDPrimaryGeneratorAction(),
+				new EDEventAction(),
+				output
+				)
+		);
 }
 
 void EDActionInitialization::Build() const
@@ -50,6 +57,10 @@ void EDActionInitialization::Build() const
   auto pga = new EDPrimaryGeneratorAction();  
   SetUserAction( pga );
 
-  SetUserAction(new EDRunAction( pga ) );
-  SetUserAction(new EDEventAction);
+  OutputManager* output = new OutputManager();
+  auto event = new EDEventAction;
+  SetUserAction( event );
+  SetUserAction(new EDRunAction( pga, event, output ) );
+  SetUserAction(new TrackingAction( pga ) );
+  SetUserAction( new SteppingAction(fDetConstruction) );
 }  

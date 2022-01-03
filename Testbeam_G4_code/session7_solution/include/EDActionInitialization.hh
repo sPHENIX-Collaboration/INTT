@@ -32,21 +32,25 @@
 #define EDActionInitialization_h 1
 
 #include "G4VUserActionInitialization.hh"
+#include "EDPrimaryGeneratorAction.hh"
+#include "EDEventAction.hh"
+#include "EDRunAction.hh"
+#include "TrackingAction.hh"
+#include "SteppingAction.hh"
+#include "OutputManager.hh"
 
 /// Action initialization class.
 
 class EDActionInitialization : public G4VUserActionInitialization
 {
   public:
-    EDActionInitialization();
+    EDActionInitialization( EDDetectorConstruction* fDetConstruction_arg );
     virtual ~EDActionInitialization();
 
     virtual void Build() const;
     virtual void BuildForMaster() const;
+  const EDDetectorConstruction* fDetConstruction;
+
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-
-    

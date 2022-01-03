@@ -126,5 +126,4 @@
 /INTT/geom/setPlateMaterial G4_Pb
 /INTT/geom/setPlateThickness 10 cm
 /INTT/geom/setPlateDistance 12 cm
-/INTT/geom/constructPlate
 # /INTT/geom/constructPlate

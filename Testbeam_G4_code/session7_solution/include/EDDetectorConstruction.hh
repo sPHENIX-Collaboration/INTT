@@ -86,7 +86,6 @@ public:
   static const G4double ft; // = 304.8; // 1 ft = 304.8 mm  
 
 private:
-
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
   
@@ -103,6 +102,7 @@ private:
   
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
+  G4double experimental_size[3]; // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
@@ -125,7 +125,8 @@ private:
   G4VPhysicalVolume* INTT_testbeam_BOXPV;
 
   G4LogicalVolume* worldLog;
-  G4LogicalVolume* INTT_testbeam_BOXLV;
+  G4LogicalVolume* experimental_areaLV; //  the dark box and the trigger scintillators are in this volume. it may be rotated
+  G4LogicalVolume* INTT_testbeam_BOXLV; // the dark box is in this volume
   
   G4VisAttributes* color_invisible;
   G4VisAttributes* color_silicon_active;
@@ -151,6 +152,8 @@ private:
   void DefineCommands();
 
   void ConstructDarkBox();
+  void ConstructLadders();
+  void ConstructTriggers();
   void ConstructPlate();
 };
 

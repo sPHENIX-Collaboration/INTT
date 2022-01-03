@@ -32,6 +32,7 @@
 
 #include "EDDetectorConstruction.hh"
 #include "EDActionInitialization.hh"
+//#include "OutputManager.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -74,6 +75,7 @@ int main(int argc,char** argv)
   // Change a seed of random number
   std::random_device rnd;
   CLHEP::HepRandom::setTheSeed( rnd() );
+  //CLHEP::HepRandom::setTheSeed( 2 ); // 2 has only 25 tracks, nice for debugging
   
   for ( G4int i=1; i<argc; i=i+2 )
     {
@@ -111,17 +113,23 @@ int main(int argc,char** argv)
   G4RunManager * runManager = new G4RunManager;
 #endif
 
+ 
   // Set mandatory initialization classes
   // Detector construction
-  runManager->SetUserInitialization(new EDDetectorConstruction());
+  auto det_const = new EDDetectorConstruction();
+  runManager->SetUserInitialization( det_const );
 
   // Physics list
-  if ( physicsListName.size() == 0 ) {
-    physicsListName = "FTFP_BERT";
-  }
-  
+  if ( physicsListName.size() == 0 )
+    {
+      physicsListName = "FTFP_BERT";
+    }
+
+  // set OutputManager
+  OutputManager* outout = new OutputManager();
+
   G4PhysListFactory physListFactory;
-  if ( ! physListFactory.IsReferencePhysList(physicsListName)) {
+  if ( ! physListFactory.IsReferencePhysList(physicsListName) ) {
     G4cerr << " Physics list " << physicsListName 
            << " is not defined." << G4endl;
     return 1;
@@ -133,8 +141,8 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(physicsList);
     
   // User action initialization
-  runManager->SetUserInitialization( new EDActionInitialization() );
-
+  runManager->SetUserInitialization( new EDActionInitialization( det_const ) );
+  
   // Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
