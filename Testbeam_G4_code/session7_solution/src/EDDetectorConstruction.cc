@@ -51,7 +51,7 @@ EDDetectorConstruction::EDDetectorConstruction()
 
   // assign very primitive paraleters here
   // size of the world
-  world_size[0] = this->kDarkbox_stage_width * 1.5;
+  world_size[0] = this->kDarkbox_stage_width * 2.0;
   world_size[1] = world_size[0];
   world_size[2] = this->kDarkbox_stage_width + 2 * m;
 
@@ -112,8 +112,21 @@ void EDDetectorConstruction::DefineCommands()
   setPlatedistance.SetParameterName( "plateDistance", false ); // (name, is_omittable)
   setPlatedistance.SetDefaultValue( "0" );
 
-  // # switch to rotate the setup around the vertical axis (planning)
-  // # Usage: /INTT/geom/rotateSetup [rotation angle] [unit]
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch to the vertically rotated setup or not
+  G4GenericMessenger::Command& setRotationV
+    = fMessenger->DeclareProperty( "setRotationV", this->is_vertical_rotation );
+  setPlatedistance.SetGuidance( "Set the vertically rotated setup or not" );
+  setPlatedistance.SetParameterName( "isVerticalRotation", true ); // (name, is_omittable)
+  setPlatedistance.SetDefaultValue( "false" );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Switch to the horizontally rotated setup or not
+  G4GenericMessenger::Command& setRotationH
+    = fMessenger->DeclareProperty( "setRotationH", this->is_horizontal_rotation );
+  setPlatedistance.SetGuidance( "Set the horizontally rotated setup or not" );
+  setPlatedistance.SetParameterName( "isHorizontalRotation", true ); // (name, is_omittable)
+  setPlatedistance.SetDefaultValue( "false" );
 
   // # selection of the trigger scintillator configuration (but how?)
   // # Usage: /INTT/geom/???
@@ -312,6 +325,9 @@ void EDDetectorConstruction::ConstructDarkBox()
 		    darkbox_wall_upstreamLV, "darkbox_wall_downstream", INTT_testbeam_BOXLV,
 		    false, 1, checkOverlaps);
 
+
+  // construct contants in the dark box
+  this->ConstructLadders();
 }
 
 void EDDetectorConstruction::ConstructLadders()
@@ -1289,7 +1305,11 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
   //G4double xpos = 
   G4ThreeVector experimental_position( 0, 0, 0 );
-  G4VPhysicalVolume *experimental_areaPV = new G4PVPlacement(0, //no rotation
+  G4RotationMatrix *setup_rotation = new G4RotationMatrix();
+  //setup_rotation->rotateY( 29.05 *deg); // trigger sci rotated as well
+  //setup_rotation->rotateX( -13.7 *deg); // trigger sci. stay the same
+  
+  G4VPhysicalVolume *experimental_areaPV = new G4PVPlacement(setup_rotation, //no rotation
 							     experimental_position,
 							     this->experimental_areaLV, //its logical volume
 							     "experimental_area", //its name
@@ -1300,7 +1320,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 
   
   this->ConstructDarkBox();
-  this->ConstructLadders();
   this->ConstructTriggers();
   //this->ConstructPlate();
   //always return the physical World

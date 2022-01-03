@@ -71,6 +71,13 @@
 # /INTT/beam/positionRestriction 3
 
 #---------------------------------------------------------------------------
+# switch to the vertically/horizontally rotated setup or not
+# Usage: /INTT/geom/setRotationV [true/false]
+# Usage: /INTT/geom/setRotationH [true/false]
+# /INTT/geom/setRotationV true
+# /INTT/geom/setRotationH true
+
+#---------------------------------------------------------------------------
 # switch to put the additional thin plate to have multiple track in an event
 # Usage: /INTT/geom/putPlate [material defined in Geant4] [thickness] [unit] [distance from the upstream trigger scintillator] [unit]
 /INTT/geom/setPlateMaterial G4_Pb

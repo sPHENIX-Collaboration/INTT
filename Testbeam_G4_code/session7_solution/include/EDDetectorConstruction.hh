@@ -146,6 +146,9 @@ private:
   G4String plate_material;
   G4double plate_thickness;
   G4double plate_distance; // distance from the upstream trigger scintillator
+
+  G4bool is_vertical_rotation = false;
+  G4bool is_horizontal_rotation = false;
   
   void DefineVisAttributes();
   void DefineMaterials();
