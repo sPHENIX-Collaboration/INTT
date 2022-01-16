@@ -93,6 +93,12 @@ public:
 private:
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
+
+  // variable to switch the trigger setup
+  // -1: full setup (mini, A, darkbox, B, C), run24-run32
+  //  0: standard setup (mini, B, darkbox, C)
+  //  1: special setup for horizotal rotated setup (mini, B, darkbox )
+  G4int setup_type;
   
   const G4double kSilicon_strip_width; // along y-axis
   const G4double kSilicon_strip_thickness; // along z-axis
@@ -111,6 +117,7 @@ private:
   G4double experimental_size[3]; // x, y, z
   G4double experimental_offset[3];  // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
+  G4double darkbox_offset[3];  // x, y, z
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
   const G4double kDarkbox_stage_width; // width of the movable stage
@@ -138,6 +145,7 @@ private:
   G4VisAttributes* color_invisible;
   G4VisAttributes* color_silicon_active;
   G4VisAttributes* color_silicon_inactive;
+  G4VisAttributes* color_silicon_not_used;
   G4VisAttributes* color_glue;
   G4VisAttributes* color_FPHX;
   G4VisAttributes* color_HDI_copper;
