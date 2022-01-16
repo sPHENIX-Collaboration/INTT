@@ -32,9 +32,9 @@
 #define EDDetectorConstruction_h 1
 
 #include <cstdlib>
+#include <cmath>
 
 #include "G4VUserDetectorConstruction.hh"
-#include "G4GenericMessenger.hh"
 #include "G4VisAttributes.hh"
 #include "G4RunManager.hh"
 
@@ -60,9 +60,11 @@
 #include "TBRIK.h"
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"
+//#include "DetectorMessenger.hh"
 
 //extern G4double theoffset;
 class G4VPhysicalVolume;
+//class DetectorMessenger;
 
 /// Detector construction class to define materials and geometry.
 class EDDetectorConstruction : public G4VUserDetectorConstruction
@@ -85,6 +87,9 @@ public:
   static const G4double inch; // = 25.4; // 1 inch = 25.4 mm
   static const G4double ft; // = 304.8; // 1 ft = 304.8 mm  
 
+  //void SetPlateConstruction( G4bool arg ){ bl_plate_ = arg;};
+  //void DoConstruction( int i=0 );
+  
 private:
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
@@ -93,6 +98,7 @@ private:
   const G4double kSilicon_strip_thickness; // along z-axis
   const G4double kSilicon_length_type_a; // along x-axis
   const G4double kSilicon_length_type_b; // along x-axis
+  G4double silicon_module_gap[3];
   const G4double kFPHX_width; // along y-axis
   const G4double kFPHX_thickness; // along xz-axis
   const G4double kFPHX_length; // along x-axis
@@ -103,12 +109,13 @@ private:
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
   G4double experimental_size[3]; // x, y, z
+  G4double experimental_offset[3];  // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
   const G4double kDarkbox_stage_width; // width of the movable stage
   
-  G4GenericMessenger* fMessenger;
+  //  DetectorMessenger* fMessenger;
 
   G4Material* DefaultMaterial;
   G4Material* Silicon;
@@ -143,6 +150,7 @@ private:
   G4VisAttributes* color_plate;
 
   // parameters for the additional plate
+  G4bool is_plate = false;
   G4String plate_material;
   G4double plate_thickness;
   G4double plate_distance; // distance from the upstream trigger scintillator
