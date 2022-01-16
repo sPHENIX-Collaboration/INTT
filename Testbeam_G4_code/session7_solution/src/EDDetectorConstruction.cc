@@ -1493,7 +1493,7 @@ void EDDetectorConstruction::ConstructSDandField()
   G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD);
   SetSensitiveDetector("INTT_sciLV1", calorimeterSD);
   
-  EDEmCalorimeterSD *calorimeterSD_mini = new EDEmCalorimeterSD("EmCalorimeterSD_mini", "EmCalorimeterHitsCollection");
+  EDEmCalorimeterSD *calorimeterSD_mini = new EDEmCalorimeterSD("EmCalorimeterSD_mini", "EmCalorimeterHitsCollection_mini");
   G4SDManager::GetSDMpointer()->AddNewDetector( calorimeterSD_mini );
   SetSensitiveDetector("INTT_mini_sciLV", calorimeterSD_mini);
   
