@@ -32,9 +32,9 @@
 #define EDDetectorConstruction_h 1
 
 #include <cstdlib>
+#include <cmath>
 
 #include "G4VUserDetectorConstruction.hh"
-#include "G4GenericMessenger.hh"
 #include "G4VisAttributes.hh"
 #include "G4RunManager.hh"
 
@@ -60,9 +60,11 @@
 #include "TBRIK.h"
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"
+//#include "DetectorMessenger.hh"
 
 //extern G4double theoffset;
 class G4VPhysicalVolume;
+//class DetectorMessenger;
 
 /// Detector construction class to define materials and geometry.
 class EDDetectorConstruction : public G4VUserDetectorConstruction
@@ -85,15 +87,24 @@ public:
   static const G4double inch; // = 25.4; // 1 inch = 25.4 mm
   static const G4double ft; // = 304.8; // 1 ft = 304.8 mm  
 
+  //void SetPlateConstruction( G4bool arg ){ bl_plate_ = arg;};
+  //void DoConstruction( int i=0 );
+  
 private:
-
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
+
+  // variable to switch the trigger setup
+  // -1: full setup (mini, A, darkbox, B, C), run24-run32
+  //  0: standard setup (mini, B, darkbox, C)
+  //  1: special setup for horizotal rotated setup (mini, B, darkbox )
+  G4int setup_type;
   
   const G4double kSilicon_strip_width; // along y-axis
   const G4double kSilicon_strip_thickness; // along z-axis
   const G4double kSilicon_length_type_a; // along x-axis
   const G4double kSilicon_length_type_b; // along x-axis
+  G4double silicon_module_gap[3];
   const G4double kFPHX_width; // along y-axis
   const G4double kFPHX_thickness; // along xz-axis
   const G4double kFPHX_length; // along x-axis
@@ -103,12 +114,15 @@ private:
   
   // G4double fmovement;
   G4double world_size[3]; // x, y, z
+  G4double experimental_size[3]; // x, y, z
+  G4double experimental_offset[3];  // x, y, z
   G4double INTT_testbeam_BOX_size[3];  // x, y, z
+  G4double darkbox_offset[3];  // x, y, z
   const G4double kDarkbox_wall_thickness_body;
   const G4double kDarkbox_wall_thickness_side;
   const G4double kDarkbox_stage_width; // width of the movable stage
   
-  G4GenericMessenger* fMessenger;
+  //  DetectorMessenger* fMessenger;
 
   G4Material* DefaultMaterial;
   G4Material* Silicon;
@@ -125,11 +139,13 @@ private:
   G4VPhysicalVolume* INTT_testbeam_BOXPV;
 
   G4LogicalVolume* worldLog;
-  G4LogicalVolume* INTT_testbeam_BOXLV;
+  G4LogicalVolume* experimental_areaLV; //  the dark box and the trigger scintillators are in this volume. it may be rotated
+  G4LogicalVolume* INTT_testbeam_BOXLV; // the dark box is in this volume
   
   G4VisAttributes* color_invisible;
   G4VisAttributes* color_silicon_active;
   G4VisAttributes* color_silicon_inactive;
+  G4VisAttributes* color_silicon_not_used;
   G4VisAttributes* color_glue;
   G4VisAttributes* color_FPHX;
   G4VisAttributes* color_HDI_copper;
@@ -142,15 +158,21 @@ private:
   G4VisAttributes* color_plate;
 
   // parameters for the additional plate
+  G4bool is_plate = false;
   G4String plate_material;
   G4double plate_thickness;
   G4double plate_distance; // distance from the upstream trigger scintillator
+
+  G4bool is_vertical_rotation = false;
+  G4bool is_horizontal_rotation = false;
   
   void DefineVisAttributes();
   void DefineMaterials();
   void DefineCommands();
 
   void ConstructDarkBox();
+  void ConstructLadders();
+  void ConstructTriggers();
   void ConstructPlate();
 };
 

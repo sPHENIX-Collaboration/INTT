@@ -30,7 +30,12 @@
 const G4double EDDetectorConstruction::inch = 25.4; // 1 inch = 25.4 mm
 
 EDDetectorConstruction::EDDetectorConstruction()
-  : kSilicon_strip_width( 78.0 * um ),
+  : //fMessenger( this, "", "", this ),
+    G4VUserDetectorConstruction(),
+    kDarkbox_wall_thickness_body( 3.0 / 4 * inch ),   // 3/4 inch
+    kDarkbox_wall_thickness_side( 1.0 / 2 * inch ),  // 1/2 inch
+    kDarkbox_stage_width(  720 * mm ), // width of the movable stage
+    kSilicon_strip_width( 78.0 * um ),
     kSilicon_strip_thickness( 320.0 * um ),
     kSilicon_length_type_a( 16.0 * mm ),
     kSilicon_length_type_b( 20.0 * mm ),
@@ -40,24 +45,50 @@ EDDetectorConstruction::EDDetectorConstruction()
     kSilver_epoxy_glue_silicon_thickness( 14 * um ),
     kSilver_epoxy_glue_FPHX_thickness( 50 * um ),
     kINTT_CFRP_thickness( 300 * um ),
-    kDarkbox_wall_thickness_body( 3.0 / 4 * inch ),   // 3/4 inch
-    kDarkbox_wall_thickness_side( 1.0 / 2 * inch ),  // 1/2 inch
-    kDarkbox_stage_width(  720 * mm ), // width of the movable stage
-    G4VUserDetectorConstruction()
+    plate_thickness( 1 * cm ), // thickness of the additional lead plate
+    plate_distance( 40.5 * cm ), // distance between the additional lead plate and the dark box
+    setup_type( 0 ), // trigger setup
+    is_vertical_rotation( true ),
+    is_horizontal_rotation( false ),
+    is_plate( false )
 {
 
+  //  fMessenger = new DetectorMessenger( this, "", "", this );
   // Option to switch on/off checking of volumes overlaps
   checkOverlaps = true;
 
+  world_size[0] =  world_size[1] = kDarkbox_stage_width * 2.0;
+  world_size[2]= kDarkbox_stage_width + 2 * m;
+  
+  silicon_module_gap[0] = 0.2 * mm;
+  silicon_module_gap[1] = 22.5 * mm;
+  silicon_module_gap[2] = kSilicon_strip_thickness;
+
   // assign very primitive paraleters here
-  // size of the world
-  world_size[0] = this->kDarkbox_stage_width;
-  world_size[1] = 0.2 * m;
-  world_size[2] = this->kDarkbox_stage_width + 2 * m;
+  // size of the experimental area
+  //  experimental_size[0] = this->kDarkbox_stage_width;
+  experimental_size[0] = world_size[0] / 1.5;
+  experimental_size[1] = world_size[1] / 1.5;
+  experimental_size[2] = 1 * m;//this->kDarkbox_stage_width + 1 * m;
 
   // size of the dark box
   INTT_testbeam_BOX_size[0] = 25.0 / 2  * inch;  // total length is 25 inch = 635 mm. In this simulation, half box should be enough
   INTT_testbeam_BOX_size[1] = INTT_testbeam_BOX_size[2] = 6.54 * inch; // = 166 mm
+
+  // position of the dark box
+  G4double silicon_length = this->kSilicon_length_type_a * 8
+    + this->kSilicon_length_type_b * 5
+    + this->silicon_module_gap[2];
+
+  // offset for the experimental area
+  this->experimental_offset[0] = (silicon_length/2 - this->kSilicon_length_type_a * 2.5); // x
+  this->experimental_offset[1] = 0.0 * cm; // y
+  this->experimental_offset[2] = 0.0 * cm; // z
+
+  // offset for the dark box
+  this->darkbox_offset[0] = 0.0 * cm;
+  this->darkbox_offset[1] = 128.0 / 2  * kSilicon_strip_width; // hight of half chip
+  this->darkbox_offset[2] = 0.0 * cm;
 
   // check whether the dark box is larger than the world or not
   for (int i = 0; i < 3; i++)
@@ -72,44 +103,6 @@ EDDetectorConstruction::~EDDetectorConstruction() {}
 
 void EDDetectorConstruction::DefineCommands()
 {
-  fMessenger
-    = new G4GenericMessenger(this, "/INTT/geom/", "Commands for the geometry in this application");
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch to construct the additional plate
-  // Usage: /INTT/geom/constructPlate
-  // Note: Material, thickness, and distance for the plate need to be set in advance
-  auto &constructPlate_command = fMessenger->DeclareMethod( "constructPlate", &EDDetectorConstruction::ConstructPlate, "" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the additional plate thickness
-  G4GenericMessenger::Command& setPlateMaterial
-    = fMessenger->DeclareProperty( "setPlateMaterial", this->plate_material );
-  setPlateMaterial.SetGuidance( "Set the material of the additional plate" );
-  setPlateMaterial.SetParameterName( "plateMaterial", false ); // (name, is_omittable)
-  setPlateMaterial.SetDefaultValue( "G4_Pb" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the additional plate thickness
-  G4GenericMessenger::Command& setPlateThickness
-    = fMessenger->DeclarePropertyWithUnit( "setPlateThickness", "mm", this->plate_thickness );
-  setPlateThickness.SetGuidance( "Set the thickness of the additional plate" );
-  setPlateThickness.SetParameterName( "plateThickess", false ); // (name, is_omittable)
-  setPlateThickness.SetDefaultValue( "0" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the distance from the upstream trigger scintillator to the additional plate
-  G4GenericMessenger::Command& setPlatedistance
-    = fMessenger->DeclarePropertyWithUnit( "setPlateDistance", "cm", this->plate_distance );
-  setPlatedistance.SetGuidance( "Set the distance of the additional plate from the upstream trigger scintillator" );
-  setPlatedistance.SetParameterName( "plateDistance", false ); // (name, is_omittable)
-  setPlatedistance.SetDefaultValue( "0" );
-
-  // # switch to rotate the setup around the vertical axis (planning)
-  // # Usage: /INTT/geom/rotateSetup [rotation angle] [unit]
-
-  // # selection of the trigger scintillator configuration (but how?)
-  // # Usage: /INTT/geom/???
 }
 
 void EDDetectorConstruction::DefineMaterials()
@@ -125,6 +118,7 @@ void EDDetectorConstruction::DefineMaterials()
   nistManager->FindOrBuildMaterial("G4_Ag", fromIsotopes);
   nistManager->FindOrBuildMaterial("G4_Cu", fromIsotopes);
   Silicon = nistManager->FindOrBuildMaterial("G4_Si", fromIsotopes);
+
   // There is no need to test if materials were built/found
   // as G4NistManager would issue an error otherwise
   // Try the code with "XYZ".      
@@ -216,27 +210,54 @@ void EDDetectorConstruction::ConstructDarkBox()
 {
   auto run_manager = G4RunManager::GetRunManager();
 
+  G4RotationMatrix *box_rotation = new G4RotationMatrix();
+
+  G4ThreeVector box_position( this->darkbox_offset[0], this->darkbox_offset[1], this->darkbox_offset[2] );
+  if( is_vertical_rotation )
+    {
+      const G4double kVertical_rotation_angle = -13.7 * deg;
+      box_rotation->rotateX( kVertical_rotation_angle ); // trigger sci. stay the same
+
+      G4double dx = 0.0;
+      G4double theta = std::atan2( this->INTT_testbeam_BOX_size[2]/2, this->INTT_testbeam_BOX_size[1]/2 ) * radian;
+      G4double radius = sqrt( std::pow(this->INTT_testbeam_BOX_size[2]/2, 2 ) + std::pow(this->INTT_testbeam_BOX_size[1]/2, 2) );
+      G4double dz = -radius
+	* (  cos( theta - kVertical_rotation_angle ) - cos( theta )) ;
+      G4double dy = radius
+	* ( sin( theta - kVertical_rotation_angle  ) - sin( theta )) ;
+
+      dy = this->INTT_testbeam_BOX_size[1] / 2 + this->darkbox_offset[1] - 94.5 ;
+      
+      box_position += G4ThreeVector(0, dy, dz );
+
+    }
+  else if( is_horizontal_rotation )
+    {
+      box_rotation->rotateY( 29.05 *deg); // trigger sci rotated as well
+    }
+
   auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
-				     this->kDarkbox_stage_width / 2,
+				     //this->kDarkbox_stage_width / 2,
+				     this->INTT_testbeam_BOX_size[0] / 2,
 				     this->INTT_testbeam_BOX_size[1] / 2,
-				     this->INTT_testbeam_BOX_size[2] / 2 +  1 * m);
+				     this->INTT_testbeam_BOX_size[2] / 2 );
 				     //this->kDarkbox_stage_width / 2 );
   
   INTT_testbeam_BOXLV
     = new G4LogicalVolume(INTT_testbeam_BOX, DefaultMaterial, "INTT_testbeam_BOXLV");
   INTT_testbeam_BOXLV->SetVisAttributes(color_invisible);
-  
+
   INTT_testbeam_BOXPV =
-    new G4PVPlacement(0,
-		      G4ThreeVector(0, 0, 0),
+    new G4PVPlacement(box_rotation,
+		      box_position,
 		      INTT_testbeam_BOXLV,  //its logical volume
 		      "INTT_testbeam_BOXLV",  //its name
-		      this->worldLog, //its mother  volume
+		      //this->worldLog, //its mother  volume
+		      this->experimental_areaLV,
 		      false,  //no boolean operation
 		      0,  //copy number
 		      checkOverlaps);
-
-
+  
   ////////////////////////////////
   // walls of the dark box      //
   ////////////////////////////////
@@ -302,31 +323,13 @@ void EDDetectorConstruction::ConstructDarkBox()
 		    darkbox_wall_upstreamLV, "darkbox_wall_downstream", INTT_testbeam_BOXLV,
 		    false, 1, checkOverlaps);
 
+  
+  // construct contants in the dark box
+  this->ConstructLadders();
 }
 
-G4VPhysicalVolume *EDDetectorConstruction::Construct()
+void EDDetectorConstruction::ConstructLadders()
 {
-  // World
-  // world volume
-  G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
-
-  auto run_manager = G4RunManager::GetRunManager();
-
-  this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
-  this->worldLog->SetVisAttributes(color_invisible);
-
-  G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
-						 G4ThreeVector(),  //at (0,0,0)
-						 this->worldLog, //its logical volume
-						 "worldLog", //its name
-						 0,  //its mother  volume
-						 false,  //no boolean operation
-						 0,  //copy number
-						 checkOverlaps); //overlaps checking
-
-
-  this->ConstructDarkBox();
-
   //======================G4solid===============================================  
   const int kLadder_num = 4;
   const bool kIs_silicon_off = false;  // flag for debugging, turning all silicon strips off to save time
@@ -374,7 +377,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   const G4double kLadder_horizontal_length = 232.2 * mm;
   const G4double kLadder_vertical_length = 38 * mm;
   //  1.47684 cm
-
+  
   //  G4Box* INTT_si_box    = new G4Box("INTT_si_box", 0.3 *m, 0.3 *m, 0.3 *m);
   // container for the active silicon strips and inactive silicon block
   G4Box *INTT_si = new G4Box("INTT_si",
@@ -383,16 +386,25 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 			     this->kSilicon_strip_thickness / 2 );
     
   // the gap between the silicon type-A and type-B
-  G4Box *INTT_si_gap = new G4Box("INTT_si_gap", 0.1 *mm, 11.25 *mm, this->kSilicon_strip_thickness / 2 );
+  G4Box *INTT_si_gap = new G4Box("INTT_si_gap",
+				 this->silicon_module_gap[0] / 2,
+				 this->silicon_module_gap[1] / 2,
+				 this->silicon_module_gap[2] / 2 );
 
+  // Silicon strip
   G4Box *INTT_si_typeA = new G4Box("INTT_si_typeA",
 				   this->kSilicon_length_type_a / 2,
 				   this->kSilicon_strip_width / 2,
-				   this->kSilicon_strip_thickness / 2);
+				   this->kSilicon_strip_thickness / 2 );
+  auto INTT_si_typeALV = new G4LogicalVolume( INTT_si_typeA, Silicon, "typeA" );
+  INTT_si_typeALV->SetVisAttributes(color_silicon_active);  
+  
   G4Box *INTT_si_typeB = new G4Box("INTT_si_typeB",
 				   this->kSilicon_length_type_b / 2,
 				   this->kSilicon_strip_width / 2,
 				   this->kSilicon_strip_thickness / 2);
+  auto INTT_si_typeBLV = new G4LogicalVolume( INTT_si_typeB, Silicon, "typeB" );
+  INTT_si_typeBLV->SetVisAttributes(color_silicon_active);  
 
   //! @TODO which thickness 14 um or 50 um should be used for the silicon sensors?
   G4Box *INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
@@ -400,11 +412,11 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
     
   G4Box* INTT_Chip		= new G4Box("INTT_Chip",
 					    this->kFPHX_length/2, this->kFPHX_width/2, this->kFPHX_thickness/2 );
-
   G4Box* INTT_Chip_glue		= new G4Box("INTT_Chip_glue",
 					    this->kFPHX_length/2, this->kFPHX_width/2, this->kSilver_epoxy_glue_FPHX_thickness / 2); 
 
   G4Box* INTT_Chip_area = new G4Box("INTT_Chip_area", this->kFPHX_length/2, this->kFPHX_width/2, this->kFPHX_thickness + this->kSilver_epoxy_glue_FPHX_thickness );
+
 
   G4double INTT_CFRP_tube_inner_radius = 1.5 * mm;
   G4double INTT_CFRP_tube_outer_radius = INTT_CFRP_tube_inner_radius + kINTT_CFRP_thickness;
@@ -628,12 +640,12 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   INTT_siLV_typeB->SetVisAttributes(color_silicon_active);
 
   G4LogicalVolume *INTT_siLV_typeA_not_used = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA_not_used");
-  //  INTT_siLV_typeA_not_used->SetVisAttributes(color_silicon_active);
-  INTT_siLV_typeA_not_used->SetVisAttributes(color_glue);
+  INTT_siLV_typeA_not_used->SetVisAttributes(color_silicon_not_used);
+  //INTT_siLV_typeA_not_used->SetVisAttributes(color_glue);
 
   G4LogicalVolume *INTT_siLV_typeB_not_used = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB_not_used");
-  //INTT_siLV_typeB_not_used->SetVisAttributes(color_silicon_active);
-  INTT_siLV_typeB_not_used->SetVisAttributes(color_glue);
+  INTT_siLV_typeB_not_used->SetVisAttributes(color_silicon_not_used);
+  //INTT_siLV_typeB_not_used->SetVisAttributes(color_glue);
 
   G4LogicalVolume *INTT_siLV_glue_typeA = new G4LogicalVolume(INTT_si_glue_typeA, SilverEpoxyGlue, "INTT_siLV_glue_typeA");
   INTT_siLV_glue_typeA->SetVisAttributes(color_glue);
@@ -642,15 +654,16 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   INTT_siLV_glue_typeB->SetVisAttributes(color_glue);
 
   G4LogicalVolume *INTT_siLV_gap = new G4LogicalVolume(INTT_si_gap,  DefaultMaterial, "INTT_siLV_gap");
-  INTT_siLV_gap->SetVisAttributes(color_CFRP_foam);    
+  //  INTT_siLV_gap->SetVisAttributes(color_CFRP_foam);    
+  INTT_siLV_gap->SetVisAttributes(color_glue);    
 
   // loop over all INTT ladders for the silicon strips
   for (G4int l = 0; l < kLadder_num; l++)
     {
 
       // if the debuggind flag is ture, skip silicon strips
-      if (kIs_silicon_off == true)
-	continue;
+      //      if (kIs_silicon_off == true)
+      //continue;
 
       // put the area for the active and inactive silicon
       INTT_siLV_outer[l] = new G4LogicalVolume(INTT_si, Silicon, INTT_siLV_name[l]);
@@ -661,8 +674,12 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 	+ l * kINTT_ladder_thickness + l * kGap // move to the ladder position which we are working in this loop
 	+ this->kSilicon_strip_thickness / 2; // move the the center of the silicon strip
 
+      G4RotationMatrix *silicon_rotation = new G4RotationMatrix(); // It's necessary to make geometry same as the reality. Without rotation, the silicon module is like the other half ladder.
+      silicon_rotation->rotateY( 180 * deg );
+      silicon_rotation->rotateZ( 180 * deg );
+
       G4VPhysicalVolume *INTT_siLV_outer_allPV =
-	new G4PVPlacement(0,
+	new G4PVPlacement( silicon_rotation,
 			  G4ThreeVector(0, 0, zpos), 
 			  INTT_siLV_outer[l], //its logical volume
 			  INTT_siLV_name[l],  //its name
@@ -870,10 +887,10 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
             } // end of if (l1 < 128)
         } // end of for (G4int l1 = 0; l1 < 256; l1++)
 
-
       // the silver epoxy glue for the silcon chip type-A
       // move the position from the center of the silicon strip to the center of the glue
       zpos += this->kSilicon_strip_thickness / 2 + this->kSilver_epoxy_glue_FPHX_thickness / 2;
+
       G4VPhysicalVolume *INTT_siLV_glue_typeA_PV =
 	new G4PVPlacement(0,
 			  G4ThreeVector(-51.1 * mm, 0, zpos ),
@@ -894,7 +911,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 			  false,  //no boolean operation
 			  0,  //copy number
 			  checkOverlaps);  
-	
     } // end block for for loop over all INTT ladders
 
   //for chip
@@ -991,6 +1007,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       //   = new G4LogicalVolume(INTT_Chip, Silicon, INTT_ChipLV_name[0]);  
     } // end block for for loop
 
+  
   // loop over all INTT ladders to create HDI cables and the carbon staves
   for (G4int l = 0; l < kLadder_num; l++)
     {
@@ -1209,98 +1226,249 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
       ////////////////////////////////////////////////////////////
     } // end block for for loop
 
+}
+
+void EDDetectorConstruction::ConstructTriggers()
+{
+
   ////////////////////////////////////////////////////////////
   // Trigger scintillators ///////////////////////////////////
-  ////////////////////////////////////////////////////////////
-  G4double INTT_sci_thin_thickness = 2.5 * mm;
-  // G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 116.1 *mm, 11.25 *mm, INTT_sci_thin_thickness/2.); // obsolete
-  G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 230.0 / 2 * mm, 24.0 / 2 * mm, INTT_sci_thin_thickness/2.);
 
-  // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
+  ////////////////////////////////////////////////////////////
+  // first, make boxes and logical volumes
+  // the thin scintillator
+  G4double INTT_sci_thin_thickness = 2.5 * mm;
+  G4Box *INTT_sci_thin = new G4Box("INTT_sci_thin", 230.0 / 2 * mm, 24.0 / 2 * mm, INTT_sci_thin_thickness/2.);
   G4LogicalVolume *INTT_sci_thinLV = new G4LogicalVolume(INTT_sci_thin, BBHodo_Scinti, "INTT_sci_thinLV");
   INTT_sci_thinLV->SetVisAttributes(color_scintillator);
 
-  G4double distance_darkbox_upstream_scintillator = 117.0 * mm;
-  G4double zpos_sci = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
-
-  //    zpos_sci = -20 * cm;    
-  new G4PVPlacement(0,
-		    G4ThreeVector(0, 0, zpos_sci ), 
-		    INTT_sci_thinLV, //its logical volume
-		    "sci_thin_upstream",  //its name
-		    INTT_testbeam_BOXLV,
-		    false,  //no boolean operation
-		    0,  //copy number
-		    checkOverlaps);
-
-  // for the thicker trigger scintillators, to be put on the downstream surface of the darkbox
+  // the thicker trigger scintillators
   G4double INTT_sci_thick_thickness = 5 * mm;    
   G4Box *INTT_sci = new G4Box("INTT_sci", 230.0 / 2 * mm, 24.0 / 2 * mm, INTT_sci_thick_thickness/2.);
   G4LogicalVolume *INTT_sciLV = new G4LogicalVolume(INTT_sci, BBHodo_Scinti, "INTT_sciLV1");
   INTT_sciLV->SetVisAttributes(color_scintillator);
+  
+  // mini-trigger scintillator
+  G4Box *INTT_mini_sci = new G4Box("INTT_mini_sci", 9.0 / 2 * mm, 9.0 / 2 * mm, INTT_sci_thick_thickness/2.);
+  G4LogicalVolume *INTT_mini_sciLV = new G4LogicalVolume(INTT_mini_sci, BBHodo_Scinti, "INTT_mini_sciLV");
+  INTT_mini_sciLV->SetVisAttributes(color_scintillator);
 
+  ////////////////////////////////////////////////////////////
+  // second, put them depending on the condition
+  G4double distance_darkbox_upstream_scintillator = 117.0 * mm; // it's the same for any setup
   G4double distance_darkbox_middle_scintillator = 57.0 * mm;
-  zpos_sci = this->INTT_testbeam_BOX_size[2] / 2 + distance_darkbox_middle_scintillator + INTT_sci_thick_thickness / 2;
-    
-  new G4PVPlacement(0,
-		    G4ThreeVector(0, 0, zpos_sci ), 
-		    INTT_sciLV, //its logical volume
-		    "sci_middle",  //its name
-		    INTT_testbeam_BOXLV,
-		    false,  //no boolean operation
-		    0,  //copy number
-		    checkOverlaps);
-    
-  // to be written in better way
   G4double distance_middle_downstream_scintillators = 30 * mm;
-  zpos_sci += INTT_sci_thick_thickness + distance_middle_downstream_scintillators;
-    
-  new G4PVPlacement(0,
-		    G4ThreeVector(0, 0, zpos_sci ),
-		    INTT_sciLV, //its logical volume
-		    "sci_downstream",  //its name
-		    INTT_testbeam_BOXLV,
-		    false,  //no boolean operation
-		    1,  //copy number
-		    checkOverlaps);
 
-  //always return the physical World
-  return worldPV;
+  if( setup_type == 0 )
+    {
+  
+      G4double zpos_sci_up = -distance_darkbox_upstream_scintillator
+	- this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thick_thickness / 2;
+
+      new G4PVPlacement(0,
+			G4ThreeVector(0, 0, zpos_sci_up ), 
+			INTT_sciLV, //its logical volume
+			"INTT_sci_LV1",  //its name
+			this->experimental_areaLV,
+			false, 0, checkOverlaps );   //no boolean operation, copy number, overlap check flag
+
+      G4double zpos_sci_middle = this->INTT_testbeam_BOX_size[2] / 2
+	+ distance_darkbox_middle_scintillator
+	+ INTT_sci_thick_thickness / 2;
+    
+      new G4PVPlacement(0,
+			G4ThreeVector(0, 0, zpos_sci_middle ), 
+			INTT_sciLV, //its logical volume
+			"INTT_sci_LV1",  //its name
+			this->experimental_areaLV,
+			false, 1, checkOverlaps );   //no boolean operation, copy number, overlap check flag
+    
+      G4double zpos_mini_sci = zpos_sci_up -  INTT_sci_thin_thickness / 2 // start from the upstream edge of the upstream sci.
+	- 3.0 * cm / 2  // thickness of the aluminum frame
+	- 14.3 * mm / 2 // diameter of PMT H3165-10 (Hamamatsu), https://www.hamamatsu.com/us/en/product/type/H3165-10/index.html
+	- INTT_sci_thick_thickness / 2;
+      G4ThreeVector pos_mini_sci( -this->experimental_offset[0],
+				  -this->experimental_offset[1],
+				  -this->experimental_offset[2] +  zpos_mini_sci );
+  
+      new G4PVPlacement(0,
+			pos_mini_sci,
+			INTT_mini_sciLV, //its logical volume
+			"INTT_mini_sciLV",  //its name
+			this->experimental_areaLV,
+			false, 0, checkOverlaps );   //no boolean operation, copy number, overlap check flag
+    }
+  else if( setup_type == -1 )// 4 sci setup
+    {
+      G4double zpos_sci_up = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
+
+      new G4PVPlacement(0,
+			G4ThreeVector(0, 0, zpos_sci_up ), 
+			INTT_sci_thinLV, //its logical volume
+			"sci_thin_upstream",  //its name
+			//INTT_testbeam_BOXLV,
+			this->experimental_areaLV,
+			false,  //no boolean operation
+			0,  //copy number
+			checkOverlaps);
+
+
+      G4double zpos_sci_middle = this->INTT_testbeam_BOX_size[2] / 2 + distance_darkbox_middle_scintillator + INTT_sci_thick_thickness / 2;
+    
+      new G4PVPlacement(0,
+			G4ThreeVector(0, 0, zpos_sci_middle ), 
+			INTT_sciLV, //its logical volume
+			"sci_middle",  //its name
+			//INTT_testbeam_BOXLV,
+			this->experimental_areaLV,
+			false,  //no boolean operation
+			0,  //copy number
+			checkOverlaps);
+    
+      // to be written in better way
+      G4double zpos_sci_down = zpos_sci_middle + INTT_sci_thick_thickness + distance_middle_downstream_scintillators;
+    
+      new G4PVPlacement(0,
+			G4ThreeVector(0, 0, zpos_sci_down ),
+			INTT_sciLV, //its logical volume
+			"sci_downstream",  //its name
+			//INTT_testbeam_BOXLV,
+			this->experimental_areaLV,
+			false,  //no boolean operation
+			1,  //copy number
+			checkOverlaps);
+
+
+      G4double zpos_mini_sci = zpos_sci_up -  INTT_sci_thin_thickness / 2 // start from the upstream edge of the upstream sci.
+
+	- 3.0 * cm / 2  // thickness of the aluminum frame
+	- 14.3 * mm / 2 // diameter of PMT H3165-10 (Hamamatsu), https://www.hamamatsu.com/us/en/product/type/H3165-10/index.html
+	- INTT_sci_thick_thickness / 2;
+      G4ThreeVector pos_mini_sci( -this->experimental_offset[0],
+				  -this->experimental_offset[1],
+				  -this->experimental_offset[2] +  zpos_mini_sci );
+  
+      new G4PVPlacement(0,
+			pos_mini_sci,
+			INTT_mini_sciLV, //its logical volume
+			"mini_sci",  //its name
+			this->experimental_areaLV,
+			false,  //no boolean operation
+			0,  //copy number
+			checkOverlaps);
+
+    } // end of 4-sci setup
+
 }
+
 
 void EDDetectorConstruction::ConstructPlate()
 {
   
+
   // Get nist material manager
   G4NistManager *nistManager = G4NistManager::Instance();
   G4bool fromIsotopes = false;
-  nistManager->FindOrBuildMaterial(this->plate_material, fromIsotopes);
-
+  nistManager->FindOrBuildMaterial( "G4_Pb", fromIsotopes);
+  
   G4Box *plate_box = new G4Box("plate",
 			       this->INTT_testbeam_BOX_size[0] / 2,
 			       this->INTT_testbeam_BOX_size[1] / 2,
 			       this->plate_thickness / 2 );
 
   // for the thin trigger scintillator, to be put on the upstream surface of the darkbox
-  G4LogicalVolume *plate_LV = new G4LogicalVolume(plate_box, G4Material::GetMaterial( this->plate_material ), "plateLV");
+  G4LogicalVolume *plate_LV = new G4LogicalVolume(plate_box, G4Material::GetMaterial( "G4_Pb" ), "plateLV");
   plate_LV->SetVisAttributes( color_plate );
 
-  G4double distance_darkbox_upstream_scintillator = 117.0 * mm;
-  G4double zpos = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - this->plate_distance;
+  // distance from the beam window of the dark box to this lead plate: 40.5 cm
+  G4double zpos = -this->INTT_testbeam_BOX_size[2] / 2 - this->plate_distance;
 
   new G4PVPlacement(0,
 		    G4ThreeVector(0, 0, zpos ),
 		    plate_LV, //its logical volume
 		    "plate",  //its name
-		    this->INTT_testbeam_BOXLV,
+		    this->experimental_areaLV,
 		    false,  //no boolean operation
 		    0,  //copy number
 		    checkOverlaps);
   
 }
 
+G4VPhysicalVolume *EDDetectorConstruction::Construct()
+{
+  // World
+  // world volume
+  G4VSolid *worldS = new G4Box("World", this->world_size[0] / 2, this->world_size[1] / 2, this->world_size[2] / 2);
+
+  auto run_manager = G4RunManager::GetRunManager();
+
+  this->worldLog = new G4LogicalVolume(worldS, DefaultMaterial, "worldLog");
+  this->worldLog->SetVisAttributes(color_invisible);
+
+  G4VPhysicalVolume *worldPV = new G4PVPlacement(0, //no rotation
+						 G4ThreeVector(),  //at (0,0,0)
+						 this->worldLog, //its logical volume
+						 "worldLog", //its name
+						 0,  //its mother  volume
+						 false,  //no boolean operation
+						 0,  //copy number
+						 checkOverlaps); //overlaps checking
+
+  // experimental area
+  G4VSolid *experimental_box = new G4Box("ExperimentalBox", this->experimental_size[0] / 2, this->experimental_size[1] / 2, this->experimental_size[2] / 2);
+  this->experimental_areaLV = new G4LogicalVolume(experimental_box, DefaultMaterial, "experimental_areaLV");
+  this->experimental_areaLV->SetVisAttributes(color_invisible);
+
+  // 
+  G4ThreeVector experimental_position( this->experimental_offset[0],
+				       this->experimental_offset[1],
+				       this->experimental_offset[2] );
+  
+  
+  G4VPhysicalVolume *experimental_areaPV = new G4PVPlacement(0, 
+							     experimental_position,
+							     this->experimental_areaLV, //its logical volume
+							     "experimental_area", //its name
+							     this->worldLog,  //its mother  volume
+							     false,  //no boolean operation
+							     0,  //copy number
+							     checkOverlaps); //overlaps checking
+
+  
+  this->ConstructDarkBox();
+
+  // floor for the dark box
+  G4double darkbox_floor_thickness = 0.3 * mm;
+  G4Box *darkbox_floor = new G4Box("darkbox_floor",
+				   396 / 2 * mm, //this->INTT_testbeam_BOX_size[0] / 2,
+				   darkbox_floor_thickness / 2,
+				   265 / 2 * mm );
+
+  auto darkbox_floorLV = new G4LogicalVolume(darkbox_floor, G4Material::GetMaterial( "G4_Al" ), "darkbox_floor");
+  darkbox_floorLV->SetVisAttributes( color_plate );
+
+  G4ThreeVector darkbox_floor_position( 0.0, 
+					this->darkbox_offset[1] -this->INTT_testbeam_BOX_size[1] / 2 - darkbox_floor_thickness / 2,
+					0.0 );
+
+  if( !is_vertical_rotation && !is_horizontal_rotation ) // if both are false, put the floor
+  // put below the dark box
+  new G4PVPlacement(0, darkbox_floor_position, 
+		    darkbox_floorLV, "darkbox_floor", experimental_areaLV,
+		    false, 0, checkOverlaps);
+  
+  this->ConstructTriggers();
+
+  if( this->is_plate == true )
+    this->ConstructPlate();
+  
+  //always return the physical World
+  return worldPV;
+}
+
 void EDDetectorConstruction::ConstructSDandField()
 {
+
   // EDChamberSD*INTT_siSD[4];
   // G4String INTT_siSD_name[4]={"INTT_siSD_1","INTT_siSD_2","INTT_siSD_3","INTT_siSD_4"};
   // G4String INTT_siSD_HitsCollection_name[4]={"INTT_siSD_HitsCollection_1","INTT_siSD_HitsCollection_2","INTT_siSD_HitsCollection_3","INTT_siSD_HitsCollection_4"};
@@ -1314,34 +1482,34 @@ void EDDetectorConstruction::ConstructSDandField()
   G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD);
   SetSensitiveDetector("INTT_siLV_all_typeB", chamber2SD);
 
-  EDEmCalorimeterSD *calorimeterSD1 = new EDEmCalorimeterSD("EmCalorimeterSD1", "EmCalorimeterHitsCollection1");
-  G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD1);
-  SetSensitiveDetector("INTT_sci_thinLV", calorimeterSD1);
-    
+  if( setup_type == -1 ) // only for the full setup
+    {
+      EDEmCalorimeterSD *calorimeterSD1 = new EDEmCalorimeterSD("EmCalorimeterSD1", "EmCalorimeterHitsCollection1");
+      G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD1);
+      SetSensitiveDetector("INTT_sci_thinLV", calorimeterSD1);
+    }
+  
   EDEmCalorimeterSD *calorimeterSD = new EDEmCalorimeterSD("EmCalorimeterSD", "EmCalorimeterHitsCollection");
   G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD);
   SetSensitiveDetector("INTT_sciLV1", calorimeterSD);
-    
-  // EDChamberSD* trigger_1 = new EDChamberSD("Trigger_1", "Trigger_1HitsCollection", 1);
-  // G4SDManager::GetSDMpointer()->AddNewDetector(trigger_1);
-  // SetSensitiveDetector("INTT_sciLV1", trigger_1);
-
-  // for (int i2=0; i2 < 4; i2++)
-  //   {
-  //   INTT_siSD[i2]=new EDChamberSD(INTT_siSD_name[i2],INTT_siSD_HitsCollection_name[i2],i2);
-  //   G4SDManager::GetSDMpointer()->AddNewDetector(INTT_siSD[i2]);
-  //   SetSensitiveDetector(INTT_siLV_name[i2], INTT_siSD[i2]);
-  //   }
-  // G4SDManager::GetSDMpointer()->SetVerboseLevel(1);
-
+  
+  EDEmCalorimeterSD *calorimeterSD_mini = new EDEmCalorimeterSD("EmCalorimeterSD_mini", "EmCalorimeterHitsCollection_mini");
+  G4SDManager::GetSDMpointer()->AddNewDetector( calorimeterSD_mini );
+  SetSensitiveDetector("INTT_mini_sciLV", calorimeterSD_mini);
+  
 }
 
 void EDDetectorConstruction::DefineVisAttributes()
 {
 
-  color_invisible		= new G4VisAttributes(false	, G4Colour(0.0, 0.000, 0.0, 0.0)	);
+  //  color_invisible		= new G4VisAttributes(false	, G4Colour(0.0, 0.000, 0.0, 0.0)	);
+  color_invisible		= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 0.0, 1.0)	);
+  color_invisible->SetForceWireframe( true );
+  
   color_silicon_active	= new G4VisAttributes(true	, G4Colour(1.0, 0.000, 0.0, 0.5)	); // transparent red
   color_silicon_inactive	= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 1.0, 0.5)	); // transparent blue
+  color_silicon_not_used	= new G4VisAttributes(true	, G4Colour(1.0, 0.500, 0.0, 0.5)	); // transparent blue
+  
   color_glue			= new G4VisAttributes(true	, G4Colour(0.1, 0.100, 0.1, 0.4)	);
   color_FPHX			= new G4VisAttributes(true	, G4Colour(1.0, 0.843, 0.0, 0.5)	); // HTML gold
   color_HDI_copper		= new G4VisAttributes(true	, G4Colour(0.7, 0.400, 0.0, 0.5)	); // brown
@@ -1353,3 +1521,24 @@ void EDDetectorConstruction::DefineVisAttributes()
   color_darkbox_wall		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.1)	); // transparent black
   color_plate    		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.8)	); // transparent black
 }
+
+/*
+void EDDetectorConstruction::DoConstruction( int i)
+{
+  G4cout << "void EDDetectorConstruction::DoConstruction( int i = " << i << ")" << G4endl;
+
+  G4RunManager::GetRunManager()->ReinitializeGeometry(true);
+  // /*
+  G4RunManager::GetRunManager()->DefineWorldVolume(Construct());
+  G4RunManager::GetRunManager()->GeometryHasBeenModified();
+  // * /
+  
+  G4UImanager *UImanager = G4UImanager::GetUIpointer();
+  UImanager->ApplyCommand("/vis/drawVolume");
+  // UImanager->ApplyCommand("/vis/viewer/set/targetPoint 0 0 " +
+  //                         std::to_string(fVisViewpoint / CLHEP::m) + " m");
+  UImanager->ApplyCommand("/vis/scene/add/trajectories smooth");
+  UImanager->ApplyCommand("/vis/scene/add/hits");
+
+}
+*/

@@ -68,7 +68,7 @@ class EDPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     // method from the base class
     virtual void GeneratePrimaries(G4Event*);         
-
+  G4ParticleGun*  GetParticleGun() const { return fParticleGun; };
   private:
     G4GenericMessenger*  fMessenger;
     G4ParticleGun*  fParticleGun;  
