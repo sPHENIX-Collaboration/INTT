@@ -48,7 +48,7 @@ EDDetectorConstruction::EDDetectorConstruction()
     plate_thickness( 1 * cm ), // thickness of the additional lead plate
     plate_distance( 40.5 * cm ), // distance between the additional lead plate and the dark box
     setup_type( 0 ), // trigger setup
-    is_vertical_rotation( true ),
+    is_vertical_rotation( false ),
     is_horizontal_rotation( false ),
     is_plate( false )
 {
@@ -619,7 +619,7 @@ void EDDetectorConstruction::ConstructLadders()
   
   const G4double kINTT_ladders_center = 0.0;
   //const G4double kGap = 35.0 * mm; // gap betwen ladders, good to use the same parameter for all ladders
-  const G4double kGap = 0.5 * inch; // gap betwen ladders, good to use the same parameter for all ladders
+  const G4double kGap = 26.1 * mm; // gap betwen ladders, good to use the same parameter for all ladders
   const G4double kStave_thickness = kINTT_CFRP_thickness + INTT_CFRP_tube_outer_radius * 2 + kINTT_CFRP_thickness; // flat CFRP thickness + CFRP tube + formed CFRP thickness
 
   // silicon   + silver epoxy glue: 320um + 14um
@@ -662,8 +662,8 @@ void EDDetectorConstruction::ConstructLadders()
     {
 
       // if the debuggind flag is ture, skip silicon strips
-      //      if (kIs_silicon_off == true)
-      //continue;
+      if (kIs_silicon_off == true)
+	continue;
 
       // put the area for the active and inactive silicon
       INTT_siLV_outer[l] = new G4LogicalVolume(INTT_si, Silicon, INTT_siLV_name[l]);
