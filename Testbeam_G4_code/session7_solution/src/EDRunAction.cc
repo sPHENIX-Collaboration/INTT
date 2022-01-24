@@ -38,8 +38,15 @@ G4double EDRunAction::beam_energy;
 G4bool EDRunAction::is_beam_smearing;
 ELPHEBeam* EDRunAction::beam;
 
-EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga ) :
-  G4UserRunAction()
+EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* output ) : 
+  G4UserRunAction(),
+  event_( event ),
+  event_id_( -1 ),
+  vec(),
+  track_(),
+  tracks_(),
+  steps_(),
+  output_( output )
 {
   DefineCommands();
   // Create analysis manager
@@ -83,6 +90,7 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga ) :
   analysisManager->CreateNtupleDColumn("Beam_energy"); // in MeV
   analysisManager->FinishNtuple();
 
+  // ntuple id = 2
   analysisManager->CreateNtuple("event_particle", "event_particle");
   analysisManager->CreateNtupleIColumn("PID_order"); // colume id = 0
   analysisManager->CreateNtupleIColumn("PID"); // colume id = 0
@@ -95,13 +103,32 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga ) :
   analysisManager->FinishNtuple();
 
   // ntuple id = 1
-
   analysisManager->CreateNtuple("sci_trigger", "sci_trigger");
   analysisManager->CreateNtupleIColumn("Event_ID");
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
 
+  /*
+  if( event_ )
+    {
+      //tf_output_ = new TFile( "test.root", "RECREATE" );
+      //tf_output_ = std::shared_ptr < TFile >( "test.root", "RECREATE" );
+      tf_output_ = std::make_shared< TFile >( "test.root", "RECREATE" );
+      
+      //tree_ = new TTree( "tree", "tree" );
+      tree_ = std::make_shared< TTree >( "tree", "tree" );
+      tree_->Branch( "event", &event_id_, "event/I" );
+      //analysisManager->CreateNtuple( "TrackMC", "TrackMC" );
+      tree_->Branch( "vec", &vec );
+      //      tree_->Branch( "event", &event );      
+      //tree_->Branch( "track", &track_ );
+      tree_->Branch( "tracks", &tracks_ );
+      tree_->Branch( "steps", &steps_ );
+
+    }
+  */
+  
 }
 
 EDRunAction::~EDRunAction()
@@ -145,8 +172,6 @@ void EDRunAction::DefineCommands()
   setPositionRestriction.SetParameterName( "positionRestriction", true ); // (name, is_omittable)
   setPositionRestriction.SetDefaultValue( "0" );
 
-
-
 }
 
 void EDRunAction::BeginOfRunAction(const G4Run* kRun )
@@ -155,6 +180,8 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   // Get analysis manager
   auto analysisManager = G4AnalysisManager::Instance();  
   auto UImanager = G4UImanager::GetUIpointer();
+
+  output_->Book();
   
   if( this->is_first )
     {
@@ -181,7 +208,7 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   analysisManager->OpenFile(fileName);  
 
   this->beam = new ELPHEBeam( beam_line, production_target, position_restriction, this->beam_energy );
-  beam->Print( 0 );  
+  //  beam->Print( 0 );  
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )
@@ -194,6 +221,44 @@ void EDRunAction::EndOfRunAction(const G4Run* kRun )
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->Write();
   analysisManager->CloseFile();
-  
+
+  //output_->Save();
+  //tf_output_->WriteTObject( tree_, tree_->GetName() );
+
+  /*
+  for( auto& brik : briks_ )
+    {
+      tf_output_->WriteObject( brik, brik->GetName() );
+    }
+  */  
+
+  //  tf_output_->Close();
+
   //std::cerr << " -> ends" << std::endl;
+}
+
+void EDRunAction::ClearEventBuffer( string mode )
+{
+  if( mode == "TrackMC" || mode == "all" )
+    tracks_.erase( tracks_.begin(), tracks_.end() );
+
+  if( mode == "StepMC" || mode == "all" )
+    steps_.erase( steps_.begin(), steps_.end() );
+
+}
+
+void EDRunAction::SetTrackMCs( vector < TrackMC* >& tracks )
+{
+  this->ClearEventBuffer( "TrackMC" );
+  for( auto& track : tracks )
+    tracks_.push_back( track );
+
+}
+
+void EDRunAction::SetStepMCs( vector < StepMC* >& steps )
+{
+  this->ClearEventBuffer( "StepMC" );
+  for( auto& step : steps )
+    steps_.push_back( step );
+
 }
