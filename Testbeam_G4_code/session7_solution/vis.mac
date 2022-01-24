@@ -3,30 +3,29 @@
 #
 
 # Use these open statements to open selected visualization
-#
 # Use this open statement to create an OpenGL view:
 /vis/open OGL 600x600-0+0
 
 # Use this open statement to create an OpenInventor view:
-#/vis/open OI
-#
+# /vis/open OI
+
 # Use this open statement to create a .prim file suitable for
 # viewing in DAWN:
-#/vis/open DAWNFILE
-#
+# /vis/open DAWNFILE
+
 # Use this open statement to create a .heprep file suitable for
 # viewing in HepRApp:
-#/vis/open HepRepFile
-#
+# /vis/open HepRepFile
+
 # Use this open statement to create a .wrl file suitable for
 # viewing in a VRML viewer:
-#/vis/open VRML2FILE
-#
+# /vis/open VRML2FILE
+
 # Disable auto refresh and quieten vis messages whilst scene and
 # trajectories are established:
 /vis/viewer/set/autoRefresh false
 /vis/verbose errors
-#
+
 # Draw geometry:
 /vis/drawVolume
 
@@ -51,19 +50,19 @@
 /vis/scene/add/hits
 
 # To draw only gammas:
-#/vis/filtering/trajectories/create/particleFilter
-#/vis/filtering/trajectories/particleFilter-0/add gamma
+# /vis/filtering/trajectories/create/particleFilter
+# /vis/filtering/trajectories/particleFilter-0/add gamma
 
 # To invert the above, drawing all particles except gammas,
 # keep the above two lines but also add:
-#/vis/filtering/trajectories/particleFilter-0/invert true
+# /vis/filtering/trajectories/particleFilter-0/invert true
 
 # Many other options are available with /vis/modeling and /vis/filtering.
 # For example, to select colour by particle ID:
 /vis/modeling/trajectories/create/drawByParticleID
 /vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts true
 # To select or override default colours (note: e+ is blue by default):
-#/vis/modeling/trajectories/list
+# /vis/modeling/trajectories/list
 /vis/modeling/trajectories/drawByParticleID-0/set e- yellow
 /vis/modeling/trajectories/drawByParticleID-0/set e+ blue
 /vis/modeling/trajectories/drawByParticleID-0/set gamma green
@@ -86,22 +85,29 @@
 /vis/verbose warnings
 
 # For file-based drivers, use this to create an empty detector view:
-#/vis/viewer/flush
+# /vis/viewer/flush
 
 # Add a menu « View » in the toolbar
 /gui/addMenu menu_view View
-#
+
 # In this View menu, add two buttons for setting the viewPoint at Theta/Phi (0,0) and (90,0)
 /gui/addButton menu_view "viewpoint (0,0)" "/vis/viewer/set/viewpointThetaPhi 0 0"
+/gui/addButton menu_view "viewpoint (45,0)" "/vis/viewer/set/viewpointThetaPhi 45 0"
 /gui/addButton menu_view "viewpoint (90,0)" "/vis/viewer/set/viewpointThetaPhi 90 0"
-#
+/gui/addButton menu_view "viewpoint (0,45)" "/vis/viewer/set/viewpointThetaPhi 0 45"
+/gui/addButton menu_view "viewpoint (0,90)" "/vis/viewer/set/viewpointThetaPhi 0 90"
+/gui/addButton menu_view "viewpoint (45,45)" "/vis/viewer/set/viewpointThetaPhi 45 45"
+/gui/addButton menu_view "viewpoint (90,90)" "/vis/viewer/set/viewpointThetaPhi 90 90"
+/gui/addButton menu_view "viewpoint (90,90)" "/vis/viewer/set/viewpointThetaPhi 90 90"
+/gui/addButton menu_view "viewpoint (135,90)" "/vis/viewer/set/viewpointThetaPhi 135 90"
+
 # In this View menu, add a button for setting a viewPoint and ask for it (define a command without parameters)
 /gui/addButton menu_view "custom viewpoint" "/vis/viewer/set/viewpointThetaPhi"
 
 ################################################################
 # Run processing                                               #
 ################################################################
-/gun/energy 800 MeV
+/gun/energy 1 GeV
 /gun/particle e+
 /vis/ogl/set/displayListLimit 999999
 
@@ -115,15 +121,13 @@
 # /INTT/beam/beamLine -30
 
 /INTT/beam/productionTarget Au_20um
-#/INTT/beam/productionTarget W_200um
-#/INTT/beam/productionTarget Cu_8mm
+# /INTT/beam/productionTarget W_200um
+# /INTT/beam/productionTarget Cu_8mm
 
 /INTT/beam/positionRestriction 0
 # /INTT/beam/positionRestriction 1
 # /INTT/beam/positionRestriction 2
 # /INTT/beam/positionRestriction 3
 
-/INTT/geom/setPlateMaterial G4_Pb
-/INTT/geom/setPlateThickness 10 cm
-/INTT/geom/setPlateDistance 12 cm
-# /INTT/geom/constructPlate
+#/INTT/geom/constructPlate
+#/INTT/geom/construct
