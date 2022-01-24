@@ -30,8 +30,10 @@ It was used in the online analysis.
 It can be used to see CAMAC parameters over all runs to know which channels were used.
 work in progress
 
+### trim_clone_hit.cc
+The original INTT hits and the clone hits are saved into 2 files.
 
 ## Misc
 
-### Doxygen
+### Doxyfile
 A configuration file to generate class index.

@@ -1,17 +1,27 @@
-#define __CINT__
+/*!
+  @file trim_clone_hit.cc
+  @brief The original INTT hits and clone hits are divided into 2 files. Some functions for that are also here.
+  @details # How to run
+  If default parameters ( the directory path, the run number, threshold, the database file, the output path, etc.) are fine:
+  $ root trim_clone_hit.cc
 
-#ifdef __linux__
-#include "/home/gnukazuk/soft/MyLibrary/include/MyLibrary.hh"
+  To give arguments:
+  $ root 'trim_clone_hit.cc( "a/path", 99, 2 )'
 
-#elif __APPLE__
-#include "/Users/genki/soft/MyLibrary/include/MyLibrary.hh"
+  You need to edit int trim_clone_hit to change
+  - the database file
+  - output path
+ */
 
-#endif
-
-//#include <>
 #include "Database.hh"
 
+//! a global variable to specify the search range
 int thre = 1;
+
+/*!
+  @fn vector < int > GetCloneIndex(vector < int > *adc      , vector < int > *ampl     , vector < int > *chip_id  , vector < int > *fpga_id  , vector < int > *module   , vector < int > *chan_id  , vector < int > *fem_id   , vector < int > *bco      , vector < int > *bco_full , vector < int > *event    )
+  @brief Index of clone hits is returned as a vector < int > variable
+ */
 vector < int > GetCloneIndex(
 		   vector < int > *adc      ,
 		   vector < int > *ampl     ,
@@ -36,11 +46,12 @@ vector < int > GetCloneIndex(
 	{
 	  int bco_diff = (*bco_full)[i] - (*bco_full)[j];
 
+	  // search range is here
 	  // if BCOs are different a lot, skip this
-	  //if( abs(bco_diff) >= 13 )
 	  if( abs(bco_diff) >= thre )
 	    continue;
 
+	  // check whether this hit (j) has the same parameters as the hit (i)
 	  if( (*adc)[i] != (*adc)[j] )
 	    continue;
 	  
@@ -62,41 +73,43 @@ vector < int > GetCloneIndex(
 	  if( (*fem_id)[i] != (*fem_id)[j] )
 	    continue;
 
-
+	  // for debugging
 	  //	  if( abs(bco_diff) == 2 || j == 132 )
 	  if( false )
 	    {
 	      cout << endl;
-	  cout << i << " - " << j << "\t" << bco_diff << endl;
-	  cout << "\e[0;32m" << (*adc)[i] << " "
-	       << (*ampl)[i] << " "
-	       << (*chip_id)[i] << " "
-	       << (*fpga_id)[i] << " "
-	       << (*module)[i] << " "
-	       << (*chan_id)[i] << " "
-	       << (*fem_id)[i] << " "
-	       << (*bco)[i] << " "
-	       << (*bco_full)[i] << " "
-	       << "\e[0;37m" << endl;
-
-	  cout << "\e[0;33m" << (*adc)[j] << " "
-	       << (*ampl)[j] << " "
-	       << (*chip_id)[j] << " "
-	       << (*fpga_id)[j] << " "
-	       << (*module)[j] << " "
-	       << (*chan_id)[j] << " "
-	       << (*fem_id)[j] << " "
-	       << (*bco)[j] << " "
-	       << (*bco_full)[j] << " "
-	       << "\e[0;37m" << endl;
+	      cout << i << " - " << j << "\t" << bco_diff << endl;
+	      cout << "\e[0;32m" << (*adc)[i] << " "
+		   << (*ampl)[i] << " "
+		   << (*chip_id)[i] << " "
+		   << (*fpga_id)[i] << " "
+		   << (*module)[i] << " "
+		   << (*chan_id)[i] << " "
+		   << (*fem_id)[i] << " "
+		   << (*bco)[i] << " "
+		   << (*bco_full)[i] << " "
+		   << "\e[0;37m" << endl;
+	      
+	      cout << "\e[0;33m" << (*adc)[j] << " "
+		   << (*ampl)[j] << " "
+		   << (*chip_id)[j] << " "
+		   << (*fpga_id)[j] << " "
+		   << (*module)[j] << " "
+		   << (*chan_id)[j] << " "
+		   << (*fem_id)[j] << " "
+		   << (*bco)[j] << " "
+		   << (*bco_full)[j] << " "
+		   << "\e[0;37m" << endl;
 	    }
-	  
+
+	  // if process reaches here, it means this hit (j) is clone of the hit (i)
+	  // store the index, 
 	  index.push_back( j );
-	  break;
+	  //break; // maybe meaningless
 	}
-
+      
     }
-
+  
   // keep unique indices, multiple assignment may be happen for multiple (2<) clone
   sort( index.begin(), index.end() );
   index.erase( unique( index.begin(), index.end()), index.end() );
@@ -105,6 +118,11 @@ vector < int > GetCloneIndex(
 }
 
 
+/*!
+  @fn void CopyData( vector < int >& indices_ref, vector < int > *adc, vector < int > *ampl     , vector < int > *chip_id  , vector < int > *fpga_id  , vector < int > *module   , vector < int > *chan_id  , vector < int > *fem_id   , vector < int > *bco      , vector < int > *bco_full , vector < int > *event,	       vector < int >& adc_dest, vector < int >& ampl_dest, vector < int >& chip_id_dest, vector < int >& fpga_id_dest, vector < int >& module_dest, vector < int >& chan_id_dest, vector < int >& fem_id_dest, vector < int >& bco_dest, vector < int >& bco_full_dest, vector < int >& event_dest, bool is_removed )
+  @brief values in the 2nd-11th vector variables are copied to the 12th-21st 
+  @param is_removed A switch to copy the original hits (true) or clone hits (false)
+*/
 void CopyData(
 	      vector < int >& indices_ref,
 	      vector < int > *adc      ,
@@ -131,16 +149,17 @@ void CopyData(
 	      bool is_removed )
 {
 
-  adc_dest.erase( adc_dest.begin(), adc_dest.end() );
-  ampl_dest.erase( ampl_dest.begin(), ampl_dest.end() );
-  chip_id_dest.erase( chip_id_dest.begin(), chip_id_dest.end() );
-  fpga_id_dest.erase( fpga_id_dest.begin(), fpga_id_dest.end() );
-  module_dest.erase( module_dest.begin(), module_dest.end() );
-  chan_id_dest.erase( chan_id_dest.begin(), chan_id_dest.end() );
-  fem_id_dest.erase( fem_id_dest.begin(), fem_id_dest.end() );
-  bco_dest.erase( bco_dest.begin(), bco_dest.end() );
-  bco_full_dest.erase( bco_full_dest.begin(), bco_full_dest.end() );
-  event_dest.erase( event_dest.begin(), event_dest.end() );
+  // remove elements
+  adc_dest.erase	( adc_dest.begin()	, adc_dest.end()	);
+  ampl_dest.erase	( ampl_dest.begin()	, ampl_dest.end()	);
+  chip_id_dest.erase	( chip_id_dest.begin()	, chip_id_dest.end()	);
+  fpga_id_dest.erase	( fpga_id_dest.begin()	, fpga_id_dest.end()	);
+  module_dest.erase	( module_dest.begin()	, module_dest.end()	);
+  chan_id_dest.erase	( chan_id_dest.begin()	, chan_id_dest.end()	);
+  fem_id_dest.erase	( fem_id_dest.begin()	, fem_id_dest.end()	);
+  bco_dest.erase	( bco_dest.begin()	, bco_dest.end()	);
+  bco_full_dest.erase	( bco_full_dest.begin()	, bco_full_dest.end()	);
+  event_dest.erase	( event_dest.begin()	, event_dest.end()	);
   
   vector < int > indices;
 
@@ -148,20 +167,26 @@ void CopyData(
     {
       indices = indices_ref;
     }
-  else
+  else // in the cae to select original hits, it's little bit complicated because I have only indices of the clone hits...
     {
 
+      // select index of the original hits
       for( int i=0; i<adc->size(); i++ )
-	if( find( indices_ref.begin(), indices_ref.end(), i ) == indices_ref.end() )
-	  indices.push_back( i );
+	{
+	  // if this index is not in the list of clone hit index, this is the original hit's
+	  if( find( indices_ref.begin(), indices_ref.end(), i ) == indices_ref.end() )
+	    indices.push_back( i );
+	}
       
     }
 
 
+  // for debugging
   // for( auto& index : indices )
   //   cout << index << endl;
   // cout << "total: " << indices.size() << endl;
-  
+
+  // loop over the indices to copy them
   for( auto& index : indices )
     {
       //cout << index << "\t" << (*adc)[index] << endl;
@@ -178,8 +203,15 @@ void CopyData(
       
     }  
 }
-		   
-int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int threshold = 2)
+
+/*!
+  @fn int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int threshold = 5 )
+  @param data_dir The path to the directory that contains the data to be used (because this information is not in the database)
+  @param run_num The run number you want to process
+  @param threshold The search range
+  @brief The input file is divided into 2 files. One contains only the original INTT hits, and the other only the clone hits.
+*/
+int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int threshold = 5 )
 {
   thre = threshold;
   
@@ -264,17 +296,19 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   tr_clone->Branch( "bco_full",		&bco_full_clone );
   tr_clone->Branch( "event",		&event_clone );
 
+  // loop over all entries in tree_both
   for( int i=0; i<tr->GetEntries(); i++ )
     {
 
       tr->GetEntry( i );
       //cout << flush << "\r\t" << setw(6) << i  << "/" << tr->GetEntries() << " ";
 
+      // get index of the clone hits
       vector < int > clone_index = GetCloneIndex( adc,       ampl,      chip_id,
 						  fpga_id,   module,    chan_id,
 						  fem_id,    bco,       bco_full,
 						  event );
-      
+      // copy the original hits to the variables
       CopyData( clone_index,
 		adc,       ampl,      chip_id,
 		fpga_id,   module,    chan_id,
@@ -284,7 +318,7 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
 		fem_id_no_clone,    bco_no_clone,       bco_full_no_clone,	event_no_clone,
 		true );      
       
-      
+      // copy the clone hits to another variables
       CopyData( clone_index,
 		adc,       ampl,      chip_id,
 		fpga_id,   module,    chan_id,
@@ -297,7 +331,7 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
       tr_no_clone->Fill();
       tr_clone->Fill();
 
-      //      if( adc->size() - adc_no_clone.size() - adc_clone.size() != 0 )
+      // for debugging
       if( false )
 	{
 	  cout << endl;
@@ -305,21 +339,18 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
 	    //<< adc->size() - adc_no_clone.size() - adc_clone.size()
 	       <<  adc_no_clone.size() + adc_clone.size() - adc->size()
 	       << endl << endl	       << endl << endl;
-
-
+	  
+	  
 	  for( auto& index : clone_index )
 	    cout << index << endl;
 	  
 	}
-      
+
+      // for debugging
       // if( adc->size() != 0 )
       // 	break;
     }
   
-
-  // tr->Scan( "adc:chip_id:chan_id" );
-  // tr_no_clone->Scan( "adc:chip_id:chan_id" );
-
 
   stringstream comment;
   comment << "Threshold: " << threshold << endl;
@@ -327,8 +358,7 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   comment << "Output: " << output_no_clone << endl;
   comment << "Output: " << output_clone << endl;
 
-  //  string cut = string("Entry$<=") + to_string(end_at);
-  //auto total_hits = tr->Draw( "adc", cut.c_str(), "goff" );
+  // to get the number of hits from tree_both, TTree::GetEntries() isn't good.
   auto total_hits = tr->Draw( "adc", "", "goff" );
   comment << "Total INTT hits: " << total_hits << endl;
 
@@ -343,7 +373,6 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   comment << "total - (original + clone) = "
 	  << total_hits - (original_hits + clone_hits)
 	  << endl;
-
 
   cerr << run_num << "\t"
        << threshold << "\t"
