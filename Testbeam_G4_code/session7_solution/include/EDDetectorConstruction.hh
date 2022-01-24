@@ -57,7 +57,7 @@
 #include "G4Tokenizer.hh"
 #include "public_variable.hh"
 
-#include "TBRIK.h"
+//#include "TBRIK.h"
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"
 //#include "DetectorMessenger.hh"

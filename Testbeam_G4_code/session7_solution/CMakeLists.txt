@@ -59,7 +59,7 @@ set(EXAMPLEED_SCRIPTS
   run.png
   vis.mac
   beam_parameter/Au_20um.root
-#  beam_parameter/W_200um.root
+  beam_parameter/W_200um.root
 #  beam_parameter/Cu_8mm.root
   interface_v4.c
   )
