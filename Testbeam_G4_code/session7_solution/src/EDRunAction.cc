@@ -35,11 +35,11 @@
 #include "G4SystemOfUnits.hh"
 
 G4double EDRunAction::beam_energy;
-G4bool EDRunAction::is_beam_smearing;
 ELPHEBeam* EDRunAction::beam;
 
-EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* output ) : 
+EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* output ) : 
   G4UserRunAction(),
+  INTT_mess_( INTT_mess ),
   event_( event ),
   event_id_( -1 ),
   vec(),
@@ -48,7 +48,7 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, O
   steps_(),
   output_( output )
 {
-  DefineCommands();
+
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
   // in B4Analysis.hh
@@ -57,15 +57,6 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, O
   analysisManager->SetNtupleMerging(true);
   G4cout << "Using " << analysisManager->GetType() 
          << " analysis manager" << G4endl;
-
-  // Creating histograms per layer
-  // Creating histograms for summary data
-  // analysisManager->CreateH1("AllCharged", "Charged Edep [MeV] in all layers" , 
-  //                           150, 0., 1500);
-
-  // Creating ntuples
-  //
-  // ntuple id = 0
 
   //============================NEW one, only store the ID====================================================        
   analysisManager->CreateNtuple("Chamber1", "Chamber 1 hits");
@@ -102,13 +93,20 @@ EDRunAction::EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, O
   analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
   analysisManager->FinishNtuple();
 
-  // ntuple id = 1
+  // ntuple id = 3
   analysisManager->CreateNtuple("sci_trigger", "sci_trigger");
   analysisManager->CreateNtupleIColumn("Event_ID");
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
 
+  // ntuple id = 4
+  analysisManager->CreateNtuple("tree_camac", "tree_camac");
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->camac_adc_ ); // column Id = 0
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->camac_tdc_ ); // column Id = 1
+
+  
+  
   /*
   if( event_ )
     {
@@ -136,43 +134,6 @@ EDRunAction::~EDRunAction()
   delete G4AnalysisManager::Instance();  
 }
 
-void EDRunAction::DefineCommands()
-{
-  fMessenger
-    = new G4GenericMessenger(this, "/INTT/beam/", "Commands for beam in this application");
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the momentum spread
-  G4GenericMessenger::Command& setBeamSmearing
-    = fMessenger->DeclareProperty( "beamSmearing", is_beam_smearing );
-  setBeamSmearing.SetGuidance( "Switch to the realistic beam(true) or mono-energy beam at x=0 & y=0(false)." );
-  setBeamSmearing.SetParameterName( "beamSmearing", false ); // (name, is_omittable)
-  setBeamSmearing.SetDefaultValue( "false" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the beam line
-  G4GenericMessenger::Command& setBeamLine
-    = fMessenger->DeclareProperty( "beamLine", beam_line );
-  setBeamLine.SetGuidance( "Selection of the beam line. -23 and -30 are available." );
-  setBeamLine.SetParameterName( "beamLine", true ); // (name, is_omittable)
-  setBeamLine.SetDefaultValue( "-23" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the production target
-  G4GenericMessenger::Command& setProductionTarget
-    = fMessenger->DeclareProperty( "productionTarget", production_target );
-  setProductionTarget.SetGuidance( "Selection of th production target. Au_20um, W_200um, and Cu_8mm are available." );
-  setProductionTarget.SetParameterName( "productionTarget", true ); // (name, is_omittable)
-  setProductionTarget.SetDefaultValue( "Au_20um" );
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Switch for the x_p limitation (restriction of horizontal position of the beam)
-  G4GenericMessenger::Command& setPositionRestriction
-    = fMessenger->DeclareProperty( "positionRestriction", position_restriction );
-  setPositionRestriction.SetGuidance( "Selection of position restrictioin of the beam. 0(no), 1(weak), 2(moderate), and 3(strong) are available." );
-  setPositionRestriction.SetParameterName( "positionRestriction", true ); // (name, is_omittable)
-  setPositionRestriction.SetDefaultValue( "0" );
-
-}
 
 void EDRunAction::BeginOfRunAction(const G4Run* kRun )
 {
@@ -207,17 +168,20 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   G4String fileName = "ED";
   analysisManager->OpenFile(fileName);  
 
-  this->beam = new ELPHEBeam( beam_line, production_target, position_restriction, this->beam_energy );
-  //  beam->Print( 0 );  
+  auto beam_line = INTT_mess_->GetBeamLine();
+  auto target = INTT_mess_->GetTarget();
+  auto position_restriction = INTT_mess_->GetPositionRestriction();
+  this->beam = new ELPHEBeam( beam_line, target, position_restriction, this->beam_energy );
+
+  if( 1<= INTT_mess_->GetDebugLevel() )
+    beam->Print( 0 );  
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )
 {
 
 
-  //  std::cerr << "void EDRunAction::EndOfRunAction(const G4Run* kRun )" ;
   // save histograms 
-  //
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->Write();
   analysisManager->CloseFile();
@@ -225,16 +189,8 @@ void EDRunAction::EndOfRunAction(const G4Run* kRun )
   //output_->Save();
   //tf_output_->WriteTObject( tree_, tree_->GetName() );
 
-  /*
-  for( auto& brik : briks_ )
-    {
-      tf_output_->WriteObject( brik, brik->GetName() );
-    }
-  */  
-
   //  tf_output_->Close();
 
-  //std::cerr << " -> ends" << std::endl;
 }
 
 void EDRunAction::ClearEventBuffer( string mode )

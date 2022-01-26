@@ -32,6 +32,7 @@
 #define EDPrimaryGeneratorAction_h 1
 
 #include <cmath> // for M_PI
+
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 #include "G4ParticleGun.hh"
@@ -43,6 +44,7 @@
 #include "G4MTRunManager.hh"
 #include "G4VSensitiveDetector.hh"
 #include "Randomize.hh"
+
 #include "EDAnalysis.hh"
 #include "EDRunAction.hh"
 //#include "G4MTRandGauss.hh"
@@ -53,24 +55,26 @@
 //#include "RandGauss.h"
 #include "EDRunAction.hh"
 #include "ELPHEBeam.hh"
+#include "INTTMessenger.hh"
 
 class G4Event;
 class G4ParticleGun;
 class G4GenericMessenger;
+class INTTMessenger;
 
-/// The first primary generator action class.
+/// The primary generator action class.
 
 class EDPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    EDPrimaryGeneratorAction();    
+    EDPrimaryGeneratorAction( INTTMessenger* INTT_mess );    
     virtual ~EDPrimaryGeneratorAction();
 
     // method from the base class
-    virtual void GeneratePrimaries(G4Event*);         
+  virtual void GeneratePrimaries(G4Event*);         
   G4ParticleGun*  GetParticleGun() const { return fParticleGun; };
   private:
-    G4GenericMessenger*  fMessenger;
+    INTTMessenger*  INTT_mess_;
     G4ParticleGun*  fParticleGun;  
     G4bool          fRandom;
   

@@ -29,9 +29,8 @@
 // the ultra-stupid units
 const G4double EDDetectorConstruction::inch = 25.4; // 1 inch = 25.4 mm
 
-EDDetectorConstruction::EDDetectorConstruction()
-  : //fMessenger( this, "", "", this ),
-    G4VUserDetectorConstruction(),
+EDDetectorConstruction::EDDetectorConstruction( INTTMessenger* INTT_mess )
+  : G4VUserDetectorConstruction(),
     kDarkbox_wall_thickness_body( 3.0 / 4 * inch ),   // 3/4 inch
     kDarkbox_wall_thickness_side( 1.0 / 2 * inch ),  // 1/2 inch
     kDarkbox_stage_width(  720 * mm ), // width of the movable stage
@@ -46,14 +45,10 @@ EDDetectorConstruction::EDDetectorConstruction()
     kSilver_epoxy_glue_FPHX_thickness( 50 * um ),
     kINTT_CFRP_thickness( 300 * um ),
     plate_thickness( 1 * cm ), // thickness of the additional lead plate
-    plate_distance( 40.5 * cm ), // distance between the additional lead plate and the dark box
-    setup_type( 0 ), // trigger setup
-    is_vertical_rotation( false ),
-    is_horizontal_rotation( false ),
-    is_plate( false )
+    plate_distance( 40.5 * cm ) // distance between the additional lead plate and the dark box
 {
 
-  //  fMessenger = new DetectorMessenger( this, "", "", this );
+  INTT_mess_ = INTT_mess;
   // Option to switch on/off checking of volumes overlaps
   checkOverlaps = true;
 
@@ -96,14 +91,9 @@ EDDetectorConstruction::EDDetectorConstruction()
 
   DefineMaterials();
   DefineVisAttributes();
-  DefineCommands();
 }
 
 EDDetectorConstruction::~EDDetectorConstruction() {}
-
-void EDDetectorConstruction::DefineCommands()
-{
-}
 
 void EDDetectorConstruction::DefineMaterials()
 {
@@ -213,11 +203,12 @@ void EDDetectorConstruction::ConstructDarkBox()
   G4RotationMatrix *box_rotation = new G4RotationMatrix();
 
   G4ThreeVector box_position( this->darkbox_offset[0], this->darkbox_offset[1], this->darkbox_offset[2] );
-  if( is_vertical_rotation )
+  if( INTT_mess_->IsVerticalRotation() )
     {
       const G4double kVertical_rotation_angle = -13.7 * deg;
       box_rotation->rotateX( kVertical_rotation_angle ); // trigger sci. stay the same
 
+      // position modification in z-y plane
       G4double dx = 0.0;
       G4double theta = std::atan2( this->INTT_testbeam_BOX_size[2]/2, this->INTT_testbeam_BOX_size[1]/2 ) * radian;
       G4double radius = sqrt( std::pow(this->INTT_testbeam_BOX_size[2]/2, 2 ) + std::pow(this->INTT_testbeam_BOX_size[1]/2, 2) );
@@ -228,12 +219,30 @@ void EDDetectorConstruction::ConstructDarkBox()
 
       dy = this->INTT_testbeam_BOX_size[1] / 2 + this->darkbox_offset[1] - 94.5 ;
       
-      box_position += G4ThreeVector(0, dy, dz );
+      box_position += G4ThreeVector(dx, dy, dz );
 
     }
-  else if( is_horizontal_rotation )
+  else if( INTT_mess_->IsHorizontalRotation() )
     {
-      box_rotation->rotateY( 29.05 *deg); // trigger sci rotated as well
+      const G4double kHorizontal_rotation_angle = 29.05 * deg;
+      box_rotation->rotateY( kHorizontal_rotation_angle ); // trigger sci rotated as well
+
+      // position modification in x-z plane
+      G4double theta = std::atan2( this->INTT_testbeam_BOX_size[2]/2, this->INTT_testbeam_BOX_size[0]/2 ) * radian;
+      G4double radius = sqrt( std::pow(this->INTT_testbeam_BOX_size[2]/2, 2 ) + std::pow(this->INTT_testbeam_BOX_size[0]/2, 2) );
+      G4double dx = -this->kSilicon_length_type_a * 2.75 * cos( kHorizontal_rotation_angle );
+	//radius * ( sin( theta - kHorizontal_rotation_angle  ) - sin( theta )) ;
+      G4double dy = 0.0;
+      G4double dz = radius
+	* (  cos( theta - kHorizontal_rotation_angle ) - cos( theta )) ;
+
+      //dz = this->INTT_testbeam_BOX_size[2] / 2 + this->darkbox_offset[2] - 94.5 ;
+
+      // module1: chip10
+      // module6: chip10
+      // module5: chip11
+      
+      box_position += G4ThreeVector(dx, dy, dz );
     }
 
   auto INTT_testbeam_BOX = new G4Box("INTT_testbeam_BOX",
@@ -257,6 +266,16 @@ void EDDetectorConstruction::ConstructDarkBox()
 		      false,  //no boolean operation
 		      0,  //copy number
 		      checkOverlaps);
+
+  // INTT_testbeam_BOXPV =
+  //   new G4PVPlacement(0,
+  // 		      G4ThreeVector( 0, 0, 0 ),
+  // 		      INTT_testbeam_BOXLV,  //its logical volume
+  // 		      "INTT_testbeam_BOXLV",  //its name
+  // 		      //this->worldLog, //its mother  volume
+  // 		      this->experimental_areaLV,
+  // 		      false,  //no boolean operation
+  // 		      checkOverlaps);
   
   ////////////////////////////////
   // walls of the dark box      //
@@ -332,7 +351,6 @@ void EDDetectorConstruction::ConstructLadders()
 {
   //======================G4solid===============================================  
   const int kLadder_num = 4;
-  const bool kIs_silicon_off = false;  // flag for debugging, turning all silicon strips off to save time
 
   //G4LogicalVolume* INTT_siLV[kLadder_num];
   vector<G4String> INTT_siLV_name, INTT_HDI_copperLV_name, INTT_HDI_KaptonLV_name,
@@ -662,7 +680,7 @@ void EDDetectorConstruction::ConstructLadders()
     {
 
       // if the debuggind flag is ture, skip silicon strips
-      if (kIs_silicon_off == true)
+      if( INTT_mess_->GetDebugLevel() == 1)
 	continue;
 
       // put the area for the active and inactive silicon
@@ -1259,7 +1277,7 @@ void EDDetectorConstruction::ConstructTriggers()
   G4double distance_darkbox_middle_scintillator = 57.0 * mm;
   G4double distance_middle_downstream_scintillators = 30 * mm;
 
-  if( setup_type == 0 )
+  if( INTT_mess_->GetTriggerType() == 0 )
     {
   
       G4double zpos_sci_up = -distance_darkbox_upstream_scintillator
@@ -1275,14 +1293,18 @@ void EDDetectorConstruction::ConstructTriggers()
       G4double zpos_sci_middle = this->INTT_testbeam_BOX_size[2] / 2
 	+ distance_darkbox_middle_scintillator
 	+ INTT_sci_thick_thickness / 2;
-    
-      new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos_sci_middle ), 
-			INTT_sciLV, //its logical volume
-			"INTT_sci_LV1",  //its name
-			this->experimental_areaLV,
-			false, 1, checkOverlaps );   //no boolean operation, copy number, overlap check flag
-    
+
+      // in the case of the horizontally rotated setup, the downstream sci. was not installed.
+      if( !INTT_mess_->IsHorizontalRotation() )
+	{
+	  new G4PVPlacement(0,
+			    G4ThreeVector(0, 0, zpos_sci_middle ), 
+			    INTT_sciLV, //its logical volume
+			    "INTT_sci_LV1",  //its name
+			    this->experimental_areaLV,
+			    false, 1, checkOverlaps );   //no boolean operation, copy number, overlap check flag
+	}
+      
       G4double zpos_mini_sci = zpos_sci_up -  INTT_sci_thin_thickness / 2 // start from the upstream edge of the upstream sci.
 	- 3.0 * cm / 2  // thickness of the aluminum frame
 	- 14.3 * mm / 2 // diameter of PMT H3165-10 (Hamamatsu), https://www.hamamatsu.com/us/en/product/type/H3165-10/index.html
@@ -1298,7 +1320,7 @@ void EDDetectorConstruction::ConstructTriggers()
 			this->experimental_areaLV,
 			false, 0, checkOverlaps );   //no boolean operation, copy number, overlap check flag
     }
-  else if( setup_type == -1 )// 4 sci setup
+  else if( INTT_mess_->GetTriggerType() == 1 )// 4 sci setup
     {
       G4double zpos_sci_up = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
 
@@ -1415,16 +1437,15 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 						 checkOverlaps); //overlaps checking
 
   // experimental area
-  G4VSolid *experimental_box = new G4Box("ExperimentalBox", this->experimental_size[0] / 2, this->experimental_size[1] / 2, this->experimental_size[2] / 2);
+  G4VSolid *experimental_box = new G4Box("ExperimentalBox",
+					 this->experimental_size[0] / 2, this->experimental_size[1] / 2, this->experimental_size[2] / 2);
   this->experimental_areaLV = new G4LogicalVolume(experimental_box, DefaultMaterial, "experimental_areaLV");
   this->experimental_areaLV->SetVisAttributes(color_invisible);
 
-  // 
   G4ThreeVector experimental_position( this->experimental_offset[0],
 				       this->experimental_offset[1],
 				       this->experimental_offset[2] );
-  
-  
+    
   G4VPhysicalVolume *experimental_areaPV = new G4PVPlacement(0, 
 							     experimental_position,
 							     this->experimental_areaLV, //its logical volume
@@ -1433,7 +1454,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 							     false,  //no boolean operation
 							     0,  //copy number
 							     checkOverlaps); //overlaps checking
-
   
   this->ConstructDarkBox();
 
@@ -1451,7 +1471,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 					this->darkbox_offset[1] -this->INTT_testbeam_BOX_size[1] / 2 - darkbox_floor_thickness / 2,
 					0.0 );
 
-  if( !is_vertical_rotation && !is_horizontal_rotation ) // if both are false, put the floor
+  if( !INTT_mess_->IsVerticalRotation() ) // don't put the floor in the case of the vertically rotated setup
   // put below the dark box
   new G4PVPlacement(0, darkbox_floor_position, 
 		    darkbox_floorLV, "darkbox_floor", experimental_areaLV,
@@ -1459,7 +1479,7 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
   
   this->ConstructTriggers();
 
-  if( this->is_plate == true )
+  if( INTT_mess_->IsPlate() == true )
     this->ConstructPlate();
   
   //always return the physical World
@@ -1469,11 +1489,6 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 void EDDetectorConstruction::ConstructSDandField()
 {
 
-  // EDChamberSD*INTT_siSD[4];
-  // G4String INTT_siSD_name[4]={"INTT_siSD_1","INTT_siSD_2","INTT_siSD_3","INTT_siSD_4"};
-  // G4String INTT_siSD_HitsCollection_name[4]={"INTT_siSD_HitsCollection_1","INTT_siSD_HitsCollection_2","INTT_siSD_HitsCollection_3","INTT_siSD_HitsCollection_4"};
-  // G4String INTT_siLV_name[4]={"INTT_siLV1","INTT_siLV2","INTT_siLV3","INTT_siLV4"};
-
   EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
   G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);
   SetSensitiveDetector("INTT_siLV_all_typeA", chamber1SD);
@@ -1482,7 +1497,7 @@ void EDDetectorConstruction::ConstructSDandField()
   G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD);
   SetSensitiveDetector("INTT_siLV_all_typeB", chamber2SD);
 
-  if( setup_type == -1 ) // only for the full setup
+  if( INTT_mess_->GetTriggerType() == 1 ) // only for the full setup
     {
       EDEmCalorimeterSD *calorimeterSD1 = new EDEmCalorimeterSD("EmCalorimeterSD1", "EmCalorimeterHitsCollection1");
       G4SDManager::GetSDMpointer()->AddNewDetector(calorimeterSD1);
@@ -1521,24 +1536,3 @@ void EDDetectorConstruction::DefineVisAttributes()
   color_darkbox_wall		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.1)	); // transparent black
   color_plate    		= new G4VisAttributes(true	, G4Colour(1.0, 1.000, 1.0, 0.8)	); // transparent black
 }
-
-/*
-void EDDetectorConstruction::DoConstruction( int i)
-{
-  G4cout << "void EDDetectorConstruction::DoConstruction( int i = " << i << ")" << G4endl;
-
-  G4RunManager::GetRunManager()->ReinitializeGeometry(true);
-  // /*
-  G4RunManager::GetRunManager()->DefineWorldVolume(Construct());
-  G4RunManager::GetRunManager()->GeometryHasBeenModified();
-  // * /
-  
-  G4UImanager *UImanager = G4UImanager::GetUIpointer();
-  UImanager->ApplyCommand("/vis/drawVolume");
-  // UImanager->ApplyCommand("/vis/viewer/set/targetPoint 0 0 " +
-  //                         std::to_string(fVisViewpoint / CLHEP::m) + " m");
-  UImanager->ApplyCommand("/vis/scene/add/trajectories smooth");
-  UImanager->ApplyCommand("/vis/scene/add/hits");
-
-}
-*/

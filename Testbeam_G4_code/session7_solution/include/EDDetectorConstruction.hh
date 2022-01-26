@@ -57,14 +57,13 @@
 #include "G4Tokenizer.hh"
 #include "public_variable.hh"
 
-//#include "TBRIK.h"
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"
-//#include "DetectorMessenger.hh"
+#include "INTTMessenger.hh"
 
 //extern G4double theoffset;
 class G4VPhysicalVolume;
-//class DetectorMessenger;
+class INTTMessenger;
 
 /// Detector construction class to define materials and geometry.
 class EDDetectorConstruction : public G4VUserDetectorConstruction
@@ -74,7 +73,7 @@ class EDDetectorConstruction : public G4VUserDetectorConstruction
   //extern G4double theoffset =35;
   
 public:
-  EDDetectorConstruction();
+  EDDetectorConstruction( INTTMessenger* INTT_mess );
   //static double theoffset =35;
   virtual ~EDDetectorConstruction();
   
@@ -93,12 +92,6 @@ public:
 private:
   // Option to switch on/off checking of volumes overlaps
   G4bool checkOverlaps = true;
-
-  // variable to switch the trigger setup
-  // -1: full setup (mini, A, darkbox, B, C), run24-run32
-  //  0: standard setup (mini, B, darkbox, C)
-  //  1: special setup for horizotal rotated setup (mini, B, darkbox )
-  G4int setup_type;
   
   const G4double kSilicon_strip_width; // along y-axis
   const G4double kSilicon_strip_thickness; // along z-axis
@@ -122,7 +115,7 @@ private:
   const G4double kDarkbox_wall_thickness_side;
   const G4double kDarkbox_stage_width; // width of the movable stage
   
-  //  DetectorMessenger* fMessenger;
+  INTTMessenger* INTT_mess_;
 
   G4Material* DefaultMaterial;
   G4Material* Silicon;
@@ -158,17 +151,12 @@ private:
   G4VisAttributes* color_plate;
 
   // parameters for the additional plate
-  G4bool is_plate = false;
   G4String plate_material;
   G4double plate_thickness;
   G4double plate_distance; // distance from the upstream trigger scintillator
 
-  G4bool is_vertical_rotation = false;
-  G4bool is_horizontal_rotation = false;
-  
   void DefineVisAttributes();
   void DefineMaterials();
-  void DefineCommands();
 
   void ConstructDarkBox();
   void ConstructLadders();

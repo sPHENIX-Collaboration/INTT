@@ -55,26 +55,24 @@
 #include "StepMC.hh"
 #include "TrackMC.hh"
 #include "Eventa.hh"
+#include "INTTMessenger.hh"
 
 class G4Run;
 class EDPrimaryGeneratorAction;
 class EDEventAction;
+class INTTMessenger;
 
 /// Run action class
 class EDRunAction : public G4UserRunAction
 {
 public:
-  EDRunAction( EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* otput );
+  EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* otput );
   
   virtual ~EDRunAction();
 
   G4bool is_first = true;
   static G4double beam_energy;//  = 800 * MeV;
-  static G4bool is_beam_smearing;
   static ELPHEBeam* beam;
-  std::string beam_line;
-  std::string production_target;
-  int position_restriction;
   EDEventAction* event_;
   
   virtual void BeginOfRunAction(const G4Run* );
@@ -114,9 +112,9 @@ private:
   vector < StepMC* > steps_;
   vector < TBRIK* > briks_;
   
-  G4GenericMessenger* fMessenger;
+  INTTMessenger* INTT_mess_;
   OutputManager* output_;
-  void DefineCommands();
+
   void ClearEventBuffer( string mode );
 
 };

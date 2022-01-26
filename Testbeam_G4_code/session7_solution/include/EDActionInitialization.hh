@@ -38,19 +38,19 @@
 #include "TrackingAction.hh"
 #include "SteppingAction.hh"
 #include "OutputManager.hh"
-
+#include "INTTMessenger.hh"
 /// Action initialization class.
 
 class EDActionInitialization : public G4VUserActionInitialization
 {
-  public:
-    EDActionInitialization( EDDetectorConstruction* fDetConstruction_arg );
-    virtual ~EDActionInitialization();
-
-    virtual void Build() const;
-    virtual void BuildForMaster() const;
+public:
+  EDActionInitialization( INTTMessenger* INTT_mess, EDDetectorConstruction* fDetConstruction_arg );
+  virtual ~EDActionInitialization();
+  
+  virtual void Build() const;
+  virtual void BuildForMaster() const;
   const EDDetectorConstruction* fDetConstruction;
-
+  INTTMessenger* INTT_mess_;
 };
 
 #endif

@@ -31,6 +31,8 @@
 #ifndef EDEventAction_h
 #define EDEventAction_h 1
 
+#include <vector>
+
 #include "G4UserEventAction.hh"
 #include "G4RunManager.hh"
 #include "globals.hh"
@@ -60,6 +62,9 @@ public:
   TrackMC* GetTrackMC( int id );
   G4int GetStoredStepMCNum(){ return steps_.size();};
   G4int GetStoredTrackMCNum(){ return tracks_.size();};
+
+  std::vector < G4int > camac_adc_;
+  std::vector < G4int > camac_tdc_;
   
 private:
   G4bool fVerbose;

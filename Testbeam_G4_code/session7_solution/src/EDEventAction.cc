@@ -71,6 +71,48 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
   auto run_manager = G4RunManager::GetRunManager();
   auto run_action = (EDRunAction*) run_manager->GetUserRunAction();
   run_action->SetEventID( event->GetEventID() );
+  G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
+
+  /////////////////////////////////////////////////////////////////////
+  // Processes for the trigger scintillators                         //
+  /////////////////////////////////////////////////////////////////////
+  G4int eID = 0;
+  //  const G4Event* evt = G4MTRunManager::GetRunManager()->GetCurrentEvent();
+  if( event )
+    eID = event->GetEventID();
+
+
+  // G4int collId;
+
+  // // HGCAL EE + FH
+  // auto sdManager = G4SDManager::GetSDMpointer();
+  // collId = sdManager->GetCollectionID( "INTT_sciLV1" );
+  // // = G4SDManager::GetSDMpointer()->GetCollectionID("AbsorberHitsCollection");
+
+  // auto hc = hce->GetHC(collId);
+
+  // G4int n_hit = fHitsCollection->entries();
+
+  // for (G4int i = 0; i < n_hit; i++) 
+  //   {
+  //     G4double fEdep = (*fHitsCollection)[i]->GetEnergyDeposit();
+  //     if (fEdep>0.)
+  //     {
+  //       // analysisManager->FillNtupleIColumn(3, 0, eID);
+  //       // analysisManager->FillNtupleIColumn(3, 1, i);
+  //       // analysisManager->FillNtupleDColumn(3, 2, fEdep);  
+  //       // analysisManager->AddNtupleRow(3);
+  //       // //if ( eID % 10000 == 0)
+  // 	// //if( verbose == 2 )
+  // 	// if( false )
+  //       //   {
+  //       //     G4cout<<" SCI, eID : "<<eID<<" Sci trigger ID : "<<i<<" edep : "<<fEdep<<G4endl;
+  //       //   }
+  //     }
+
+  //   }
+
+  
   // auto tree = run_action -> GetTree();
 
   // run_action->SetTrackMCs( tracks_ );
