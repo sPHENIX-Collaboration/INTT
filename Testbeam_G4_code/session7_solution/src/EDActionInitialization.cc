@@ -30,9 +30,10 @@
 
 #include "EDActionInitialization.hh"
 
-EDActionInitialization::EDActionInitialization( EDDetectorConstruction* fDetConstruction_arg )
+EDActionInitialization::EDActionInitialization( INTTMessenger* INTT_mess, EDDetectorConstruction* fDetConstruction_arg )
   : G4VUserActionInitialization(),
-    fDetConstruction( fDetConstruction_arg )
+    fDetConstruction( fDetConstruction_arg ),
+    INTT_mess_( INTT_mess )
 {}
 
 EDActionInitialization::~EDActionInitialization()
@@ -44,8 +45,8 @@ void EDActionInitialization::BuildForMaster() const
   OutputManager* output = new OutputManager();
   
   SetUserAction(
-		new EDRunAction(
-				new EDPrimaryGeneratorAction(),
+		new EDRunAction( INTT_mess_,
+				new EDPrimaryGeneratorAction( INTT_mess_ ),
 				new EDEventAction(),
 				output
 				)
@@ -54,13 +55,13 @@ void EDActionInitialization::BuildForMaster() const
 
 void EDActionInitialization::Build() const
 {
-  auto pga = new EDPrimaryGeneratorAction();  
+  auto pga = new EDPrimaryGeneratorAction( INTT_mess_ );  
   SetUserAction( pga );
 
   OutputManager* output = new OutputManager();
   auto event = new EDEventAction;
   SetUserAction( event );
-  SetUserAction(new EDRunAction( pga, event, output ) );
+  SetUserAction(new EDRunAction( INTT_mess_, pga, event, output ) );
   SetUserAction(new TrackingAction( pga ) );
   SetUserAction( new SteppingAction(fDetConstruction) );
 }  

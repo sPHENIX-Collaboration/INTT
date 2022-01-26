@@ -30,16 +30,16 @@
 
 #include "EDPrimaryGeneratorAction.hh"
 
-EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
+EDPrimaryGeneratorAction::EDPrimaryGeneratorAction( INTTMessenger* INTT_mess )
   : G4VUserPrimaryGeneratorAction(),
-    fMessenger(0),
     fParticleGun(0),
     fRandom(true)
 {   
   G4int nofParticles = 1;
   fParticleGun  = new G4ParticleGun(nofParticles);
 
-  DefineCommands();
+  INTT_mess_ = INTT_mess;
+
   // Define particle properties
   G4String particleName = "e+";
   
@@ -53,21 +53,6 @@ EDPrimaryGeneratorAction::EDPrimaryGeneratorAction()
 EDPrimaryGeneratorAction::~EDPrimaryGeneratorAction()
 {}
 
-void EDPrimaryGeneratorAction::DefineCommands()
-{
-  fMessenger
-    = new G4GenericMessenger(this, "/INTT/beam/", "Commands for beam in this application");
-    
-  //////////////////////////////////////////////////////////////////////////////
-  // Beam energy
-  // G4GenericMessenger::Command& setBeamEnergy
-  //   = fMessenger->DeclarePropertyWithUnit( "beamEnergy", "GeV", beam_energy );
-  // setBeamEnergy.SetGuidance( "Beam energy in the units of GeV" );
-  // setBeamEnergy.SetParameterName( "BeamEnergy", false ); // (name, is_omittable)
-  // setBeamEnergy.SetDefaultValue( 1.0 );
-  
-  return;
-}
 
 void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
@@ -82,15 +67,13 @@ void EDPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   G4double phi =  0.0 * deg;
 
   // if no beam smearing required, just generate the beam here
-  if( EDRunAction::is_beam_smearing == false )
+  if( INTT_mess_->IsSmearing() == false )
     {
       //      std::cerr << "Primary generator action, mono-energy mode, " << energy_spectrum << " "
-      //<< EDRunAction::is_beam_smearing ;
       fParticleGun->SetParticleMomentumDirection( G4ThreeVector(0, 0, 1) );
       fParticleGun->SetParticlePosition( G4ThreeVector(0, 0, -1.0 * m) );
       fParticleGun->SetParticleEnergy( energy_spectrum );
 
-      //fParticleGun->GeneratePrimaryVertex(event);
     }
   else
     {

@@ -1,0 +1,81 @@
+################################################################
+# parameters for INTT                                          #
+################################################################
+
+# ============================================================ #
+#   for the beam 
+# ============================================================ #
+
+#---------------------------------------------------------------------------
+# switch to use mono-energy beam at (x=0, y=0) (false), or realistic beam (momentum spread, x-y distribution)
+# Usage: /INTT/beam/beamSmearing [false or true]
+/INTT/beam/beamSmearing false
+/INTT/beam/beamSmearing true
+
+#---------------------------------------------------------------------------
+# selection of the beamline, -23 and -30 are available. Use -23 if you are not sure.
+# Usage: /INTT/beam/beamLine [-23 or -30]
+/INTT/beam/beamLine -23
+#/INTT/beam/beamLine -30
+
+#---------------------------------------------------------------------------
+# selection of the production target. Au_20um, W_200um, and Cu_8mm are available. It affects to the momentum spread and the beam intensity (doesn't matter in MC)
+# Usage: /INTT/beam/productionTarget [Au_20um, W_200um, or Cu_8mm]
+#/INTT/beam/target Au_20um
+/INTT/beam/target W_200um
+#/INTT/beam/target Cu_8mm
+
+#---------------------------------------------------------------------------
+# horizontal position restriction to the beam to get smaller momentum spread. 
+# Usage: /INTT/beam/positionRestriction [0, 1, 2, or 3]
+# higher values gives tighter restriction, i.e. less momentum spread. 0 means no restriction.
+/INTT/beam/positionRestriction 0
+# /INTT/beam/positionRestriction 1
+# /INTT/beam/positionRestriction 2
+# /INTT/beam/positionRestriction 3
+
+# ============================================================ #
+#   for the geometry
+# ============================================================ #
+
+#---------------------------------------------------------------------------
+# switch for the trigger configuration
+# Usage: /INTT/geom/triggerType 0/1
+#        0: sci_D sci_B INTTs sci_C
+#        1: sci_D sci_A INTTs sci_B sci_C
+/INTT/geom/triggerType 0
+
+#---------------------------------------------------------------------------
+# switch to the vertically/horizontally rotated setup or not
+# Usage: /INTT/geom/setRotation none/vertical/horizontal
+/INTT/geom/setRotation none
+#/INTT/geom/setRotation vertical
+
+#---------------------------------------------------------------------------
+# switch to put the additional thin plate to have multiple track in an event
+# Usage: /INTT/geom/putPlate [material defined in Geant4] [thickness] [unit] [distance from the upstream trigger scintillator] [unit]
+#/INTT/geom/isPlate true
+/INTT/geom/isPlate false
+
+#---------------------------------------------------------------------------
+# selection of the trigger scintillator configuration (but how?)
+# Usage: /INTT/geom/???
+
+# ============================================================ #
+#   for analysis
+# ============================================================ #
+#---------------------------------------------------------------------------
+# switch to set the detection efficienty of the INTT ladders
+# Usage: /INTT/ana/efficiency [efficiency of the ladder0] [efficiency of the ladder2] [efficiency of the ladder3] [efficiency of the ladder4]
+# /INTT/ana/efficiency 1.0 1.0 1.0 1.0
+
+# ============================================================ #
+#   for something else
+# ============================================================ #
+#---------------------------------------------------------------------------
+# switch for the trigger configuration
+# Usage: /INTT/geom/debugLevel 0/1/2
+#        0: not debug, normal run
+#        1: simplified geometry (no silicon strips), the same random number seed 2
+#        2: debuggin INTTMessenger
+/INTT/misc/debugLevel 0

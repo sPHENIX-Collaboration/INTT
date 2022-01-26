@@ -30,9 +30,6 @@
 
 #include <random>
 
-#include "EDDetectorConstruction.hh"
-#include "EDActionInitialization.hh"
-//#include "OutputManager.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -45,6 +42,11 @@
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
+
+#include "EDDetectorConstruction.hh"
+#include "EDActionInitialization.hh"
+//#include "OutputManager.hh"
+#include "INTTMessenger.hh"
 
 namespace {
   void PrintUsage() {
@@ -63,7 +65,7 @@ int main(int argc,char** argv)
     PrintUsage();
     return 1;
   }
-  
+
   G4String macro;
   G4String session;
   G4String physicsListName;
@@ -74,8 +76,6 @@ int main(int argc,char** argv)
 
   // Change a seed of random number
   std::random_device rnd;
-  CLHEP::HepRandom::setTheSeed( rnd() );
-  //CLHEP::HepRandom::setTheSeed( 2 ); // 2 has only 25 tracks, nice for debugging
   
   for ( G4int i=1; i<argc; i=i+2 )
     {
@@ -113,10 +113,31 @@ int main(int argc,char** argv)
   G4RunManager * runManager = new G4RunManager;
 #endif
 
- 
+
+  // Get the pointer to the User Interface manager
+  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+
+  INTTMessenger* INTT_mess = new INTTMessenger( runManager, "", "" );
+  G4String INTT_init_command = "/control/execute ";
+  UImanager->ApplyCommand( INTT_init_command + "INTT_config.mac" );
+  INTT_mess->Print();
+
+  // for debugging INTTMessenger
+  if( INTT_mess->GetDebugLevel() == 0 )
+    {
+      CLHEP::HepRandom::setTheSeed( rnd() );
+    }
+  else if( 1 <= INTT_mess->GetDebugLevel() )
+    {
+      CLHEP::HepRandom::setTheSeed( 2 ); // 2 has only 25 tracks, nice for debugging
+      
+      if( 2 <= INTT_mess->GetDebugLevel() )
+	return 0;
+    }
+  
   // Set mandatory initialization classes
   // Detector construction
-  auto det_const = new EDDetectorConstruction();
+  auto det_const = new EDDetectorConstruction( INTT_mess );
   runManager->SetUserInitialization( det_const );
 
   // Physics list
@@ -141,16 +162,13 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(physicsList);
     
   // User action initialization
-  runManager->SetUserInitialization( new EDActionInitialization( det_const ) );
+  runManager->SetUserInitialization( new EDActionInitialization( INTT_mess, det_const ) );
   
   // Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
   visManager->Initialize();
-
-  // Get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   if ( macro.size() ) {
     // batch mode
