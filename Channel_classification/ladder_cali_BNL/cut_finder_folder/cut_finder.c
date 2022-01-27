@@ -1,6 +1,6 @@
 void cut_finder ()
 {
-	TString folder_name = "/home/cwshih/INTT_cal/INTT_cal_test/ladder_cali/cut_finder_folder/";
+        TString folder_name = "/home/cwshih/INTT_cal/INTT_cal_test/ladder_cali/cut_finder_folder/";
 	int cut_range = 5; //sigma
 
 	TFile *f1 = TFile::Open(Form("%s/sum_up_all.root",folder_name.Data()));
@@ -11,6 +11,8 @@ void cut_finder ()
 	TTree *chan_thre_position = (TTree *)f1->Get("chan_thre_position"); //value_TP
 	TTree *chan_adc_study = (TTree *)f1->Get("chan_adc_study"); //value_adc_0
 	TTree *chan_study = (TTree *)f1->Get("chan_study"); //value_slope_chi, value_width_chi
+	TTree *chan_err_width = (TTree *)f1->Get("chan_err_width"); //
+	TTree *chan_err_mean = (TTree *)f1->Get("chan_err_mean"); //
 
 	int chip_W, chan_W;
 	double value_W, value_W02, value_W13;
@@ -31,6 +33,17 @@ void cut_finder ()
 	int chip_chi, chan_chi;
 	double value_slope_chi, value_width_chi;
 	double value_slope_value, value_width_value;
+
+	int chip_width, chan_width;
+	double value_width0, value_width1;
+	double value_width2, value_width3;
+	double value_pvalue;
+	
+	int chip_mean, chan_mean;
+	double value_mean0, value_mean1;
+	double value_mean2, value_mean3;
+	
+	
 
 	TCanvas * c1 = new TCanvas ("c1","c1",1800,1800);
 	c1->SetLogy();
@@ -68,23 +81,62 @@ void cut_finder ()
 	chan_study->SetBranchAddress("width_value",&value_width_value);
 	chan_study->SetBranchAddress("width_rchi2",&value_width_chi);
 
+
+	chan_err_width->SetBranchAddress("chip_id",&chip_width);
+	chan_err_width->SetBranchAddress("chan_id",&chan_width);
+	chan_err_width->SetBranchAddress("err_width0",&value_width0);
+	chan_err_width->SetBranchAddress("err_width1",&value_width1);
+	chan_err_width->SetBranchAddress("err_width2",&value_width2);
+	chan_err_width->SetBranchAddress("err_width3",&value_width3);
+	chan_err_width->SetBranchAddress("err_pvalue",&value_pvalue);
+
+
+	chan_err_mean->SetBranchAddress("chip_id",&chip_width);
+	chan_err_mean->SetBranchAddress("chan_id",&chan_width);
+	chan_err_mean->SetBranchAddress("err_mean0",&value_mean0);
+	chan_err_mean->SetBranchAddress("err_mean1",&value_mean1);
+	chan_err_mean->SetBranchAddress("err_mean2",&value_mean2);
+	chan_err_mean->SetBranchAddress("err_mean3",&value_mean3);
+
+	
 	int total_size_W = chan_gaus_width->GetEntriesFast();
 	int total_size_E = chan_entry->GetEntriesFast();
 	int total_size_EA = ampl_channel_entries->GetEntriesFast();
 	int total_size_TP = chan_thre_position->GetEntriesFast();
 	int total_size_adc = chan_adc_study->GetEntriesFast();
 	int total_size_chi = chan_study->GetEntriesFast();
-
+	int total_size_width = chan_err_width->GetEntriesFast();
+	int total_size_mean = chan_err_mean->GetEntriesFast();
+	
 	cout<<"width :              "<<total_size_W<<endl;
 	cout<<"entry :              "<<total_size_E<<endl;
 	cout<<"ampl entry :         "<<total_size_EA<<endl;
 	cout<<"threshold position : "<<total_size_TP<<endl;
 	cout<<"adc :                "<<total_size_adc<<endl;
 	cout<<"rchi2 :              "<<total_size_chi<<endl;
+	cout<<"err_width :          "<<total_size_width<<endl;
+	cout<<"err_mean :          "<<total_size_mean<<endl;
+	
 	cout<<" "<<endl;
 
 	gStyle->SetOptStat(111111);
 
+
+
+
+	TH1F * h_err_width_sum = new TH1F ("","width_sum of each channel",80,0,8);
+	h_err_width_sum->GetXaxis()->SetTitle("Width");
+
+	TH1F * h_err_mean0 = new TH1F ("","mean0 of each channel",40,0,80);
+	h_err_mean0->GetXaxis()->SetTitle("mean");
+	TH1F * h_err_mean1 = new TH1F ("","mean1 of each channel",40,10,80);
+	h_err_mean1->GetXaxis()->SetTitle("mean");
+	TH1F * h_err_mean2 = new TH1F ("","mean2 of each channel",40,20,80);
+	h_err_mean2->GetXaxis()->SetTitle("mean");
+	TH1F * h_err_mean3 = new TH1F ("","mean3 of each channel",40,30,80);
+	h_err_mean3->GetXaxis()->SetTitle("mean");
+
+	
 	TH1F * width_1D = new TH1F ("","offseted width of each channel",50,0,6);
 	// width_1D->SetLogy();
 	width_1D->GetXaxis()->SetTitle("Width (unit : ampl)");
@@ -184,8 +236,11 @@ void cut_finder ()
 	TF1 * pol1_13 = new TF1 ("pol1_13","pol1",1,14);
 	TF1 * pol1_26 = new TF1 ("pol1_26","pol1",14,27);
 
-
-	
+	TF1 * fit_err_width_sum = new TF1 ("fit_err_width_sum","gaus",0,6);
+	TF1 * fit_err_mean0 = new TF1 ("fit_err_mean0","gaus",0,40);
+	TF1 * fit_err_mean1 = new TF1 ("fit_err_mean1","gaus",10,50);
+	TF1 * fit_err_mean2 = new TF1 ("fit_err_mean2","gaus",20,60);
+	TF1 * fit_err_mean3 = new TF1 ("fit_err_mean3","gaus",30,70);
 
 
 	for (int i = 0; i < total_size_W; i++)
@@ -196,7 +251,10 @@ void cut_finder ()
 		chan_thre_position->GetEntry(i);
 		chan_adc_study->GetEntry(i);
 		chan_study->GetEntry(i);
+		chan_err_width->GetEntry(i);
+		chan_err_mean->GetEntry(i);
 
+		
 		width_1D->Fill(value_W);
 		width_1D02->Fill(value_W02);
 		width_1D13->Fill(value_W13);
@@ -214,6 +272,19 @@ void cut_finder ()
 		slopevalue_chip_2D->Fill(chip_chi,value_slope_value);
 
 		width_pvalue_1D->Fill(TMath::Prob(value_width_chi, 3));
+
+		h_err_width_sum->Fill(value_width0);
+		h_err_width_sum->Fill(value_width1);
+		h_err_width_sum->Fill(value_width2);
+		h_err_width_sum->Fill(value_width3);
+
+		h_err_mean0->Fill(value_mean0);
+		h_err_mean1->Fill(value_mean1);
+		h_err_mean2->Fill(value_mean2);
+		h_err_mean3->Fill(value_mean3);
+
+
+		
 		if (TMath::Prob(value_width_chi, 3) < 0.0000006)
 		{
 			cout<<"width : "<<i<<" "<<chip_chi<<" "<<chan_chi<<" "<<Form("%.10f",TMath::Prob(value_width_chi, 3))<<endl;
@@ -235,6 +306,82 @@ void cut_finder ()
 	tex11 -> SetTextAlign (13);
 	
 
+
+
+	c1->cd();
+	h_err_width_sum->Draw("hist");
+	h_err_width_sum->Fit("fit_err_width_sum","NQ");
+	fit_err_width_sum->Draw("lsame");
+
+	tex11 -> DrawLatex (0.12, 0.850, Form("#bf{Fit parameters}"));
+	tex11 -> DrawLatex (0.12, 0.810, Form("#bullet Width = %.3f #pm %.3f", fit_err_width_sum->GetParameter(2), fit_err_width_sum->GetParError(2)));
+	tex11 -> DrawLatex (0.12, 0.770, Form("#bullet Mean = %.3f #pm %.3f", fit_err_width_sum->GetParameter(1), fit_err_width_sum->GetParError(1)));
+	tex11 -> DrawLatex (0.12, 0.700, Form("#bf{Fit quality}"));
+	tex11 -> DrawLatex (0.12, 0.660, Form("#bullet #chi^{2}/ndf = %.3f/%d = %.3f",fit_err_width_sum->GetChisquare(),fit_err_width_sum->GetNDF(),fit_err_width_sum->GetChisquare()/fit_err_width_sum->GetNDF() ));
+
+	c1->Print(Form("%s/h_err_width_sum.pdf",folder_name.Data()));
+	c1->Clear();
+
+	c1->cd();
+	h_err_mean0->Draw("hist");
+	h_err_mean0->Fit("fit_err_mean0","NQ");
+	fit_err_mean0->Draw("lsame");
+
+	tex11 -> DrawLatex (0.12, 0.850, Form("#bf{Fit parameters}"));
+	tex11 -> DrawLatex (0.12, 0.810, Form("#bullet Width = %.3f #pm %.3f", fit_err_mean0->GetParameter(2), fit_err_mean0->GetParError(2)));
+	tex11 -> DrawLatex (0.12, 0.770, Form("#bullet Mean = %.3f #pm %.3f", fit_err_mean0->GetParameter(1), fit_err_mean0->GetParError(1)));
+	tex11 -> DrawLatex (0.12, 0.700, Form("#bf{Fit quality}"));
+	tex11 -> DrawLatex (0.12, 0.660, Form("#bullet #chi^{2}/ndf = %.3f/%d = %.3f",fit_err_mean0->GetChisquare(),fit_err_mean0->GetNDF(),fit_err_mean0->GetChisquare()/fit_err_mean0->GetNDF() ));
+
+	c1->Print(Form("%s/h_err_mean0.pdf",folder_name.Data()));
+	c1->Clear();
+	
+
+
+	c1->cd();
+	h_err_mean1->Draw("hist");
+	h_err_mean1->Fit("fit_err_mean1","NQ");
+	fit_err_mean1->Draw("lsame");
+
+	tex11 -> DrawLatex (0.12, 0.850, Form("#bf{Fit parameters}"));
+	tex11 -> DrawLatex (0.12, 0.810, Form("#bullet Width = %.3f #pm %.3f", fit_err_mean1->GetParameter(2), fit_err_mean1->GetParError(2)));
+	tex11 -> DrawLatex (0.12, 0.770, Form("#bullet Mean = %.3f #pm %.3f", fit_err_mean1->GetParameter(1), fit_err_mean1->GetParError(1)));
+	tex11 -> DrawLatex (0.12, 0.700, Form("#bf{Fit quality}"));
+	tex11 -> DrawLatex (0.12, 0.660, Form("#bullet #chi^{2}/ndf = %.3f/%d = %.3f",fit_err_mean1->GetChisquare(),fit_err_mean1->GetNDF(),fit_err_mean1->GetChisquare()/fit_err_mean1->GetNDF() ));
+
+	c1->Print(Form("%s/h_err_mean1.pdf",folder_name.Data()));
+	c1->Clear();
+	
+	c1->cd();
+	h_err_mean2->Draw("hist");
+	h_err_mean2->Fit("fit_err_mean2","NQ");
+	fit_err_mean2->Draw("lsame");
+
+	tex11 -> DrawLatex (0.12, 0.850, Form("#bf{Fit parameters}"));
+	tex11 -> DrawLatex (0.12, 0.810, Form("#bullet Width = %.3f #pm %.3f", fit_err_mean2->GetParameter(2), fit_err_mean2->GetParError(2)));
+	tex11 -> DrawLatex (0.12, 0.770, Form("#bullet Mean = %.3f #pm %.3f", fit_err_mean2->GetParameter(1), fit_err_mean2->GetParError(1)));
+	tex11 -> DrawLatex (0.12, 0.700, Form("#bf{Fit quality}"));
+	tex11 -> DrawLatex (0.12, 0.660, Form("#bullet #chi^{2}/ndf = %.3f/%d = %.3f",fit_err_mean2->GetChisquare(),fit_err_mean2->GetNDF(),fit_err_mean2->GetChisquare()/fit_err_mean2->GetNDF() ));
+
+	c1->Print(Form("%s/h_err_mean2.pdf",folder_name.Data()));
+	c1->Clear();
+	
+
+	c1->cd();
+	h_err_mean3->Draw("hist");
+	h_err_mean3->Fit("fit_err_mean3","NQ");
+	fit_err_mean3->Draw("lsame");
+
+	tex11 -> DrawLatex (0.12, 0.850, Form("#bf{Fit parameters}"));
+	tex11 -> DrawLatex (0.12, 0.810, Form("#bullet Width = %.3f #pm %.3f", fit_err_mean3->GetParameter(2), fit_err_mean3->GetParError(2)));
+	tex11 -> DrawLatex (0.12, 0.770, Form("#bullet Mean = %.3f #pm %.3f", fit_err_mean3->GetParameter(1), fit_err_mean3->GetParError(1)));
+	tex11 -> DrawLatex (0.12, 0.700, Form("#bf{Fit quality}"));
+	tex11 -> DrawLatex (0.12, 0.660, Form("#bullet #chi^{2}/ndf = %.3f/%d = %.3f",fit_err_mean3->GetChisquare(),fit_err_mean3->GetNDF(),fit_err_mean3->GetChisquare()/fit_err_mean3->GetNDF() ));
+
+	c1->Print(Form("%s/h_err_mean3.pdf",folder_name.Data()));
+	c1->Clear();
+	
+	
 	c1->cd();
 	width_1D->Draw("hist");
 	width_1D->Fit("width_offset_fit","NQ");
@@ -481,9 +628,13 @@ void cut_finder ()
 	cout<<"9. slope value correct: "<<slope_value_fit->GetParameter(1)-cut_range*(slope_value_fit->GetParameter(2))<<"	to "<<slope_value_fit->GetParameter(1)+cut_range*(slope_value_fit->GetParameter(2))<<endl;
 	cout<<"10. offseted width 02  : "<<width_offset_fit02->GetParameter(1)-cut_range*(width_offset_fit02->GetParameter(2))<<"	to "<<width_offset_fit02->GetParameter(1)+cut_range*(width_offset_fit02->GetParameter(2))<<endl;
 	cout<<"11.offseted width 13  : "<<width_offset_fit13->GetParameter(1)-cut_range*(width_offset_fit13->GetParameter(2))<<"	to "<<width_offset_fit13->GetParameter(1)+cut_range*(width_offset_fit13->GetParameter(2))<<endl;
-
-
-
+	cout<<"12. err width sum   :"<<fit_err_width_sum->GetParameter(1)-cut_range*(fit_err_width_sum->GetParameter(2))<<"	to "<<fit_err_width_sum->GetParameter(1)+cut_range*(fit_err_width_sum->GetParameter(2))<<endl;
+	cout<<"13. err mean0   :"<<fit_err_mean0->GetParameter(1)-cut_range*(fit_err_mean0->GetParameter(2))<<"	to "<<fit_err_mean0->GetParameter(1)+cut_range*(fit_err_mean0->GetParameter(2))<<endl;
+	cout<<"14. err mean1   :"<<fit_err_mean1->GetParameter(1)-cut_range*(fit_err_mean1->GetParameter(2))<<"	to "<<fit_err_mean1->GetParameter(1)+cut_range*(fit_err_mean1->GetParameter(2))<<endl;
+	cout<<"15. err mean2   :"<<fit_err_mean2->GetParameter(1)-cut_range*(fit_err_mean2->GetParameter(2))<<"	to "<<fit_err_mean2->GetParameter(1)+cut_range*(fit_err_mean2->GetParameter(2))<<endl;
+	cout<<"16. err mean3   :"<<fit_err_mean3->GetParameter(1)-cut_range*(fit_err_mean3->GetParameter(2))<<"	to "<<fit_err_mean3->GetParameter(1)+cut_range*(fit_err_mean3->GetParameter(2))<<endl;
+	cout<<"17. err p-value: "<<Form("%d-sigma -> 0.0000006 (P.S. No fitting)",cut_range)<<endl;
+	
 	cout<<" "<<endl;
 	cout<<"/////slope correct///// "<<endl;
 	cout<<Form("Fit : chip 1 ~ 13, Y = %.3f X + %.3f",pol1_13->GetParameter(1), pol1_13->GetParError(0))<<endl;
@@ -502,6 +653,14 @@ void cut_finder ()
 	output_txt<<"offseted_width_13	"<<width_offset_fit13->GetParameter(1)-cut_range*(width_offset_fit13->GetParameter(2))<<"	to "<<width_offset_fit13->GetParameter(1)+cut_range*(width_offset_fit13->GetParameter(2))<<"\r"<<endl;
 	output_txt<<"1_13_slope	"<<Form("%.4f	and %.4f",pol1_13->GetParameter(1), pol1_13->GetParError(0))<<"\r"<<endl;
 	output_txt<<"14_26_slope	"<<Form("%.4f	and %.4f",pol1_26->GetParameter(1), pol1_26->GetParError(0))<<"\r"<<endl;
+	output_txt<<"err_width_sum	"<<fit_err_width_sum->GetParameter(1)-cut_range*(fit_err_width_sum->GetParameter(2))<<"	to "<<fit_err_width_sum->GetParameter(1)+cut_range*(fit_err_width_sum->GetParameter(2))<<"\r"<<endl;
+	
+	output_txt<<"err_mean0          "<<fit_err_mean0->GetParameter(1)-cut_range*(fit_err_mean0->GetParameter(2))<<" to "<<fit_err_mean0->GetParameter(1)+cut_range*(fit_err_mean0->GetParameter(2))<<"\r"<<endl;
+	output_txt<<"err_mean1          "<<fit_err_mean1->GetParameter(1)-cut_range*(fit_err_mean1->GetParameter(2))<<" to "<<fit_err_mean1->GetParameter(1)+cut_range*(fit_err_mean1->GetParameter(2))<<"\r"<<endl;
+	output_txt<<"err_mean2          "<<fit_err_mean2->GetParameter(1)-cut_range*(fit_err_mean2->GetParameter(2))<<" to "<<fit_err_mean2->GetParameter(1)+cut_range*(fit_err_mean2->GetParameter(2))<<"\r"<<endl;
+	output_txt<<"err_mean3          "<<fit_err_mean3->GetParameter(1)-cut_range*(fit_err_mean3->GetParameter(2))<<" to "<<fit_err_mean3->GetParameter(1)+cut_range*(fit_err_mean3->GetParameter(2))<<"\r"<<endl;
+	output_txt<<"err_p-value	"<<0<<"	to"<<Form(" 0.0000006")<<"\r"<<endl;
+
 	output_txt.close();
 }
 

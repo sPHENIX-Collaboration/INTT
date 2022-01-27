@@ -1,10 +1,10 @@
 folder_direction="/home/5202011/INTT_cal/INTT_cal_test/ladder_cali"
-ladder_folder="/ladder_files/02-0028"
+ladder_folder="/ladder_files/01-0060"
 template_version="/template_v1"
 
 number_of_file=2
 #merge_file_name="02_0028_summary"
-module_ID=6
+module_ID=8
 
 rm multi_run_status.txt
 #rm $merge_file_name.root
@@ -15,7 +15,7 @@ echo 1
 #ls *.dat > dat_file.txt
 #sleep 15
 
-let number_for_final=number_of_file-1 
+#let number_for_final=number_of_file-1 
 
 
 #for seed in $(seq 0 $number_for_final)
@@ -30,7 +30,7 @@ let number_for_final=number_of_file-1
 ls *.root > total_file.txt
 sleep 5
 
-for seed in $(seq 0 $number_for_final)
+for seed in $(seq 0 1)
 do
     cp calibration_ana_code_multi.c calibration_ana_code_multi_copy.c
     sed -i "s/data_index/${seed}/g" calibration_ana_code_multi_copy.c

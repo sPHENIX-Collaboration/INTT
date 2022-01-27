@@ -37,7 +37,7 @@
 #include <TH1D.h>
 #include <TF1.h>
 #include <TLorentzVector.h>
-#include <iomanip>
+//#include <iomanip>
 //#include "untuplizer.h"
 //#include "sigmaEff.h"
 
@@ -45,6 +45,26 @@ double RC_eq1(double *t, double *par)
 {
 	return par[0] * t[0] + par[1];
 }
+
+
+double shifted_hist(TH1F* h_org, TH1F* h_new, float offset = 0)
+{
+  for(int i =0; i<h_org->GetNbinsX(); i++) {
+    float x = h_org->GetBinCenter(i+1);
+    int bincontent = h_org->GetBinContent(i+1);
+
+    float x_new = x - offset;  // new bin center                                                                                                                                                           
+
+    int new_bin_id = h_new->FindBin(x_new);
+    h_new->SetBinContent(new_bin_id, bincontent);    
+  }
+
+  return 0;
+}
+
+
+
+
 
 //void name with "copy" is correct
 void calibration_ana_code_multi_copy(TString folder_name, int module_number, bool run_option, bool assembly_check, int noise_level_check, bool new_check, bool unbound_check, bool noise_channel_check, bool multi_run)
@@ -118,6 +138,11 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	// vector<TString>D_ED; D_ED.clear();
 	// vector<double>D_EE; D_EE.clear();
 
+
+	int chip_ER, chan_ER;
+	int chip_ERM, chan_ERM;
+
+	
 	int chip_N, chan_N;
 	int chip_E, chan_E, level_E;
 	int chip_U, chan_U;
@@ -132,7 +157,7 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	double root_adc_0N, root_adc_1N, root_adc_2N, root_adc_3N, root_adc_4N;
 
 
-	double level_N, level_U, level_W, level_W02, level_W13 ;
+	double level_N, level_U, level_W, level_W02, level_W13, level_ADC0, level_ADC1, level_ADC2, level_ADC3, level_pvalue, mean_ADC0, mean_ADC1, mean_ADC2, mean_ADC3;
 	//TString source_name;
 
 	double entries_mean, entries_width;
@@ -153,7 +178,31 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	TTree *tree_output9 = new TTree("chan_thre_position", "threshold_position of each channel");
 	TTree *tree_output10 = new TTree("chan_study", "slop, width, chi2 of each channel");
 	TTree *tree_output11 = new TTree("chan_adc_study", "mean of each adc of each channel");
+	TTree *tree_output12 = new TTree("chan_err_width", "err width of each channel");
+	TTree *tree_output13 = new TTree("chan_err_mean", "err mean of each channel");
 
+
+
+
+	tree_output12->Branch("source_id", &run_file);
+	tree_output12->Branch("chip_id", &chip_ER);
+	tree_output12->Branch("chan_id", &chan_ER);
+	tree_output12->Branch("err_width0", &level_ADC0);  // the ADC0 "err fit width" of each channel (3328 channels)
+	tree_output12->Branch("err_width1", &level_ADC1); // the ADC1 "err fit width" of each channel (3328 channels)
+	tree_output12->Branch("err_width2", &level_ADC2); // the ADC2 "err fit width" of each channel (3328 channels)
+	tree_output12->Branch("err_width3", &level_ADC3); // the ADC3 "err fit width" of each channel (3328 channels)
+	tree_output12->Branch("err_pvalue", &level_pvalue); 
+
+	
+	tree_output13->Branch("source_id", &run_file);
+	tree_output13->Branch("chip_id", &chip_ERM);
+	tree_output13->Branch("chan_id", &chan_ERM);
+	tree_output13->Branch("err_mean0", &mean_ADC0);  // the ADC0 "err fit mean" of each channel (3328 channels)
+	tree_output13->Branch("err_mean1", &mean_ADC1); // the ADC1 "err fit mean" of each channel (3328 channels)
+	tree_output13->Branch("err_mean2", &mean_ADC2); // the ADC2 "err fit mean" of each channel (3328 channels)
+	tree_output13->Branch("err_mean3", &mean_ADC3); // the ADC3 "err fit mean" of each channel (3328 channels)
+
+	
 
 	tree_output1->Branch("source_id", &run_file);
 	tree_output1->Branch("chip_id", &chip_N);
@@ -473,6 +522,12 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	TF1 *gaus_fit = new TF1("gaus_fit", "gaus", 0.0, 0.18);
 
 	TF1 *ef_fit = new TF1("ef_fit","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc0 = new TF1("ef_fit_adc0","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc1 = new TF1("ef_fit_adc1","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc2 = new TF1("ef_fit_adc2","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc3 = new TF1("ef_fit_adc3","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc4 = new TF1("ef_fit_adc4","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
+	TF1 *ef_fit_adc_acum = new TF1("ef_fit_adc_acum","[2] * 0.5* (1.0 + TMath::Erf((x - [0]) / [1] / TMath::Sqrt2()))",0, 70);
 
 	
 
@@ -651,6 +706,32 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	//tex13 -> SetTextFont (42);
 	tex13->SetTextSize(0.028);
 
+	TLatex *tex_chan_ampl_adc0 = new TLatex();
+	tex_chan_ampl_adc0->SetNDC();
+	tex_chan_ampl_adc0->SetTextSize(0.028);
+	TLatex *tex_chan_ampl_adc1 = new TLatex();
+	tex_chan_ampl_adc1->SetNDC();
+	tex_chan_ampl_adc1->SetTextSize(0.028);
+	TLatex *tex_chan_ampl_adc2 = new TLatex();
+	tex_chan_ampl_adc2->SetNDC();
+	tex_chan_ampl_adc2->SetTextSize(0.028);
+	TLatex *tex_chan_ampl_adc3 = new TLatex();
+	tex_chan_ampl_adc3->SetNDC();
+	tex_chan_ampl_adc3->SetTextSize(0.028);
+	TLatex *tex_chan_ampl_adc4 = new TLatex();
+	tex_chan_ampl_adc4->SetNDC();
+	tex_chan_ampl_adc4->SetTextSize(0.028);
+
+	TLatex *tex_adc_width_compactor = new TLatex();
+	tex_adc_width_compactor->SetNDC();
+	tex_adc_width_compactor->SetTextSize(0.028);
+
+	
+	TLatex *tex_chan_ampl_adc_acum = new TLatex();
+	tex_chan_ampl_adc_acum->SetNDC();
+	tex_chan_ampl_adc_acum->SetTextSize(0.028);
+
+	
 	TLatex *tex_chan_ampl_1D = new TLatex();
 	tex_chan_ampl_1D->SetNDC();
 	tex_chan_ampl_1D->SetTextSize(0.028);
@@ -663,12 +744,19 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	tex_adc_ampl->SetNDC();
 	tex_adc_ampl->SetTextSize(0.028);
 
+	
 	TH2F *ampladc_detail = new TH2F("", "", 70, 0, 70, 8, 0, 8);
 
 	TH1F *check_new = new TH1F("", "", 70, 0, 70);
 	check_new->GetXaxis()->SetTitle("offset_ampl");
 	check_new->GetYaxis()->SetTitle("entries");
 
+
+	TH1F *err_width = new TH1F("", "", 60, 0, 6);
+	err_width->GetXaxis()->SetTitle("offset_ampl");
+	err_width->GetYaxis()->SetTitle("entries");
+
+	
 	TH1F * offset_width_1D_02 = new TH1F("", "", 70, 0, 70);
 	offset_width_1D_02->GetXaxis()->SetTitle("offset_ampl");
 	offset_width_1D_02->GetYaxis()->SetTitle("entries");
@@ -682,6 +770,7 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	chan_ampl_1D->GetYaxis()->SetTitle("entries");	
 
 	TF1 *gaus_fit_new = new TF1("gaus_fit_new", "gaus", 0, 70);
+	TF1 *gaus_fit_width = new TF1("gaus_fit_width", "gaus", 0, 6);
 
 	TF1 *gaus_fit_new_02 = new TF1("gaus_fit_new_02", "gaus", 0, 70);
 	TF1 *gaus_fit_new_13 = new TF1("gaus_fit_new_13", "gaus", 0, 70);
@@ -690,6 +779,18 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	vector<double> response_width02[26];
 	vector<double> response_width13[26];
 
+	vector<double> response_width0[26];
+	vector<double> response_width1[26];
+	vector<double> response_width2[26];
+	vector<double> response_width3[26];
+	vector<double> response_pvalue[26];
+
+	vector<double> response_mean0[26];
+	vector<double> response_mean1[26];
+	vector<double> response_mean2[26];
+	vector<double> response_mean3[26];
+
+	
 	TH1F *channel_entries_check = new TH1F("", "# of event each channel", 50, 0, 450);
 	channel_entries_check->GetXaxis()->SetTitle("channel event");
 	channel_entries_check->GetYaxis()->SetTitle("entries");
@@ -701,6 +802,11 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	TH2F *ChiNDF_TH2 = new TH2F("", "", 128, 0, 128, 128, 0.04, 0.15);
 	ChiNDF_TH2->SetStats(0);
 
+	TH1F * width_pvalue_1D = new TH1F("","width p-value",50,0,1);
+        width_pvalue_1D->GetXaxis()->SetTitle("p-value");
+
+
+	
 	TCanvas *c2 = new TCanvas("c2", "c2", 1200, 1200);
 	TH1F *slop_detail_TH = new TH1F("", "", 100, 0.08, 0.18);
 	slop_detail_TH->GetYaxis()->SetTitle("entries");
@@ -747,6 +853,14 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	
 	TCanvas *c13 = new TCanvas("c13", "c13", 1200, 1200);
 	TCanvas *c14 = new TCanvas("c14", "c14", 1200, 1200);
+	TCanvas *c15 = new TCanvas("c15", "c15", 1200, 1200);
+	TCanvas *c16 = new TCanvas("c16", "c16", 1200, 1200);
+	TCanvas *c17 = new TCanvas("c17", "c17", 1200, 1200);
+	TCanvas *c18 = new TCanvas("c18", "c18", 1200, 1200);
+	TCanvas *c19 = new TCanvas("c19", "c19", 1200, 1200);
+	TCanvas *c20 = new TCanvas("c20", "c20", 1200, 1200);
+	//TCanvas *c21 = new TCanvas("c21", "c21", 1200, 1200);
+
 	int channel_entries_outsider = 0;
 
 	TH1F * TP_turnon_1D = new TH1F ("","threshold position distribution",50,25,40);
@@ -762,11 +876,64 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	slope_rchi2_1D->GetYaxis()->SetTitle("entry");
 
 
+	TH1F*channel_ADC_0_on = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_1_on = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_2_on = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_3_on = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_4_on = new TH1F ("","",70,0,70);
+
+	TH1F*channel_ADC_0_on_clone = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_1_on_clone = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_2_on_clone = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_3_on_clone = new TH1F ("","",70,0,70);
+	TH1F*channel_ADC_4_on_clone = new TH1F ("","",70,0,70);
+
+	
 	TH1F*channel_ADC_0 = new TH1F ("","",70,0,70);
 	TH1F*channel_ADC_1 = new TH1F ("","",70,0,70);
 	TH1F*channel_ADC_2 = new TH1F ("","",70,0,70);
 	TH1F*channel_ADC_3 = new TH1F ("","",70,0,70);
 	TH1F*channel_ADC_4 = new TH1F ("","",70,0,70);
+
+
+	channel_ADC_0_on->GetXaxis()->SetTitle("ampl");
+	channel_ADC_0_on->GetYaxis()->SetTitle("entry");
+	channel_ADC_0_on->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_1_on->GetXaxis()->SetTitle("ampl");
+	channel_ADC_1_on->GetYaxis()->SetTitle("entry");
+	channel_ADC_1_on->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_2_on->GetXaxis()->SetTitle("ampl");
+	channel_ADC_2_on->GetYaxis()->SetTitle("entry");
+	channel_ADC_2_on->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_3_on->GetXaxis()->SetTitle("ampl");
+	channel_ADC_3_on->GetYaxis()->SetTitle("entry");
+	channel_ADC_3_on->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_4_on->GetXaxis()->SetTitle("ampl");
+	channel_ADC_4_on->GetYaxis()->SetTitle("entry");
+	channel_ADC_4_on->GetYaxis()->SetRangeUser(0,13);
+
+
+
+
+	channel_ADC_0_on_clone->GetXaxis()->SetTitle("ampl");
+	channel_ADC_0_on_clone->GetYaxis()->SetTitle("entry");
+	channel_ADC_0_on_clone->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_1_on_clone->GetXaxis()->SetTitle("ampl");
+	channel_ADC_1_on_clone->GetYaxis()->SetTitle("entry");
+	channel_ADC_1_on_clone->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_2_on_clone->GetXaxis()->SetTitle("ampl");
+	channel_ADC_2_on_clone->GetYaxis()->SetTitle("entry");
+	channel_ADC_2_on_clone->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_3_on_clone->GetXaxis()->SetTitle("ampl");
+	channel_ADC_3_on_clone->GetYaxis()->SetTitle("entry");
+	channel_ADC_3_on_clone->GetYaxis()->SetRangeUser(0,13);
+	channel_ADC_4_on_clone->GetXaxis()->SetTitle("ampl");
+	channel_ADC_4_on_clone->GetYaxis()->SetTitle("entry");
+	channel_ADC_4_on_clone->GetYaxis()->SetRangeUser(0,13);
+
+
+
+	
 	TH1F*channel_ADC_all = new TH1F ("","",70,0,70);
 	channel_ADC_all->GetXaxis()->SetTitle("ampl");
 	channel_ADC_all->GetYaxis()->SetTitle("entry");
@@ -778,6 +945,32 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	channel_ADC_3->SetStats(0);	
 	channel_ADC_4->SetStats(0);	
 
+	channel_ADC_0_on->SetStats(0);	
+	channel_ADC_1_on->SetStats(0);	
+	channel_ADC_2_on->SetStats(0);	
+	channel_ADC_3_on->SetStats(0);	
+	channel_ADC_4_on->SetStats(0);	
+	
+	channel_ADC_0_on->Sumw2();	
+	channel_ADC_1_on->Sumw2();	
+	channel_ADC_2_on->Sumw2();	
+	channel_ADC_3_on->Sumw2();	
+	channel_ADC_4_on->Sumw2();	
+
+
+	channel_ADC_0_on_clone->SetStats(0);	
+	channel_ADC_1_on_clone->SetStats(0);	
+	channel_ADC_2_on_clone->SetStats(0);	
+	channel_ADC_3_on_clone->SetStats(0);	
+	channel_ADC_4_on_clone->SetStats(0);	
+	
+	channel_ADC_0_on_clone->Sumw2();	
+	channel_ADC_1_on_clone->Sumw2();	
+	channel_ADC_2_on_clone->Sumw2();	
+	channel_ADC_3_on_clone->Sumw2();	
+	channel_ADC_4_on_clone->Sumw2();	
+
+	
 	THStack * adc_stack;
 
 
@@ -785,6 +978,8 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	tex_channel_adc->SetNDC();
 	tex_channel_adc->SetTextSize(0.028);
 
+
+	
 	TF1 *chan_ADC_fit = new TF1("chan_ADC_fit", "gaus", 0, 70);
 	TF1 *chan_ADC0_fit = new TF1("chan_ADC0_fit", "gaus", 0, 70);
 	TF1 *chan_ADC1_fit = new TF1("chan_ADC1_fit", "gaus", 0, 70);
@@ -810,6 +1005,8 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	double XADCerror [5]= {0,0,0,0,0};
 
 	TF1 * polynomial0 = new TF1 ("polynomial0","pol0",-1,10);
+	TF1 * polynomial0_adc = new TF1 ("polynomial0_adc","pol0",-1,10);
+
 	TF1 * polynomial1 = new TF1 ("polynomial1","pol1",0,70);
 
 
@@ -837,6 +1034,18 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 		c14->cd();
 		c14->Print(Form("%s/folder_%s/chip%d_detail_offsetwidth13.pdf(", folder_name.Data(), the_name.Data(), i4 + 1));
 
+		c15->cd();
+		c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf(", folder_name.Data(), the_name.Data(), i4 + 1));
+
+		c16->cd();
+		c16->Print(Form("%s/folder_%s/chip%d_detail_acumerr.pdf(", folder_name.Data(), the_name.Data(), i4 + 1));
+
+		c17->cd();
+		c17->Print(Form("%s/folder_%s/chip%d_detail_adcerr_acum.pdf(", folder_name.Data(), the_name.Data(), i4 + 1));
+
+		c18->cd();
+		c18->Print(Form("%s/folder_%s/chip%d_detail_adc_compactor.pdf(", folder_name.Data(), the_name.Data(), i4 + 1));
+
 		if (run_option == true)
 		{
 			c1->cd();
@@ -858,12 +1067,23 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 			offset_width_1D_02 ->SetTitle(Form("chip_id=%d, chan_id = %d", i4 + 1, i2));
 			offset_width_1D_13 ->SetTitle(Form("chip_id=%d, chan_id = %d", i4 + 1, i2));
 
+
+
+			channel_ADC_0_on->SetTitle(Form("chip_id=%d, chan_id = %d, ADC0", i4 + 1, i2));
+			channel_ADC_1_on->SetTitle(Form("chip_id=%d, chan_id = %d, ADC1", i4 + 1, i2));
+			channel_ADC_2_on->SetTitle(Form("chip_id=%d, chan_id = %d, ADC2", i4 + 1, i2));
+			channel_ADC_3_on->SetTitle(Form("chip_id=%d, chan_id = %d, ADC3", i4 + 1, i2));
+			channel_ADC_4_on->SetTitle(Form("chip_id=%d, chan_id = %d, ADC4", i4 + 1, i2));
+
+			
 			channel_ADC_0->SetTitle(Form("chip_id=%d, chan_id = %d, ADC0", i4 + 1, i2));
 			channel_ADC_1->SetTitle(Form("chip_id=%d, chan_id = %d, ADC1", i4 + 1, i2));
 			channel_ADC_2->SetTitle(Form("chip_id=%d, chan_id = %d, ADC2", i4 + 1, i2));
 			channel_ADC_3->SetTitle(Form("chip_id=%d, chan_id = %d, ADC3", i4 + 1, i2));
 			channel_ADC_4->SetTitle(Form("chip_id=%d, chan_id = %d, ADC4", i4 + 1, i2));
 
+		
+			
 			channel_ADC_all->SetTitle(Form("chip_id=%d, chan_id = %d", i4 + 1, i2));
 			
 			adc_stack = new THStack("","ADC stack");
@@ -881,6 +1101,7 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 					if (chip_adc[i4][i2][i3] == 0)
 					{
 						channel_ADC_0->Fill(chip_ampl[i4][i2][i3]);
+												
 					}
 
 					if (chip_adc[i4][i2][i3] == 1)
@@ -902,14 +1123,355 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 					{
 						channel_ADC_4->Fill(chip_ampl[i4][i2][i3]);
 					}
+					//-----------------------------------------------
 
+					
+					if (chip_adc[i4][i2][i3] == 0 || chip_adc[i4][i2][i3] == 1 || chip_adc[i4][i2][i3] == 2 || chip_adc[i4][i2][i3] == 3 || chip_adc[i4][i2][i3] == 4 || chip_adc[i4][i2][i3] == 5 || chip_adc[i4][i2][i3] == 6 || chip_adc[i4][i2][i3] == 7)
+					{
+					  
+					  channel_ADC_0_on->Fill(chip_ampl[i4][i2][i3]);
+					  channel_ADC_0_on_clone->Fill(chip_ampl[i4][i2][i3]);
+					}
+					
+					
+					if (chip_adc[i4][i2][i3] == 1 || chip_adc[i4][i2][i3] == 2 || chip_adc[i4][i2][i3] == 3 || chip_adc[i4][i2][i3] == 4 || chip_adc[i4][i2][i3] == 5 || chip_adc[i4][i2][i3] == 6 || chip_adc[i4][i2][i3] == 7)
+					{
+					  channel_ADC_1_on->Fill(chip_ampl[i4][i2][i3]);
+					  channel_ADC_1_on_clone->Fill(chip_ampl[i4][i2][i3]);
+					}
+
+					if (chip_adc[i4][i2][i3] == 2 || chip_adc[i4][i2][i3] == 3 || chip_adc[i4][i2][i3] == 4 || chip_adc[i4][i2][i3] == 5 || chip_adc[i4][i2][i3] == 6 || chip_adc[i4][i2][i3] == 7)
+					{
+						channel_ADC_2_on->Fill(chip_ampl[i4][i2][i3]);
+						channel_ADC_2_on_clone->Fill(chip_ampl[i4][i2][i3]);
+					}
+
+					if (chip_adc[i4][i2][i3] == 3 || chip_adc[i4][i2][i3] == 4 || chip_adc[i4][i2][i3] == 5 || chip_adc[i4][i2][i3] == 6 || chip_adc[i4][i2][i3] == 7)
+					{
+						channel_ADC_3_on->Fill(chip_ampl[i4][i2][i3]);
+						channel_ADC_3_on_clone->Fill(chip_ampl[i4][i2][i3]);
+					}
+
+					if (chip_adc[i4][i2][i3] == 4 || chip_adc[i4][i2][i3] == 5 || chip_adc[i4][i2][i3] == 6 || chip_adc[i4][i2][i3] == 7)
+					{
+						channel_ADC_4_on->Fill(chip_ampl[i4][i2][i3]);
+						channel_ADC_4_on_clone->Fill(chip_ampl[i4][i2][i3]);
+					}
+
+					
 					sum_adc[chip_adc[i4][i2][i3]] += chip_ampl[i4][i2][i3];
 					count_adc[chip_adc[i4][i2][i3]] += 1;
 				}
 			}
 
+
+
+		
+			
 			//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+
+			c15->cd();
+			//channel_ADC_0_on->SetFillColorAlpha(4,0.25);
+			channel_ADC_0_on->Draw("hist");
+			//chan_ADC0_fit_on->Draw("lsame");
+			
+			if (channel_ADC_0_on->GetEntries() ==0)
+			  {
+			    ef_fit_adc0->SetParameter(0,10); //turn on
+			    ef_fit_adc0->SetParameter(1,0); //slope
+			    ef_fit_adc0->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc0->SetParameters(30, 2, 12); 
+			    ef_fit_adc0->SetParLimits(2,9.9,12);
+			    ef_fit_adc0->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_0_on->Fit("ef_fit_adc0", "NQ");	
+			  }
+			c15->cd();
+			ef_fit_adc0->Draw("lsame");
+			c15->cd();
+			tex_chan_ampl_adc0->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc0->GetParameter(0)));
+			c15->cd();
+			tex_chan_ampl_adc0->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc0->GetParameter(1)));
+			c15->cd();
+			tex_chan_ampl_adc0->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc0->GetParameter(2)));
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+
+
+
+			c15->cd();
+			channel_ADC_1_on->Draw("hist");
+			
+			if (channel_ADC_1_on->GetEntries() ==0)
+			  {
+			    ef_fit_adc1->SetParameter(0,10); //turn on
+			    ef_fit_adc1->SetParameter(1,0); //slope
+			    ef_fit_adc1->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc1->SetParameters(35, 2, 12); 
+			    ef_fit_adc1->SetParLimits(2,9.9,12);
+			    ef_fit_adc1->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_1_on->Fit("ef_fit_adc1", "NQ");	
+			  }
+			c15->cd();
+			ef_fit_adc1->Draw("lsame");
+			c15->cd();
+			tex_chan_ampl_adc1->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc1->GetParameter(0)));
+			c15->cd();
+			tex_chan_ampl_adc1->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc1->GetParameter(1)));
+			c15->cd();
+			tex_chan_ampl_adc1->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc1->GetParameter(2)));
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+	
+
+			
+			c15->cd();
+			channel_ADC_2_on->Draw("hist");
+			
+			if (channel_ADC_2_on->GetEntries() ==0)
+			  {
+			    ef_fit_adc2->SetParameter(0,10); //turn on
+			    ef_fit_adc2->SetParameter(1,0); //slope
+			    ef_fit_adc2->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc2->SetParameters(40, 2, 12); 
+			    ef_fit_adc2->SetParLimits(2,9.9,12);
+			    ef_fit_adc2->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_2_on->Fit("ef_fit_adc2", "NQ");	
+			  }
+			c15->cd();
+			ef_fit_adc2->Draw("lsame");
+			c15->cd();
+			tex_chan_ampl_adc2->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc2->GetParameter(0)));
+			c15->cd();
+			tex_chan_ampl_adc2->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc2->GetParameter(1)));
+			c15->cd();
+			tex_chan_ampl_adc2->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc2->GetParameter(2)));
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+	
+
+
+			c15->cd();
+			channel_ADC_3_on->Draw("hist");
+			
+			if (channel_ADC_3_on->GetEntries() ==0)
+			  {
+			    ef_fit_adc3->SetParameter(0,10); //turn on
+			    ef_fit_adc3->SetParameter(1,0); //slope
+			    ef_fit_adc3->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc3->SetParameters(45, 2, 12); 
+			    ef_fit_adc3->SetParLimits(2,9.9,12);
+			    ef_fit_adc3->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_3_on->Fit("ef_fit_adc3", "NQ");	
+			  }
+			c15->cd();
+			ef_fit_adc3->Draw("lsame");
+			c15->cd();
+			tex_chan_ampl_adc3->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc3->GetParameter(0)));
+			c15->cd();
+			tex_chan_ampl_adc3->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc3->GetParameter(1)));
+			c15->cd();
+			tex_chan_ampl_adc3->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc3->GetParameter(2)));
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+	
+
+
+			c15->cd();
+			channel_ADC_4_on->Draw("hist");
+			
+			if (channel_ADC_4_on->GetEntries() ==0)
+			  {
+			    ef_fit_adc4->SetParameter(0,10); //turn on
+			    ef_fit_adc4->SetParameter(1,0); //slope
+			    ef_fit_adc4->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc4->SetParameters(50, 2, 12); 
+			    ef_fit_adc4->SetParLimits(2,9.9,12);
+			    ef_fit_adc4->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_4_on->Fit("ef_fit_adc4", "NQ");	
+			  }
+			c15->cd();
+			ef_fit_adc4->Draw("lsame");
+			c15->cd();
+			tex_chan_ampl_adc4->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc4->GetParameter(0)));
+			c15->cd();
+			tex_chan_ampl_adc4->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc4->GetParameter(1)));
+			c15->cd();
+			tex_chan_ampl_adc4->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc4->GetParameter(2)));   			
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+
+
+			c16->cd();
+			
+			
+			// after shift                                                                                                                                                                                           
+			double offset1 = (ef_fit_adc1->GetParameter(0))-(ef_fit_adc0->GetParameter(0));
+			double offset2 = (ef_fit_adc2->GetParameter(0))-(ef_fit_adc0->GetParameter(0));
+			double offset3 = (ef_fit_adc3->GetParameter(0))-(ef_fit_adc0->GetParameter(0));
+		
+			TH1F* hnew1 = new TH1F("hnew1", "", 70, 0, 70);
+			shifted_hist(channel_ADC_1_on_clone, hnew1, offset1);
+			
+			TH1F* hnew2 = new TH1F("hnew2", "", 70, 0, 70);
+			shifted_hist(channel_ADC_2_on_clone, hnew2, offset2);
+			
+			TH1F* hnew3 = new TH1F("hnew3", "", 70, 0, 70);
+			shifted_hist(channel_ADC_3_on_clone, hnew3, offset3);
+
+
+			TH1F* h_ADC_0 = (TH1F*)channel_ADC_0_on_clone->Clone("h_ADC_0");
+			// add up the two histogram                                                                                                                                                       
+			channel_ADC_0_on_clone->Add(hnew1);
+			channel_ADC_0_on_clone->Add(hnew2);
+			channel_ADC_0_on_clone->Add(hnew3);
+
+
+	
+			// plot                                                                                                                                                                           
+			channel_ADC_0_on_clone->SetLineColor(4);
+			channel_ADC_0_on_clone->Draw("hist");
+			h_ADC_0->SetLineColor(1);
+			h_ADC_0->Draw("hist same");
+			hnew1->SetLineColor(2);
+			hnew1->Draw("hist same");
+			hnew2->SetLineColor(3);
+			hnew2->Draw("hist same");
+			hnew3->SetLineColor(5);
+			hnew3->Draw("hist same");
+		
+
+			c16->Print(Form("%s/folder_%s/chip%d_detail_acumerr.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c16->Clear();
+			
+			//-----------------------
+
+			response_width0[i4].push_back(ef_fit_adc0->GetParameter(1));
+			response_width1[i4].push_back(ef_fit_adc1->GetParameter(1));
+			response_width2[i4].push_back(ef_fit_adc2->GetParameter(1));
+			response_width3[i4].push_back(ef_fit_adc3->GetParameter(1));
+			
+			response_mean0[i4].push_back(ef_fit_adc0->GetParameter(0));
+			response_mean1[i4].push_back(ef_fit_adc1->GetParameter(0));
+			response_mean2[i4].push_back(ef_fit_adc2->GetParameter(0));
+			response_mean3[i4].push_back(ef_fit_adc3->GetParameter(0));
+	
+			
+			err_width->Fill(ef_fit_adc0->GetParameter(1));
+			err_width->Fill(ef_fit_adc1->GetParameter(1));
+			err_width->Fill(ef_fit_adc2->GetParameter(1));
+			err_width->Fill(ef_fit_adc3->GetParameter(1));
+			
+
+
+			c17->cd();
+			//channel_ADC_0_on->SetFillColorAlpha(4,0.25);
+			channel_ADC_0_on_clone->Draw("hist");
+			//chan_ADC0_fit_on->Draw("lsame");
+			
+			if (channel_ADC_0_on_clone->GetEntries() ==0)
+			  {
+			    ef_fit_adc_acum->SetParameter(0,10); //turn on
+			    ef_fit_adc_acum->SetParameter(1,0); //slope
+			    ef_fit_adc_acum->SetParameter(2,1);//height
+			  }
+			else 
+			  {
+			    ef_fit_adc_acum->SetParameters(30, 2, 20); 
+			    ef_fit_adc_acum->SetParLimits(2,40,50);
+			    ef_fit_adc_acum->SetParLimits(1,0.2,10);
+				// [0] turn_on
+				// [1] slope
+				// [2] height 
+			    channel_ADC_0_on_clone->Fit("ef_fit_adc_acum","NQ");	
+			  }
+			c17->cd();
+			ef_fit_adc_acum->Draw("lsame");
+			c17->cd();
+			tex_chan_ampl_adc_acum->DrawLatex(0.12, 0.750, Form("turn on : %.4f", ef_fit_adc_acum->GetParameter(0)));
+			c17->cd();
+			tex_chan_ampl_adc_acum->DrawLatex(0.12, 0.720, Form("width   : %.3f", ef_fit_adc_acum->GetParameter(1)));
+			c17->cd();
+			tex_chan_ampl_adc_acum->DrawLatex(0.12, 0.690, Form("height  : %.3f", ef_fit_adc_acum->GetParameter(2)));
+			c17->Print(Form("%s/folder_%s/chip%d_detail_adcerr_acum.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c17->Clear();
+
+
+			
+
+	
+			const Int_t n = 4;
+			Double_t x[n]  = {0, 1, 2, 3};
+			Double_t y[n]  = { ef_fit_adc0->GetParameter(1), ef_fit_adc1->GetParameter(1), ef_fit_adc2->GetParameter(1), ef_fit_adc3->GetParameter(1) };
+			Double_t ex[n] = {0, 0, 0, 0};
+			Double_t ey[n] = { ef_fit_adc0->GetParError(1), ef_fit_adc1->GetParError(1), ef_fit_adc2->GetParError(1), ef_fit_adc3->GetParError(1)};
+		
+			TGraphErrors * compactor_width = new TGraphErrors(n,x,y,ex,ey);			
+			compactor_width->GetXaxis()->SetTitle("ADC");
+			compactor_width->GetYaxis()->SetTitle("width");
+			compactor_width->SetTitle(Form("chip_id=%d, chan_id = %d", i4 + 1, i2));
+			compactor_width->SetMarkerStyle(20);
+			compactor_width->SetMarkerSize(2);
+			compactor_width->SetMarkerColor(1);
+			compactor_width->GetXaxis()->SetLimits(-0.5,3.5);
+
+			c18->cd();
+			compactor_width->Draw("apl");
+
+			
+			compactor_width->Fit("polynomial0_adc","NQ");	
+			c18->cd();
+			polynomial0_adc->Draw("lsame");
+			
+			tex_adc_width_compactor->DrawLatex(0.12, 0.750, Form("fit : %.3f", polynomial0_adc->GetParameter(0)));
+			c18->cd();
+			tex_adc_width_compactor->DrawLatex(0.12, 0.720, Form("#chi^{2} : %.2f, NDF : %d, #chi^{2}/NDF : %.2f", polynomial0_adc->GetChisquare(),polynomial0_adc->GetNDF(),polynomial0_adc->GetChisquare()/polynomial0_adc->GetNDF()));	
+					
+			c18->Print(Form("%s/folder_%s/chip%d_detail_adc_compactor.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
+			c18->Clear();
+
+
+			width_pvalue_1D->Fill(TMath::Prob(polynomial0_adc->GetChisquare(), polynomial0_adc->GetNDF()));
+			response_pvalue[i4].push_back(TMath::Prob(polynomial0_adc->GetChisquare(), polynomial0_adc->GetNDF()));
+					
+
+
+			
+			
+			//
+
+			
 			c8->cd();
 			channel_ADC_0->Draw("hist");
 			if (channel_ADC_0->GetEntries()==0.)
@@ -1073,6 +1635,17 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 
 			//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+
+
+
+
+			//-----------------------------------------------------------------
+
+
+
+
+			
 			chip_adc_root = i4+1;
 			chan_adc_root = i2;
 			root_adc_0 = chan_ADC0_fit->GetParameter(1);
@@ -1115,11 +1688,16 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 			channel_ADC_4->SetFillColorAlpha(6,0.25);
 			channel_ADC_4->Draw("hist same");
 			chan_ADC4_fit->Draw("lsame");
+
+
+			
+			
 			c11->Print(Form("%s/folder_%s/chip%d_detail_adcwidthall.pdf", folder_name.Data(), the_name.Data(), i4 + 1));
 			c11->Clear();
 
-			
 
+
+			
 			TGraphErrors * chan_ADC_ampl_plot;
 			if (channel_ADC_1->GetEntries() !=0)
 			{
@@ -1463,6 +2041,25 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 			channel_ADC_3->Reset("ICESM");
 			channel_ADC_4->Reset("ICESM");
 
+			channel_ADC_0_on->Reset("ICESM");
+			channel_ADC_1_on->Reset("ICESM");
+			channel_ADC_2_on->Reset("ICESM");
+			channel_ADC_3_on->Reset("ICESM");
+			channel_ADC_4_on->Reset("ICESM");
+
+			channel_ADC_0_on_clone->Reset("ICESM");
+			channel_ADC_1_on_clone->Reset("ICESM");
+			channel_ADC_2_on_clone->Reset("ICESM");
+			channel_ADC_3_on_clone->Reset("ICESM");
+			channel_ADC_4_on_clone->Reset("ICESM");
+
+			
+			hnew1->Reset("ICESM");
+			hnew2->Reset("ICESM");
+			hnew3->Reset("ICESM");
+
+			h_ADC_0->Reset("ICESM");
+			  
 			c1->Clear();
 			c6->Clear();
 			c7->Clear();
@@ -1482,6 +2079,9 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 			chan_ADC_mean_error.clear();
 
 		} // channel 128
+
+
+		
 		cout << " " << endl;
 		if (run_option == true)
 		{
@@ -1525,10 +2125,50 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 			c14->cd();
 			c14->Print(Form("%s/folder_%s/chip%d_detail_offsetwidth13.pdf)", folder_name.Data(), the_name.Data(), i4 + 1));
 			c14->Clear();
-			
+
+
+			c15->cd();
+			c15->Print(Form("%s/folder_%s/chip%d_detail_adcerr.pdf)", folder_name.Data(), the_name.Data(), i4 + 1));
+			c15->Clear();
+
+			c16->cd();
+			c16->Print(Form("%s/folder_%s/chip%d_detail_acumerr.pdf)", folder_name.Data(), the_name.Data(), i4 + 1));
+			c16->Clear();
+
+			c17->cd();
+			c17->Print(Form("%s/folder_%s/chip%d_detail_adcerr_acum.pdf)", folder_name.Data(), the_name.Data(), i4 + 1));
+			c17->Clear();
+
+			c18->cd();
+			c18->Print(Form("%s/folder_%s/chip%d_detail_adc_compactor.pdf)", folder_name.Data(), the_name.Data(), i4 + 1));
+			c18->Clear();
+
 		}
 	} // chip 26 end
 
+
+
+	c19->cd();
+	err_width->Draw("hist");
+	err_width->Fit("gaus_fit_width","NQ");
+	gaus_fit_width->Draw("lsame");
+	TLatex *tex_acum_gaus_width = new TLatex();
+	tex_acum_gaus_width->SetNDC();
+	tex_acum_gaus_width->SetTextFont(42);
+	tex_acum_gaus_width->SetTextSize(0.032);
+	tex_acum_gaus_width->DrawLatex(0.2, 0.840, Form("Gaus Mean : %.4f", gaus_fit_width->GetParameter(1)));
+	tex_acum_gaus_width->DrawLatex(0.2, 0.80, Form("Gaus Sigma : %.4f", gaus_fit_width->GetParameter(2)));
+
+	c19->Print(Form("%s/folder_%s/err_width_distri.pdf", folder_name.Data(), the_name.Data()));
+	c19->Clear();
+
+	c20->cd();
+	width_pvalue_1D->Draw("hist");
+	c20->Print(Form("%s/folder_%s/err_width_pvalue.pdf", folder_name.Data(), the_name.Data()));
+	c20->Clear();
+
+	
+	
 	cout << "==============information of ampladc_detail ==========" << endl;
 	c1->Clear();
 	c1->cd();
@@ -1619,6 +2259,28 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 				level_W13 = response_width13[i9][i10];
 				tree_output4->Fill();
 
+
+
+				chip_ER = i9 + 1;
+				chan_ER = i10;
+				level_ADC0 = response_width0[i9][i10];
+				level_ADC1 = response_width1[i9][i10];
+				level_ADC2 = response_width2[i9][i10];
+				level_ADC3 = response_width3[i9][i10];
+				level_pvalue = response_pvalue[i9][i10];
+				tree_output12->Fill();
+
+
+				chip_ERM = i9 + 1;
+				chan_ERM = i10;
+				mean_ADC0 = response_mean0[i9][i10];
+				mean_ADC1 = response_mean1[i9][i10];
+				mean_ADC2 = response_mean2[i9][i10];
+				mean_ADC3 = response_mean3[i9][i10];
+				tree_output13->Fill();
+
+
+				
 				if (response_width[i9][i10] < Gaus_width_cut && response_width[i9][i10] !=0)
 				{
 					unbound_chip.push_back(i9 + 1);
@@ -1866,7 +2528,8 @@ void calibration_ana_code_multi_copy(TString folder_name, int module_number, boo
 	tree_output9->Write("", TObject::kOverwrite);
 	tree_output10->Write("", TObject::kOverwrite);
 	tree_output11->Write("", TObject::kOverwrite);
-
+	tree_output12->Write("", TObject::kOverwrite);
+	tree_output13->Write("", TObject::kOverwrite);
 	// delete tree_output1;
 	// delete tree_output2;
 
