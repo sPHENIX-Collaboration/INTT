@@ -3,6 +3,19 @@
 
 #include "INTTMessenger.hh"
 
+INTTMessenger::INTTMessenger()
+  : G4GenericMessenger( 0 ),
+    is_plate_( false ),
+    trigger_type_( 0 ),
+    rotation_status_( 0 ),
+    is_beam_smearing_( false ),
+    beam_line_( "-23" ),
+    target_( "W_200um" ),
+    position_restriction_( 0 ),
+    fDirectory_(0)
+{
+}
+
 INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& doc )
   : G4GenericMessenger( obj, dir, doc ),
     is_plate_( false ),
@@ -74,12 +87,21 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
   //////////////////////////////////////////////////////////////////////////////
   // Parameters for the beam                                                  //
   //////////////////////////////////////////////////////////////////////////////
+
   //////////////////////////////////////////////////////////////////////////////
   // Switch to use mono-energy beam(false) or more realistic beam(true)
   beam_smearing_command_ = new G4UIcmdWithABool( "/INTT/beam/beamSmearing", this );
   beam_smearing_command_->SetGuidance( "Switch to the realistic beam(true) or mono-energy beam at x=0 & y=0(false)." );
   beam_smearing_command_->SetParameterName("beamSmearing", false, false );
-  
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Beam file selection
+  beam_file_command_ = new G4UIcmdWithAString( "/INTT/beam/beamFile", this );
+  beam_file_command_->SetGuidance( "Selection of the beam file to be used." );
+  beam_file_command_->SetParameterName( "BeanFile", true ); // (name, is_omittable)
+  //beam_file_command_->SetDefaultValue( "beam_parameter/beam_W_400A.dat" );
+  //beam_line_command_->SetCandidates( "beam_parameter/beam_W_400A.dat beam_parameter/beam_W_400A_original.dat beam_parameter/beam_W_400A_mini.dat" );
+
   //////////////////////////////////////////////////////////////////////////////
   // Switch for the beam line
   beam_line_command_ = new G4UIcmdWithAString( "/INTT/beam/beamLine", this );
@@ -103,7 +125,7 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
   position_restriction_command_->SetParameterName( "PositionRestriction", true ); // (name, is_omittable)
   position_restriction_command_->SetDefaultValue( 0 );
   position_restriction_command_->SetRange( "0<=PositionRestriction && PositionRestriction<=3" );
-  
+
   //////////////////////////////////////////////////////////////////////////////
   // Parameters for something else                                            //
   //////////////////////////////////////////////////////////////////////////////
@@ -123,6 +145,7 @@ INTTMessenger::~INTTMessenger()
   delete plate_command_;
   delete rotation_command_;
   delete beam_smearing_command_;
+  delete beam_file_command_;
   delete beam_line_command_;
   delete trigger_type_command_;
   delete position_restriction_command_;
@@ -155,6 +178,11 @@ void INTTMessenger::SetNewValue(G4UIcommand* command, G4String val)
   else if( command == beam_smearing_command_ )
     {
       is_beam_smearing_ = beam_smearing_command_->GetNewBoolValue( val );
+    }
+  else if( command == beam_file_command_ )
+    {
+      beam_file_ = val;
+      G4cout << beam_file_ << G4endl;
     }
   else if( command == beam_line_command_ )
     {

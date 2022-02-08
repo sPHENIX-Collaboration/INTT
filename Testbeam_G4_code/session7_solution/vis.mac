@@ -76,9 +76,9 @@
 /vis/viewer/set/style surface
 /vis/viewer/set/lightsThetaPhi -135 135 deg
 
-/vis/geometry/set/visibility World 0 false
-/vis/geometry/set/colour Scintillator 0 green
-/vis/geometry/set/colour lead 0 yellow
+#/vis/geometry/set/visibility World 0 false
+#/vis/geometry/set/colour Scintillator 0 green
+#/vis/geometry/set/colour lead 0 yellow
 
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true
@@ -91,15 +91,13 @@
 /gui/addMenu menu_view View
 
 # In this View menu, add two buttons for setting the viewPoint at Theta/Phi (0,0) and (90,0)
-/gui/addButton menu_view "viewpoint (0,0)" "/vis/viewer/set/viewpointThetaPhi 0 0"
+/gui/addButton menu_view "Down->Upstream (0,0)" "/vis/viewer/set/viewpointThetaPhi 0 0"
 /gui/addButton menu_view "viewpoint (45,0)" "/vis/viewer/set/viewpointThetaPhi 45 0"
 /gui/addButton menu_view "viewpoint (90,0)" "/vis/viewer/set/viewpointThetaPhi 90 0"
 /gui/addButton menu_view "viewpoint (0,45)" "/vis/viewer/set/viewpointThetaPhi 0 45"
-/gui/addButton menu_view "viewpoint (0,90)" "/vis/viewer/set/viewpointThetaPhi 0 90"
-/gui/addButton menu_view "viewpoint (45,45)" "/vis/viewer/set/viewpointThetaPhi 45 45"
-/gui/addButton menu_view "viewpoint (90,90)" "/vis/viewer/set/viewpointThetaPhi 90 90"
-/gui/addButton menu_view "viewpoint (90,90)" "/vis/viewer/set/viewpointThetaPhi 90 90"
-/gui/addButton menu_view "viewpoint (135,90)" "/vis/viewer/set/viewpointThetaPhi 135 90"
+/gui/addButton menu_view "Top-Up-R->Bottom-Down-L (45,45)" "/vis/viewer/set/viewpointThetaPhi 45 45"
+/gui/addButton menu_view "Tilted Top->Bottom (90,90)" "/vis/viewer/set/viewpointThetaPhi 90 90"
+/gui/addButton menu_view "Top-Up->Bottom-Down (135,90)" "/vis/viewer/set/viewpointThetaPhi 135 90"
 
 # In this View menu, add a button for setting a viewPoint and ask for it (define a command without parameters)
 /gui/addButton menu_view "custom viewpoint" "/vis/viewer/set/viewpointThetaPhi"
@@ -107,27 +105,7 @@
 ################################################################
 # Run processing                                               #
 ################################################################
-/gun/energy 1 GeV
+/gun/energy 934 MeV
 /gun/particle e+
+
 /vis/ogl/set/displayListLimit 999999
-
-################################################################
-# parameters for INTT                                          #
-################################################################
-/INTT/beam/beamSmearing false
-# /INTT/beam/beamSmearing true
-
-/INTT/beam/beamLine -23
-# /INTT/beam/beamLine -30
-
-/INTT/beam/productionTarget Au_20um
-# /INTT/beam/productionTarget W_200um
-# /INTT/beam/productionTarget Cu_8mm
-
-/INTT/beam/positionRestriction 0
-# /INTT/beam/positionRestriction 1
-# /INTT/beam/positionRestriction 2
-# /INTT/beam/positionRestriction 3
-
-#/INTT/geom/constructPlate
-#/INTT/geom/construct

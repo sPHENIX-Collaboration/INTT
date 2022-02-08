@@ -10,7 +10,15 @@
 # switch to use mono-energy beam at (x=0, y=0) (false), or realistic beam (momentum spread, x-y distribution)
 # Usage: /INTT/beam/beamSmearing [false or true]
 /INTT/beam/beamSmearing false
-/INTT/beam/beamSmearing true
+#/INTT/beam/beamSmearing true
+
+#---------------------------------------------------------------------------
+# Selection of the beam file
+# Usage] /INTT/beam/beamFile [file path]
+/INTT/beam/beamFile beam_parameter/beam_W_400A.dat
+# /INTT/beam/beamFile beam_parameter/beam_W_400A_original.dat
+# /INTT/beam/beamFile beam_parameter/beam_W_400A_mini.dat
+
 
 #---------------------------------------------------------------------------
 # selection of the beamline, -23 and -30 are available. Use -23 if you are not sure.
@@ -50,6 +58,7 @@
 # Usage: /INTT/geom/setRotation none/vertical/horizontal
 /INTT/geom/setRotation none
 #/INTT/geom/setRotation vertical
+#/INTT/geom/setRotation horizontal
 
 #---------------------------------------------------------------------------
 # switch to put the additional thin plate to have multiple track in an event
@@ -77,5 +86,5 @@
 # Usage: /INTT/geom/debugLevel 0/1/2
 #        0: not debug, normal run
 #        1: simplified geometry (no silicon strips), the same random number seed 2
-#        2: debuggin INTTMessenger
+#        2: debugging INTTMessenger
 /INTT/misc/debugLevel 0

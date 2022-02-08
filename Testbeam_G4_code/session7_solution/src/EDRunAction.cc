@@ -78,6 +78,9 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   analysisManager->CreateNtupleDColumn("Beam_Theta"); // colume id = 0
   analysisManager->CreateNtupleDColumn("Beam_Phi"); // colume id = 1
   analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
+  analysisManager->CreateNtupleDColumn("Beam_Px"); // colume id = 0
+  analysisManager->CreateNtupleDColumn("Beam_Py"); // colume id = 0
+  analysisManager->CreateNtupleDColumn("Beam_Pz"); // colume id = 0 
   analysisManager->CreateNtupleDColumn("Beam_energy"); // in MeV
   analysisManager->FinishNtuple();
 
@@ -171,9 +174,9 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   auto beam_line = INTT_mess_->GetBeamLine();
   auto target = INTT_mess_->GetTarget();
   auto position_restriction = INTT_mess_->GetPositionRestriction();
-  this->beam = new ELPHEBeam( beam_line, target, position_restriction, this->beam_energy );
+  this->beam = new ELPHEBeam( INTT_mess_, beam_line, target, position_restriction, this->beam_energy );
 
-  if( 1<= INTT_mess_->GetDebugLevel() )
+  if( 1<= INTT_mess_->GetDebugLevel() && INTT_mess_->IsSmearing())
     beam->Print( 0 );  
 }
 

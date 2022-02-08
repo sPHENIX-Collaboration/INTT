@@ -27,6 +27,7 @@ class G4UIcmdWithADouble;
 class INTTMessenger: public G4GenericMessenger
 {
 public:
+  INTTMessenger();
   INTTMessenger( void* obj, const G4String& dir, const G4String& doc );
 
   ~INTTMessenger();
@@ -46,6 +47,7 @@ public:
   G4String GetBeamLine(){ return beam_line_;};
   G4String GetTarget(){ return target_;};
   G4int    GetPositionRestriction(){ return position_restriction_;};
+  G4String GetBeamFile(){ return beam_file_;};
   
   // for something else
   G4int GetDebugLevel(){ return debug_level_;};
@@ -81,6 +83,9 @@ private:
   std::string production_target;
   int position_restriction;
 
+  G4UIcmdWithAString* beam_file_command_;
+  G4String beam_file_;
+  
   // for misc
   G4UIcmdWithAnInteger* debug_level_command_;
   G4int debug_level_; // 0: not debug, 1: 
