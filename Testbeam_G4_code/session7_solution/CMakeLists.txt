@@ -59,10 +59,14 @@ set(EXAMPLEED_SCRIPTS
   run.png
   vis.mac
   INTT_config.mac
-  beam_parameter/Au_20um.root
-  beam_parameter/W_200um.root
-#  beam_parameter/Cu_8mm.root
-  interface_v4.c
+  # beam_parameter/Au_20um.root
+  # beam_parameter/W_200um.root
+  #  beam_parameter/Cu_8mm.root
+  # beam_parameter/data/ebl-hb/23/w425.root
+  beam_parameter/beam_W_400A.dat
+  #beam_parameter/beam_W_400A_original.dat
+  beam_parameter/beam_W_400A_mini.dat
+  # interface_v4.c
   )
 
 foreach(_script ${EXAMPLEED_SCRIPTS})

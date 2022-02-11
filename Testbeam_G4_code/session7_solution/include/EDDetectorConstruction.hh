@@ -136,7 +136,10 @@ private:
   G4LogicalVolume* INTT_testbeam_BOXLV; // the dark box is in this volume
   
   G4VisAttributes* color_invisible;
-  G4VisAttributes* color_silicon_active;
+  G4VisAttributes* color_silicon_active_typeA;
+  G4VisAttributes* color_silicon_active_typeA_odd;
+  G4VisAttributes* color_silicon_active_typeA_even;
+  G4VisAttributes* color_silicon_active_typeB;
   G4VisAttributes* color_silicon_inactive;
   G4VisAttributes* color_silicon_not_used;
   G4VisAttributes* color_glue;
@@ -165,3 +168,4 @@ private:
 };
 
 #endif
+

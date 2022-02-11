@@ -16,6 +16,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4VProcess.hh"
+#include "G4UImanager.hh"
 
 // ROOT headers
 #include "TVector3.h"

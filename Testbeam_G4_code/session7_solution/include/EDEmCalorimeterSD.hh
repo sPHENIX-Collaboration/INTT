@@ -33,16 +33,17 @@
 #define EDEmCalorimeterSD_h 1
 
 #include "G4VSensitiveDetector.hh"
-#include "EDEmCalorimeterHit.hh"
-#include "EDAnalysis.hh"
 #include "G4MTRunManager.hh"
-
+#include "G4UImanager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4SDManager.hh"
 #include "G4VTouchable.hh"
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
+
+#include "EDEmCalorimeterHit.hh"
+#include "EDAnalysis.hh"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -61,6 +62,7 @@ class EDEmCalorimeterSD : public G4VSensitiveDetector
 
   private:
     EDEmCalorimeterHitsCollection* fHitsCollection;
+  G4int verbose = 0;
 };
 
 

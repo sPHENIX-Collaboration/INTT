@@ -76,13 +76,14 @@ EDDetectorConstruction::EDDetectorConstruction( INTTMessenger* INTT_mess )
     + this->silicon_module_gap[2];
 
   // offset for the experimental area
-  this->experimental_offset[0] = (silicon_length/2 - this->kSilicon_length_type_a * 2.5); // x
+  //this->experimental_offset[0] = (silicon_length/2 - this->kSilicon_length_type_a * 2.5); // x
+  this->experimental_offset[0] = -(silicon_length/2 - this->kSilicon_length_type_a * 2.5); // x
   this->experimental_offset[1] = 0.0 * cm; // y
   this->experimental_offset[2] = 0.0 * cm; // z
 
   // offset for the dark box
-  this->darkbox_offset[0] = 0.0 * cm;
-  this->darkbox_offset[1] = 128.0 / 2  * kSilicon_strip_width; // hight of half chip
+  this->darkbox_offset[0] = INTT_mess->GetDarkboxOffsetX();
+  this->darkbox_offset[1] = INTT_mess->GetDarkboxOffsetY() + 128.0 / 2  * kSilicon_strip_width; // hight of half chip
   this->darkbox_offset[2] = 0.0 * cm;
 
   // check whether the dark box is larger than the world or not
@@ -230,8 +231,14 @@ void EDDetectorConstruction::ConstructDarkBox()
       // position modification in x-z plane
       G4double theta = std::atan2( this->INTT_testbeam_BOX_size[2]/2, this->INTT_testbeam_BOX_size[0]/2 ) * radian;
       G4double radius = sqrt( std::pow(this->INTT_testbeam_BOX_size[2]/2, 2 ) + std::pow(this->INTT_testbeam_BOX_size[0]/2, 2) );
-      G4double dx = -this->kSilicon_length_type_a * 2.75 * cos( kHorizontal_rotation_angle );
-	//radius * ( sin( theta - kHorizontal_rotation_angle  ) - sin( theta )) ;
+      // G4double dx = this->kSilicon_length_type_a * 2.75 * cos( kHorizontal_rotation_angle );
+      // 	//radius * ( sin( theta - kHorizontal_rotation_angle  ) - sin( theta )) ;
+
+      G4double silicon_length = this->kSilicon_length_type_a * 8
+	+ this->kSilicon_length_type_b * 5
+	+ this->silicon_module_gap[2];
+      G4double dx = (silicon_length /2 - this->kSilicon_length_type_a * 5.5) * cos( kHorizontal_rotation_angle );
+      //      G4double dx = (-silicon_length / 2 ) * cos( kHorizontal_rotation_angle );
       G4double dy = 0.0;
       G4double dz = radius
 	* (  cos( theta - kHorizontal_rotation_angle ) - cos( theta )) ;
@@ -394,13 +401,16 @@ void EDDetectorConstruction::ConstructLadders()
 
   const G4double kLadder_horizontal_length = 232.2 * mm;
   const G4double kLadder_vertical_length = 38 * mm;
+  const G4double kSilicon_module_vertical_length
+    = this->kSilicon_strip_width * 128 * 2
+    + 1.27 * mm * 2; // inactive silicon area on the top and bottom
   //  1.47684 cm
   
   //  G4Box* INTT_si_box    = new G4Box("INTT_si_box", 0.3 *m, 0.3 *m, 0.3 *m);
   // container for the active silicon strips and inactive silicon block
   G4Box *INTT_si = new G4Box("INTT_si",
-			     116.1 *mm,
-			     11.25 *mm,
+			     kLadder_horizontal_length / 2 , //116.1 *mm,
+			     kSilicon_module_vertical_length / 2, //11.25 *mm,
 			     this->kSilicon_strip_thickness / 2 );
     
   // the gap between the silicon type-A and type-B
@@ -415,18 +425,25 @@ void EDDetectorConstruction::ConstructLadders()
 				   this->kSilicon_strip_width / 2,
 				   this->kSilicon_strip_thickness / 2 );
   auto INTT_si_typeALV = new G4LogicalVolume( INTT_si_typeA, Silicon, "typeA" );
-  INTT_si_typeALV->SetVisAttributes(color_silicon_active);  
+  INTT_si_typeALV->SetVisAttributes(color_silicon_active_typeA);  
   
   G4Box *INTT_si_typeB = new G4Box("INTT_si_typeB",
 				   this->kSilicon_length_type_b / 2,
 				   this->kSilicon_strip_width / 2,
 				   this->kSilicon_strip_thickness / 2);
   auto INTT_si_typeBLV = new G4LogicalVolume( INTT_si_typeB, Silicon, "typeB" );
-  INTT_si_typeBLV->SetVisAttributes(color_silicon_active);  
+  INTT_si_typeBLV->SetVisAttributes(color_silicon_active_typeB);  
 
   //! @TODO which thickness 14 um or 50 um should be used for the silicon sensors?
-  G4Box *INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA", 65 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
-  G4Box *INTT_si_glue_typeB = new G4Box("INTT_si_glue_typeB", 51 *mm, 11.25 *mm, this->kSilver_epoxy_glue_FPHX_thickness / 2 );
+  G4Box *INTT_si_glue_typeA = new G4Box("INTT_si_glue_typeA",
+					(this->kSilicon_length_type_a * 8 + 1 * mm * 2 ) / 2 , //65 *mm,
+					kSilicon_module_vertical_length / 2, //11.25 *mm,
+					this->kSilver_epoxy_glue_FPHX_thickness / 2 );
+
+  G4Box *INTT_si_glue_typeB = new G4Box("INTT_si_glue_typeB",
+					(this->kSilicon_length_type_b * 5 + 1 * mm * 2) / 2, // 51 *mm,
+					kSilicon_module_vertical_length / 2, //11.25 *mm,
+					this->kSilver_epoxy_glue_FPHX_thickness / 2 );
     
   G4Box* INTT_Chip		= new G4Box("INTT_Chip",
 					    this->kFPHX_length/2, this->kFPHX_width/2, this->kFPHX_thickness/2 );
@@ -651,11 +668,23 @@ void EDDetectorConstruction::ConstructLadders()
     - kGap - kINTT_ladder_thickness; // gap between 1st and 2nd ladders + thickness of the 1st ladder
   
   //===============================================================================================================
-  G4LogicalVolume *INTT_siLV_typeA = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
-  INTT_siLV_typeA->SetVisAttributes(color_silicon_active);
+  // G4LogicalVolume *INTT_siLV_typeA = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA");
+  // INTT_siLV_typeA->SetVisAttributes(color_silicon_active_typeA);
 
-  G4LogicalVolume *INTT_siLV_typeB = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");
-  INTT_siLV_typeB->SetVisAttributes(color_silicon_active);
+  G4LogicalVolume *INTT_siLV_typeA_odd = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA_odd");
+  INTT_siLV_typeA_odd->SetVisAttributes(color_silicon_active_typeA_odd );
+
+  G4LogicalVolume *INTT_siLV_typeA_even = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA_even");
+  INTT_siLV_typeA_even->SetVisAttributes(color_silicon_active_typeA_even );
+
+  // G4LogicalVolume *INTT_siLV_typeB = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB");
+  // INTT_siLV_typeB->SetVisAttributes(color_silicon_active_typeB);
+
+  G4LogicalVolume *INTT_siLV_typeB_odd = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB_odd");
+  INTT_siLV_typeB_odd->SetVisAttributes(color_silicon_active_typeA_odd);
+
+  G4LogicalVolume *INTT_siLV_typeB_even = new G4LogicalVolume(INTT_si_typeB, Silicon, "INTT_siLV_all_typeB_even");
+  INTT_siLV_typeB_even->SetVisAttributes(color_silicon_active_typeA_even);
 
   G4LogicalVolume *INTT_siLV_typeA_not_used = new G4LogicalVolume(INTT_si_typeA, Silicon, "INTT_siLV_all_typeA_not_used");
   INTT_siLV_typeA_not_used->SetVisAttributes(color_silicon_not_used);
@@ -694,7 +723,7 @@ void EDDetectorConstruction::ConstructLadders()
 
       G4RotationMatrix *silicon_rotation = new G4RotationMatrix(); // It's necessary to make geometry same as the reality. Without rotation, the silicon module is like the other half ladder.
       silicon_rotation->rotateY( 180 * deg );
-      silicon_rotation->rotateZ( 180 * deg );
+      silicon_rotation->rotateX( 180 * deg );
 
       G4VPhysicalVolume *INTT_siLV_outer_allPV =
 	new G4PVPlacement( silicon_rotation,
@@ -720,6 +749,8 @@ void EDDetectorConstruction::ConstructLadders()
       // the sillicon sensor part
       G4ThreeVector the_position; // needed?
       G4double xpos = 0.0, ypos = 0.0;
+
+      // loop over silicon strips in 2 chips
       for (G4int l1 = 0; l1 < 256; l1++)
         {
 
@@ -728,6 +759,7 @@ void EDDetectorConstruction::ConstructLadders()
 	    {
 	      ypos = (-9.961 + (l1 * 0.078)) *mm;
 
+	      // loop over columns of 13 silicon chips
 	      for (G4int l2 = 0; l2 < 13; l2++)
                 {
 		  int type;
@@ -737,32 +769,28 @@ void EDDetectorConstruction::ConstructLadders()
 
 		      xpos = (-107.1 + (l2 *16)) * mm;
 
-		      if( l != 0 ) // active ladders
+		      G4LogicalVolume* lv_to_be_used;
+		      G4String name = "INTT_siLV_all_typeA";
+		      if( l == 0 ) // for the most upstream ladder, which was not used in the experiment
 			{
+			  lv_to_be_used = INTT_siLV_typeA_not_used;
+			  name += "_not_used";
+			}
+		      if( l2 % 2 == 0 && l != 0 ) // for operational ladders, odd columns
+			lv_to_be_used = INTT_siLV_typeA_odd;
+		      else if( l2 % 2 == 1 && l != 0 ) // for operational ladders, even columns
+			lv_to_be_used = INTT_siLV_typeA_even;
 
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeA,  //its logical volume
-					      "INTT_siLV_all_typeA",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
-			}
-		      else
-			{
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeA_not_used,  //its logical volume
-					      "INTT_siLV_all_typeA_not_used",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
-			  
-			}
+		      chip_channelsPV =
+			new G4PVPlacement(0,
+					  G4ThreeVector(xpos, ypos, 0),
+					  lv_to_be_used, //its logical volume
+					  name,  //its name
+					  INTT_siLV_outer[l], //its mother  volume
+					  false,  //no boolean operation
+					  counting_number,  //copy number
+					  false);
+		      
 		      the_position = INTT_testbeam_BOXPV->GetTranslation()
 			+ INTT_siLV_outer_allPV->GetTranslation()
 			+ chip_channelsPV->GetTranslation();
@@ -773,30 +801,29 @@ void EDDetectorConstruction::ConstructLadders()
 		  else
                     {
 		      xpos = (25.1 + ((l2 - 8) *20)) * mm;
-		      if( l != 0 ) // active ladders
+
+		      G4LogicalVolume* lv_to_be_used;
+		      G4String name = "INTT_siLV_all_typeB";
+		      if( l == 0 ) // for the most upstream ladder, which was not used in the experiment
 			{
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeB,  //its logical volume
-					      "INTT_siLV_all_typeB",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
+			  lv_to_be_used = INTT_siLV_typeB_not_used;
+			  name += "_not_used";
 			}
-		      else
-			{
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeB_not_used,  //its logical volume
-					      "INTT_siLV_all_typeB_not_used",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
-			}
+		      if( l2 % 2 == 0 && l != 0 ) // for operational ladders, odd columns
+			lv_to_be_used = INTT_siLV_typeB_odd;
+		      else if( l2 % 2 == 1 && l != 0 ) // for operational ladders, even columns
+			lv_to_be_used = INTT_siLV_typeB_even;
+
+		      chip_channelsPV =
+			new G4PVPlacement(0,
+					  G4ThreeVector(xpos, ypos, 0),
+					  lv_to_be_used, // INTT_siLV_typeB_odd,  //its logical volume
+					  name, // "INTT_siLV_all_typeB",  //its name
+					  INTT_siLV_outer[l], //its mother  volume
+					  false,  //no boolean operation
+					  counting_number,  //copy number
+					  false);
+		      
 		      
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
@@ -805,13 +832,6 @@ void EDDetectorConstruction::ConstructLadders()
 		      counting_number += 1;
                     } // end of if( l2 < 8 )
 
-		  // G4cout << "copy test : " << counting_number - 1
-		  // 	   << " ID : " << l << " " << l1 << " " << l2
-		  // 	   << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-		  // 	   << " up : " << 0
-		  // 	   << " type : " << type
-		  // 	   << G4endl;
-		    
                 }
             }
 	  else  // for the silicon chips on the upper side
@@ -827,32 +847,29 @@ void EDDetectorConstruction::ConstructLadders()
                     {
 
 		      xpos = (-107.1 + (l2 *16)) *mm;
-		      if( l != 0 ) // active ladders
-			{
-			  chip_channelsPV = 
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeA,  //its logical volume
-					      "INTT_siLV_all_typeA",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
-			}
-		      else
-			{
-			  chip_channelsPV = 
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeA_not_used,  //its logical volume
-					      "INTT_siLV_all_typeA_not_used",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
 
+		      G4LogicalVolume* lv_to_be_used;
+		      G4String name = "INTT_siLV_all_typeA";
+		      if( l == 0 ) // for the most upstream ladder, which was not used in the experiment
+			{
+			  lv_to_be_used = INTT_siLV_typeA_not_used;
+			  name += "_not_used";
 			}
+		      if( l2 % 2 == 0 && l != 0 ) // for the operational ladders, even columns
+			lv_to_be_used = INTT_siLV_typeA_even;
+		      else if( l2 % 2 == 1 && l != 0 ) // for the operational ladders, odd columns
+			lv_to_be_used = INTT_siLV_typeA_odd;
 
+		      chip_channelsPV = 
+			new G4PVPlacement(0,
+					  G4ThreeVector(xpos, ypos, 0),
+					  lv_to_be_used, //INTT_siLV_typeA,  //its logical volume
+					  name, //"INTT_siLV_all_typeA",  //its name
+					  INTT_siLV_outer[l], //its mother  volume
+					  false,  //no boolean operation
+					  counting_number,  //copy number
+					  false);
+		      					  
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
 			chip_channelsPV->GetTranslation();
@@ -863,30 +880,28 @@ void EDDetectorConstruction::ConstructLadders()
                     {
 
 		      xpos = (25.1 + ((l2 - 8) *20)) *mm;
-		      if( l != 0 ) // active ladders
+
+		      G4LogicalVolume* lv_to_be_used;
+		      G4String name = "INTT_siLV_all_typeB";
+		      if( l == 0 ) // for the most upstream ladder, which was not used in the experiment
 			{
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeB,  //its logical volume
-					      "INTT_siLV_all_typeB",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
+			  lv_to_be_used = INTT_siLV_typeB_not_used;
+			  name += "_not_used";
 			}
-		      else
-			{
-			  chip_channelsPV =
-			    new G4PVPlacement(0,
-					      G4ThreeVector(xpos, ypos, 0),
-					      INTT_siLV_typeB_not_used,  //its logical volume
-					      "INTT_siLV_all_typeB_not_used",  //its name
-					      INTT_siLV_outer[l], //its mother  volume
-					      false,  //no boolean operation
-					      counting_number,  //copy number
-					      false);
-			}
+		      if( l2 % 2 == 0 && l != 0 ) // for the operational ladders, even columns
+			lv_to_be_used = INTT_siLV_typeB_even;
+		      else if( l2 % 2 == 1 && l != 0 ) // for the operational ladders, odd columns
+			lv_to_be_used = INTT_siLV_typeB_odd;
+
+		      chip_channelsPV =
+			new G4PVPlacement(0,
+					  G4ThreeVector(xpos, ypos, 0),
+					  lv_to_be_used, // INTT_siLV_typeB_odd,  //its logical volume
+					  name, //"INTT_siLV_all_typeB",  //its name
+					  INTT_siLV_outer[l], //its mother  volume
+					  false,  //no boolean operation
+					  counting_number,  //copy number
+					  false);
 
 		      the_position = INTT_testbeam_BOXPV->GetTranslation() +
 			INTT_siLV_outer_allPV->GetTranslation() +
@@ -895,11 +910,6 @@ void EDDetectorConstruction::ConstructLadders()
 		      counting_number += 1;
                     }
 
-		  // G4cout << "copy test : " << counting_number - 1
-		  // 	   << " ID : " << l << " " << l1 << " " << l2
-		  // 	   << " position : " << the_position[0] << " " << the_position[1] << " " << the_position[2]
-		  // 	   << " up : " << 1 
-		  // 	   << " type : " << type << G4endl;
 		    
                 } // end of for (G4int l2 = 0; l2 < 13; l2++)
             } // end of if (l1 < 128)
@@ -909,9 +919,17 @@ void EDDetectorConstruction::ConstructLadders()
       // move the position from the center of the silicon strip to the center of the glue
       zpos += this->kSilicon_strip_thickness / 2 + this->kSilver_epoxy_glue_FPHX_thickness / 2;
 
+      G4double silicon_length = this->kSilicon_length_type_a * 8
+	+ this->kSilicon_length_type_b * 5
+	+ this->silicon_module_gap[2];
+      G4ThreeVector silicon_glue_position_typeA( (kLadder_horizontal_length - 1 * mm * 2 - this->kSilicon_length_type_a * 8 )/ 2,
+						 0,
+						 zpos );
+      
       G4VPhysicalVolume *INTT_siLV_glue_typeA_PV =
 	new G4PVPlacement(0,
-			  G4ThreeVector(-51.1 * mm, 0, zpos ),
+			  //G4ThreeVector(-51.1 * mm, 0, zpos ),
+			  silicon_glue_position_typeA,
 			  INTT_siLV_glue_typeA, //its logical volume
 			  INTT_siLV_glue_typeA_name[l],  //its name
 			  INTT_testbeam_BOXLV,  //its mother  volume
@@ -919,10 +937,15 @@ void EDDetectorConstruction::ConstructLadders()
 			  0,  //copy number
 			  checkOverlaps);
 
-      // the silver epoxy glue for the silcon chip type-A
+      G4ThreeVector silicon_glue_position_typeB( -(kLadder_horizontal_length - 1 * mm * 2 - this->kSilicon_length_type_b * 5 )/ 2,
+						 0,
+						 zpos );
+      
+      // the silver epoxy glue for the silcon chip type-B
       G4VPhysicalVolume *INTT_siLV_glue_typeB_PV =
 	new G4PVPlacement(0,
-			  G4ThreeVector(65.1 * mm, 0, zpos ),
+			  //G4ThreeVector(65.1 * mm, 0, zpos ),
+			  silicon_glue_position_typeB,
 			  INTT_siLV_glue_typeB, //its logical volume
 			  INTT_siLV_glue_typeB_name[l],  //its name
 			  INTT_testbeam_BOXLV,  //its mother  volume
@@ -1489,13 +1512,30 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 void EDDetectorConstruction::ConstructSDandField()
 {
 
-  EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
-  G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);
-  SetSensitiveDetector("INTT_siLV_all_typeA", chamber1SD);
+  // EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
+  // G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);
+  // SetSensitiveDetector("INTT_siLV_all_typeA", chamber1SD);
 
-  EDChamberSD *chamber2SD = new EDChamberSD("Chamber2SD", "Chamber2HitsCollection", 0);
-  G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD);
-  SetSensitiveDetector("INTT_siLV_all_typeB", chamber2SD);
+  EDChamberSD *chamber1SD_odd = new EDChamberSD("Chamber1SD_odd", "Chamber1HitsCollection_odd", 0);
+  G4SDManager::GetSDMpointer()->AddNewDetector( chamber1SD_odd );
+  SetSensitiveDetector("INTT_siLV_all_typeA_odd", chamber1SD_odd );
+
+  EDChamberSD *chamber1SD_even = new EDChamberSD("Chamber1SD_even", "Chamber1HitsCollection_even", 0);
+  G4SDManager::GetSDMpointer()->AddNewDetector( chamber1SD_even );
+  SetSensitiveDetector("INTT_siLV_all_typeA_even", chamber1SD_even );
+
+ 
+  // EDChamberSD *chamber2SD = new EDChamberSD("Chamber2SD", "Chamber2HitsCollection", 0);
+  // G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD);
+  // SetSensitiveDetector("INTT_siLV_all_typeB", chamber2SD);
+
+  EDChamberSD *chamber2SD_odd = new EDChamberSD("Chamber2SD_odd", "Chamber2HitsCollection_odd", 0);
+  G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD_odd);
+  SetSensitiveDetector("INTT_siLV_all_typeB_odd", chamber2SD_odd );
+
+  EDChamberSD *chamber2SD_even = new EDChamberSD("Chamber2SD_even", "Chamber2HitsCollection_even", 0);
+  G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD_even);
+  SetSensitiveDetector("INTT_siLV_all_typeB_even", chamber2SD_even );
 
   if( INTT_mess_->GetTriggerType() == 1 ) // only for the full setup
     {
@@ -1521,9 +1561,14 @@ void EDDetectorConstruction::DefineVisAttributes()
   color_invisible		= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 0.0, 1.0)	);
   color_invisible->SetForceWireframe( true );
   
-  color_silicon_active	= new G4VisAttributes(true	, G4Colour(1.0, 0.000, 0.0, 0.5)	); // transparent red
-  color_silicon_inactive	= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 1.0, 0.5)	); // transparent blue
-  color_silicon_not_used	= new G4VisAttributes(true	, G4Colour(1.0, 0.500, 0.0, 0.5)	); // transparent blue
+  color_silicon_active_typeA	= new G4VisAttributes(true	, G4Colour(0.9, 0.400, 0.0, 0.5)	); // transparent red
+  color_silicon_active_typeA_odd= new G4VisAttributes(true	, G4Colour(0.9, 0.000, 0.0, 0.5)	); // transparent red
+  color_silicon_active_typeA_even= new G4VisAttributes(true	, G4Colour(0.5, 0.000, 0.0, 0.5)	); // transparent red
+  color_silicon_active_typeB	= new G4VisAttributes(true	, G4Colour(0.9, 0.000, 0.4, 0.5)	); // transparent red
+  //  color_silicon_inactive	= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 1.0, 0.5)	); // transparent blue
+  color_silicon_inactive	= new G4VisAttributes(true	, G4Colour(0.0, 0.000, 1.0, 0.0)	); // transparent blue
+  //color_silicon_not_used	= new G4VisAttributes(true	, G4Colour(1.0, 0.500, 0.0, 0.5)	); // transparent blue
+  color_silicon_not_used	= new G4VisAttributes(true	, G4Colour(0.5, 0.250, 0.25, 0.5)	); // transparent blue
   
   color_glue			= new G4VisAttributes(true	, G4Colour(0.1, 0.100, 0.1, 0.4)	);
   color_FPHX			= new G4VisAttributes(true	, G4Colour(1.0, 0.843, 0.0, 0.5)	); // HTML gold

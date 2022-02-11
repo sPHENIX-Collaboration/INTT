@@ -36,11 +36,12 @@
 ################################################################
 # Run processing                                               #
 ################################################################
-/gun/energy 1 GeV
-/gun/particle e+
+/gun/particle e+ # it's necesasry anyway
+/gun/energy 934 MeV # it works if the beam is not smeared
 
 ################################################################
 # Start the run                                                #
 ################################################################
-/run/printProgress 1000
-/run/beamOn 1000
+/run/printProgress  10000
+#/run/beamOn        50000
+/run/beamOn 100000

@@ -30,7 +30,6 @@
 
 #include <random>
 
-
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
 #else
@@ -61,11 +60,12 @@ int main(int argc,char** argv)
 {
   // Evaluate arguments
   //
-  if ( argc > 9 ) {
-    PrintUsage();
-    return 1;
-  }
-
+  if( argc > 9 )
+    {
+      PrintUsage();
+      return 1;
+    }
+  
   G4String macro;
   G4String session;
   G4String physicsListName;
@@ -99,10 +99,11 @@ int main(int argc,char** argv)
   
   // Detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = 0;
-  if ( ! macro.size() ) {
-    ui = new G4UIExecutive(argc, argv, session);
-  }
-
+  if ( ! macro.size() )
+    {
+      ui = new G4UIExecutive(argc, argv, session);
+    }
+  
   // Construct the run manager
 #ifdef G4MULTITHREADED
   G4MTRunManager * runManager = new G4MTRunManager;
@@ -113,10 +114,10 @@ int main(int argc,char** argv)
   G4RunManager * runManager = new G4RunManager;
 #endif
 
-
   // Get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
+  // read INTT macros at first
   INTTMessenger* INTT_mess = new INTTMessenger( runManager, "", "" );
   G4String INTT_init_command = "/control/execute ";
   UImanager->ApplyCommand( INTT_init_command + "INTT_config.mac" );

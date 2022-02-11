@@ -1,112 +1,138 @@
 #include "ELPHEBeam.hh"
 
 ELPHEBeam::ELPHEBeam() :
-  beam_line_( "-23" ),
-  production_target_( "Au_20um" ),
-  position_restriction_( 0 ),
-  momentum_( 800 * CLHEP::MeV ),
-  momentum_factor_( 1.0 / 1.32 ),
-  spread_factor_( 1.0 / 25.0 )
+  datafile_( "beam_parameter/beam_W_400A.dat" ),
+  is_first_( true ),
+  line_length_( 70 )
 {
-  ReadDatabase();
+  Init();
 }
 
-
-ELPHEBeam::ELPHEBeam( std::string beam_line, std::string production_target, int position_restriction, double momentum ) :
-  momentum_factor_( 1.0 / 1.32 ),
-  spread_factor_( 1.0 / 25.0 )
+ELPHEBeam::ELPHEBeam( INTTMessenger* mess ) :
+  datafile_( "beam_parameter/beam_W_400A.dat" ),
+  is_first_( true ),
+  line_length_( 70 )
 {
-  beam_line_ = beam_line;
-  production_target_ = production_target;
-  position_restriction_ = position_restriction;
-  momentum_ = momentum;
-  ReadDatabase();
+  INTT_mess_ = mess;
+  Init();  
   
 }
 
 ELPHEBeam::~ELPHEBeam()
 {
-  data_->Close();
-  delete data_;
+  ifs_.close();
 }
 
-void ELPHEBeam::ReadDatabase()
+void ELPHEBeam::Init()
 {
-  datafile_ = "beam_parameter/" + production_target_ + ".root";
+  index_ = beam_parameter_.begin();
 
-  data_ = new TFile( datafile_.c_str(), "READ");
-  //if( data_ == nullptr )
-  if( data_->IsOpen() == false )
-    {
-      G4cerr << std::string( 50, '=' ) << G4endl;
-      G4cerr << datafile_ << " is not found" << G4endl;
-      G4cerr << "Run aborted" << G4endl;
-      G4cerr << std::string( 50, '=' ) << G4endl;
-
-#ifdef G4MULTITHREADED
-      auto manager = G4MTRunManager::GetRunManager();
-#else
-      auto manager = G4RunManager::GetRunManager();
-#endif
-      manager->AbortRun();
-      //exit( -1 );
-    }
-
-  std::string graph_name = "momentum_vs_spread";
-  if( position_restriction_ == 1 )
-    {
-      graph_name += "_xp_45";
-    }
-  else if( position_restriction_ == 2 )
-    {
-      graph_name += "_xp_3";
-    }
-  else if( position_restriction_ == 3 )
-    {
-      graph_name += "_xp_15";
-    }
-
-  graph_ = (TGraph*)data_->Get( graph_name.c_str() );
+  if( INTT_mess_->IsSmearing() )
+    ReadBeamFile();
   
 }
 
-double ELPHEBeam::GetMomentum()
+void ELPHEBeam::ReadBeamFile()
 {
 
-  if( beam_line_ == "-30" )
+  // no need to repeat this function because it's used as a static object
+  if( is_first_ == false )
+    return;
+  
+  ifs_.open( INTT_mess_->GetBeamFile().data(), std::ios::in );
+  if( ifs_.fail() )
     {
-      return momentum_ * momentum_factor_;
+      index_ = beam_parameter_.begin();
+      G4cerr << "void ELPHEBeam::ReadBeamFile()" << G4endl;
+      G4cerr << "The beam file " << beamfile_path_ << " is not found" << G4endl;
+      return;
     }
 
-  return momentum_;
+  std::string line;
+  while( getline( ifs_, line ) )
+    {
+      BeamParameter* param = new BeamParameter( line );
+      beam_parameter_.push_back( param );
+
+    }
+
+  index_ = beam_parameter_.begin();
+  if( INTT_mess_->GetDebugLevel() < 1 )
+    {
+      G4int start = CLHEP::RandFlat::shootInt( long(0), long(beam_parameter_.size() -1) );
+      index_ += start;
+    }
+
+  is_first_ = false;
 }
 
-double ELPHEBeam::GetMomentumSpread()
+void ELPHEBeam::GenerateNextBeam()
 {
 
-  if( beam_line_ == "-30" )
+  if( index_ == beam_parameter_.end() )
     {
-      return graph_->Eval( momentum_ * momentum_factor_ );
+      index_ = beam_parameter_.begin();
+      GenerateNextBeam(); // so the first dataset is always omitted... Leave it as it's not a big problem
+      
+    }
+  else
+    {
+      index_++;
+      return;
     }
   
-  return graph_->Eval( momentum_ );
 }
 
-void ELPHEBeam::Print( int level )
+void ELPHEBeam::PrintLine( std::string line, std::string header, std::string footer )
 {
-  G4cout << "+" << std::string( 50, '-' ) << "+" << G4endl;
-  G4cout << "| ELPHEBeam class" << G4endl;
-  G4cout << "|  - beam line                        : " << beam_line_ << G4endl;
-  G4cout << "|  - production target                : " << production_target_ << G4endl;
-  G4cout << "|  - position restriction             : " << position_restriction_ << G4endl;
-  G4cout << "|  - momentum given from macro        : " << momentum_ << G4endl;
-  G4cout << "|  - actual momentum to be used       : " << this->GetMomentum() << G4endl;
-  G4cout << "|  - actual momentum spread to be used: " << this->GetMomentumSpread() << G4endl;
-  G4cout << "|  - data file                        : " << datafile_ << G4endl;
-  G4cout << "|  - graph name                       : " << graph_->GetName() << G4endl;
+  std::string printed_line = header + line;
+  int space_num = line_length_ - ( header + line + footer ).size();
 
-  if( level > 0 )
-    graph_->Print();
-  
-  G4cout << "+" << std::string( 50, '-' ) << "+" << G4endl;
+  if( space_num > 0 )
+    printed_line += std::string( space_num, ' ');
+
+  printed_line += footer;
+  G4cout << printed_line << G4endl;
+
+}
+
+void ELPHEBeam::Print()
+{
+  this->PrintLine( std::string( line_length_ - 3, '-' ), " +", "+" );
+  this->PrintLine( " ELPHEBeam class" );
+
+  if( INTT_mess_->IsSmearing() )
+    this->PrintLine( " - data file:" + datafile_ );
+  else
+    this->PrintLine( " --- Mono energy mode---" );
+    
+  this->PrintLine( "" );
+
+  if( INTT_mess_->IsSmearing() && is_first_ == false )
+    {
+
+      this->PrintLine( " *** about this beam particle ***" );
+      this->PrintLine( " * energy : " + to_string(this->GetBeamEnergy()) );
+
+      std::string line = " * momentum vec: (" 
+	+ to_string( this->GetBeamMomentumDirection().x() ) + ", "
+	+ to_string( this->GetBeamMomentumDirection().y() ) + ", "
+	+ to_string( this->GetBeamMomentumDirection().z() ) + ") ";
+      this->PrintLine( line );
+      
+      line = " * position vec: ("
+	+ to_string( this->GetBeamPosition().x() ) + ", "
+	+ to_string( this->GetBeamPosition().y() ) +  ", "
+	+ to_string( this->GetBeamPosition().z() ) + ") ";
+      this->PrintLine( line );
+      
+      line = " * Current index: "
+	+ to_string( (G4int)( index_ - beam_parameter_.begin()) )
+	+ " / "
+	+ to_string( beam_parameter_.size() );
+      this->PrintLine( line );
+
+    }
+
+  this->PrintLine( std::string( line_length_ - 3, '-' ), " +", "+" );
 }
