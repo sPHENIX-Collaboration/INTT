@@ -146,6 +146,7 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   auto UImanager = G4UImanager::GetUIpointer();
 
   output_->Book();
+
   
   if( this->is_first )
     {
@@ -153,6 +154,7 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
       is_first = false;
     }
 
+  /*
   // define output name
   G4String particle = UImanager->GetCurrentStringValue( "/gun/particle" );
   std::stringstream ss;
@@ -166,23 +168,20 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
     ss2 << beam_energy << "MeV";
     energy =  ss.str();
   }
-
+  */
+  
   // Open an output file
-  G4String fileName = "ED";
+  G4String fileName = INTT_mess_->GetOutputPath();
   analysisManager->OpenFile(fileName);  
 
-  auto beam_line = INTT_mess_->GetBeamLine();
-  auto target = INTT_mess_->GetTarget();
-  auto position_restriction = INTT_mess_->GetPositionRestriction();
-  this->beam = new ELPHEBeam( INTT_mess_, beam_line, target, position_restriction, this->beam_energy );
-
+  this->beam = new ELPHEBeam( INTT_mess_ );
+  
   if( 1<= INTT_mess_->GetDebugLevel() && INTT_mess_->IsSmearing())
-    beam->Print( 0 );  
+    beam->Print();  
 }
 
 void EDRunAction::EndOfRunAction(const G4Run* kRun )
 {
-
 
   // save histograms 
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
@@ -191,7 +190,6 @@ void EDRunAction::EndOfRunAction(const G4Run* kRun )
 
   //output_->Save();
   //tf_output_->WriteTObject( tree_, tree_->GetName() );
-
   //  tf_output_->Close();
 
 }

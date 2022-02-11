@@ -92,7 +92,7 @@ public:
   //void SetTrackMCs( vector < TrackMC* >& tracks ) const { tracks_ = tracks; };
   void SetTrackMCs( vector < TrackMC* >& tracks );
   void SetStepMCs( vector < StepMC* >& steps );
-  
+
 private:
 
   G4int event_id_;

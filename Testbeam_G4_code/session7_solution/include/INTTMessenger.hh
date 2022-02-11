@@ -4,13 +4,17 @@
 #ifndef INTTMessenger_h
 #define INTTMessenger_h 1
 
+#include <iostream>
+
 #include "G4GenericMessenger.hh"
 //#include "G4UIdirectory.hh"
-#include "G4UIcmdWithAString.hh"
-#include "G4UIcmdWithAnInteger.hh"
-#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithoutParameter.hh"
-  
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAString.hh"
+//#include "G4AnalysisManager.hh"
+#include "G4UImanager.hh"
 #include "globals.hh"
 
 #include "EDDetectorConstruction.hh"
@@ -44,13 +48,13 @@ public:
 
   // for beam
   G4bool   IsSmearing(){ return is_beam_smearing_;};
-  G4String GetBeamLine(){ return beam_line_;};
-  G4String GetTarget(){ return target_;};
-  G4int    GetPositionRestriction(){ return position_restriction_;};
   G4String GetBeamFile(){ return beam_file_;};
-  
+  G4double GetDarkboxOffsetX(){ return darkbox_offset_x_; };
+  G4double GetDarkboxOffsetY(){ return darkbox_offset_y_; };
+
   // for something else
   G4int GetDebugLevel(){ return debug_level_;};
+  std::string GetOutputPath();
   
 private:
   G4UIdirectory*             fDirectory_;
@@ -64,32 +68,29 @@ private:
 
   G4UIcmdWithAString* rotation_command_;
   G4int rotation_status_; // 0: none, 1: vertical, 2: horizontal
+  
+  G4UIcmdWithADouble* darkbox_offset_x_command_;
+  G4double darkbox_offset_x_;
+
+  G4UIcmdWithADouble* darkbox_offset_y_command_;
+  G4double darkbox_offset_y_;
 
   // for the beam
   G4UIcmdWithABool* beam_smearing_command_;
   G4bool is_beam_smearing_;
 
-  G4UIcmdWithAString* beam_line_command_;
-  G4String beam_line_;
-
-  G4UIcmdWithAString* target_command_;
-  G4String target_;
-
-  G4UIcmdWithAnInteger* position_restriction_command_;
-  G4int position_restriction_;
-
-  G4double beam_energy;//  = 800 * MeV;
-  std::string beam_line;
-  std::string production_target;
-  int position_restriction;
-
   G4UIcmdWithAString* beam_file_command_;
   G4String beam_file_;
-  
+
   // for misc
   G4UIcmdWithAnInteger* debug_level_command_;
   G4int debug_level_; // 0: not debug, 1: 
 
+  G4UIcmdWithAString* output_command_;
+  std::string output_name_;
+  std::string output_tag_;
+
+  G4bool DoesExist( std::string name );
 };
 
 #endif

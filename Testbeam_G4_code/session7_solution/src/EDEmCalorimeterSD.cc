@@ -44,6 +44,10 @@ EDEmCalorimeterSD::~EDEmCalorimeterSD()
 
 void EDEmCalorimeterSD::Initialize(G4HCofThisEvent* hce)
 {
+  // store the verbose level for debugging
+  auto ui_manager = G4UImanager::GetUIpointer();
+  verbose = ui_manager->GetCurrentIntValue( "/run/verbose", 1, true );
+
   fHitsCollection 
     = new EDEmCalorimeterHitsCollection(SensitiveDetectorName, collectionName[0]);
 
@@ -65,7 +69,8 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
   
   G4int eID_1 = 0;
   const G4Event* evt_1 = G4MTRunManager::GetRunManager()->GetCurrentEvent();
-  if (evt_1) eID_1 = evt_1->GetEventID();
+  if (evt_1)
+    eID_1 = evt_1->GetEventID();
 
   const G4VTouchable* touchable
     = step->GetPreStepPoint()->GetTouchable();
@@ -74,11 +79,9 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
   G4double edep = step->GetTotalEnergyDeposit();
 
   // G4String motherPhysical_name_test = motherPhysical->GetName(); // not used anymore 
-  // if (eID_1%10000==0)G4cout<<"!!!! SCI pre_TESTnameTEST : "<<motherPhysical_name_test<<G4endl; // not used anymore 
   
   G4int copyNo = motherPhysical->GetCopyNo();
   // G4int copyNo =  touchable->GetVolume(0)-> GetCopyNo();   // test
-  if (eID_1%10000==0)G4cout<<"!!!! SCI pre_getcopynumberTEST : "<<copyNo<<" edep : "<<edep<<G4endl;
 
   EDEmCalorimeterHit* HitThisUnit = (*fHitsCollection)[copyNo];
   HitThisUnit->AddEdep(edep);
@@ -126,6 +129,13 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
   // Add values
   //hit->AddEdep(edep);
 
+  //if( verbose == 2 )
+  if( false )
+    {
+      // G4cout<<"!!!! SCI pre_TESTnameTEST : "<<motherPhysical_name_test<<G4endl; // not used anymore 
+      G4cout<<"!!!! SCI pre_getcopynumberTEST : "<<copyNo<<" edep : "<<edep<<G4endl;
+    }
+  
   return true;
 }
 
@@ -148,7 +158,9 @@ void EDEmCalorimeterSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
         analysisManager->FillNtupleIColumn(3, 1, i);
         analysisManager->FillNtupleDColumn(3, 2, fEdep);  
         analysisManager->AddNtupleRow(3);
-        if ( eID % 10000 == 0)
+        //if ( eID % 10000 == 0)
+	//if( verbose == 2 )
+	if( false )
           {
             G4cout<<" SCI, eID : "<<eID<<" Sci trigger ID : "<<i<<" edep : "<<fEdep<<G4endl;
           }
