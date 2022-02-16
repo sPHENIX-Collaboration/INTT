@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id$
-//
 /// \file EDChamberHit.cc
 /// \brief Implementation of the EDChamberHit class
 //
@@ -69,11 +42,11 @@ int EDChamberHit::operator==(const EDChamberHit& right) const
 
 void EDChamberHit::Print()
 {  
-  G4cout << " up or down " << fupordown
-         << "   x position " << fxposition 
-         << "   y position " <<  fyposition
-         <<"    z position " <<fzposition
-         <<" sensor type "   <<fsilicon_type
+  G4cout << "up or down "  << fupordown  << "\t"
+         << "(x, y, z) = ("  << fxposition << ", "  << fyposition << ", "  << fzposition << "),\t"
+         << "sensor type " << fsilicon_type << "\t"
+	 << "energy depo " << std::setw(5) << std::setprecision(3) << fEdep << "\t"
+	 << "timing "  << std::setw(5) << std::setprecision(3) << fTime << "\t"
           << G4endl; 
 }
 
@@ -85,9 +58,11 @@ void EDChamberHit::Draw()
     G4Circle circle(fPosition);
     circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
+
     G4Colour colour(1.,0.,0.);
     G4VisAttributes attribs(colour);
     circle.SetVisAttributes(attribs);
     pVVisManager->Draw(circle);
   }
+
 }

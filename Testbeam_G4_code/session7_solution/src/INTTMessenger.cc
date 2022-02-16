@@ -195,6 +195,10 @@ void INTTMessenger::Print()
 
   G4cout << std::string( 50, '-' ) << G4endl;
 
+
+  auto physics_list_helper = G4PhysicsListHelper::GetPhysicsListHelper();
+  //physics_list_helper->DumpOrdingParameterTable();
+  
 }
 
 G4bool INTTMessenger::IsVerticalRotation()

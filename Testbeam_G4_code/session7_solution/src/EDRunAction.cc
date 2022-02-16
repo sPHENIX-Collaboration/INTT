@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id$
-//
 /// \file EDRunAction.cc
 /// \brief Implementation of the EDRunAction class
 
@@ -86,16 +59,87 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
 
   // ntuple id = 2
   analysisManager->CreateNtuple("event_particle", "event_particle");
-  analysisManager->CreateNtupleIColumn("PID_order"); // colume id = 0
-  analysisManager->CreateNtupleIColumn("PID"); // colume id = 0
+  analysisManager->CreateNtupleIColumn("PID_order");
+  analysisManager->CreateNtupleIColumn("PID");
   analysisManager->CreateNtupleDColumn("PID_energy");
-  analysisManager->CreateNtupleDColumn("particle_X"); // colume id = 0
+  analysisManager->CreateNtupleDColumn("post_process_id");
+  analysisManager->CreateNtupleDColumn("particle_X");
   analysisManager->CreateNtupleDColumn("particle_Y");
   analysisManager->CreateNtupleDColumn("particle_Z");
+  analysisManager->CreateNtupleDColumn("theta_in");
+  analysisManager->CreateNtupleDColumn("theta_out");
+  analysisManager->CreateNtupleDColumn("dtheta");
+  analysisManager->CreateNtupleDColumn("phi_in");
+  analysisManager->CreateNtupleDColumn("phi_out");  
   analysisManager->CreateNtupleIColumn("volume_type");
-  analysisManager->CreateNtupleIColumn("Event_ID"); // colume id = 1
+  analysisManager->CreateNtupleIColumn("Event_ID");
   analysisManager->FinishNtuple();
 
+  // G4PhysicsListHelper::DumpOrdingParameterTable  :
+  //         TypeName      ProcessType        SubType         AtRest      AlongStep        PostStep     Duplicable
+  //   Transportation              1             91             -1              0              0  false
+  //      CoupleTrans              1             92             -1              0              0  false
+  //      CoulombScat              2              1             -1             -1           1000  false
+  //       Ionisation              2              2             -1              2              2  false
+  //            Brems              2              3             -1             -1              3  false
+  //  PairProdCharged              2              4             -1             -1              4  false
+  //            Annih              2              5              5             -1              5  false
+  //      AnnihToMuMu              2              6             -1             -1              6  false
+  //       AnnihToHad              2              7             -1             -1              7  false
+  //     NuclearStopp              2              8             -1              8             -1  false
+  //    ElectronSuper              2              9             -1              1              1  false
+  //              Msc              2             10             -1              1             -1  false
+  //         Rayleigh              2             11             -1             -1           1000  false
+  //    PhotoElectric              2             12             -1             -1           1000  false
+  //          Compton              2             13             -1             -1           1000  false
+  //             Conv              2             14             -1             -1           1000  false
+  //       ConvToMuMu              2             15             -1             -1           1000  false
+  //       GammaSuper              2             16             -1             -1           1000  false
+  //    PositronSuper              2             17              1              1              1  false
+  //         Cerenkov              2             21             -1             -1           1000  false
+  //    Scintillation              2             22           9999             -1           9999  false
+  //         SynchRad              2             23             -1             -1           1000  false
+  //         TransRad              2             24             -1             -1           1000  false
+  //      SurfaceRefl              2             25             -1             -1           1000  false
+  //         OpAbsorb              3             31             -1             -1           1000  false
+  //       OpBoundary              3             32             -1             -1           1000  false
+  //       OpRayleigh              3             33             -1             -1           1000  false
+  //            OpWLS              3             34             -1             -1           1000  false
+  //          OpMieHG              3             35             -1             -1           1000  false
+  //           OpWLS2              3             36             -1             -1           1000  false
+  //       DNAElastic              2             51             -1             -1           1000  false
+  //         DNAExcit              2             52             -1             -1           1000  false
+  //    DNAIonisation              2             53             -1             -1           1000  false
+  //      DNAVibExcit              2             54             -1             -1           1000  false
+  //    DNAAttachment              2             55             -1             -1           1000  false
+  //     DNAChargeDec              2             56             -1             -1           1000  false
+  //     DNAChargeInc              2             57             -1             -1           1000  false
+  //      DNAElecSolv              2             58             -1             -1           1000  false
+  //    DNAMolecDecay              6             59           1000             -1             -1  false
+  //      ITTransport              1             60             -1              0              0  false
+  //    DNABrownTrans              1             61             -1              0              0  false
+  //    DNADoubleIoni              2             62             -1             -1           1000  false
+  //     DNADoubleCap              2             63             -1             -1           1000  false
+  //  DNAIoniTransfer              2             64             -1             -1           1000  false
+  //       HadElastic              4            111             -1             -1           1000  false
+  //     HadInelastic              4            121             -1             -1           1000  false
+  //       HadCapture              4            131             -1             -1           1000  false
+  //    MuAtomCapture              4            132             -1             -1           1000  false
+  //       HadFission              4            141             -1             -1           1000  false
+  //        HadAtRest              4            151           1000             -1             -1  false
+  //           HadCEX              4            161             -1             -1           1000  false
+  //            Decay              6            201           1000             -1           1000  false
+  //       DecayWSpin              6            202           1000             -1           1000  false
+  //      DecayPiSpin              6            203           1000             -1           1000  false
+  //       DecayRadio              6            210           1000             -1           1000  false
+  //     DecayUnKnown              6            211             -1             -1           1000  false
+  //      DecayMuAtom              6            221           1000             -1           1000  false
+  //         DecayExt              6            231           1000             -1           1000  false
+  //      StepLimiter              7            401             -1             -1           1000  false
+  //      UsrSepcCuts              7            402             -1             -1           1000  false
+  //    NeutronKiller              7            403             -1             -1           1000  false
+  //    ParallelWorld             10            491           9900              1           9900  true
+	    
   // ntuple id = 3
   analysisManager->CreateNtuple("sci_trigger", "sci_trigger");
   analysisManager->CreateNtupleIColumn("Event_ID");

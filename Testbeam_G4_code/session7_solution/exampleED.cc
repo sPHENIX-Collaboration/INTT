@@ -145,6 +145,7 @@ int main(int argc,char** argv)
   if ( physicsListName.size() == 0 )
     {
       physicsListName = "FTFP_BERT";
+      //physicsListName = "FTFP_BERT_EMZ"; // better than FTFP_BERT for electromagnetic processes, but takes more time (twice?)
     }
 
   // set OutputManager

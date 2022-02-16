@@ -8,16 +8,6 @@
 # Limit thread output to 1 thread
 #/control/cout/ignoreThreadsExcept 0
 
-# Dump particle processes
-#/particle/select mu+
-#/particle/process/dump
-
-#/particle/select mu-
-#/particle/process/dump
-
-#/particle/select e-
-#/particle/process/dump
-
 # Set particle production thresholds (cuts)
 /run/setCut 1 mm
 /run/setCutForAGivenParticle e- 0.1 mm
@@ -39,9 +29,34 @@
 /gun/particle e+ # it's necesasry anyway
 /gun/energy 934 MeV # it works if the beam is not smeared
 
+#/process/inactivate msc e+
+#/process/inactivate eIoni e+
+#/process/inactivate eBrem e+
+#/process/inactivate annihil e+
+#/process/inactivate CoulombScat e+
+
+#/process/inactivate msc e-
+#/process/inactivate eIoni e-
+#/process/inactivate eBrem e-
+#/process/inactivate annihil e-
+#/process/inactivate CoulombScat e-
+
+/process/activate CoulombScat e+
+/process/activate CoulombScat e-
+
+
+# Dump particle processes
+# /particle/select e+
+# /particle/process/dump
+
+# /particle/select e-
+# /particle/process/dump
+
+/process/msc/EnergyLimit 1 GeV
+
 ################################################################
 # Start the run                                                #
 ################################################################
-/run/printProgress  10000
+/run/printProgress  100000
 #/run/beamOn        50000
-/run/beamOn 100000
+/run/beamOn 1

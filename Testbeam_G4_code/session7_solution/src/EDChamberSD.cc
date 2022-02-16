@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id$
-//
 /// \file EDChamberSD.cc
 /// \brief Implementation of the EDChamberSD class
 //
@@ -256,16 +229,80 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
     volume_test_ID=1;
   }
 
+  auto pre_step_point = step->GetPreStepPoint();
+  auto post_step_point = step->GetPostStepPoint();
+  auto p_in  = pre_step_point->GetMomentum();
+  auto p_out = post_step_point->GetMomentum();
+
+  auto phys_in  = pre_step_point->GetProcessDefinedStep();
+  auto phys_out = post_step_point->GetProcessDefinedStep();
+
+
+  auto process_name_out = phys_out->GetProcessName();
+  G4int process_id = phys_out->GetProcessSubType();
+  /*  if( process_name_out == "msc" )
+    process_id = 0;
+  else if( process_name_out == "CoulombScat" )
+    process_id = 1;
+  else if( process_name_out == "eIoni" )
+    process_id = 2;
+  else if( process_name_out == "eBrem" )
+    process_id = 3;
+  else if( process_name_out == "phot" ) // photoelectric effect
+    process_id = 10;
+  else if( process_name_out == "compt" ) // compton scattering
+    process_id = 10;
+  else if( process_name_out == "Transportation" )
+    process_id = 99;
+  else
+    {
+      G4cout << phys_out->GetProcessName() << G4endl;
+      process_id = -1;
+    }
+  */
+  
+  G4double theta_in  = p_in.theta();
+  G4double theta_out = p_out.theta();
+  G4double dtheta = p_out.theta( p_in ); // std::acos(cosTheta(q));
+  G4double phi_in  = p_in.phi();
+  G4double phi_out = p_out.phi();
+
+  //G4cout << theta_in << "\t" << theta_out << "\t" << dtheta << "\t" << p_out.polarAngle( p_in ) << G4endl;
   G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
   // ntuple ID = 2: event_particle
+  G4int num = 0;
+  analysisManager->FillNtupleIColumn(2, num++, particle_order);
+  analysisManager->FillNtupleIColumn(2, num++, PDG);
+  analysisManager->FillNtupleDColumn(2, num++, secondaryParticleKineticEnergy);//Total energy, not edep
+  analysisManager->FillNtupleDColumn(2, num++, process_id ); // pre_process_id
+  analysisManager->FillNtupleDColumn(2, num++, posX); //posPosition
+  analysisManager->FillNtupleDColumn(2, num++, posY); //posPosition
+  analysisManager->FillNtupleDColumn(2, num++, posZ); //posPosition
+  analysisManager->FillNtupleDColumn(2, num++, theta_in); // theta_in
+  analysisManager->FillNtupleDColumn(2, num++, theta_out); // theta_out
+  analysisManager->FillNtupleDColumn(2, num++, dtheta); // dtheta
+  analysisManager->FillNtupleDColumn(2, num++, phi_in); // phi_in
+  analysisManager->FillNtupleDColumn(2, num++, phi_out); // phi_out
+  analysisManager->FillNtupleIColumn(2, num++, volume_test_ID);
+  analysisManager->FillNtupleIColumn(2, num++, eID_1); // event ID
+
+  /*
+  
   analysisManager->FillNtupleIColumn(2, 0, particle_order);
   analysisManager->FillNtupleIColumn(2, 1, PDG);
   analysisManager->FillNtupleDColumn(2, 2, secondaryParticleKineticEnergy);//Total energy, not edep
+  analysisManager->FillNtupleDColumn(2, 3, proecss_id ); // pre_process_id
   analysisManager->FillNtupleDColumn(2, 3, posX); //posPosition
   analysisManager->FillNtupleDColumn(2, 4, posY); //posPosition
   analysisManager->FillNtupleDColumn(2, 5, posZ); //posPosition
-  analysisManager->FillNtupleIColumn(2, 6, volume_test_ID);
-  analysisManager->FillNtupleIColumn(2, 7, eID_1); // event ID
+  analysisManager->FillNtupleDColumn(2, 6, theta_in); // theta_in
+  analysisManager->FillNtupleDColumn(2, 7, theta_out); // theta_out
+  analysisManager->FillNtupleDColumn(2, 8, dtheta); // dtheta
+  analysisManager->FillNtupleDColumn(2, 9, phi_in); // phi_in
+  analysisManager->FillNtupleDColumn(2, 10, phi_out); // phi_out
+  analysisManager->FillNtupleIColumn(2, 11, volume_test_ID);
+  analysisManager->FillNtupleIColumn(2, 12, eID_1); // event ID
+  */
   analysisManager->AddNtupleRow(2);
 
   //==========================================keep========================================================
