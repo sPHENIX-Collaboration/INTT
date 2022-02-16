@@ -15,6 +15,7 @@
 #include "G4UIcmdWithAString.hh"
 //#include "G4AnalysisManager.hh"
 #include "G4UImanager.hh"
+#include "G4PhysicsListHelper.hh"
 #include "globals.hh"
 
 #include "EDDetectorConstruction.hh"

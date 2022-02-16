@@ -9,8 +9,8 @@
 #---------------------------------------------------------------------------
 # switch to use mono-energy beam at (x=0, y=0) (false), or realistic beam (momentum spread, x-y distribution)
 # Usage: /INTT/beam/beamSmearing [false or true]
-#/INTT/beam/beamSmearing false
-/INTT/beam/beamSmearing true
+/INTT/beam/beamSmearing false
+#/INTT/beam/beamSmearing true
 
 #---------------------------------------------------------------------------
 # Selection of the beam file
@@ -33,9 +33,9 @@
 #---------------------------------------------------------------------------
 # switch to the vertically/horizontally rotated setup or not
 # Usage: /INTT/geom/setRotation none/vertical/horizontal
-#/INTT/geom/setRotation none
+/INTT/geom/setRotation none
 #/INTT/geom/setRotation vertical
-/INTT/geom/setRotation horizontal
+#/INTT/geom/setRotation horizontal
 
 #---------------------------------------------------------------------------
 # switch to put the additional thin plate to have multiple track in an event
@@ -75,11 +75,15 @@
 # /INTT/geom/setDarkboxOffsetY 0.7 # test for  Run61, beam on chan0, not so bad
 # /INTT/geom/setDarkboxOffsetY 4.47 # test for  Run61, beam on chan0, too low
 
-# /INTT/geom/setDarkboxOffsetY 2.44 # test for  Run61, beam on chan0, not so bad, use this
+# /INTT/geom/setDarkboxOffsetY 2.44 # test for  Run61, use this
 
 ## for run63 horizontal rotation ###
 # modification not neeeded?
-/INTT/geom/setDarkboxOffsetY 3 
+#/INTT/geom/setDarkboxOffsetY 3 
+
+## for run89 ###
+#/INTT/geom/setDarkboxOffsetX 8
+#/INTT/geom/setDarkboxOffsetY 4
 
 #---------------------------------------------------------------------------
 # selection of the trigger scintillator configuration (but how?)
@@ -104,8 +108,13 @@
 #        [tag] should not contain a space
 #/INTT/misc/setOutputTag x-10mm_y-3mm_100k-events
 # /INTT/misc/setOutputTag y+2.44mm_100k-events
-#/INTT/misc/setOutputTag junk
-/INTT/misc/setOutputTag y+3_100k-events
+/INTT/misc/setOutputTag junk
+#/INTT/misc/setOutputTag y+3_100k-events
+#/INTT/misc/setOutputTag run89_x+8_y+4mm_100k-events
+#/INTT/misc/setOutputTag standard-phys_1M-events
+/INTT/misc/setOutputTag coulomb-on_1M-events
+#/INTT/misc/setOutputTag only-coulomb_1M-events
+#/INTT/misc/setOutputTag EMZ-coulomb-on_1M-events
 
   
 #---------------------------------------------------------------------------
@@ -114,4 +123,4 @@
 #        0: not debug, normal run
 #        1: simplified geometry (no silicon strips), the same random number seed 2
 #        2: debugging INTTMessenger
-/INTT/misc/debugLevel 0
+/INTT/misc/debugLevel 1

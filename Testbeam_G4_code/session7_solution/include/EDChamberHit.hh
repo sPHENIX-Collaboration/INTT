@@ -1,30 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id$
-//
 /// \file EDChamberHit.hh
 /// \brief Definition of the EDChamberHit class
 //
@@ -43,14 +16,15 @@ class EDChamberHit : public G4VHit
     EDChamberHit();
     virtual ~EDChamberHit();
     EDChamberHit(const EDChamberHit& right);
-    const EDChamberHit& operator=(const EDChamberHit& right);
-    int operator==(const EDChamberHit &right) const;
 
-    inline void* operator new(size_t);
-    inline void  operator delete(void* hit);
+  const EDChamberHit& operator=(const EDChamberHit& right);
 
-    virtual void Print();
-    virtual void Draw();
+  int operator==(const EDChamberHit &right) const;
+  inline void* operator new(size_t);
+  inline void  operator delete(void* hit);
+
+  virtual void Print();
+  virtual void Draw();
 
     // setter methods
     void SetEncoderID(G4int upordown, G4int silicon_type,G4int zposition, G4int xposition, G4int yposition )
@@ -62,7 +36,8 @@ class EDChamberHit : public G4VHit
         fyposition=yposition;
         
     }
-    void AddEdep(G4double edep)       { fEdep += edep; }
+
+  void AddEdep(G4double edep)       { fEdep += edep; }
 
     G4int Getupordown()const { return fupordown; }
     G4int Getsilicon_type()const { return fsilicon_type; }
@@ -70,7 +45,6 @@ class EDChamberHit : public G4VHit
     G4int Getxposition() const { return fxposition; }
     G4int Getyposition ()const { return fyposition; }
     G4double GetEnergyDeposit() const { return fEdep; }
-
 
     void SetLayerNumber(G4int number) { fLayerNumber = number; }
     void SetTime(G4double time)       { fTime = time; }
@@ -95,7 +69,7 @@ class EDChamberHit : public G4VHit
     G4ThreeVector  fPosition;
 };
 
-typedef G4THitsCollection<EDChamberHit> EDChamberHitsCollection;
+typedef G4THitsCollection < EDChamberHit > EDChamberHitsCollection;
 
 extern G4ThreadLocal G4Allocator<EDChamberHit>* EDChamberHitAllocator;
 
