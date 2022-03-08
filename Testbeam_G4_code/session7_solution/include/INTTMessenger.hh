@@ -53,6 +53,13 @@ public:
   G4double GetDarkboxOffsetX(){ return darkbox_offset_x_; };
   G4double GetDarkboxOffsetY(){ return darkbox_offset_y_; };
 
+  G4double GetTrigger1OffsetX(){ return trigger1_offset_x_; };
+  G4double GetTrigger1OffsetY(){ return trigger1_offset_y_; };
+  G4double GetTrigger2OffsetX(){ return trigger2_offset_x_; };
+  G4double GetTrigger2OffsetY(){ return trigger2_offset_y_; };
+  G4double GetTrigger3OffsetX(){ return trigger3_offset_x_; };
+  G4double GetTrigger3OffsetY(){ return trigger3_offset_y_; };
+  
   // for something else
   G4int GetDebugLevel(){ return debug_level_;};
   std::string GetOutputPath();
@@ -75,6 +82,18 @@ private:
 
   G4UIcmdWithADouble* darkbox_offset_y_command_;
   G4double darkbox_offset_y_;
+
+  G4UIcommand* trigger1_offset_command_;
+  G4double trigger1_offset_x_;
+  G4double trigger1_offset_y_;
+
+  G4UIcommand* trigger2_offset_command_;
+  G4double trigger2_offset_x_;
+  G4double trigger2_offset_y_;
+
+  G4UIcommand* trigger3_offset_command_;
+  G4double trigger3_offset_x_;
+  G4double trigger3_offset_y_;
 
   // for the beam
   G4UIcmdWithABool* beam_smearing_command_;
