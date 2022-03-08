@@ -44,7 +44,6 @@
 /process/activate CoulombScat e+
 /process/activate CoulombScat e-
 
-
 # Dump particle processes
 # /particle/select e+
 # /particle/process/dump
@@ -52,11 +51,10 @@
 # /particle/select e-
 # /particle/process/dump
 
-/process/msc/EnergyLimit 1 GeV
+#/process/msc/EnergyLimit 1 GeV
 
 ################################################################
 # Start the run                                                #
 ################################################################
-/run/printProgress  100000
-#/run/beamOn        50000
-/run/beamOn 1
+/run/printProgress  10000
+/run/beamOn 100000
