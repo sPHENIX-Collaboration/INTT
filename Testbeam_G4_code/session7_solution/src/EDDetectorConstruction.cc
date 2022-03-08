@@ -1268,14 +1268,14 @@ void EDDetectorConstruction::ConstructTriggers()
   G4double distance_darkbox_middle_scintillator = 57.0 * mm;
   G4double distance_middle_downstream_scintillators = 30 * mm;
 
-  if( INTT_mess_->GetTriggerType() == 0 )
+  if( INTT_mess_->GetTriggerType() == 0 ) // mini + trigger1 + INTT + trigger2
     {
   
       G4double zpos_sci_up = -distance_darkbox_upstream_scintillator
 	- this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thick_thickness / 2;
 
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos_sci_up ), 
+			G4ThreeVector(INTT_mess_->GetTrigger1OffsetX(), INTT_mess_->GetTrigger1OffsetY(), zpos_sci_up ), 
 			INTT_sciLV, //its logical volume
 			"INTT_sci_LV1",  //its name
 			this->experimental_areaLV,
@@ -1289,7 +1289,7 @@ void EDDetectorConstruction::ConstructTriggers()
       if( !INTT_mess_->IsHorizontalRotation() )
 	{
 	  new G4PVPlacement(0,
-			    G4ThreeVector(0, 0, zpos_sci_middle ), 
+			    G4ThreeVector(INTT_mess_->GetTrigger2OffsetX(), INTT_mess_->GetTrigger2OffsetY(), zpos_sci_middle ), 
 			    INTT_sciLV, //its logical volume
 			    "INTT_sci_LV1",  //its name
 			    this->experimental_areaLV,
@@ -1311,12 +1311,12 @@ void EDDetectorConstruction::ConstructTriggers()
 			this->experimental_areaLV,
 			false, 0, checkOverlaps );   //no boolean operation, copy number, overlap check flag
     }
-  else if( INTT_mess_->GetTriggerType() == 1 )// 4 sci setup
+  else if( INTT_mess_->GetTriggerType() == 1 )// 4 sci setup, i.e. mini + trigger1 + INTT + trigger2 + trigger3
     {
       G4double zpos_sci_up = -distance_darkbox_upstream_scintillator + -this->INTT_testbeam_BOX_size[2] / 2 - INTT_sci_thin_thickness / 2;
 
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos_sci_up ), 
+			G4ThreeVector(INTT_mess_->GetTrigger1OffsetX(), INTT_mess_->GetTrigger1OffsetY(), zpos_sci_up ), 
 			INTT_sci_thinLV, //its logical volume
 			"sci_thin_upstream",  //its name
 			//INTT_testbeam_BOXLV,
@@ -1329,7 +1329,7 @@ void EDDetectorConstruction::ConstructTriggers()
       G4double zpos_sci_middle = this->INTT_testbeam_BOX_size[2] / 2 + distance_darkbox_middle_scintillator + INTT_sci_thick_thickness / 2;
     
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos_sci_middle ), 
+			G4ThreeVector(INTT_mess_->GetTrigger2OffsetX(), INTT_mess_->GetTrigger2OffsetY(), zpos_sci_middle ), 
 			INTT_sciLV, //its logical volume
 			"sci_middle",  //its name
 			//INTT_testbeam_BOXLV,
@@ -1342,7 +1342,7 @@ void EDDetectorConstruction::ConstructTriggers()
       G4double zpos_sci_down = zpos_sci_middle + INTT_sci_thick_thickness + distance_middle_downstream_scintillators;
     
       new G4PVPlacement(0,
-			G4ThreeVector(0, 0, zpos_sci_down ),
+			G4ThreeVector(INTT_mess_->GetTrigger3OffsetX(), INTT_mess_->GetTrigger3OffsetY(), zpos_sci_down ), 
 			INTT_sciLV, //its logical volume
 			"sci_downstream",  //its name
 			//INTT_testbeam_BOXLV,

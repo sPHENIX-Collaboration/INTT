@@ -28,7 +28,7 @@
 #include "G4Tokenizer.hh"
 #include "G4UIcommand.hh"
 #include "G4Tokenizer.hh"
-#include "public_variable.hh"
+//#include "public_variable.hh"
 
 #include "EDChamberSD.hh"
 #include "EDEmCalorimeterSD.hh"

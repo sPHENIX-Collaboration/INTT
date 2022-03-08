@@ -11,6 +11,12 @@ INTTMessenger::INTTMessenger()
     is_beam_smearing_( false ),
     darkbox_offset_x_( 0 ),
     darkbox_offset_y_( 0 ),
+    trigger1_offset_x_( 0 ),
+    trigger1_offset_y_( 0 ),
+    trigger2_offset_x_( 0 ),
+    trigger2_offset_y_( 0 ),
+    trigger3_offset_x_( 0 ),
+    trigger3_offset_y_( 0 ),
     output_name_( "" ),
     fDirectory_(0)
 {
@@ -24,6 +30,12 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
     is_beam_smearing_( false ),
     darkbox_offset_x_( 0 ),
     darkbox_offset_y_( 0 ),
+    trigger1_offset_x_( 0 ),
+    trigger1_offset_y_( 0 ),
+    trigger2_offset_x_( 0 ),
+    trigger2_offset_y_( 0 ),
+    trigger3_offset_x_( 0 ),
+    trigger3_offset_y_( 0 ),
     output_name_( "" ),
     fDirectory_(0)
 {
@@ -75,11 +87,45 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
   darkbox_offset_x_command_->SetDefaultValue( 0.0 );
 
   //////////////////////////////////////////////////////////////////////////////
-  // Seeting of the beam offset in x direction
+  // Seeting of the beam offset in y direction
   darkbox_offset_y_command_ = new G4UIcmdWithADouble( "/INTT/geom/setDarkboxOffsetY", this );
   darkbox_offset_y_command_->SetGuidance( "Set the horixontal offset of the darkbox position" );
   darkbox_offset_y_command_->SetParameterName( "darkbox_offset_y", true ); // (name, is_omittable)
   darkbox_offset_y_command_->SetDefaultValue( 0.0 );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Seeting of the trigger1 (most upstream) offset in x&y directions
+  // trigger1_offset_y_command_ = new G4UIcmdWithADouble( "/INTT/geom/setTrigger1Offset", this );
+  trigger1_offset_command_ = new G4UIcommand( "/INTT/geom/setTrigger1Offset", this );
+  trigger1_offset_command_->SetGuidance( "Set the vertical and horixontal offset of the trigger1 position in mm" );
+
+  G4UIparameter* param_trigger1_offset_x = new G4UIparameter( "trigger1_offset_x", 'd', false );
+  trigger1_offset_command_->SetParameter( param_trigger1_offset_x );
+  G4UIparameter* param_trigger1_offset_y = new G4UIparameter( "trigger1_offset_y", 'd', false );
+  trigger1_offset_command_->SetParameter( param_trigger1_offset_y );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Seeting of the trigger2 (middle (3-sci setup) or downsteam (2-sci setup) ) offset in x&y directions
+  // trigger2_offset_y_command_ = new G4UIcmdWithADouble( "/INTT/geom/setTrigger2Offset", this );
+  trigger2_offset_command_ = new G4UIcommand( "/INTT/geom/setTrigger2Offset", this );
+  trigger2_offset_command_->SetGuidance( "Set the vertical and horixontal offset of the trigger2 position in mm" );
+
+  G4UIparameter* param_trigger2_offset_x = new G4UIparameter( "trigger2_offset_x", 'd', false );
+  trigger2_offset_command_->SetParameter( param_trigger2_offset_x );
+  G4UIparameter* param_trigger2_offset_y = new G4UIparameter( "trigger2_offset_y", 'd', false );
+  trigger2_offset_command_->SetParameter( param_trigger2_offset_y );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Seeting of the trigger3 (most downstream, available only for the 3-sci setup) offset in x&y directions
+  // trigger3_offset_y_command_ = new G4UIcmdWithADouble( "/INTT/geom/setTrigger3Offset", this );
+  trigger3_offset_command_ = new G4UIcommand( "/INTT/geom/setTrigger3Offset", this );
+  trigger3_offset_command_->SetGuidance( "Set the vertical and horixontal offset of the trigger3 position in mm" );
+
+  G4UIparameter* param_trigger3_offset_x = new G4UIparameter( "trigger3_offset_x", 'd', false );
+  trigger3_offset_command_->SetParameter( param_trigger3_offset_x );
+  G4UIparameter* param_trigger3_offset_y = new G4UIparameter( "trigger3_offset_y", 'd', false );
+  trigger3_offset_command_->SetParameter( param_trigger3_offset_y );
+
 
   //////////////////////////////////////////////////////////////////////////////
   // Parameters for the beam                                                  //
@@ -158,6 +204,27 @@ void INTTMessenger::SetNewValue(G4UIcommand* command, G4String val)
   else if( command == darkbox_offset_y_command_ )
     {
       darkbox_offset_y_ = darkbox_offset_y_command_->GetNewDoubleValue( val ) * CLHEP::mm;
+    }
+  else if( command == trigger1_offset_command_ )
+    {
+      G4Tokenizer next( val );
+      trigger1_offset_x_ = StoD( next() ) * CLHEP::mm;
+      trigger1_offset_y_ = StoD( next() ) * CLHEP::mm;
+      
+    }
+  else if( command == trigger2_offset_command_ )
+    {
+      G4Tokenizer next( val );
+      trigger2_offset_x_ = StoD( next() ) * CLHEP::mm;
+      trigger2_offset_y_ = StoD( next() ) * CLHEP::mm;
+
+    }
+  else if( command == trigger3_offset_command_ )
+    {
+      G4Tokenizer next( val );
+      trigger3_offset_x_ = StoD( next() ) * CLHEP::mm;
+      trigger3_offset_y_ = StoD( next() ) * CLHEP::mm;
+      
     }
   else if( command == beam_smearing_command_ )
     {
