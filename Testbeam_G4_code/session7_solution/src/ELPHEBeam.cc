@@ -69,11 +69,13 @@ void ELPHEBeam::ReadBeamFile()
 void ELPHEBeam::GenerateNextBeam()
 {
 
-  if( index_ == beam_parameter_.end() )
+  // When the index comes to the end of beam parameters list, set it to the beginning
+  // But go back to the bigginig little bit ealier to avoid accessing out of range.
+  // Slightly more than #thread should be enough. I guess this program will never run with 256 threads.
+  if( beam_parameter_.end() - index_ < 255 )
     {
       index_ = beam_parameter_.begin();
       GenerateNextBeam(); // so the first dataset is always omitted... Leave it as it's not a big problem
-      
     }
   else
     {
