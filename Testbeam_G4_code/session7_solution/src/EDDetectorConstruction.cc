@@ -725,7 +725,7 @@ void EDDetectorConstruction::ConstructLadders()
 	  // for the silicon chips on the lower side
 	  if (l1 < 128)
 	    {
-	      ypos = (-9.961 + (l1 * 0.078)) *mm;
+	      ypos = (-9.945 + (l1 * 0.078)) *mm;
 
 	      // loop over columns of 13 silicon chips
 	      for (G4int l2 = 0; l2 < 13; l2++)
@@ -805,7 +805,7 @@ void EDDetectorConstruction::ConstructLadders()
 	  else  // for the silicon chips on the upper side
             {
 
-	      ypos = (0.055 + ((l1 - 128) *0.078)) *mm;
+	      ypos = (0.039 + ((l1 - 128) *0.078)) *mm;
 	      for (G4int l2 = 0; l2 < 13; l2++)
                 {
 
