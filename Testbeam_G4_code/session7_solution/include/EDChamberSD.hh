@@ -33,7 +33,7 @@ class EDChamberSD : public G4VSensitiveDetector
 {
   public:
     EDChamberSD(const G4String& name,
-                const G4String& hitsCollectionName,
+		const G4String& hitsCollectionName,
                 G4int ntupleID);
     virtual ~EDChamberSD();
 

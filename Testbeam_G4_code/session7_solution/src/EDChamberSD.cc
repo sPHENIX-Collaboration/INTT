@@ -48,19 +48,45 @@ void EDChamberSD::Initialize(G4HCofThisEvent* hce)
   G4int zposition = 4;
   G4int silicon_type = 2;
   G4int copyNo_counting = 0;
-  
-  for (G4int i1=0; i1<zposition; i1++)
+
+  for (G4int i1=0; i1<zposition; i1++) // loop over z-position, in another words, ladders
     {
-      for (G4int i2=0; i2<yposition; i2++)
+      for (G4int i2=0; i2<yposition; i2++) // loop over y-position, it means the vertical direction
+        {
+
+	  G4int up_or_down = i2<128 ? 0 : 1 ; // 0 is for the down side (U14 - U26), 1 is for the up side
+	  
+	  for (G4int i3=0; i3<xposition; i3++) // loop over x-position, the horizontal direction
+	    {
+	      
+	      G4int silicon_type = i3 < 8 ? 0 : 1; // 0 is for type-A, 1 is for type-B
+	      
+	      EDChamberHit *newHit = new EDChamberHit();
+	      G4int ypos = i2 < 128 ? i2 : i2 - 128;
+	      newHit->SetEncoderID( up_or_down, silicon_type, i1, i3, ypos ); // up or down, silicon_type, z, x, y
+	      fHitsCollection->insert(newHit);
+	      //G4cout<<"TESTChmaberSD : "<<copyNo_counting<<" "<<i1<<" "<<i2<<" "<<i3<<" up : "<<0<<" type : "<<0<<G4endl;
+	      copyNo_counting+=1;
+
+	    } // end of the loop over x-position
+	} // end of the loop over y-position
+    } // end  of the loop over z-position
+
+  
+  
+  /* // saved in 2022/June/20 by G. Nukazuka: It can be better
+  for (G4int i1=0; i1<zposition; i1++) // loop over z-position, in another words, ladders
+    {
+      for (G4int i2=0; i2<yposition; i2++) // loop over y-position, it means the vertical direction
         {
           if (i2<128) //Down, U14 ~ U26
             {
-              for (G4int i3=0; i3<xposition; i3++)
+              for (G4int i3=0; i3<xposition; i3++) // loop over x-position, the horizontal direction
                 {
                   if (i3<8)
                     {
                       EDChamberHit *newHit = new EDChamberHit();
-                      newHit->SetEncoderID(0,0,i1,i3,i2);
+                      newHit->SetEncoderID(0,0,i1,i3,i2); // up or down, silicon_type, z, x, y
                       fHitsCollection->insert(newHit);
                       //G4cout<<"TESTChmaberSD : "<<copyNo_counting<<" "<<i1<<" "<<i2<<" "<<i3<<" up : "<<0<<" type : "<<0<<G4endl;
                       copyNo_counting+=1;
@@ -74,8 +100,8 @@ void EDChamberSD::Initialize(G4HCofThisEvent* hce)
                       //G4cout<<"TESTChmaberSD : "<<copyNo_counting<<" "<<i1<<" "<<i2<<" "<<i3<<" up : "<<0<<" type : "<<1<<G4endl;
                       copyNo_counting+=1;
                     }  
-                }
-            }
+                } // end of the loop over x-position
+            } // end of the loop over y-position
           else //upper, U1 ~ U13 
             {
               for (G4int i3=0; i3<xposition; i3++)
@@ -100,27 +126,9 @@ void EDChamberSD::Initialize(G4HCofThisEvent* hce)
             }  
 
         }
-    }
-
-
-  // for (G4int i1=0; i1<upordown; i1++)
-  //   {
-  //     for (G4int i2=0; i2<silicon_type; i2++)
-  //       {
-  //         for(G4int i3=0; i3<zposition; i3++)
-  //           {
-  //             for(G4int i4=0; i4<xposition; i4++)
-  //               {
-  //                 for(G4int i5=0; i5<yposition; i5++)
-  //                   {
-  //                     EDChamberHit *newHit = new EDChamberHit();
-  //                     newHit->SetEncoderID(i1,i2,i3,i4,i5);
-  //                     fHitsCollection->insert(newHit);
-  //                   }
-  //               }
-  //           }
-  //       }
-  //   }
+	}
+  */ // saved in 2022/June/20 by G. Nukazuka: It can be better
+  
 }
 
 G4bool EDChamberSD::ProcessHits(G4Step* step, 
@@ -156,21 +164,26 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
 
   //newHit->SetLayerNumber(copyNo);
   //G4int PID = Control::GetControl()->GetPIDForCalHit(step);
-  G4int PDG = step->GetTrack()->GetDefinition()->GetPDGEncoding();
-  G4int particle_order = step->GetTrack() -> GetTrackID();
-  
-  G4String volume_test= step->GetTrack()->GetVolume()->GetName(); // !!maybe!! it is from poststepposition
+  auto track = step->GetTrack();
+
+  G4String volume_test= track->GetVolume()->GetName(); // !!maybe!! it is from poststepposition
   //G4String volume_test_2= step->GetPostStepPoint()->GetTouchable()->GetVolume(1)->GetName();
 
-  G4int post_copyNo = step->GetTrack()->GetVolume()->GetCopyNo();
-  
+  G4int post_copyNo = track->GetVolume()->GetCopyNo();
 
-  G4double posX = step->GetTrack()->GetPosition().x();
-  G4double posY = step->GetTrack()->GetPosition().y();
-  G4double posZ = step->GetTrack()->GetPosition().z();
+  // track information
+  G4int PDG = track->GetDefinition()->GetPDGEncoding();
+  G4int particle_order = track -> GetTrackID();
+
+  G4double track_energy = track->GetTotalEnergy();
+  
+  // hit information
+  G4double posX = track->GetPosition().x();
+  G4double posY = track->GetPosition().y();
+  G4double posZ = track->GetPosition().z();
   G4double edep = step->GetTotalEnergyDeposit(); // it doesn't be classified as prePosition or posPosition
     
-  G4double secondaryParticleKineticEnergy =  step->GetTrack()->GetKineticEnergy(); 
+  G4double secondaryParticleKineticEnergy =  track->GetKineticEnergy(); 
   
   //if (volume_test=="INTT_siLV_all_typeA") {cout<<"volume_test<<" "<<0<<endl;}
   //else if (volume_test=="INTT_siLV_all_typeB") {cout<<"testing "<<volume_test<<" "<<1<<endl;}
@@ -204,7 +217,7 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   if ( edep == 0. )
     return false;
 
-  G4double time = step->GetTrack()->GetGlobalTime() ;
+  G4double time = track->GetGlobalTime() ;
 
   //based on my memory, the GetPreStepPoint is the first, and the GetPostStepPoint is the end position
   G4ThreeVector touchposition = step->GetPreStepPoint()->GetPosition(); //this is the postion when particle hit on the material
@@ -315,177 +328,42 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   //columnPosition[1] = phi
   //columnPosition[2] = z
 
-  //if((fabs(thePosition[2])-510.345) < 0 ) // part one or part two
-  // if (fabs(thePosition[1])<10. && thePosition[2]>0.)
-  //   {
-      
-
-  //     if (thePosition[0]>-115.1 && thePosition[0]<12.9)
-  //      {
-         
-
-  //        if (thePosition[1]>-10. && thePosition[1]<-0.016)
-  //          {
-  //            upordown=1; 
-  //            silicon_type=1;
-  //            xposition=ceil((thePosition[0]+115.1)/16.);
-
-  //            zposition=ceil((fabs(thePosition[2])-99.84)/35.);  
-
-  //            yposition=ceil((thePosition[1]+10.)/0.078);
-
-  //            //sensorposition[0] = -107.1+(xposition-1)*16.;
-  //            //sensorposition[1] = -9.961+(yposition-1)*0.078;
-  //            //sensorposition[2] = 100.+(zposition-1)*35.;
-  //          }
-  //        else if ( thePosition[1]>0.016 && thePosition[1]<10. ) 
-  //          {
-  //            upordown=0; 
-  //            silicon_type=1;
-  //            xposition=ceil((thePosition[0]+115.1)/16.);
-
-  //            zposition=ceil((fabs(thePosition[2])-99.84)/35.);
-
-  //            yposition=ceil((thePosition[1]-0.016)/0.078); 
-
-  //            //sensorposition[0] = -107.1+(xposition-1)*16.;
-  //            //sensorposition[1] = 0.055+(yposition-1)*0.078;
-  //            //sensorposition[2] = 100.+(zposition-1)*35.;
-  //          }
-  //        else {} //found = true;   
-
-         
-
-  //      }
-  //     else if (thePosition[0]>15.1 && thePosition[0]<115.1)
-  //       {
-
-  //        if (thePosition[1]>-10. && thePosition[1]<-0.016)
-  //          { 
-  //            upordown=1;
-  //            silicon_type=0;
-  //            xposition=ceil((thePosition[0]-15.1)/20.);
-
-  //            zposition=ceil((fabs(thePosition[2])-99.84)/35.);  
-
-  //            yposition=ceil((thePosition[1]+10.)/0.078);
-             
-  //            //sensorposition[0] = 25.1+(xposition-1)*20.;
-  //            //sensorposition[1] = -9.961+(yposition-1)*0.078;
-  //            //sensorposition[2] = 100.+(zposition-1)*35.;
-  //          }
-  //        else if ( thePosition[1]>0.016 && thePosition[1]<10. ) 
-  //          {
-  //            upordown=0;
-  //            silicon_type=0;
-  //            xposition=ceil((thePosition[0]-15.1)/20.);
-
-  //            zposition=ceil((fabs(thePosition[2])-99.84)/35.);
-
-  //            yposition=ceil((thePosition[1]-0.016)/0.078); 
-
-  //            //sensorposition[0] = 25.1+(xposition-1)*20.;
-  //            //sensorposition[1] = 0.055+(yposition-1)*0.078;
-  //            //sensorposition[2] = 100.+(zposition-1)*35.; 
-  //          }
-  //        else {}//found = true;  
-
-
-
-  //       }
-  //     else {}//found = true;
-  //   }
-  // else 
-  //   {
-  //     //found = true;
-  //   }
-
-  //==========================================from Mokka========================================================
-
-    //G4cout << "Iamtest~~~~~~~~" << upordown << " " << silicon_type << " " << xposition << " " << yposition << " " << zposition << G4endl;
-
-
-  // Change the following line to get the charge of the tracked particle
-  //G4double charge = step->GetTrack()->GetDefinition()->GetPDGCharge();
-  //if ( charge == 0. ) return false;
-
-  //G4double edep = step->GetTotalEnergyDeposit();
-  //if ( edep==0. ) return false;
-  
-  // Create new hit
-  //EDChamberHit* newHit = new EDChamberHit();
-  
-  // Layer number
-  // = copy number of mother volume
-  /*G4StepPoint* preStepPoint = step->GetPreStepPoint();
-  const G4VTouchable* touchable
-    = step->GetPreStepPoint()->GetTouchable();*/
-  
-
-  // Time
-  //G4double time = preStepPoint->GetGlobalTime();
-  //newHit->SetTime(time);
- 
-  // Position
-  //G4ThreeVector position = preStepPoint->GetPosition();
-  //newHit->SetPosition(position);
- 
-  // Add hit in the collection
-  //fHitsCollection->insert(newHit);
-
-  // Add hits properties in the ntuple
-  /*G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  analysisManager->FillNtupleIColumn(fNtupleId, 0, copyNo);
-  analysisManager->FillNtupleDColumn(fNtupleId, 1, position.x());
-  analysisManager->FillNtupleDColumn(fNtupleId, 2, position.y());
-  analysisManager->FillNtupleDColumn(fNtupleId, 3, position.z());
-  analysisManager->FillNtupleDColumn(fNtupleId, 4, edep);
-  analysisManager->FillNtupleDColumn(fNtupleId, 5, eID);  
-  analysisManager->AddNtupleRow(fNtupleId); */ 
-  // G4int subX=8;
-  // G4int subY=128;
-  // G4int subZ=4;
-  // G4int Hit_object_number;
-
   //Hit_object_number=(zposition-1)*subX*subY+ (xposition-1)*subY   +(yposition-1);
   EDChamberHit* HitThisUnit = (*fHitsCollection)[copyNo];
   HitThisUnit->AddEdep(edep);
 
+  if( step->IsFirstStepInVolume() )
+    HitThisUnit->SetStepIn( step );
 
-  // if (upordown==0 && silicon_type==0)
-  //   {
-  //     //G4cout << " 1test~~~~~~~~~~~~~ " << upordown << " " << silicon_type << G4endl;
-  //     Hit_object_number=(zposition-1)*subX*subY+ (xposition-1)*subY   +(yposition-1);
-  //     EDChamberHit* HitThisUnit = (*fHitsCollection)[Hit_object_number];
-  //     HitThisUnit->AddEdep(edep);
-  //   }
-  // else if (upordown==0 && silicon_type==1)
-  //   {
-  //     //G4cout << "anothertest " << zposition << " " << xposition << " " << yposition << G4endl;
-  //     Hit_object_number=3328+(zposition-1)*subX*subY+(xposition-1)*subY+(yposition-1);
-  //     //G4cout << " 2test~~~~~~~~~~~~~ " << upordown << " " << silicon_type << " " << Hit_object_number << G4endl;
-  //     EDChamberHit* HitThisUnit = (*fHitsCollection)[Hit_object_number];
-  //     HitThisUnit->AddEdep(edep);
-  //   }
-  // else if (upordown==1 && silicon_type==0)
-  //   {
-  //     //G4cout << " 3test~~~~~~~~~~~~~ " << upordown << " " << silicon_type << G4endl;
-  //     Hit_object_number=6656+(zposition-1)*subX*subY+(xposition-1)*subY+(yposition-1);
-  //     EDChamberHit* HitThisUnit = (*fHitsCollection)[Hit_object_number];
-  //     HitThisUnit->AddEdep(edep);
-  //   }  
-  // else if (upordown==1 && silicon_type==1)
-  //   {
-  //     //G4cout << " 4test~~~~~~~~~~~~~ " << upordown << " " << silicon_type << G4endl;
-  //     Hit_object_number=9984+(zposition-1)*subX*subY+(xposition-1)*subY+(yposition-1);
-  //     EDChamberHit* HitThisUnit = (*fHitsCollection)[Hit_object_number];
-  //     HitThisUnit->AddEdep(edep);
-  //   }
+  if( step->IsLastStepInVolume() )
+    HitThisUnit->SetStepOut( step );
+  
+  // to keep infomation of the track that give the higherst energy to this strip, check dE before
+  if( edep > HitThisUnit->GetEdepStep() )
+    {
+      if( HitThisUnit->GetTrack() != nullptr && verbose == 2 )
+	G4cout << "track overwritten: "
+	       << HitThisUnit->GetTrack()->GetTrackID() << "(" << HitThisUnit->GetEdepStep() << ")"
+	       << " --> "
+	       << track->GetTrackID() << " (" << edep << ")"
+	       << G4endl;
+      
+      HitThisUnit->SetTime( track->GetGlobalTime() ); // this is the hit timing
+      HitThisUnit->SetTrack( track );
+      HitThisUnit->SetEdepStep( edep );
 
-  //= layerNo*funitofside*funitofside + RowNo*funitofside + ColumnNo;
-  //EDScintillatorHit* HitThisUnit = (*fHitsCollection)[Hit_object_number];
-  // HitThisUnit->SetCoordinate(layerNO,RowNO,ColumnNo);
+      if( track->GetTrackID() == 1 ) // in the case of the beam track, set the flag
+	{
+	  HitThisUnit->SetBeamIn( true );
+	  HitThisUnit->SetBeamOut( true );
 
+
+	}
+    }
+
+  //G4cout << "ProcessHit, copyNo = " << copyNo << G4endl;
+  //  HitThisUnit->Print();
+  
   //if (eID_1%10000==0)
   //  if( verbose == 2 )
   if( false )
@@ -506,7 +384,7 @@ void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)
   //  std::cerr << "void EDChamberSD::EndOfEvent(G4HCofThisEvent* /*hce*/)";
   
   G4int eID = 0;
-  const G4Event* evt=G4MTRunManager::GetRunManager()->GetCurrentEvent();
+  const G4Event* evt = G4MTRunManager::GetRunManager()->GetCurrentEvent();
   if (evt)
     eID = evt->GetEventID();
 

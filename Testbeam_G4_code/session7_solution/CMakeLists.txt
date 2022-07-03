@@ -44,9 +44,9 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 add_executable(exampleED exampleED.cc ${sources} ${headers} ) #lib/TrackMC.cc lib/StepMC.cc )
-target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} StepMC TrackMC )
+# target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} StepMC TrackMC )
+target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 link_directories(${ROOT_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR} )
-
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

@@ -18,6 +18,7 @@ INTTMessenger::INTTMessenger()
     trigger3_offset_x_( 0 ),
     trigger3_offset_y_( 0 ),
     output_name_( "" ),
+    dac_values_(10), // 0, DAC0-7
     fDirectory_(0)
 {
 }
@@ -37,6 +38,7 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
     trigger3_offset_x_( 0 ),
     trigger3_offset_y_( 0 ),
     output_name_( "" ),
+    dac_values_(10),
     fDirectory_(0)
 {
   
@@ -146,6 +148,36 @@ INTTMessenger::INTTMessenger( void* obj, const G4String& dir, const G4String& do
   //beam_line_command_->SetCandidates( "beam_parameter/beam_W_400A.dat beam_parameter/beam_W_400A_original.dat beam_parameter/beam_W_400A_mini.dat" );
 
   //////////////////////////////////////////////////////////////////////////////
+  // Parameters for the DAQ                                                   //
+  //////////////////////////////////////////////////////////////////////////////
+
+  // init values
+  dac_values_[0] = 0;
+  dac_values_[9] = 1e6;
+  // dac_values_.push_back(   0 ); // first
+  // dac_values_.push_back(  15 ); // DAC0
+  // dac_values_.push_back(  30 ); // DAC1
+  // dac_values_.push_back(  60 ); // DAC2
+  // dac_values_.push_back(  90 ); // DAC3
+  // dac_values_.push_back( 120 ); // DAC4
+  // dac_values_.push_back( 150 ); // DAC5
+  // dac_values_.push_back( 180 ); // DAC6
+  // dac_values_.push_back( 210 ); // DAC7
+  // dac_values_.push_back( 255 ); // last 
+
+  DAC_command_ = new G4UIcommand( "/INTT/DAQ/setDACs", this );
+  DAC_command_->SetGuidance( "[usage]: /INTT/DAQ/setDACs DAC0 DAC1 DAC2 DAC3 DAC4 DAC5 DAC6 DAC7" );
+
+  G4UIparameter* DAC_param;
+  for( int i=0; i<8; i++ )
+    {
+      std::string name = "DAC" + std::to_string(i);
+      DAC_param = new G4UIparameter( name.c_str(), 'i', false );
+      DAC_param->SetDefaultValue( to_string(dac_values_[i+i]).c_str() );
+      DAC_command_->SetParameter( DAC_param );      
+    }
+  
+  //////////////////////////////////////////////////////////////////////////////
   // Parameters for something else                                            //
   //////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
@@ -234,6 +266,30 @@ void INTTMessenger::SetNewValue(G4UIcommand* command, G4String val)
     {
       beam_file_ = val;
     }
+  else if( command == DAC_command_ )
+    {
+      G4Tokenizer next( val );
+
+      for( int i=0; i<8; i++ )
+	{
+	  auto dac = StoI( next() );
+	  dac_values_[i+1] = dac;
+	}
+
+      // check whether the DAC values are sorted or not
+      for( int i=0; i<dac_values_.size()-1; i++ )
+	{
+	  if( dac_values_[i] >= dac_values_[i+1] )
+	    {
+	      G4cerr << "\n" << string( 50, '=' ) << G4endl;
+	      G4cerr << "INTTMessanger, DAC setting in the user macro seems to be wrong" << G4endl;
+	      G4cerr << "DAC" << i - 1 << " = " << dac_values_[i] << ", DAC" << i << " = " << dac_values_[i+1] << G4endl;
+	      G4cerr << "DAC" << i - 1 << " should be smaller than DAC" << i << G4endl;
+	      G4cerr << string( 50, '=' ) << G4endl << G4endl;
+	    }
+	}	      
+      
+    }
   else if( command == debug_level_command_ )
     {
       debug_level_ = debug_level_command_->GetNewIntValue( val );
@@ -256,6 +312,12 @@ void INTTMessenger::Print()
 
   G4cout << "--- Beam ---" << G4endl;
   G4cout << "  G4bool is_beam_smearing: " <<   is_beam_smearing_ << endl;
+
+  G4cout << "--- DAQ ---" << G4endl;
+  G4cout << "  vector < G4int > dac_values:" << endl << "\t";
+  for( auto& it : dac_values_ )
+    G4cout << std::setw(4) << it ;
+  G4cout << endl;
 
   G4cout << "--- Misc ---" << G4endl;
   G4cout << "  G4int  debug_level_: " << debug_level_ << endl;
