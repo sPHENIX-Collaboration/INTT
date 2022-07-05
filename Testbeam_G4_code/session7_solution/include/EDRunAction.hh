@@ -17,7 +17,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
-#include "TBRIK.h"
+//#include "TBRIK.h"
 
 #include "EDPrimaryGeneratorAction.hh"
 #include "EDEventAction.hh"
@@ -25,9 +25,9 @@
 #include "OutputManager.hh"
 
 // original classes for scoreing and analysis
-#include "StepMC.hh"
-#include "TrackMC.hh"
-#include "Eventa.hh"
+// #include "StepMC.hh"
+// #include "TrackMC.hh"
+// #include "Eventa.hh"
 #include "INTTMessenger.hh"
 
 class G4Run;
@@ -57,14 +57,14 @@ public:
   inline std::shared_ptr < TTree > GetTree() const { return tree_;};
 
   //void SetEvent( Event* ev ){ ev_ = ev; };
-  void AddTrackMC( TrackMC* track ){ tracks_.push_back( track ); };
-  //  void AddBox( TBox* box ){ boxes_.push_back( box );};
-  void AddBrik( TBRIK* brik ){ briks_.push_back( brik );};
+  // void AddTrackMC( TrackMC* track ){ tracks_.push_back( track ); };
+  // //  void AddBox( TBox* box ){ boxes_.push_back( box );};
+  // void AddBrik( TBRIK* brik ){ briks_.push_back( brik );};
   
   void SetEventID( int id ){ event_id_ = id;};
   //void SetTrackMCs( vector < TrackMC* >& tracks ) const { tracks_ = tracks; };
-  void SetTrackMCs( vector < TrackMC* >& tracks );
-  void SetStepMCs( vector < StepMC* >& steps );
+  // void SetTrackMCs( vector < TrackMC* >& tracks );
+  // void SetStepMCs( vector < StepMC* >& steps );
 
 private:
 
@@ -78,13 +78,13 @@ private:
   std::shared_ptr <TFile> tf_output_;
   //  TTree* tree_;
   std::shared_ptr <TTree> tree_;
-  TLorentzVector vec;
-  Eventa* ev_;
-  TrackMC* track_;
-  vector < TrackMC* > tracks_;
-  vector < StepMC* > steps_;
-  vector < TBRIK* > briks_;
-  
+  // TLorentzVector vec;
+  // Eventa* ev_;
+  // TrackMC* track_;
+  // vector < TrackMC* > tracks_;
+  // vector < StepMC* > steps_;
+  // vector < TBRIK* > briks_;
+
   INTTMessenger* INTT_mess_;
   OutputManager* output_;
 

@@ -16,6 +16,8 @@ SteppingAction::~SteppingAction()
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
+
+  /*
   // how can I get it when given by use?
   auto ui_manager = G4UImanager::GetUIpointer();
   verbose = ui_manager->GetCurrentIntValue( "/event/verbose", 1, true );
@@ -96,7 +98,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     }
   
   G4cout << G4endl;
-  */
+  * /
   
   //track->Print();
   
@@ -107,5 +109,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   }
 
   //  step_mc->Print( 2 );
-  event_action->AddStepMC( step_mc );  
+  event_action->AddStepMC( step_mc );
+  */
+  
 }

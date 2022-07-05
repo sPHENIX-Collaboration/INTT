@@ -20,7 +20,7 @@ void EDActionInitialization::BuildForMaster() const
   SetUserAction(
 		new EDRunAction( INTT_mess_,
 				new EDPrimaryGeneratorAction( INTT_mess_ ),
-				new EDEventAction(),
+				new EDEventAction( INTT_mess_ ),
 				output
 				)
 		);
@@ -32,7 +32,7 @@ void EDActionInitialization::Build() const
   SetUserAction( pga );
 
   OutputManager* output = new OutputManager();
-  auto event = new EDEventAction;
+  auto event = new EDEventAction( INTT_mess_ );
   SetUserAction( event );
   SetUserAction(new EDRunAction( INTT_mess_, pga, event, output ) );
   SetUserAction(new TrackingAction( pga ) );

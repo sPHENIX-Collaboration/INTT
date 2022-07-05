@@ -59,6 +59,9 @@ public:
   G4double GetTrigger2OffsetY(){ return trigger2_offset_y_; };
   G4double GetTrigger3OffsetX(){ return trigger3_offset_x_; };
   G4double GetTrigger3OffsetY(){ return trigger3_offset_y_; };
+
+  // for DAQ
+  std::vector < G4int > GetDacValues(){ return dac_values_;};
   
   // for something else
   G4int GetDebugLevel(){ return debug_level_;};
@@ -102,6 +105,10 @@ private:
   G4UIcmdWithAString* beam_file_command_;
   G4String beam_file_;
 
+  // for DAQ
+  G4UIcommand* DAC_command_;
+  std::vector < G4int > dac_values_;
+  
   // for misc
   G4UIcmdWithAnInteger* debug_level_command_;
   G4int debug_level_; // 0: not debug, 1: 

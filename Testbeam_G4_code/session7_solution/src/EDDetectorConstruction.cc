@@ -677,7 +677,7 @@ void EDDetectorConstruction::ConstructLadders()
     {
 
       // if the debuggind flag is ture, skip silicon strips
-      if( INTT_mess_->GetDebugLevel() == 1)
+      if( INTT_mess_->GetDebugLevel() > 1)
 	continue;
 
       // put the area for the active and inactive silicon

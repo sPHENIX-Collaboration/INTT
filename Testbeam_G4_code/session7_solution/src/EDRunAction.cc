@@ -15,10 +15,10 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   INTT_mess_( INTT_mess ),
   event_( event ),
   event_id_( -1 ),
-  vec(),
-  track_(),
-  tracks_(),
-  steps_(),
+  //vec(),
+  // track_(),
+  // tracks_(),
+  // steps_(),
   output_( output )
 {
 
@@ -43,7 +43,9 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   analysisManager->FinishNtuple();
   //============================NEW one, only store the ID====================================================
 
-  //ntuple id =1 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ntuple id =1 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   analysisManager->CreateNtuple("Beam_angle", "Beam_angle");
   analysisManager->CreateNtupleDColumn("Beam_X"); // colume id = 0
   analysisManager->CreateNtupleDColumn("Beam_Y"); // colume id = 0
@@ -57,7 +59,9 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   analysisManager->CreateNtupleDColumn("Beam_energy"); // in MeV
   analysisManager->FinishNtuple();
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ntuple id = 2
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   analysisManager->CreateNtuple("event_particle", "event_particle");
   analysisManager->CreateNtupleIColumn("PID_order");
   analysisManager->CreateNtupleIColumn("PID");
@@ -140,20 +144,81 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   //    NeutronKiller              7            403             -1             -1           1000  false
   //    ParallelWorld             10            491           9900              1           9900  true
 	    
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ntuple id = 3
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   analysisManager->CreateNtuple("sci_trigger", "sci_trigger");
   analysisManager->CreateNtupleIColumn("Event_ID");
   analysisManager->CreateNtupleIColumn("sci_ID");
   analysisManager->CreateNtupleDColumn("sci_edep"); // colume id = 0
   analysisManager->FinishNtuple();    
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ntuple id = 4
-  analysisManager->CreateNtuple("tree_camac", "tree_camac");
-  analysisManager->CreateNtupleIColumn( "camac_adc", event_->camac_adc_ ); // column Id = 0
-  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->camac_tdc_ ); // column Id = 1
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  analysisManager->CreateNtuple("tree", "tree");
+  analysisManager->CreateNtupleIColumn( "adc"		); // column ID: 0
+  analysisManager->CreateNtupleIColumn( "ampl"		); // column ID: 1
+  analysisManager->CreateNtupleIColumn( "chip_id"	); // column ID: 2
+  analysisManager->CreateNtupleIColumn( "fpga_id"	); // column ID: 3
+  analysisManager->CreateNtupleIColumn( "module"	); // column ID: 4
+  analysisManager->CreateNtupleIColumn( "chan_id"	); // column ID: 5
+  analysisManager->CreateNtupleIColumn( "fem_id"	); // column ID: 6
+  analysisManager->CreateNtupleIColumn( "bco"		); // column ID: 7
+  analysisManager->CreateNtupleIColumn( "bco_full"	); // column ID: 8
+  analysisManager->CreateNtupleIColumn( "event"		); // column ID: 9
 
+  // MC truth
+  analysisManager->CreateNtupleIColumn( "event_id_MC"	); // column ID: 10
+
+  // hit information
+  analysisManager->CreateNtupleDColumn( "edep_MC"	); // column ID: 11
+  analysisManager->CreateNtupleIColumn( "dac_MC"	); // column ID: 12
+
+  // track information
   
+  analysisManager->CreateNtupleIColumn( "track_id_MC"	); // column ID: 13
+  analysisManager->CreateNtupleIColumn( "track_pid_MC"	); // column ID: 14
+  analysisManager->CreateNtupleDColumn( "track_energy_in_MC"	); // column ID: 15
+  analysisManager->CreateNtupleDColumn( "track_energy_out_MC"	); // column ID: 16
+  //  analysisManager->CreateNtupleDColumn( "track_energy_MC"	); // column ID: 14
+
+    
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ntuple id = 5
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  analysisManager->CreateNtuple("tree_camac", "tree_camac");
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); // column Id = 0
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() ); // column Id = 1
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ntuple id = 6
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  analysisManager->CreateNtuple("tree_both", "tree_both");
+
+  // CAMAC information (trigger sci.)
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); 
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() );
+
+  // INTT hit
+  analysisManager->CreateNtupleIColumn( "adc", event_->GetContainerAdc() ); 
+  analysisManager->CreateNtupleIColumn( "ampl", event_->GetContainerAmpl() ); 
+  analysisManager->CreateNtupleIColumn( "chip_id", event_->GetContainerChipId() ); 
+  analysisManager->CreateNtupleIColumn( "fpga_id", event_->GetContainerFpgaId() ); 
+  analysisManager->CreateNtupleIColumn( "module", event_->GetContainerModule() ); 
+  analysisManager->CreateNtupleIColumn( "chan_id", event_->GetContainerChanId() ); 
+  analysisManager->CreateNtupleIColumn( "fem_id", event_->GetContainerFemId() ); 
+  analysisManager->CreateNtupleIColumn( "bco", event_->GetContainerBco() ); 
+  analysisManager->CreateNtupleIColumn( "bco_full", event_->GetContainerBcoFull() ); 
+  analysisManager->CreateNtupleIColumn( "event", event_->GetContainerEvent() ); 
+
+  // INTT hit (MC truth)
   
+  analysisManager->CreateNtupleIColumn( "event_id_MC", event_->GetContainerEventMC() );
+  analysisManager->CreateNtupleDColumn( "edep_MC", event_->GetContainerEdepMC() );
+  analysisManager->CreateNtupleIColumn( "dac_MC", event_->GetContainerDacsMC() );
+
   /*
   if( event_ )
     {
@@ -238,28 +303,28 @@ void EDRunAction::EndOfRunAction(const G4Run* kRun )
 
 }
 
-void EDRunAction::ClearEventBuffer( string mode )
-{
-  if( mode == "TrackMC" || mode == "all" )
-    tracks_.erase( tracks_.begin(), tracks_.end() );
+// void EDRunAction::ClearEventBuffer( string mode )
+// {
+//   if( mode == "TrackMC" || mode == "all" )
+//     tracks_.erase( tracks_.begin(), tracks_.end() );
 
-  if( mode == "StepMC" || mode == "all" )
-    steps_.erase( steps_.begin(), steps_.end() );
+//   if( mode == "StepMC" || mode == "all" )
+//     steps_.erase( steps_.begin(), steps_.end() );
 
-}
+// }
 
-void EDRunAction::SetTrackMCs( vector < TrackMC* >& tracks )
-{
-  this->ClearEventBuffer( "TrackMC" );
-  for( auto& track : tracks )
-    tracks_.push_back( track );
+// void EDRunAction::SetTrackMCs( vector < TrackMC* >& tracks )
+// {
+//   this->ClearEventBuffer( "TrackMC" );
+//   for( auto& track : tracks )
+//     tracks_.push_back( track );
 
-}
+// }
 
-void EDRunAction::SetStepMCs( vector < StepMC* >& steps )
-{
-  this->ClearEventBuffer( "StepMC" );
-  for( auto& step : steps )
-    steps_.push_back( step );
+// void EDRunAction::SetStepMCs( vector < StepMC* >& steps )
+// {
+//   this->ClearEventBuffer( "StepMC" );
+//   for( auto& step : steps )
+//     steps_.push_back( step );
 
-}
+// }

@@ -49,6 +49,8 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track )
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
+
+  /*
   // how can I get it when given by use?
   auto ui_manager = G4UImanager::GetUIpointer();
   verbose = ui_manager->GetCurrentIntValue( "/tracking/verbose", 1, true );
@@ -199,7 +201,8 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
 
     }
 
-  event_action->AddTrackMC( track_mc );
+  //  event_action->AddTrackMC( track_mc );
+  */
 }
 
 void TrackingAction::Print( const G4Track* track )

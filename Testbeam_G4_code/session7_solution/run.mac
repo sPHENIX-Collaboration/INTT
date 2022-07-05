@@ -14,6 +14,11 @@
 /run/setCutForAGivenParticle e+ 0.2 mm
 /run/setCutForAGivenParticle gamma 0.3 mm
 
+# following parameters give no difference but consume huge amount of memory and takes longer time
+# /run/setCutForAGivenParticle e- 40 um
+# /run/setCutForAGivenParticle e+ 40 um
+# /run/setCutForAGivenParticle gamma 40 um
+
 ################################################################
 # Debugging commands                                           #
 ################################################################
@@ -41,8 +46,8 @@
 #/process/inactivate annihil e-
 #/process/inactivate CoulombScat e-
 
-/process/activate CoulombScat e+
-/process/activate CoulombScat e-
+#/process/activate CoulombScat e+
+#/process/activate CoulombScat e-
 
 # Dump particle processes
 # /particle/select e+
@@ -56,5 +61,5 @@
 ################################################################
 # Start the run                                                #
 ################################################################
-/run/printProgress  10000
+/run/printProgress  1000
 /run/beamOn 100000
