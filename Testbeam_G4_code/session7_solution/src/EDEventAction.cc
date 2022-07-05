@@ -115,13 +115,17 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
   if( event )
     eID = event->GetEventID();
 
-  GetHitsCollectionIDs();
+  this->GetHitsCollectionIDs();
     
   /////////////////////////////////////////////////////////////////////
   // Processes for the INTT hits                                     //
   /////////////////////////////////////////////////////////////////////
-  FillINTTEvent( event );
+  this->FillINTTEvent( event );
 
+  const int INTT_tree_both_id = 6;
+  analysisManager->AddNtupleRow( INTT_tree_both_id );
+  this->CleanContainer();
+  
   // auto trajectories = event->GetTrajectoryContainer();
   // for( int i=0; i<trajectories->size(); i++ )
   //   {
@@ -357,12 +361,26 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  auto particle = track->GetParticleDefinition();	  
 	  analysisManager->FillNtupleIColumn(INTT_tree_id, 13, track->GetTrackID() ); // track ID, MC truth
 	  analysisManager->FillNtupleIColumn(INTT_tree_id, 14, particle->GetPDGEncoding() ); // track's partile ID, MC truth, done
-	  analysisManager->FillNtupleDColumn(INTT_tree_id, 15, track->GetVertexKineticEnergy() ); // 
-	  analysisManager->FillNtupleDColumn(INTT_tree_id, 16, track->GetKineticEnergy() ); // 
-	    //analysisManager->FillNtupleDColumn(INTT_tree_id, 14, track->GetKineticEnergy() ); // 
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, 15, track->GetVertexKineticEnergy() ); //
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, 16, track->GetKineticEnergy() ); //
+	  //analysisManager->FillNtupleDColumn(INTT_tree_id, 14, track->GetKineticEnergy() ); //
 
 	  analysisManager->AddNtupleRow( INTT_tree_id );
 
+	  adcs_.push_back( adc );
+	  ampls_.push_back( 0 );
+	  chip_ids_.push_back( chip_id );
+	  fpga_ids_.push_back( 0 );
+	  modules_.push_back( module );
+	  chan_ids_.push_back( chan_id );
+	  fem_ids_.push_back( fem_id );
+	  bcos_.push_back( bco_ );
+	  bco_fulls_.push_back( bco_full_ );
+	  events_.push_back( 0 );
+
+	  event_ids_MC_.push_back( event_id );
+	  edeps_MC_.push_back( energy );
+	  dacs_MC_.push_back( dac );
 	  //hit->PrintEvent();
 	  
 	  /*
@@ -386,4 +404,26 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
   
 
 
+}
+
+
+void EDEventAction::CleanContainer()
+{
+  camac_adcs_.erase( camac_adcs_.begin(), camac_adcs_.end() );
+  camac_tdcs_.erase( camac_tdcs_.begin(), camac_tdcs_.end() );
+
+  adcs_.erase( adcs_.begin(), adcs_.end() );
+  ampls_.erase( ampls_.begin(), ampls_.end() );
+  chip_ids_.erase( chip_ids_.begin(), chip_ids_.end() );
+  fpga_ids_.erase( fpga_ids_.begin(), fpga_ids_.end() );
+  modules_.erase( modules_.begin(), modules_.end() );
+  chan_ids_.erase( chan_ids_.begin(), chan_ids_.end() );
+  fem_ids_.erase( fem_ids_.begin(), fem_ids_.end() );
+  bcos_.erase( bcos_.begin(), bcos_.end() );
+  bco_fulls_.erase( bco_fulls_.begin(), bco_fulls_.end() );
+  events_.erase( events_.begin(), events_.end() );
+
+  event_ids_MC_.erase( event_ids_MC_.begin(), event_ids_MC_.end() );
+  edeps_MC_.erase( edeps_MC_.begin(), edeps_MC_.end() );
+  dacs_MC_.erase( dacs_MC_.begin(), dacs_MC_.end() );
 }

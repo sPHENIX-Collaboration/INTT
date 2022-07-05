@@ -188,9 +188,37 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   // ntuple id = 5
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   analysisManager->CreateNtuple("tree_camac", "tree_camac");
-  analysisManager->CreateNtupleIColumn( "camac_adc", event_->camac_adc_ ); // column Id = 0
-  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->camac_tdc_ ); // column Id = 1
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); // column Id = 0
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() ); // column Id = 1
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ntuple id = 6
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  analysisManager->CreateNtuple("tree_both", "tree_both");
+
+  // CAMAC information (trigger sci.)
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); 
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() );
+
+  // INTT hit
+  analysisManager->CreateNtupleIColumn( "adc", event_->GetContainerAdc() ); 
+  analysisManager->CreateNtupleIColumn( "ampl", event_->GetContainerAmpl() ); 
+  analysisManager->CreateNtupleIColumn( "chip_id", event_->GetContainerChipId() ); 
+  analysisManager->CreateNtupleIColumn( "fpga_id", event_->GetContainerFpgaId() ); 
+  analysisManager->CreateNtupleIColumn( "module", event_->GetContainerModule() ); 
+  analysisManager->CreateNtupleIColumn( "chan_id", event_->GetContainerChanId() ); 
+  analysisManager->CreateNtupleIColumn( "fem_id", event_->GetContainerFemId() ); 
+  analysisManager->CreateNtupleIColumn( "bco", event_->GetContainerBco() ); 
+  analysisManager->CreateNtupleIColumn( "bco_full", event_->GetContainerBcoFull() ); 
+  analysisManager->CreateNtupleIColumn( "event", event_->GetContainerEvent() ); 
+
+  // INTT hit (MC truth)
   
+  analysisManager->CreateNtupleIColumn( "event_id_MC", event_->GetContainerEventMC() );
+  analysisManager->CreateNtupleDColumn( "edep_MC", event_->GetContainerEdepMC() );
+  analysisManager->CreateNtupleIColumn( "dac_MC", event_->GetContainerDacsMC() );
+
   /*
   if( event_ )
     {
