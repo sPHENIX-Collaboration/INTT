@@ -10,7 +10,7 @@
 # switch to use mono-energy beam at (x=0, y=0) (false), or realistic beam (momentum spread, x-y distribution)
 # Usage: /INTT/beam/beamSmearing [false or true]
 /INTT/beam/beamSmearing false
-#/INTT/beam/beamSmearing true
+# /INTT/beam/beamSmearing true
 
 #---------------------------------------------------------------------------
 # Selection of the beam file
@@ -67,7 +67,7 @@
 
 ## for run21 ###
 #/INTT/geom/setDarkboxOffsetX 10 # good for Run21?
-#/INTT/geom/setDarkboxOffsetY -3 # good agreement with Run21
+#/INTT/geom/setDarkboxOffsetY -2.766 # -3 + 3 strips, turn out to be the best
 
 ## for run61 vertical rotation ###
 # /INTT/geom/setDarkboxOffsetY 3.78 # test for  Run61, beam on chan0
@@ -75,19 +75,30 @@
 # /INTT/geom/setDarkboxOffsetY 0.7 # test for  Run61, beam on chan0, not so bad
 # /INTT/geom/setDarkboxOffsetY 4.47 # test for  Run61, beam on chan0, too low
 
-# /INTT/geom/setDarkboxOffsetY 2.44 # test for  Run61, use this
+#/INTT/geom/setDarkboxOffsetY 2.44 # test for  Run61, use this
 
 ## for run63 horizontal rotation ###
 # modification not neeeded?
 #/INTT/geom/setDarkboxOffsetY 3 
 
 ## for run89 ###
-#/INTT/geom/setDarkboxOffsetX 8
-#/INTT/geom/setDarkboxOffsetY 4
+/INTT/geom/setDarkboxOffsetX 8
+/INTT/geom/setDarkboxOffsetY 4
 
 #---------------------------------------------------------------------------
-# selection of the trigger scintillator configuration (but how?)
-# Usage: /INTT/geom/???
+# Offset of the trigger1, 2, 3 (most upstream) in vertical and horizontal directions in mm
+# Usage: /INTT/geom/setTrigger1Offset [x offset] [y offset]
+# Usage: /INTT/geom/setTrigger2Offset [x offset] [y offset]
+# Usage: /INTT/geom/setTrigger3Offset [x offset] [y offset]
+#/INTT/geom/setTrigger1Offset  0  -2
+#/INTT/geom/setTrigger1Offset  0  -5
+#/INTT/geom/setTrigger1Offset  0  -10
+
+#/INTT/geom/setTrigger2Offset  0  0
+#/INTT/geom/setTrigger2Offset  0  -10
+
+# normaly, the 3rd trigger sci. is not available
+#/INTT/geom/setTrigger3Offset  50  60
 
 # ============================================================ #
 #   for analysis
@@ -96,6 +107,12 @@
 # switch to set the detection efficienty of the INTT ladders
 # Usage: /INTT/ana/efficiency [efficiency of the ladder0] [efficiency of the ladder2] [efficiency of the ladder3] [efficiency of the ladder4]
 # /INTT/ana/efficiency 1.0 1.0 1.0 1.0
+
+# ============================================================ #
+#   for DAQ 
+# ============================================================ #
+# Usage: /INTT/DAQ/setDACs DAC0 DAC1 DAC2 DAC3 DAC4 DAC5 DAC6 DAC7
+/INTT/DAQ/setDACs 15  30  60  90  120  150  180  210
 
 # ============================================================ #
 #   for something else
@@ -108,19 +125,22 @@
 #        [tag] should not contain a space
 #/INTT/misc/setOutputTag x-10mm_y-3mm_100k-events
 # /INTT/misc/setOutputTag y+2.44mm_100k-events
-/INTT/misc/setOutputTag junk
+#/INTT/misc/setOutputTag junk
 #/INTT/misc/setOutputTag y+3_100k-events
 #/INTT/misc/setOutputTag run89_x+8_y+4mm_100k-events
 #/INTT/misc/setOutputTag standard-phys_1M-events
-/INTT/misc/setOutputTag coulomb-on_1M-events
+#/INTT/misc/setOutputTag coulomb-on_1M-events
 #/INTT/misc/setOutputTag only-coulomb_1M-events
 #/INTT/misc/setOutputTag EMZ-coulomb-on_1M-events
 
-  
+#/INTT/misc/setOutputTag run21_x+10_y-2.766mm_100k-events
+#/INTT/misc/setOutputTag run89_x+8mm_y+4mm_noCoulonb_10k-events
+
 #---------------------------------------------------------------------------
 # switch for the trigger configuration
 # Usage: /INTT/geom/debugLevel 0/1/2
 #        0: not debug, normal run
-#        1: simplified geometry (no silicon strips), the same random number seed 2
-#        2: debugging INTTMessenger
+#        1: the same random number seed 2
+#        2: simplified geometry (no silicon strips), the same random number seed 2
+#        3: debugging INTTMessenger
 /INTT/misc/debugLevel 1
