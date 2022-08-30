@@ -10,16 +10,16 @@
 G4double EDRunAction::beam_energy;
 ELPHEBeam* EDRunAction::beam;
 
-EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* output ) : 
+EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event ) : //, OutputManager* output ) : 
   G4UserRunAction(),
   INTT_mess_( INTT_mess ),
   event_( event ),
-  event_id_( -1 ),
+    event_id_( -1 ) // ,
   //vec(),
   // track_(),
   // tracks_(),
   // steps_(),
-  output_( output )
+  //  output_( output )
 {
 
   // Create analysis manager

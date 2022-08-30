@@ -70,6 +70,7 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track)
   //count nb of steps of this track
   G4int   nbSteps = track->GetCurrentStepNumber();
 
+  
   TrackMC* track_mc = new TrackMC();
   track_mc->SetEventID( event->GetEventID() );
   track_mc->SetID( track->GetTrackID() );
