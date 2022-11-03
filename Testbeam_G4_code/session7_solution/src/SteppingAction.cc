@@ -79,6 +79,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // 	 << setw(10) << setprecision(4) << vertex_momentum.y() << ", "
   // 	 << setw(10) << setprecision(4) << vertex_momentum.z() << ") "
   // 	 << G4endl;
+
   
   // TVector3* vertex_position_root = new TVector3( vertex_position.x(), vertex_position.y(), vertex_position.z() );
   // TVector3* vertex_momentum_root = new TVector3( vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() );

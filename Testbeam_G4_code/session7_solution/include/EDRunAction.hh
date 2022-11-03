@@ -14,9 +14,9 @@
 #include "G4Run.hh"
 #include "G4SystemOfUnits.hh"
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TLorentzVector.h"
+// #include "TFile.h"
+// #include "TTree.h"
+// #include "TLorentzVector.h"
 //#include "TBRIK.h"
 
 #include "EDPrimaryGeneratorAction.hh"
@@ -39,7 +39,7 @@ class INTTMessenger;
 class EDRunAction : public G4UserRunAction
 {
 public:
-  EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event, OutputManager* otput );
+  EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pga, EDEventAction* event ); //, OutputManager* otput );
   
   virtual ~EDRunAction();
 
@@ -52,9 +52,9 @@ public:
   virtual void   EndOfRunAction(const G4Run* );
 
   //inline TFile* GetOutputTFile() const { return tf_output_;};
-  inline std::shared_ptr < TFile > GetOutputTFile() const { return tf_output_;};
+  //inline std::shared_ptr < TFile > GetOutputTFile() const { return tf_output_;};
   //  inline TTree* GetTree() const { return tree_;};
-  inline std::shared_ptr < TTree > GetTree() const { return tree_;};
+  //inline std::shared_ptr < TTree > GetTree() const { return tree_;};
 
   //void SetEvent( Event* ev ){ ev_ = ev; };
   // void AddTrackMC( TrackMC* track ){ tracks_.push_back( track ); };
@@ -75,9 +75,9 @@ private:
   bool isFirst = true; // it should be true in the initial state
 
   //TFile* tf_output_;
-  std::shared_ptr <TFile> tf_output_;
+  //std::shared_ptr <TFile> tf_output_;
   //  TTree* tree_;
-  std::shared_ptr <TTree> tree_;
+  //std::shared_ptr <TTree> tree_;
   // TLorentzVector vec;
   // Eventa* ev_;
   // TrackMC* track_;

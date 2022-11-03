@@ -10,7 +10,7 @@
 #include "EDRunAction.hh"
 #include "TrackingAction.hh"
 #include "SteppingAction.hh"
-#include "OutputManager.hh"
+//#include "OutputManager.hh"
 #include "INTTMessenger.hh"
 /// Action initialization class.
 

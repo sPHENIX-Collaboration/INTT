@@ -22,8 +22,7 @@ void EDEventAction::BeginOfEventAction(const G4Event* event)
   unsigned int lowest_7_bits = 255;  
   bco_=  bco_full_ & lowest_7_bits; // take the lowest 7 bits from the BCO full
 
-  dac_values_ = INTT_mess_->GetDacValues();
-  
+  dac_values_ = INTT_mess_->GetDacValues();  
 }
 
 EDChamberHitsCollection*

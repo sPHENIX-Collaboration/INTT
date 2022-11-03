@@ -19,14 +19,14 @@
 #include "G4UImanager.hh"
 
 // ROOT headers
-#include "TVector3.h"
+// #include "TVector3.h"
 
 // headers for this application
 //#include "RunData.hh"
 #include "EDDetectorConstruction.hh"
 #include "EDEventAction.hh"
 
-#include "StepMC.hh"
+//#include "StepMC.hh"
 
 class B4DetectorConstruction;
 
