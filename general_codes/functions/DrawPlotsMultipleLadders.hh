@@ -1,7 +1,7 @@
 #pragma once
 
 // Review plots are made using a TTree in the given ROOT file
-void DrawPlotsMultipleLadders(string root_file, int usemod, string mode, string plot_type = "" );
+void DrawPlotsMultipleLadders(string root_file, int usemod, string mode, string plot_type = "", string cut = "" );
 
 void DrawPlots_AmplADC( string root_file, TTree* tree, string cut, bool reverse_chip_order );
 void DrawPlots_ChAmpl( string root_file, TTree* tree, string cut, bool reverse_chip_order );

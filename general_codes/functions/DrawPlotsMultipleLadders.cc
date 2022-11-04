@@ -19,7 +19,7 @@
   Old methods are remained as they are for the moment.
 
 */
-void DrawPlotsMultipleLadders(string root_file, int usemod, string mode, string plot_type ) {
+void DrawPlotsMultipleLadders(string root_file, int usemod, string mode, string plot_type, string cut ) {
 
   // general setting for ROOT
   gStyle->SetPalette(1);
@@ -53,6 +53,9 @@ void DrawPlotsMultipleLadders(string root_file, int usemod, string mode, string 
   // basic cuts to be applied in any case
   stringstream cut_base; // useful class to generate string using non-string and char parameters
   cut_base << "ampl<70 " << "&& module==" << usemod << " && chan_id<128 && chip_id<27";
+
+  if( cut != "" )
+    cut_base << " && " << cut;
 
   stringstream ss;
   ss << usemod;
