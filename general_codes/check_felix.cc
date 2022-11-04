@@ -93,16 +93,16 @@ int check_felix
       // Shell command for this module. It completes when the parameter to be drawn is given.
       // It should be, for example,
       // root -q -b -l 'soft/INTT/general_codes/functions/DrawPlotsMultipleLadders.cc("data/calib_packv1_220927_1700.root", 0, "calib", "ampl_adc")'
-      string command_base = "root -q -b -l \'soft/INTT/general_codes/functions/DrawPlotsMultipleLadders.cc(";
+      string command_base = "root -q -b -l \'soft/INTT_fork_genki/general_codes/functions/DrawPlotsMultipleLadders.cc(";
       command_base += "\"" + fname + "\", "
 	+ "" + modules[i] + ", "
 	+ "\"" + mode + "\", ";
-	//+ "\"" + cut + "\", ";
       if( debug ) cout << command_base << endl;
 
       // Loop over all parameters to be drawn. The shell commands are executed at this level in parallel.
       for( auto& to_be_drawn : draw_list ){
-	string command = command_base + "\"" + to_be_drawn + "\")\' &";
+	string command = command_base + "\"" + to_be_drawn + "\", "
+	  + "\"" + cut + "\" )\' &";
 	gSystem->Exec( command.c_str() );
 	
       } // end of for( auto& to_be_drawn : draw_list )
