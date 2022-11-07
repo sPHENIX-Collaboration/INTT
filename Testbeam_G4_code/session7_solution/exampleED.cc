@@ -122,7 +122,7 @@ int main(int argc,char** argv)
     }
 
   // set OutputManager
-  OutputManager* outout = new OutputManager();
+  //OutputManager* outout = new OutputManager();
 
   G4PhysListFactory physListFactory;
   if ( ! physListFactory.IsReferencePhysList(physicsListName) ) {

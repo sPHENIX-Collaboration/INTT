@@ -279,6 +279,9 @@ public:
   /*! @brief It returns the name of ROOT file. By adding the path to the file, you can open the ROOT file. See the introcution macro database_demo.cc.*/
   string GetRootFile			();
 
+  /*! @brief It returns the DAC configuration values in a vector of int.*/
+  vector < int > GetDACConfig			( string dir );
+
   /*! @brief It returns the run nummber.*/
   int GetRunNum				(){ return current_run_->run_num_		;};
   string GetFemTop			(){ return current_run_->fem_top_		;};
@@ -462,6 +465,36 @@ TDatime Database::GetDatime()
 string Database::GetRootFile()
 {
   return current_run_->data_.substr(0, current_run_->data_.find_last_of(".") ) + ".root";
+}
+
+vector < int > Database::GetDACConfig( string dir )
+{
+  vector < int > rtn;
+  string config_file = dir + current_run_->data_.substr(0, current_run_->data_.find_last_of(".") ) + "_config.dat";
+
+  ifstream ifs( config_file.c_str() );
+  if( ifs.fail() )
+    {
+      cerr << "Run " << current_run_num_ << "\t" << config_file << " is not found" << endl;
+      return rtn;
+    }
+
+  string line;
+  getline( ifs, line ); // skip header;
+  getline( ifs, line ); // main line
+  stringstream ss( line );
+  string stemp;
+  ss >> stemp >> stemp >> stemp; // skip Mask    Dig Ctrl    Vref
+
+  for( int i=0; i<8; i++ )
+    {
+      int value;
+      ss >> value;
+      rtn.push_back( value );
+    }
+  
+  ifs.close();
+  return rtn;    
 }
 
 bool Database::IsBeamRun()

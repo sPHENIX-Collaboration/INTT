@@ -1,6 +1,14 @@
 # README
 Macros for the ELPH data analysis are here.
 
+## Analysis steps
+1. Removing clone hits: trim_clone_hit.cc -> runX_no_clone.root and runX_clone.root
+2. Making BCO group: make_bco_grouping.cc -> results/ELPH/trim_data/bco_group/runX.root
+3. Removing noise hits, and then cluestering: make_cluester.cc -> run_X_no_clone_clustered.root
+4. Alignment
+
+
+
 ## Class index
 Documents for the class index, etc. are in html.zip.
 You can read it as follows:

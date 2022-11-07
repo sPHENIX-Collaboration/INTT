@@ -22,7 +22,7 @@
 #include "EDPrimaryGeneratorAction.hh"
 #include "EDEventAction.hh"
 #include "ELPHEBeam.hh"
-#include "OutputManager.hh"
+// #include "OutputManager.hh"
 
 // original classes for scoreing and analysis
 // #include "StepMC.hh"
@@ -86,7 +86,7 @@ private:
   // vector < TBRIK* > briks_;
 
   INTTMessenger* INTT_mess_;
-  OutputManager* output_;
+  //  OutputManager* output_;
 
   void ClearEventBuffer( string mode );
 

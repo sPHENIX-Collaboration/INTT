@@ -254,7 +254,7 @@ void EDRunAction::BeginOfRunAction(const G4Run* kRun )
   auto analysisManager = G4AnalysisManager::Instance();  
   auto UImanager = G4UImanager::GetUIpointer();
 
-  output_->Book();
+  //  output_->Book();
 
   
   if( this->is_first )
