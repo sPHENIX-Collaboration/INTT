@@ -13,7 +13,7 @@
   - output path
  */
 
-#include "Database.hh"
+#include "../Database.hh"
 
 //! a global variable to specify the search range
 int thre = 1;
@@ -211,19 +211,42 @@ void CopyData(
   @param threshold The search range
   @brief The input file is divided into 2 files. One contains only the original INTT hits, and the other only the clone hits.
 */
-int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int threshold = 5 )
+int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int threshold = 5, bool is_MC = false )
 {
   thre = threshold;
-  
-  Database* db = new Database( "documents/2021_test_beam/run_list - Setup.tsv" );
-  db->SetRun( run_num );
 
-  if( db->IsBeamRun() == false )
-    return -1;
-  
-  string data = data_dir + db->GetRootFile();
+  string data = "";
+
+  if( is_MC == false )
+    {
+      Database* db = new Database( "documents/2021_test_beam/run_list - Setup.tsv" );
+      db->SetRun( run_num );
+      
+      if( db->IsBeamRun() == false )
+	return -1;
+      
+      data = data_dir + db->GetRootFile();
+    }
+  else
+    {
+      // obsolete, 2022/10/31
+      // if( run_num == 89 )
+      // 	data_dir = "~/Google Drive/マイドライブ/share/data_MC/data/";
+      
+      data = data_dir + "run" + to_string( run_num ) + "_MC.root";
+    }
+
+  cout << "trim_clone_hit " << endl;
+  cout << "Data: " << data << endl;
+  cout << "Threshold: " << threshold << endl;
   
   TFile* tf = new TFile( data.c_str(), "READ" );
+  if( tf == nullptr || tf->GetListOfKeys()->GetEntries() == 0 )
+    {
+      cerr << "data: " << data << " is not found" << endl;
+      return -1;
+    }
+  
   auto tr = (TTree*)tf->Get( "tree_both" );
 
   // preparation to read data from TTree event by event (event means trigger event, some (or 1 or no) INTT hits belong to the trigger event)
@@ -239,7 +262,7 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   vector < int > *bco      (0);
   vector < int > *bco_full (0);
   vector < int > *event    (0);
-  bool INTT_event; // it's not so important...
+  //bool INTT_event; // it's not so important...
 
   tr->SetBranchAddress( "camac_adc"	, &camac_adc );
   tr->SetBranchAddress( "camac_tdc"	, &camac_tdc );
@@ -253,11 +276,13 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   tr->SetBranchAddress( "bco"		, &bco       );
   tr->SetBranchAddress( "bco_full"	, &bco_full  );
   tr->SetBranchAddress( "event"		, &event     );
-  tr->SetBranchAddress( "INTT_event"	, &INTT_event );
+  //tr->SetBranchAddress( "INTT_event"	, &INTT_event );
 
   //string output_dir = "results/ELPH/trim_data/no_clone/" + to_string( thre );
   string output_dir = "results/ELPH/trim_data/no_clone/";
   string output_no_clone = output_dir + "run" + to_string( run_num ) + "_no_clone.root";
+  if( is_MC )
+    output_no_clone = output_no_clone.substr(0, output_no_clone.size() - 5 ) + "_MC.root";
 
   TFile* tf_no_clone = new TFile( output_no_clone.c_str(), "RECREATE" );
   TTree* tr_no_clone = new TTree( "tree_both", "tree for CAMAC data and associated INTT hits without clone hits" );
@@ -265,7 +290,7 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   vector < int > adc_no_clone, ampl_no_clone, chip_id_no_clone, fpga_id_no_clone, module_no_clone, chan_id_no_clone, fem_id_no_clone, bco_no_clone, bco_full_no_clone, event_no_clone;
   tr_no_clone->Branch( "camac_adc",		&(*camac_adc) );
   tr_no_clone->Branch( "camac_tdc",		&(*camac_tdc) );
-  tr_no_clone->Branch( "INTT_event",		&INTT_event, "INTT_event/O" );
+  //tr_no_clone->Branch( "INTT_event",		&INTT_event, "INTT_event/O" );
   tr_no_clone->Branch( "adc",			&adc_no_clone );
   tr_no_clone->Branch( "ampl",			&ampl_no_clone );
   tr_no_clone->Branch( "chip_id",		&chip_id_no_clone );
@@ -278,13 +303,16 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
   tr_no_clone->Branch( "event",			&event_no_clone );
   
   string output_clone = output_dir + "run" + to_string( run_num ) + "_clone.root";
+  if( is_MC )
+    output_clone = output_clone.substr(0, output_clone.size() - 5 ) + "_MC.root";
+  
   TFile* tf_clone = new TFile( output_clone.c_str(), "RECREATE" );
 
   TTree* tr_clone = new TTree( "tree_both", "tree for CAMAC data and associated INTT hits (only clone hits)" );
   vector < int > adc_clone, ampl_clone, chip_id_clone, fpga_id_clone, module_clone, chan_id_clone, fem_id_clone, bco_clone, bco_full_clone, event_clone;
   tr_clone->Branch( "camac_adc",	&(*camac_adc) );
   tr_clone->Branch( "camac_tdc",	&(*camac_tdc) );
-  tr_clone->Branch( "INTT_event",	&INTT_event, "INTT_event/O" );
+  //tr_clone->Branch( "INTT_event",	&INTT_event, "INTT_event/O" );
   tr_clone->Branch( "adc",		&adc_clone );
   tr_clone->Branch( "ampl",		&ampl_clone );
   tr_clone->Branch( "chip_id",		&chip_id_clone );
@@ -301,7 +329,9 @@ int trim_clone_hit( string data_dir = "data/ELPH/", int run_num = 89, int thresh
     {
 
       tr->GetEntry( i );
-      //cout << flush << "\r\t" << setw(6) << i  << "/" << tr->GetEntries() << " ";
+
+      if( i % 10000 == 0 )
+	cout << flush << "\r\t" << setw(6) << i  << "/" << tr->GetEntries() << " ";
 
       // get index of the clone hits
       vector < int > clone_index = GetCloneIndex( adc,       ampl,      chip_id,

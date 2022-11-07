@@ -1,0 +1,211 @@
+\hypertarget{classDatabase}{}\doxysection{Database Class Reference}
+\label{classDatabase}\index{Database@{Database}}
+
+
+a class to provide run infromation  
+
+
+
+
+{\ttfamily \#include $<$Database.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDatabase_aae637161205fe29b73f324c1a0a2a570}\label{classDatabase_aae637161205fe29b73f324c1a0a2a570}} 
+{\bfseries Database} (string file=\char`\"{}documents/run\+\_\+list -\/ Setup.\+tsv\char`\"{})
+\item 
+\mbox{\Hypertarget{classDatabase_a900c8439b23b88c9e61a7fe476ae22cc}\label{classDatabase_a900c8439b23b88c9e61a7fe476ae22cc}} 
+bool {\bfseries Set\+Run} (string data)
+\item 
+\mbox{\Hypertarget{classDatabase_a199e3fdd062c857023a1864c38cea4a0}\label{classDatabase_a199e3fdd062c857023a1864c38cea4a0}} 
+bool {\bfseries Set\+Run} (int run\+\_\+num)
+\item 
+\mbox{\Hypertarget{classDatabase_a9d7ef4b2a25b7be4d574963f8acffb64}\label{classDatabase_a9d7ef4b2a25b7be4d574963f8acffb64}} 
+\mbox{\hyperlink{classRun}{Run}} $\ast$ {\bfseries Get\+Run} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a989ee332f0313d79c64aea52987d3bef}\label{classDatabase_a989ee332f0313d79c64aea52987d3bef}} 
+int {\bfseries Get\+Number\+Of\+Runs} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a5057e23926c605ba12f40c036b84c6c4}\label{classDatabase_a5057e23926c605ba12f40c036b84c6c4}} 
+vector$<$ \mbox{\hyperlink{classRun}{Run}} $\ast$ $>$ {\bfseries Get\+Runs} ()
+\item 
+\mbox{\Hypertarget{classDatabase_ac66605bef9acec01e553ca58b4cf941c}\label{classDatabase_ac66605bef9acec01e553ca58b4cf941c}} 
+int \mbox{\hyperlink{classDatabase_ac66605bef9acec01e553ca58b4cf941c}{Get\+Id}} ()
+\begin{DoxyCompactList}\small\item\em The run number is returned. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a756c4fc01a69f1a0c8cc42e655b0c54d}\label{classDatabase_a756c4fc01a69f1a0c8cc42e655b0c54d}} 
+string \mbox{\hyperlink{classDatabase_a756c4fc01a69f1a0c8cc42e655b0c54d}{Get\+Data}} ()
+\begin{DoxyCompactList}\small\item\em The name of .dat is returned. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_affe26be4a7b2d303f05ce2e66aacc442}\label{classDatabase_affe26be4a7b2d303f05ce2e66aacc442}} 
+T\+Datime \mbox{\hyperlink{classDatabase_affe26be4a7b2d303f05ce2e66aacc442}{Get\+Datime}} ()
+\begin{DoxyCompactList}\small\item\em The timing when this run was started is returned. T\+Datime is returned. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_ac29d940ad0c18c4081b57316f2d204bc}\label{classDatabase_ac29d940ad0c18c4081b57316f2d204bc}} 
+string \mbox{\hyperlink{classDatabase_ac29d940ad0c18c4081b57316f2d204bc}{Get\+Source}} ()
+\begin{DoxyCompactList}\small\item\em It returns the source of data in thir run. It can be calibration, source, cosmic, beam, and lost\+\_\+data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a6c934eca7deaeb2d45b4bb9bdbc1b625}\label{classDatabase_a6c934eca7deaeb2d45b4bb9bdbc1b625}} 
+string \mbox{\hyperlink{classDatabase_a6c934eca7deaeb2d45b4bb9bdbc1b625}{Get\+D\+A\+Q\+Mode}} ()
+\begin{DoxyCompactList}\small\item\em It returns the operation mode. It can be self or C\+A\+M\+AC. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a38461004d2a0502bd847a3f8385dbf62}\label{classDatabase_a38461004d2a0502bd847a3f8385dbf62}} 
+string {\bfseries Get\+Setup\+Ver} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a12bb1d7705ed14ea7f9a415bcd70eb80}\label{classDatabase_a12bb1d7705ed14ea7f9a415bcd70eb80}} 
+string {\bfseries Get\+Roc} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a268a881e70e4fa64a9a6996fcd8fe233}\label{classDatabase_a268a881e70e4fa64a9a6996fcd8fe233}} 
+string \mbox{\hyperlink{classDatabase_a268a881e70e4fa64a9a6996fcd8fe233}{Get\+Root\+File}} ()
+\begin{DoxyCompactList}\small\item\em It returns the name of R\+O\+OT file. By adding the path to the file, you can open the R\+O\+OT file. See the introcution macro \mbox{\hyperlink{database__demo_8cc}{database\+\_\+demo.\+cc}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a56f45639e2e18ff04ffaa56f21c8cf3d}\label{classDatabase_a56f45639e2e18ff04ffaa56f21c8cf3d}} 
+int \mbox{\hyperlink{classDatabase_a56f45639e2e18ff04ffaa56f21c8cf3d}{Get\+Run\+Num}} ()
+\begin{DoxyCompactList}\small\item\em It returns the run nummber. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a8a665700d1febcd5b4f2a6898950ab76}\label{classDatabase_a8a665700d1febcd5b4f2a6898950ab76}} 
+string {\bfseries Get\+Fem\+Top} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a7f0c3a95194f11812948b240283278df}\label{classDatabase_a7f0c3a95194f11812948b240283278df}} 
+string {\bfseries Get\+Fem\+Bottom} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a9316403782de2326caf3785240408ee6}\label{classDatabase_a9316403782de2326caf3785240408ee6}} 
+int \mbox{\hyperlink{classDatabase_a9316403782de2326caf3785240408ee6}{Get\+Ladder\+Num\+In\+Use}} ()
+\begin{DoxyCompactList}\small\item\em It returns the number of ladders used in this run. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_ac7c1c71fa69ddcc1629d27ab2b09ae06}\label{classDatabase_ac7c1c71fa69ddcc1629d27ab2b09ae06}} 
+vector$<$ string $>$ \mbox{\hyperlink{classDatabase_ac7c1c71fa69ddcc1629d27ab2b09ae06}{Get\+Ladders}} ()
+\begin{DoxyCompactList}\small\item\em It returns the name of all ladders in the setup. The name of a ladder in the setup but not used is also returned. To get only ladder names in use, use the function Get\+Ladders\+In\+Use. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_acd335772ea84a7275a5bf855dd304aa1}\label{classDatabase_acd335772ea84a7275a5bf855dd304aa1}} 
+vector$<$ string $>$ \mbox{\hyperlink{classDatabase_acd335772ea84a7275a5bf855dd304aa1}{Get\+Ladders\+In\+Use}} ()
+\begin{DoxyCompactList}\small\item\em It returns the name of ladders used in this run. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a137feec9afb9e0351c3a51e66469d6ff}\label{classDatabase_a137feec9afb9e0351c3a51e66469d6ff}} 
+vector$<$ string $>$ \mbox{\hyperlink{classDatabase_a137feec9afb9e0351c3a51e66469d6ff}{Get\+Roc\+Ports}} ()
+\begin{DoxyCompactList}\small\item\em It returns R\+OC port of all ladders. If the ladder was not connected, \char`\"{}-\/\char`\"{} is returned. To get R\+OC port of ladders used in this run, use Get\+Roc\+Ports\+In\+Use. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_a05772209fd219624ca71aa2326e6c3d1}\label{classDatabase_a05772209fd219624ca71aa2326e6c3d1}} 
+vector$<$ string $>$ {\bfseries Get\+Roc\+Ports\+In\+Use} ()
+\item 
+\mbox{\Hypertarget{classDatabase_ab0315b292ee5b6a5d5ba90e0974f588e}\label{classDatabase_ab0315b292ee5b6a5d5ba90e0974f588e}} 
+vector$<$ int $>$ {\bfseries Get\+Modules} ()
+\item 
+\mbox{\Hypertarget{classDatabase_aec5f7d4f9b03fa157dd9a7309fffc597}\label{classDatabase_aec5f7d4f9b03fa157dd9a7309fffc597}} 
+vector$<$ string $>$ {\bfseries Get\+Conversion} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a4db0ab8e837a9d971ccf432029743ccb}\label{classDatabase_a4db0ab8e837a9d971ccf432029743ccb}} 
+vector$<$ string $>$ {\bfseries Get\+Bus\+Extenders} ()
+\item 
+\mbox{\Hypertarget{classDatabase_aba00c4bc7bead1c217acf2ec0c195272}\label{classDatabase_aba00c4bc7bead1c217acf2ec0c195272}} 
+vector$<$ string $>$ {\bfseries Get\+Bus\+Extenders\+In\+Use} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a1edd17d22d9825060619a9da94959d6b}\label{classDatabase_a1edd17d22d9825060619a9da94959d6b}} 
+vector$<$ string $>$ {\bfseries Get\+Camac\+Adcs} ()
+\item 
+\mbox{\Hypertarget{classDatabase_ad47cd98b385768a5e415488f18d7340f}\label{classDatabase_ad47cd98b385768a5e415488f18d7340f}} 
+vector$<$ string $>$ {\bfseries Get\+Camac\+Tdcs} ()
+\item 
+\mbox{\Hypertarget{classDatabase_acaae45528656c237e40233bbafef2535}\label{classDatabase_acaae45528656c237e40233bbafef2535}} 
+string {\bfseries Get\+Description} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a01eaf0f0b465a1e25b1a67c033473cbd}\label{classDatabase_a01eaf0f0b465a1e25b1a67c033473cbd}} 
+string {\bfseries Get\+Module\+Cut} ()
+\item 
+\mbox{\Hypertarget{classDatabase_a9a13fb09a32aa3d6cb3cfbe8a853688a}\label{classDatabase_a9a13fb09a32aa3d6cb3cfbe8a853688a}} 
+bool \mbox{\hyperlink{classDatabase_a9a13fb09a32aa3d6cb3cfbe8a853688a}{Is\+Beam\+Run}} ()
+\begin{DoxyCompactList}\small\item\em It returns true if the source is \char`\"{}beam\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDatabase_aac87c972f61e3b480a8d4dd5d87fbe60}\label{classDatabase_aac87c972f61e3b480a8d4dd5d87fbe60}} 
+void {\bfseries Print} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+a class to provide run infromation 
+
+
+\begin{DoxyCodeInclude}{0}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{// The header file should be included}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include "Database.hh"}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{int} database\_demo()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{}
+\DoxyCodeLine{  \textcolor{comment}{// a path to the tsv file to be used}}
+\DoxyCodeLine{  \textcolor{keywordtype}{string} db\_file = \textcolor{stringliteral}{"documents/2021\_test\_beam/run\_list -\/ Setup.tsv"};}
+\DoxyCodeLine{}
+\DoxyCodeLine{  \textcolor{comment}{// make an instance os the Database class, the path to the tsv file shold be given as a 1st argument}}
+\DoxyCodeLine{  \mbox{\hyperlink{classDatabase}{Database}}* db = \textcolor{keyword}{new} \mbox{\hyperlink{classDatabase}{Database}}( db\_file );}
+\DoxyCodeLine{}
+\DoxyCodeLine{  \textcolor{comment}{// show all information}}
+\DoxyCodeLine{  \textcolor{comment}{//db-\/>Print();}}
+\DoxyCodeLine{}
+\DoxyCodeLine{  \textcolor{keywordtype}{int} first\_run = 21; \textcolor{comment}{// this is the first run with the beam}}
+\DoxyCodeLine{  \textcolor{keywordtype}{int} last\_run = db-\/>GetNumberOfRuns(); \textcolor{comment}{// you can get the last run number with this function}}
+\DoxyCodeLine{}
+\DoxyCodeLine{  \textcolor{comment}{// loop over runs, which starts from the first run and ends with the last run}}
+\DoxyCodeLine{  \textcolor{keywordflow}{for}( \textcolor{keywordtype}{int} run=first\_run ; run<last\_run; run++ )}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{      \textcolor{comment}{// recognize the current run to the Database class}}
+\DoxyCodeLine{      db-\/>SetRun( run );}
+\DoxyCodeLine{      }
+\DoxyCodeLine{      \textcolor{keywordtype}{string} root\_file = db-\/>\mbox{\hyperlink{classDatabase_a268a881e70e4fa64a9a6996fcd8fe233}{GetRootFile}}();}
+\DoxyCodeLine{      \textcolor{keywordtype}{string} source = db-\/>\mbox{\hyperlink{classDatabase_ac29d940ad0c18c4081b57316f2d204bc}{GetSource}}(); \textcolor{comment}{// it can be beam, source, calibration}}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// for example, if you want to analyze only beam runs, do it}}
+\DoxyCodeLine{      \textcolor{keywordflow}{if}( !(db-\/>\mbox{\hyperlink{classDatabase_a9a13fb09a32aa3d6cb3cfbe8a853688a}{IsBeamRun}}()) )}
+\DoxyCodeLine{    \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can get the timing when this run was started}}
+\DoxyCodeLine{      TDatime timing = db-\/>\mbox{\hyperlink{classDatabase_affe26be4a7b2d303f05ce2e66aacc442}{GetDatime}}();}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can select runs with CAMAC by looking DAQ mode variable}}
+\DoxyCodeLine{      \textcolor{comment}{// string daq\_mode = db-\/>GetDAQMode(); // it's not important because all beam runs were operated with the CAMAC DAQ}}
+\DoxyCodeLine{      }
+\DoxyCodeLine{      cout << run << \textcolor{stringliteral}{" "}}
+\DoxyCodeLine{       << root\_file << \textcolor{stringliteral}{"\(\backslash\)t"};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can get module numbers. Upstream module comes first.}}
+\DoxyCodeLine{      vector < int > modules = db-\/>GetModules();}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"modules("};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// loop over all modules to print them}}
+\DoxyCodeLine{      \textcolor{keywordflow}{for}( \textcolor{keywordtype}{int} i=0; i<modules.size(); i++ )}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{      cout << modules[i] << \textcolor{stringliteral}{" "};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"), "};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can get roc\_ports used in this run by the runction "GetRoc\_PortsInUse"}}
+\DoxyCodeLine{      vector < string > roc\_ports = db-\/>GetRocPortsInUse();}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"roc\_ports("};}
+\DoxyCodeLine{      \textcolor{keywordflow}{for}( \textcolor{keywordtype}{int} i=0; i<roc\_ports.size(); i++ )}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{      cout << roc\_ports[i] << \textcolor{stringliteral}{" "};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"), "};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can get ladders used in this run by the runction "GetLaddersInUse"}}
+\DoxyCodeLine{      vector < string > ladders = db-\/>\mbox{\hyperlink{classDatabase_acd335772ea84a7275a5bf855dd304aa1}{GetLaddersInUse}}();}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"ladders("};}
+\DoxyCodeLine{      \textcolor{keywordflow}{for}( \textcolor{keywordtype}{int} i=0; i<ladders.size(); i++ )}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{      cout << ladders[i] << \textcolor{stringliteral}{" "};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"), "};}
+\DoxyCodeLine{}
+\DoxyCodeLine{      \textcolor{comment}{// You can get bus extenders used in this run by the following function}}
+\DoxyCodeLine{      vector < string > bus\_extenders = db-\/>GetBusExtendersInUse();}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"BEX("};}
+\DoxyCodeLine{      \textcolor{keywordflow}{for}( \textcolor{keyword}{auto}\& bex : bus\_extenders )}
+\DoxyCodeLine{    \{}
+\DoxyCodeLine{      cout << bex << \textcolor{stringliteral}{" "};}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{      cout << \textcolor{stringliteral}{"), "};}
+\DoxyCodeLine{      }
+\DoxyCodeLine{      cout << endl;}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{  }
+\DoxyCodeLine{  \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{\}}
+\end{DoxyCodeInclude}
+ 
+
+Definition at line 220 of file Database.\+hh.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Database.\+hh\end{DoxyCompactItemize}

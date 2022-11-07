@@ -1,0 +1,118 @@
+\hypertarget{classRun}{}\doxysection{Run Class Reference}
+\label{classRun}\index{Run@{Run}}
+
+
+a class contains information of a run ( one row in the database)  
+
+
+
+
+{\ttfamily \#include $<$Database.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRun_a25834551e2a1c60a762e14e290bafb39}\label{classRun_a25834551e2a1c60a762e14e290bafb39}} 
+{\bfseries Run} (string header, string line)
+\item 
+\mbox{\Hypertarget{classRun_a1bd0f7b0790e04076281831acfd4e3a6}\label{classRun_a1bd0f7b0790e04076281831acfd4e3a6}} 
+int {\bfseries Count\+Words} (string line, string words)
+\item 
+\mbox{\Hypertarget{classRun_a2375120ed31a31b217c84ccf1485f642}\label{classRun_a2375120ed31a31b217c84ccf1485f642}} 
+string {\bfseries Get\+Module\+Cut} ()
+\item 
+\mbox{\Hypertarget{classRun_ada5e533db7047d522037a0a991de39ac}\label{classRun_ada5e533db7047d522037a0a991de39ac}} 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries Push\+Elements} (stringstream \&ss, vector$<$ T $>$ \&values, int num)
+\item 
+\mbox{\Hypertarget{classRun_ae3069fd44251ef3b59ba89a8ddaad476}\label{classRun_ae3069fd44251ef3b59ba89a8ddaad476}} 
+void {\bfseries Print} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRun_a27785f44ab74e1ef238e80923b7e1c4f}\label{classRun_a27785f44ab74e1ef238e80923b7e1c4f}} 
+{\footnotesize template$<$class T $>$ }\\static void {\bfseries Print\+Vector} (T \&values, string separator=\char`\"{} \char`\"{}, string last=\char`\"{}\textbackslash{}n\char`\"{})
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRun_a38a1dfe551945a5a4224ad2fe5f7f9b7}\label{classRun_a38a1dfe551945a5a4224ad2fe5f7f9b7}} 
+int \mbox{\hyperlink{classRun_a38a1dfe551945a5a4224ad2fe5f7f9b7}{run\+\_\+num\+\_\+}} = -\/1
+\begin{DoxyCompactList}\small\item\em The run number. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_ad4d8ea152195e5669a93f467a39a1f57}\label{classRun_ad4d8ea152195e5669a93f467a39a1f57}} 
+string \mbox{\hyperlink{classRun_ad4d8ea152195e5669a93f467a39a1f57}{data\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The name of the data (.dat) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a8e5fe715451c518d207b7b0b63e4facf}\label{classRun_a8e5fe715451c518d207b7b0b63e4facf}} 
+string \mbox{\hyperlink{classRun_a8e5fe715451c518d207b7b0b63e4facf}{source\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em Source of this run. It can be calibration, source (i.\+e. radiation source), cosmic, beam, and lost\+\_\+data (i.\+e. no data sotred) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_ac50521a6f143c47e3aa981b0e86b6906}\label{classRun_ac50521a6f143c47e3aa981b0e86b6906}} 
+string \mbox{\hyperlink{classRun_ac50521a6f143c47e3aa981b0e86b6906}{D\+A\+Q\+\_\+mode\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The operation mode. It can be self or C\+A\+M\+AC. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a4f78c3e3db75b08d04fff63a4c9afe82}\label{classRun_a4f78c3e3db75b08d04fff63a4c9afe82}} 
+string \mbox{\hyperlink{classRun_a4f78c3e3db75b08d04fff63a4c9afe82}{setup\+\_\+ver\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The version of the setup. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_abd09644bedbd35ca07431b3e2f748d5f}\label{classRun_abd09644bedbd35ca07431b3e2f748d5f}} 
+string \mbox{\hyperlink{classRun_abd09644bedbd35ca07431b3e2f748d5f}{roc\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The ID of the R\+OC in use . \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a44c577a583e537b96cb620d786247387}\label{classRun_a44c577a583e537b96cb620d786247387}} 
+string \mbox{\hyperlink{classRun_a44c577a583e537b96cb620d786247387}{fem\+\_\+top\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The R\+OC column which was connected to the top of the F\+EM. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_ad644e73eef14663159999172c2f85113}\label{classRun_ad644e73eef14663159999172c2f85113}} 
+string \mbox{\hyperlink{classRun_ad644e73eef14663159999172c2f85113}{fem\+\_\+bottom\+\_\+}} = \char`\"{}\char`\"{}
+\begin{DoxyCompactList}\small\item\em The R\+OC column which was connected to the bottom of the F\+EM. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_af583a810ed032ade0e2577fc10f3aa73}\label{classRun_af583a810ed032ade0e2577fc10f3aa73}} 
+int \mbox{\hyperlink{classRun_af583a810ed032ade0e2577fc10f3aa73}{ladder\+\_\+num\+\_\+in\+\_\+use\+\_\+}} = -\/1
+\begin{DoxyCompactList}\small\item\em The number of ladder in use in this run. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a6f09f8f56bb56dbc919e3a0264c168e2}\label{classRun_a6f09f8f56bb56dbc919e3a0264c168e2}} 
+vector$<$ string $>$ \mbox{\hyperlink{classRun_a6f09f8f56bb56dbc919e3a0264c168e2}{ladders\+\_\+}}
+\begin{DoxyCompactList}\small\item\em A vector array of ladder name. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a77de2daea00718ce837199dfa512c619}\label{classRun_a77de2daea00718ce837199dfa512c619}} 
+vector$<$ string $>$ \mbox{\hyperlink{classRun_a77de2daea00718ce837199dfa512c619}{roc\+\_\+ports\+\_\+}}
+\begin{DoxyCompactList}\small\item\em A vector array of R\+OC ports. The index corresponds to that of ladders\+\_\+. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classRun_a7d1311d3d064aba7cdbe1c4475db8268}\label{classRun_a7d1311d3d064aba7cdbe1c4475db8268}} 
+vector$<$ int $>$ {\bfseries modules\+\_\+}
+\item 
+\mbox{\Hypertarget{classRun_aba19f1be5c0921a2e7e07899839ad52b}\label{classRun_aba19f1be5c0921a2e7e07899839ad52b}} 
+vector$<$ string $>$ {\bfseries conversion\+\_\+}
+\item 
+\mbox{\Hypertarget{classRun_adffdc3fafb084713e9bd42a54422bff0}\label{classRun_adffdc3fafb084713e9bd42a54422bff0}} 
+vector$<$ string $>$ {\bfseries bus\+\_\+extenders\+\_\+}
+\item 
+\mbox{\Hypertarget{classRun_ae575fd85fdcd128ddec73bf36f1fc692}\label{classRun_ae575fd85fdcd128ddec73bf36f1fc692}} 
+vector$<$ string $>$ {\bfseries camac\+\_\+adcs\+\_\+}
+\item 
+\mbox{\Hypertarget{classRun_ae0b538c8710db674bb0d4c46e8f4f9f1}\label{classRun_ae0b538c8710db674bb0d4c46e8f4f9f1}} 
+vector$<$ string $>$ {\bfseries camac\+\_\+tdcs\+\_\+}
+\item 
+double \mbox{\hyperlink{classRun_a1a381dd2d0860e761999129689569e65}{beam\+\_\+position\+\_\+}}
+\item 
+\mbox{\Hypertarget{classRun_a1c8cf4b4fab2ee337f66dc6bdcc6e62c}\label{classRun_a1c8cf4b4fab2ee337f66dc6bdcc6e62c}} 
+string {\bfseries description\+\_\+} = \char`\"{}\char`\"{}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+a class contains information of a run ( one row in the database) 
+
+@lcass \mbox{\hyperlink{classRun}{Run}} 
+
+Definition at line 29 of file Database.\+hh.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classRun_a1a381dd2d0860e761999129689569e65}\label{classRun_a1a381dd2d0860e761999129689569e65}} 
+\index{Run@{Run}!beam\_position\_@{beam\_position\_}}
+\index{beam\_position\_@{beam\_position\_}!Run@{Run}}
+\doxysubsubsection{\texorpdfstring{beam\_position\_}{beam\_position\_}}
+{\footnotesize\ttfamily double Run\+::beam\+\_\+position\+\_\+}
+
+position of the beam. 0 is the position of run21. Direction is north -\/$>$ south. Sometimes, position was not recorded. In such cases, position was estimated using its hit map. 
+
+Definition at line 71 of file Database.\+hh.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Database.\+hh\end{DoxyCompactItemize}

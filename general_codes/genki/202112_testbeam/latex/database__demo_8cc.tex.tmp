@@ -1,0 +1,21 @@
+\hypertarget{database__demo_8cc}{}\doxysection{database\+\_\+demo.\+cc File Reference}
+\label{database__demo_8cc}\index{database\_demo.cc@{database\_demo.cc}}
+
+
+A simple introduction how to use \mbox{\hyperlink{classDatabase}{Database}} class.  
+
+
+{\ttfamily \#include \char`\"{}Database.\+hh\char`\"{}}\newline
+Include dependency graph for database\+\_\+demo.\+cc\+:
+% FIG 0
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{database__demo_8cc_abc45d1030df0e9cd6dda5637abbeac3b}\label{database__demo_8cc_abc45d1030df0e9cd6dda5637abbeac3b}} 
+int {\bfseries database\+\_\+demo} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A simple introduction how to use \mbox{\hyperlink{classDatabase}{Database}} class. 
+
