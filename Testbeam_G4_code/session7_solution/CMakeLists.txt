@@ -18,8 +18,8 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
-find_package(ROOT)
-include(${ROOT_USE_FILE})
+# find_package(ROOT)
+# include(${ROOT_USE_FILE})
 #include_directories(${ROOT_INCLUDE_DIRS} lib)
 
 #----------------------------------------------------------------------------
@@ -27,8 +27,8 @@ include(${ROOT_USE_FILE})
 # Setup include directory for this project
 
 include(${Geant4_USE_FILE})
-#include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} lib)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+#include_directories(${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} lib)
 
 #----------------------------------------------------------------------------
 # Add subdirectory for shared libraries
@@ -45,8 +45,11 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 add_executable(exampleED exampleED.cc ${sources} ${headers} ) #lib/TrackMC.cc lib/StepMC.cc )
 # target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} StepMC TrackMC )
-target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-link_directories(${ROOT_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR} )
+#target_link_libraries(exampleED ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(exampleED ${Geant4_LIBRARIES} )
+
+#link_directories(${ROOT_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR} )
+link_directories(${CMAKE_CURRENT_SOURCE_DIR} )
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
