@@ -32,7 +32,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
 # Add subdirectory for shared libraries
-add_subdirectory( lib )
+# add_subdirectory( lib )
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
