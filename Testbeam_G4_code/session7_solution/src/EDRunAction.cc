@@ -188,9 +188,12 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   // ntuple id = 5
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   analysisManager->CreateNtuple("tree_camac", "tree_camac");
-  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); // column Id = 0
-  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() ); // column Id = 1
-
+  analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() );
+  analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() );
+  analysisManager->CreateNtupleDColumn( "camac_edep_MC", event_->GetContainerCamacEdepMC() );
+  analysisManager->CreateNtupleDColumn( "camac_time_MC", event_->GetContainerCamacTimeMC() );
+  analysisManager->CreateNtupleDColumn( "camac_theta_MC", event_->GetContainerCamacThetaMC() );
+  analysisManager->CreateNtupleDColumn( "camac_phi_MC", event_->GetContainerCamacPhiMC() );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ntuple id = 6
@@ -200,6 +203,10 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   // CAMAC information (trigger sci.)
   analysisManager->CreateNtupleIColumn( "camac_adc", event_->GetContainerCamacAdc() ); 
   analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() );
+  analysisManager->CreateNtupleDColumn( "camac_edep_MC", event_->GetContainerCamacEdepMC() ); 
+  analysisManager->CreateNtupleDColumn( "camac_time_MC", event_->GetContainerCamacTimeMC() ); 
+  analysisManager->CreateNtupleDColumn( "camac_theta_MC", event_->GetContainerCamacThetaMC() );
+  analysisManager->CreateNtupleDColumn( "camac_phi_MC", event_->GetContainerCamacPhiMC() );
 
   // INTT hit
   analysisManager->CreateNtupleIColumn( "adc", event_->GetContainerAdc() ); 

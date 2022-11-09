@@ -1480,6 +1480,9 @@ G4VPhysicalVolume *EDDetectorConstruction::Construct()
 void EDDetectorConstruction::ConstructSDandField()
 {
 
+  //////////////////////////////////////////////////////
+  // for INTT                                         //
+  //////////////////////////////////////////////////////
   // EDChamberSD *chamber1SD = new EDChamberSD("Chamber1SD", "Chamber1HitsCollection", 0);
   // G4SDManager::GetSDMpointer()->AddNewDetector(chamber1SD);
   // SetSensitiveDetector("INTT_siLV_all_typeA", chamber1SD);
@@ -1505,6 +1508,9 @@ void EDDetectorConstruction::ConstructSDandField()
   G4SDManager::GetSDMpointer()->AddNewDetector(chamber2SD_even);
   SetSensitiveDetector("INTT_siLV_all_typeB_even", chamber2SD_even );
 
+  //////////////////////////////////////////////////////
+  // for the trigger scintillators                    //
+  //////////////////////////////////////////////////////
   if( INTT_mess_->GetTriggerType() == 1 ) // only for the full setup
     {
       EDEmCalorimeterSD *calorimeterSD1 = new EDEmCalorimeterSD("EmCalorimeterSD1", "EmCalorimeterHitsCollection1");

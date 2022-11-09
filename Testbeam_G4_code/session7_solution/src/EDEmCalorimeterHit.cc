@@ -12,8 +12,13 @@ G4ThreadLocal G4Allocator<EDEmCalorimeterHit>* EDEmCalorimeterHitAllocator = 0;
 
 EDEmCalorimeterHit::EDEmCalorimeterHit()
  : G4VHit(),
-   fLayerNumber(-1),
-   fEdep(0.)
+   fLayerNumber_(-1),
+   fEdep_(0.),
+   xposition_( 0.0 ),
+   yposition_( 0.0 ),
+   zposition_( 0.0 ),
+   track_angle_theta_( 0.0 ),
+   track_angle_phi_( 0.0 )
 {}
 
 EDEmCalorimeterHit::~EDEmCalorimeterHit()
@@ -36,8 +41,17 @@ int EDEmCalorimeterHit::operator==(const EDEmCalorimeterHit& /*right*/) const
 
 void EDEmCalorimeterHit::Print()
 {
-  if ( fEdep > 0. ) {
-    G4cout << "EmCalorimeter hit in layer: " << fLayerNumber 
-           << "  Edep: " << std::setw(7) << G4BestUnit(fEdep,"Energy") << G4endl;
-  }          
+  if ( fEdep_ > 0. ) {
+    G4cout << "EmCalorimeter hit in layer: " << fLayerNumber_ 
+           << "  Edep: " << std::setw(7) << G4BestUnit(fEdep_,"Energy") << G4endl;
+  }
+  
+  G4cout << "TriggerHit, layer ID: "
+	 << fLayerNumber_ << ", "    
+	 << "Position: ("
+	 << xposition_ << ", "
+	 << yposition_ << ", "
+	 << zposition_ << ")\t"
+	 << "Edep: " << fEdep_
+	 << G4endl;
 }

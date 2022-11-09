@@ -5,6 +5,7 @@
 #define EDEventAction_h 1
 
 #include <vector>
+#include <numeric>
 
 #include "G4UserEventAction.hh"
 #include "G4RunManager.hh"
@@ -17,6 +18,7 @@
 
 #include "EDRunAction.hh"
 #include "EDChamberHit.hh"
+#include "EDEmCalorimeterHit.hh"
 // #include "StepMC.hh"
 // #include "TrackMC.hh"
 #include "INTTMessenger.hh"
@@ -42,6 +44,11 @@ public:
 
   std::vector < G4int >& GetContainerCamacAdc(){ return camac_adcs_;};
   std::vector < G4int >& GetContainerCamacTdc(){ return camac_tdcs_;};
+  std::vector < G4double >& GetContainerCamacEdepMC(){ return camac_edeps_MC_;};
+  std::vector < G4double >& GetContainerCamacTimeMC(){ return camac_timing_MC_;};
+  std::vector < G4double >& GetContainerCamacThetaMC(){ return camac_theta_MC_;};
+  std::vector < G4double >& GetContainerCamacPhiMC(){ return camac_phi_MC_;};
+
   std::vector < G4int >& GetContainerAdc(){ return adcs_;};
   std::vector < G4int >& GetContainerAmpl(){ return ampls_;};
   std::vector < G4int >& GetContainerChipId(){ return chip_ids_;};
@@ -62,12 +69,18 @@ private:
   G4int bco_full_;
   
   std::vector < G4int > sensor_IDs_;
+  std::vector < G4int > trigger_IDs_;
+  std::vector < pair < string, G4int > > trigger_name_IDs_;
   std::vector < G4int > dac_values_;
 
   // vector variables for output
   // CAMAC information (trigger sci)
   std::vector < G4int > camac_adcs_;
   std::vector < G4int > camac_tdcs_;
+  std::vector < G4double > camac_edeps_MC_; // MC truth
+  std::vector < G4double > camac_timing_MC_; // MC truth
+  std::vector < G4double > camac_theta_MC_; // beam track angle theta, MC truth
+  std::vector < G4double > camac_phi_MC_; // beam track angle phi, MC truth
 
   // INTT hit information (same as the test bench)
   std::vector < G4int > adcs_;
@@ -90,6 +103,7 @@ private:
   EDChamberHitsCollection* fHitsCollection_;  
 
   void FillINTTEvent( const G4Event* event );
+  void FillTriggerEvent( const G4Event* event );
   // vector < TrackMC* > tracks_;
   // vector < StepMC* > steps_;
   //vector < G4double > eer
@@ -97,8 +111,12 @@ private:
   void CleanContainer();
   EDChamberHitsCollection* GetHitsCollection(G4int ID,
 					     const G4Event* event) const;
+  EDEmCalorimeterHitsCollection* GetTriggerHitsCollection(G4int ID,
+					     const G4Event* event) const;
+  
   void GetHitsCollectionIDs();
-
+  std::string GetTriggerName( G4int id );
+  
   G4int Z2Module( G4int z );
   G4int Edep2Dac( G4double energy );
   G4int Dac2Adc( G4int dac );
