@@ -7,8 +7,6 @@ EDEventAction::EDEventAction( INTTMessenger* INTT_mess )
  : G4UserEventAction(),
    fVerbose(true),
    INTT_mess_( INTT_mess )
-   // tracks_(),
-   // steps_()
 {}
 
 EDEventAction::~EDEventAction()
@@ -17,6 +15,8 @@ EDEventAction::~EDEventAction()
 void EDEventAction::BeginOfEventAction(const G4Event* event)
 {
 
+  CleanContainer(); // for init of camac vectors
+  
   // BCO and BCO_full are determined at the beginning of an event
   bco_full_ = CLHEP::RandFlat::shootInt( long(0), long(65535) );
   unsigned int lowest_7_bits = 255;  
@@ -38,6 +38,26 @@ EDEventAction::GetHitsCollection(G4int ID,
       G4ExceptionDescription msg;
       msg << "Cannot access hitsCollection ID " << ID;
       G4Exception("EDEventAction::GetHitsCollection()",
+		  "MyCode0003", FatalException, msg);
+    }
+  
+  return hitsCollection;
+}
+
+
+EDEmCalorimeterHitsCollection*
+EDEventAction::GetTriggerHitsCollection(G4int ID,
+				 const G4Event* event) const
+{
+  auto hitsCollection
+    = static_cast<EDEmCalorimeterHitsCollection*>(
+						  event->GetHCofThisEvent()->GetHC(ID) );
+
+  if ( ! hitsCollection )
+    {
+      G4ExceptionDescription msg;
+      msg << "Cannot access EmCalorimeterhitsCollection ID " << ID;
+      G4Exception("EDEventAction::GetTriggerHitsCollection()",
 		  "MyCode0003", FatalException, msg);
     }
   
@@ -73,33 +93,44 @@ void EDEventAction::GetHitsCollectionIDs()
 	  G4int id = G4SDManager::GetSDMpointer()->GetCollectionID( strip_HC.str().c_str() );
 	  sensor_IDs_.push_back( id );
 
-	  //G4cout << strip_HC.str() << "\t" << id << endl;
-	  
 	} // end of the loop over sensor columns
     } // end of the loop over sensor types
-    
+
+  //////////////////////////////////////////////////////////////////////////////
+  // trigger scintillator                                                     //
+  //////////////////////////////////////////////////////////////////////////////
+
+  vector < string > trigger_hits_collection_names;
+  trigger_hits_collection_names.push_back( "EmCalorimeterHitsCollection" );
+  trigger_hits_collection_names.push_back( "EmCalorimeterHitsCollection_mini" );
+
+  if( INTT_mess_->GetTriggerType() == 1 ) // only for the full setup
+    trigger_hits_collection_names.push_back( "EmCalorimeterHitsCollection1" );
+  
+  for( auto& hc_name : trigger_hits_collection_names )
+    {
+      G4int id = G4SDManager::GetSDMpointer()->GetCollectionID( hc_name.c_str() );
+      trigger_IDs_.push_back( id );
+
+      trigger_name_IDs_.push_back( pair < string, G4int >( hc_name, id ) );
+      
+    } // end of the loop over all triigers
+
 }
 
+std::string EDEventAction::GetTriggerName( G4int id )
+{
+  for( auto& entry : trigger_name_IDs_ )
+    {
+      if( entry.second == id )
+	return entry.first;
+    }
+
+  return "trigger_name_not_found";
+}
 
 void EDEventAction::EndOfEventAction(const G4Event* event)
 {
-
-  // G4cout << G4endl;
-  
-  // G4cout << "End of event" << G4endl;
-  
-  // link step information to a track
-
-  // for( auto& track : tracks_ )
-  //   {
-  //     for( auto& step : steps_ )
-  // 	{
-  // 	  track->AddStepMC( step ); // only steps belongs to this track are stored
-  // 	}
-  //   }
- 
-  // for( auto& track : tracks_ )
-  //   track->Print( 3 );
   
   auto run_manager = G4RunManager::GetRunManager();
   auto run_action = (EDRunAction*) run_manager->GetUserRunAction();
@@ -117,13 +148,37 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
   this->GetHitsCollectionIDs();
     
   /////////////////////////////////////////////////////////////////////
+  // Processes for the trigger scintillator hits                     //
+  /////////////////////////////////////////////////////////////////////
+  this->FillTriggerEvent( event );
+  const int camac_tree_id = 4;
+
+  bool trigger_flag = true;
+  for( int i=0; i<camac_edeps_MC_.size()-1; i++ ){ // the last element in camac_edeps_MC_ is the mini sci., i.e. not trigger
+
+    // typically, the energy deposit should be larger than 0.5 MeV. The case of the thin sci. not implemented yet
+    if( camac_edeps_MC_[i] < 0.5 * MeV ){
+      trigger_flag = false;
+      break;
+    }
+  }
+
+  // if the triggers are not fired, nothing saved
+  if( trigger_flag == false ){
+    this->CleanContainer();
+    return;
+  }
+
+  analysisManager->AddNtupleRow( camac_tree_id );
+
+  /////////////////////////////////////////////////////////////////////
   // Processes for the INTT hits                                     //
   /////////////////////////////////////////////////////////////////////
-  this->FillINTTEvent( event );
+    this->FillINTTEvent( event );
 
   const int INTT_tree_both_id = 6;
   analysisManager->AddNtupleRow( INTT_tree_both_id );
-  this->CleanContainer();
+
   
   // auto trajectories = event->GetTrajectoryContainer();
   // for( int i=0; i<trajectories->size(); i++ )
@@ -142,20 +197,6 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
   // 	     << G4endl;
   //   }
   
-      
-  
-  
-  // G4int collId;
-
-  // // HGCAL EE + FH
-  // auto sdManager = G4SDManager::GetSDMpointer();
-  // collId = sdManager->GetCollectionID( "INTT_sciLV1" );
-  // // = G4SDManager::GetSDMpointer()->GetCollectionID("AbsorberHitsCollection");
-
-  // auto hc = hce->GetHC(collId);
-
-  // G4int n_hit = fHitsCollection->entries();
-
   // for (G4int i = 0; i < n_hit; i++) 
   //   {
   //     G4double fEdep = (*fHitsCollection)[i]->GetEnergyDeposit();
@@ -173,47 +214,8 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
   //       //   }
   //     }
 
-  //   }
-
-  
-  // auto tree = run_action -> GetTree();
-
-  // run_action->SetTrackMCs( tracks_ );
-  // run_action->SetStepMCs( steps_ );
-
-  // tree->Fill();
-  // G4cout << "\r\c" << event->GetEventID() << "\t" << "EDEventAction::EndOfEventAction, "
-  //  	 << tracks_.size() << " TrackMCs are filled";
-  // 	 << endl;
-
-  
-  // delete all information for this run
-  // tracks_.erase( tracks_.begin(), tracks_.end() );
-  // steps_.erase( steps_.begin(), steps_.end() );
-  
-  //  std::cerr << "void EDEventAction::EndOfEventAction(const G4Event* event)";
-  // if ( false ) 
-  // {
-  //   //G4cout << ">>> End event: " << event->GetEventID() << G4endl;
-  // }  
-  // G4int eID = event->GetEventID();
-  // if ( eID % 20000 == 0)
-  //   G4cout << "Event Process: " << eID << G4endl;
-
-  //  std::cerr << "  ----> ends" << std::endl;
-  //std::cerr << std::endl;
+  //   }  
 }    
-
-// TrackMC* EDEventAction::GetTrackMC( int id )
-// {
-//   for( auto& track : tracks_ )
-//     if( track->GetID() == id )
-//       return track;
-
-//   G4cerr << " TrackMC* EDEventAction::GetTrackMC( int id )" << G4endl;
-//   G4cerr << " The track ID " << id << " is not found in EDEventAction" << G4endl;
-//   return nullptr;
-// }
 
 G4int EDEventAction::Z2Module( G4int z )
 {
@@ -300,6 +302,65 @@ void EDEventAction::XY2ChipChan( G4int up_or_down, G4int silicon_type, G4int x, 
     
 }
 
+void EDEventAction::FillTriggerEvent( const G4Event* event )
+{
+
+  for( int i=0; i<trigger_IDs_.size(); i++ ) // loop over all hits colection of the silicon sensors
+    {
+      
+      auto hc = GetTriggerHitsCollection( trigger_IDs_[i], event );      
+      //hc->PrintAllHits();
+      
+      for( int j=0; j<hc->entries(); j++ ) // loop over all hits in this hits collection
+	{
+	  auto hit = (*hc)[j]; // it's EDChamberHit class
+	  G4double energy = hit->GetEnergyDeposit();
+	  
+	  if( energy <= 0.0 ) // hits with finit energy deposit should pass this if statement
+	    continue;
+	  
+	  G4int event_id = event->GetEventID();
+	  G4int x = hit->Getxposition();
+	  G4int y = hit->Getyposition();
+	  G4int z = hit->Getzposition();
+
+	  G4int trigger_id_in_tree = 0;
+	  if( this->GetTriggerName( trigger_IDs_[i]).find( "mini" ) != std::string::npos )
+	    {
+	      trigger_id_in_tree= camac_edeps_MC_.size()-1; // mini sci., in the mostdownstream, assigned to the last element
+	      
+	    }
+	  else
+	    {
+	      if( this->GetTriggerName(trigger_IDs_[i]).find( "HitsCollection1" ) != std::string::npos ) // for the thin sci., which was only in the full setup
+		trigger_id_in_tree = 0; // thin sci., in the mostupstream, assigned to the first element
+	      else // for the normal trigger sci.
+		{
+		  
+		  if( INTT_mess_->GetTriggerType() == 0 ) // the normal setup (mini - sci_B - INTT - sci_C)
+		    trigger_id_in_tree = 0;
+		  else // the full setup (mini - sci_A - INTT - sci_B - sci_C )
+		    trigger_id_in_tree = 1;
+		  
+		  trigger_id_in_tree += hit->GetLayerNumber(); // layer0 is upstream layer1
+
+		} // end of if( this->GetTriggerName(trigger_IDs_[i]).find( "HitsCollection1" ) != std::string::npos )
+	     	      
+	    } // end of if( this->GetTriggerName( trigger_IDs_[i]).find( "mini" ) != std::string::npos )
+
+	  //hit->Print();	  
+
+	  camac_edeps_MC_[trigger_id_in_tree] = energy;
+	  camac_timing_MC_[trigger_id_in_tree] = hit->GetTiming();
+	  camac_theta_MC_[trigger_id_in_tree] = hit->GetTrackAngleTheta();
+	  camac_phi_MC_[trigger_id_in_tree] = hit->GetTrackAnglePhi();
+	  
+	} // end of for( int j=0; j<hc->entries(); j++ )
+
+    } // end of for( int i=0; i<trigger_IDs_.size(); i++ )
+  
+  
+}
 
 void EDEventAction::FillINTTEvent( const G4Event* event )
 {
@@ -400,9 +461,6 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  
 	} // end of the loop over all hits in this hits collection
     } // endl of the loop over all hits collection
-  
-
-
 }
 
 
@@ -410,6 +468,19 @@ void EDEventAction::CleanContainer()
 {
   camac_adcs_.erase( camac_adcs_.begin(), camac_adcs_.end() );
   camac_tdcs_.erase( camac_tdcs_.begin(), camac_tdcs_.end() );
+  camac_edeps_MC_.erase( camac_edeps_MC_.begin(), camac_edeps_MC_.end() );
+  camac_timing_MC_.erase( camac_timing_MC_.begin(), camac_timing_MC_.end() );
+  camac_theta_MC_.erase( camac_theta_MC_.begin(), camac_theta_MC_.end() );
+  camac_phi_MC_.erase  ( camac_phi_MC_.begin()  , camac_phi_MC_.end() );
+
+  int trigger_num = 3;
+  if( INTT_mess_->GetTriggerType() == 1 ) // only for the full setup
+    trigger_num = 4;
+
+  camac_edeps_MC_.resize( trigger_num );
+  camac_timing_MC_.resize( trigger_num );
+  camac_theta_MC_.resize( trigger_num );
+  camac_phi_MC_.resize( trigger_num );
 
   adcs_.erase( adcs_.begin(), adcs_.end() );
   ampls_.erase( ampls_.begin(), ampls_.end() );

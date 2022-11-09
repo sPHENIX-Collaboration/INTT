@@ -49,14 +49,29 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
     = step->GetPreStepPoint()->GetTouchable();
   G4VPhysicalVolume* motherPhysical = touchable->GetVolume(0); // mother
 
-  G4double edep = step->GetTotalEnergyDeposit();
-
-  // G4String motherPhysical_name_test = motherPhysical->GetName(); // not used anymore 
-  
-  G4int copyNo = motherPhysical->GetCopyNo();
+  G4int copyNo =  step->GetPreStepPoint()->GetTouchable()->GetVolume(0)-> GetCopyNo();
+  //G4int copyNo = motherPhysical->GetCopyNo();
   // G4int copyNo =  touchable->GetVolume(0)-> GetCopyNo();   // test
 
   EDEmCalorimeterHit* HitThisUnit = (*fHitsCollection)[copyNo];
+
+  G4double edep = step->GetTotalEnergyDeposit();
+
+  auto track = step->GetTrack();
+  G4double posX = track->GetPosition().x();
+  G4double posY = track->GetPosition().y();
+  G4double posZ = track->GetPosition().z();
+  HitThisUnit->SetPosition( posX, posY, posZ );
+  HitThisUnit->SetTiming( track->GetGlobalTime() );
+  
+  auto momentum = track->GetMomentum();
+  
+  HitThisUnit->SetTrackAngles( momentum.theta() / M_PI * 180.0, momentum.phi() / M_PI * 180.0 );
+
+  //  G4cout << "chamger hit: " << posX << "\t" << posY << "\t" << posZ << "\t" << edep << G4endl;
+  // G4String motherPhysical_name_test = motherPhysical->GetName(); // not used anymore 
+  
+
   HitThisUnit->AddEdep(edep);
 
   // energy deposit
