@@ -219,9 +219,11 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
 
   G4double time = track->GetGlobalTime() ;
 
-  //based on my memory, the GetPreStepPoint is the first, and the GetPostStepPoint is the end position
+  // the GetPreStepPoint is the first (starting), and the GetPostStepPoint is the end(ending) position
   G4ThreeVector touchposition = step->GetPreStepPoint()->GetPosition(); //this is the postion when particle hit on the material
   G4ThreeVector the_post_step_position = step->GetPostStepPoint()->GetPosition();  
+
+  // average of the starting end the ending position of this step
   G4ThreeVector thePosition =(step->GetPreStepPoint()->GetPosition()+step->GetPostStepPoint()->GetPosition())*0.5;
   G4ThreeVector columnPosition;
   G4double      phiposition_S1;
@@ -249,7 +251,6 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
 
   auto phys_in  = pre_step_point->GetProcessDefinedStep();
   auto phys_out = post_step_point->GetProcessDefinedStep();
-
 
   auto process_name_out = phys_out->GetProcessName();
   G4int process_id = phys_out->GetProcessSubType();
@@ -280,8 +281,9 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   G4double phi_in  = p_in.phi();
   G4double phi_out = p_out.phi();
 
-  //G4cout << theta_in << "\t" << theta_out << "\t" << dtheta << "\t" << p_out.polarAngle( p_in ) << G4endl;
+
   G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
+
   // ntuple ID = 2: event_particle
   G4int num = 0;
   analysisManager->FillNtupleIColumn(2, num++, particle_order);
@@ -299,23 +301,6 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   analysisManager->FillNtupleIColumn(2, num++, volume_test_ID);
   analysisManager->FillNtupleIColumn(2, num++, eID_1); // event ID
 
-  /*
-  
-  analysisManager->FillNtupleIColumn(2, 0, particle_order);
-  analysisManager->FillNtupleIColumn(2, 1, PDG);
-  analysisManager->FillNtupleDColumn(2, 2, secondaryParticleKineticEnergy);//Total energy, not edep
-  analysisManager->FillNtupleDColumn(2, 3, proecss_id ); // pre_process_id
-  analysisManager->FillNtupleDColumn(2, 3, posX); //posPosition
-  analysisManager->FillNtupleDColumn(2, 4, posY); //posPosition
-  analysisManager->FillNtupleDColumn(2, 5, posZ); //posPosition
-  analysisManager->FillNtupleDColumn(2, 6, theta_in); // theta_in
-  analysisManager->FillNtupleDColumn(2, 7, theta_out); // theta_out
-  analysisManager->FillNtupleDColumn(2, 8, dtheta); // dtheta
-  analysisManager->FillNtupleDColumn(2, 9, phi_in); // phi_in
-  analysisManager->FillNtupleDColumn(2, 10, phi_out); // phi_out
-  analysisManager->FillNtupleIColumn(2, 11, volume_test_ID);
-  analysisManager->FillNtupleIColumn(2, 12, eID_1); // event ID
-  */
   analysisManager->AddNtupleRow(2);
 
   //==========================================keep========================================================
@@ -331,7 +316,8 @@ G4bool EDChamberSD::ProcessHits(G4Step* step,
   //Hit_object_number=(zposition-1)*subX*subY+ (xposition-1)*subY   +(yposition-1);
   EDChamberHit* HitThisUnit = (*fHitsCollection)[copyNo];
   HitThisUnit->AddEdep(edep);
-
+  HitThisUnit->SetPosition( thePosition );
+  
   if( step->IsFirstStepInVolume() )
     HitThisUnit->SetStepIn( step );
 

@@ -174,14 +174,17 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   // hit information
   analysisManager->CreateNtupleDColumn( "edep_MC"	); // column ID: 11
   analysisManager->CreateNtupleIColumn( "dac_MC"	); // column ID: 12
+  analysisManager->CreateNtupleDColumn( "x_MC"	); // column ID: 13
+  analysisManager->CreateNtupleDColumn( "y_MC"	); // column ID: 14
+  analysisManager->CreateNtupleDColumn( "z_MC"	); // column ID: 15
 
   // track information
   
-  analysisManager->CreateNtupleIColumn( "track_id_MC"	); // column ID: 13
-  analysisManager->CreateNtupleIColumn( "track_pid_MC"	); // column ID: 14
-  analysisManager->CreateNtupleDColumn( "track_energy_in_MC"	); // column ID: 15
-  analysisManager->CreateNtupleDColumn( "track_energy_out_MC"	); // column ID: 16
-  //  analysisManager->CreateNtupleDColumn( "track_energy_MC"	); // column ID: 14
+  analysisManager->CreateNtupleIColumn( "track_id_MC"	); // column ID: 16
+  analysisManager->CreateNtupleIColumn( "track_pid_MC"	); // column ID: 17
+  analysisManager->CreateNtupleDColumn( "track_energy_in_MC"	); // column ID: 18
+  analysisManager->CreateNtupleDColumn( "track_energy_out_MC"	); // column ID: 19
+  //  analysisManager->CreateNtupleDColumn( "track_energy_MC"	); // column ID: 20
 
     
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
