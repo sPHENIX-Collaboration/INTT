@@ -155,7 +155,7 @@ void EDEventAction::EndOfEventAction(const G4Event* event)
 
   bool trigger_flag = true;
   for( int i=0; i<camac_edeps_MC_.size()-1; i++ ){ // the last element in camac_edeps_MC_ is the mini sci., i.e. not trigger
-
+    
     // typically, the energy deposit should be larger than 0.5 MeV. The case of the thin sci. not implemented yet
     if( camac_edeps_MC_[i] < 0.5 * MeV ){
       trigger_flag = false;
@@ -352,6 +352,9 @@ void EDEventAction::FillTriggerEvent( const G4Event* event )
 
 	  camac_edeps_MC_[trigger_id_in_tree] = energy;
 	  camac_timing_MC_[trigger_id_in_tree] = hit->GetTiming();
+	  camac_x_MC_[trigger_id_in_tree] = hit->Getxposition();
+	  camac_y_MC_[trigger_id_in_tree] = hit->Getyposition();
+	  camac_z_MC_[trigger_id_in_tree] = hit->Getzposition();
 	  camac_theta_MC_[trigger_id_in_tree] = hit->GetTrackAngleTheta();
 	  camac_phi_MC_[trigger_id_in_tree] = hit->GetTrackAnglePhi();
 	  
@@ -383,9 +386,15 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  //hit->Print();	  
 
 	  G4int event_id = event->GetEventID();
-	  G4int x = hit->Getxposition();
-	  G4int y = hit->Getyposition();
-	  G4int z = hit->Getzposition();
+
+	  // hit position in the lab frame
+	  G4double x_lab = hit->GetPosition().x();
+	  G4double y_lab = hit->GetPosition().y();
+	  G4double z_lab = hit->GetPosition().z();
+
+	  G4double x = hit->Getxposition();
+	  G4double y = hit->Getyposition();
+	  G4double z = hit->Getzposition();
 
 	  G4int up_or_down = hit->Getupordown();
 	  G4int silicon_type = hit->Getsilicon_type(); // 0: type-A, 1: type-B	  
@@ -400,29 +409,33 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  if( adc < 0 ) // skip this hit if the energy deposit is not 0 but too small
 	    continue;
 	  
-	  const int INTT_tree_id = 4;	  
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 0, adc ); // adc, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 1, 0 ); // ampl, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 2, chip_id ); // chip_id
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 3, 0 ); // fpga_id, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 4, module ); // module, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 5, chan_id ); // chan_id
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 6, fem_id ); // fem_id, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 7, bco_ ); // bco, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 8, bco_full_ ); // bco_full, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 9, 0 ); // event, no need to do, just use Entry$
+	  const int INTT_tree_id = 4;
+	  int column_id = 0;
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, adc ); // adc, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, 0 ); // ampl, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, chip_id ); // chip_id
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, 0 ); // fpga_id, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, module ); // module, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, chan_id ); // chan_id
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, fem_id ); // fem_id, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, bco_ ); // bco, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, bco_full_ ); // bco_full, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, 0 ); // event, no need to do, just use Entry$
 
 	  
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 10, event_id ); // event ID (MC)
-	  analysisManager->FillNtupleDColumn(INTT_tree_id, 11, energy ); // energy deposit, MC truth, done
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 12, dac ); // DAC value converted from energy deposit, MC truth, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, event_id ); // event ID (MC)
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, energy ); // energy deposit, MC truth, done
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, dac ); // DAC value converted from energy deposit, MC truth, done
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, x_lab ); // x coordinate of this hit in the lab frame (mm)
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, y_lab ); // y coordinate of this hit in the lab frame (mm)
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, z_lab ); // z coordinate of this hit in the lab frame (mm)
 
 	  auto track = hit->GetTrack();
 	  auto particle = track->GetParticleDefinition();	  
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 13, track->GetTrackID() ); // track ID, MC truth
-	  analysisManager->FillNtupleIColumn(INTT_tree_id, 14, particle->GetPDGEncoding() ); // track's partile ID, MC truth, done
-	  analysisManager->FillNtupleDColumn(INTT_tree_id, 15, track->GetVertexKineticEnergy() ); //
-	  analysisManager->FillNtupleDColumn(INTT_tree_id, 16, track->GetKineticEnergy() ); //
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, track->GetTrackID() ); // track ID, MC truth
+	  analysisManager->FillNtupleIColumn(INTT_tree_id, column_id++, particle->GetPDGEncoding() ); // track's partile ID, MC truth, done
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, track->GetVertexKineticEnergy() ); //
+	  analysisManager->FillNtupleDColumn(INTT_tree_id, column_id++, track->GetKineticEnergy() ); //
 	  //analysisManager->FillNtupleDColumn(INTT_tree_id, 14, track->GetKineticEnergy() ); //
 
 	  analysisManager->AddNtupleRow( INTT_tree_id );
@@ -441,6 +454,9 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  event_ids_MC_.push_back( event_id );
 	  edeps_MC_.push_back( energy );
 	  dacs_MC_.push_back( dac );
+	  x_MC_.push_back( x_lab );
+	  y_MC_.push_back( y_lab );
+	  z_MC_.push_back( z_lab );
 	  //hit->PrintEvent();
 	  
 	  /*
@@ -470,6 +486,9 @@ void EDEventAction::CleanContainer()
   camac_tdcs_.erase( camac_tdcs_.begin(), camac_tdcs_.end() );
   camac_edeps_MC_.erase( camac_edeps_MC_.begin(), camac_edeps_MC_.end() );
   camac_timing_MC_.erase( camac_timing_MC_.begin(), camac_timing_MC_.end() );
+  camac_x_MC_.erase( camac_x_MC_.begin(), camac_x_MC_.end() );
+  camac_y_MC_.erase( camac_y_MC_.begin(), camac_y_MC_.end() );
+  camac_z_MC_.erase( camac_z_MC_.begin(), camac_z_MC_.end() );
   camac_theta_MC_.erase( camac_theta_MC_.begin(), camac_theta_MC_.end() );
   camac_phi_MC_.erase  ( camac_phi_MC_.begin()  , camac_phi_MC_.end() );
 
@@ -479,6 +498,9 @@ void EDEventAction::CleanContainer()
 
   camac_edeps_MC_.resize( trigger_num );
   camac_timing_MC_.resize( trigger_num );
+  camac_x_MC_.resize( trigger_num );
+  camac_y_MC_.resize( trigger_num );
+  camac_z_MC_.resize( trigger_num );
   camac_theta_MC_.resize( trigger_num );
   camac_phi_MC_.resize( trigger_num );
 
@@ -496,4 +518,7 @@ void EDEventAction::CleanContainer()
   event_ids_MC_.erase( event_ids_MC_.begin(), event_ids_MC_.end() );
   edeps_MC_.erase( edeps_MC_.begin(), edeps_MC_.end() );
   dacs_MC_.erase( dacs_MC_.begin(), dacs_MC_.end() );
+  x_MC_.erase( x_MC_.begin(), x_MC_.end() );
+  y_MC_.erase( y_MC_.begin(), y_MC_.end() );
+  z_MC_.erase( z_MC_.begin(), z_MC_.end() );
 }

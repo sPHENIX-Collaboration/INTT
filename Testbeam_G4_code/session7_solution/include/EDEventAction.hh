@@ -46,6 +46,9 @@ public:
   std::vector < G4int >& GetContainerCamacTdc(){ return camac_tdcs_;};
   std::vector < G4double >& GetContainerCamacEdepMC(){ return camac_edeps_MC_;};
   std::vector < G4double >& GetContainerCamacTimeMC(){ return camac_timing_MC_;};
+  std::vector < G4double >& GetContainerCamacXMC(){ return camac_x_MC_;};
+  std::vector < G4double >& GetContainerCamacYMC(){ return camac_y_MC_;};
+  std::vector < G4double >& GetContainerCamacZMC(){ return camac_z_MC_;};
   std::vector < G4double >& GetContainerCamacThetaMC(){ return camac_theta_MC_;};
   std::vector < G4double >& GetContainerCamacPhiMC(){ return camac_phi_MC_;};
 
@@ -62,6 +65,9 @@ public:
   std::vector < G4int >& GetContainerEventMC(){ return event_ids_MC_;};
   std::vector < G4double >& GetContainerEdepMC(){ return edeps_MC_;};
   std::vector < G4int >& GetContainerDacsMC(){ return dacs_MC_;};
+  std::vector < G4double >& GetContainerXMC(){ return x_MC_;};
+  std::vector < G4double >& GetContainerYMC(){ return y_MC_;};
+  std::vector < G4double >& GetContainerZMC(){ return z_MC_;};
 
 private:
   G4bool fVerbose;
@@ -79,6 +85,9 @@ private:
   std::vector < G4int > camac_tdcs_;
   std::vector < G4double > camac_edeps_MC_; // MC truth
   std::vector < G4double > camac_timing_MC_; // MC truth
+  std::vector < G4double > camac_x_MC_; // x of the hit position in mm, MC truth
+  std::vector < G4double > camac_y_MC_; // y of the hit position in mm, MC truth
+  std::vector < G4double > camac_z_MC_; // z of the hit position in mm, MC truth
   std::vector < G4double > camac_theta_MC_; // beam track angle theta, MC truth
   std::vector < G4double > camac_phi_MC_; // beam track angle phi, MC truth
 
@@ -98,6 +107,9 @@ private:
   std::vector < G4int > event_ids_MC_;
   std::vector < G4double > edeps_MC_;
   std::vector < G4int > dacs_MC_;
+  std::vector < G4double > x_MC_;
+  std::vector < G4double > y_MC_;
+  std::vector < G4double > z_MC_;
   
   INTTMessenger* INTT_mess_;
   EDChamberHitsCollection* fHitsCollection_;  
