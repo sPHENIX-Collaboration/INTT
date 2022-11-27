@@ -352,6 +352,9 @@ void EDEventAction::FillTriggerEvent( const G4Event* event )
 
 	  camac_edeps_MC_[trigger_id_in_tree] = energy;
 	  camac_timing_MC_[trigger_id_in_tree] = hit->GetTiming();
+	  camac_x_MC_[trigger_id_in_tree] = hit->Getxposition();
+	  camac_y_MC_[trigger_id_in_tree] = hit->Getyposition();
+	  camac_z_MC_[trigger_id_in_tree] = hit->Getzposition();
 	  camac_theta_MC_[trigger_id_in_tree] = hit->GetTrackAngleTheta();
 	  camac_phi_MC_[trigger_id_in_tree] = hit->GetTrackAnglePhi();
 	  
@@ -451,6 +454,9 @@ void EDEventAction::FillINTTEvent( const G4Event* event )
 	  event_ids_MC_.push_back( event_id );
 	  edeps_MC_.push_back( energy );
 	  dacs_MC_.push_back( dac );
+	  x_MC_.push_back( x_lab );
+	  y_MC_.push_back( y_lab );
+	  z_MC_.push_back( z_lab );
 	  //hit->PrintEvent();
 	  
 	  /*
@@ -480,6 +486,9 @@ void EDEventAction::CleanContainer()
   camac_tdcs_.erase( camac_tdcs_.begin(), camac_tdcs_.end() );
   camac_edeps_MC_.erase( camac_edeps_MC_.begin(), camac_edeps_MC_.end() );
   camac_timing_MC_.erase( camac_timing_MC_.begin(), camac_timing_MC_.end() );
+  camac_x_MC_.erase( camac_x_MC_.begin(), camac_x_MC_.end() );
+  camac_y_MC_.erase( camac_y_MC_.begin(), camac_y_MC_.end() );
+  camac_z_MC_.erase( camac_z_MC_.begin(), camac_z_MC_.end() );
   camac_theta_MC_.erase( camac_theta_MC_.begin(), camac_theta_MC_.end() );
   camac_phi_MC_.erase  ( camac_phi_MC_.begin()  , camac_phi_MC_.end() );
 
@@ -489,6 +498,9 @@ void EDEventAction::CleanContainer()
 
   camac_edeps_MC_.resize( trigger_num );
   camac_timing_MC_.resize( trigger_num );
+  camac_x_MC_.resize( trigger_num );
+  camac_y_MC_.resize( trigger_num );
+  camac_z_MC_.resize( trigger_num );
   camac_theta_MC_.resize( trigger_num );
   camac_phi_MC_.resize( trigger_num );
 
@@ -506,4 +518,7 @@ void EDEventAction::CleanContainer()
   event_ids_MC_.erase( event_ids_MC_.begin(), event_ids_MC_.end() );
   edeps_MC_.erase( edeps_MC_.begin(), edeps_MC_.end() );
   dacs_MC_.erase( dacs_MC_.begin(), dacs_MC_.end() );
+  x_MC_.erase( x_MC_.begin(), x_MC_.end() );
+  y_MC_.erase( y_MC_.begin(), y_MC_.end() );
+  z_MC_.erase( z_MC_.begin(), z_MC_.end() );
 }

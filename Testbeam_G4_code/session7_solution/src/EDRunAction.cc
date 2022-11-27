@@ -208,6 +208,9 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   analysisManager->CreateNtupleIColumn( "camac_tdc", event_->GetContainerCamacTdc() );
   analysisManager->CreateNtupleDColumn( "camac_edep_MC", event_->GetContainerCamacEdepMC() ); 
   analysisManager->CreateNtupleDColumn( "camac_time_MC", event_->GetContainerCamacTimeMC() ); 
+  analysisManager->CreateNtupleDColumn( "camac_x_MC", event_->GetContainerCamacXMC() );
+  analysisManager->CreateNtupleDColumn( "camac_y_MC", event_->GetContainerCamacYMC() );
+  analysisManager->CreateNtupleDColumn( "camac_z_MC", event_->GetContainerCamacZMC() );
   analysisManager->CreateNtupleDColumn( "camac_theta_MC", event_->GetContainerCamacThetaMC() );
   analysisManager->CreateNtupleDColumn( "camac_phi_MC", event_->GetContainerCamacPhiMC() );
 
@@ -224,10 +227,12 @@ EDRunAction::EDRunAction( INTTMessenger* INTT_mess, EDPrimaryGeneratorAction* pg
   analysisManager->CreateNtupleIColumn( "event", event_->GetContainerEvent() ); 
 
   // INTT hit (MC truth)
-  
   analysisManager->CreateNtupleIColumn( "event_id_MC", event_->GetContainerEventMC() );
   analysisManager->CreateNtupleDColumn( "edep_MC", event_->GetContainerEdepMC() );
   analysisManager->CreateNtupleIColumn( "dac_MC", event_->GetContainerDacsMC() );
+  analysisManager->CreateNtupleDColumn( "x_MC", event_->GetContainerXMC()	); // column ID: 13
+  analysisManager->CreateNtupleDColumn( "y_MC", event_->GetContainerYMC()	); // column ID: 13
+  analysisManager->CreateNtupleDColumn( "z_MC", event_->GetContainerZMC()	); // column ID: 13
 
   /*
   if( event_ )

@@ -66,6 +66,7 @@ G4bool EDEmCalorimeterSD::ProcessHits(G4Step* step,
   
   auto momentum = track->GetMomentum();
   
+  HitThisUnit->SetPosition( posX, posY, posZ );
   HitThisUnit->SetTrackAngles( momentum.theta() / M_PI * 180.0, momentum.phi() / M_PI * 180.0 );
 
   //  G4cout << "chamger hit: " << posX << "\t" << posY << "\t" << posZ << "\t" << edep << G4endl;
