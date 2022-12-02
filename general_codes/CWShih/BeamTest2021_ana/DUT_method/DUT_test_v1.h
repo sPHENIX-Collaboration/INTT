@@ -4,17 +4,6 @@
 #include "par_init.h"
 #include "double_gaus.h"
 
-// note : the structure for event profile
-struct profile_str {
-    int profile_eID;
-    int profile_chip;
-    int profile;
-    int final_pickup;
-    int clusterID_0;
-    int clusterID_1;
-    int clusterID_2;
-};
-
 // note : the structure of cluster info.
 struct cluster_str {
     
@@ -34,28 +23,6 @@ struct cluster_reformat_str {
     vector<double> cluster_adc[13][3];
 };
 
-struct noise_hit_str{
-    int noise_chip;
-    int noise_layer;
-    double noise_pos;
-};
-
-struct noise_event_str{
-    int eID;
-    vector<noise_hit_str> noise_event;
-};
-
-struct multi_track_str{
-    // note : in order to output two things.
-
-    // note : in order to take out the araay of the # of track of each event.
-    vector<noise_event_str> noise_vec;
-    vector<int> N_track;
-
-    vector<int> track_chip_count;
-    
-};
-
 struct DUT_str{
     int track_111_count;
     int track_101_count;
@@ -69,7 +36,7 @@ struct DUT_str{
     vector<double> good_combination_l2_pos_hit3;
 };
 
-
+// note : read the root file of cluster_information, and build the event
 vector<cluster_str> cluster_read_and_build (TString folder_direction, TString file_name, TString cluster_file_name, int study_chip)
 {
     // note : the root file of the cluster information, chip, layer, Nhits, position.
@@ -132,6 +99,7 @@ vector<cluster_str> cluster_read_and_build (TString folder_direction, TString fi
     return output_vec;
 }
 
+// note : change the structure of the data
 vector<cluster_reformat_str> cluster_reformat ( vector<cluster_str> input_vec )
 {
 
@@ -165,7 +133,11 @@ vector<cluster_reformat_str> cluster_reformat ( vector<cluster_str> input_vec )
     
 }
 
-
+// note : version 1 of the efficiency calculation, it's done by the DUT method (Geometry method)
+// note : In principle, the results from v1 and v2 should be identical.
+// note : the v1 is more flexible, the N of cluster of l0 and l2 don't have to be 1.
+// note : and this version is friendly to the run89 satellite-peak study
+// note : but the middle layer residual distribution is not that correct (some of the cuts were not applied, which leads to a wider dist.)
 DUT_str efficiency_DUT_method (vector<cluster_reformat_str> input_cluster_vec, int study_chip)
 { 
 	double edge_exclusion_bottom = (lower_section_initial - INTT_strip_width / 2.) + INTT_strip_width * double(boundary_cut);
@@ -459,29 +431,239 @@ DUT_str efficiency_DUT_method (vector<cluster_reformat_str> input_cluster_vec, i
 
 }
 
+// note : version 2 of the efficiency calculation, it's done by the DUT method (Geometry method)
+// note : In principle, the results from v1 and v2 should be identical.
+// note : the structure of version 2 is more compact. which also means that the v2 is not flexible.
+// note : the single cluster at l0 and l2 is mandatory
+// note : and it's not friendly to the run89 study
+// note : but the middle layer residual distribution can be more correct.
+// note : it's more compact and smarter one !!!
+DUT_str efficiency_DUT_method_v2 (vector<cluster_reformat_str> input_cluster_vec, int study_chip)
+{ 
+	double edge_exclusion_bottom = (lower_section_initial - INTT_strip_width / 2.) + INTT_strip_width * double(boundary_cut);
+	double edge_exclusion_upper = ( INTT_strip_width * 128. ) - INTT_strip_width * double(boundary_cut);
+
+    vector<int> receiver_unit_clu_size[13][3]; // note : for abbreviation, for hit 
+    vector<double> receiver_unit_clu_pos[13][3];
+    vector<double> receiver_unit_clu_adc[13][3];
+
+    // note : the clusters that pass the pre-selections (cluster cut / event cut) will be saved here.
+
+    TF1 * linear_fit;
+    TGraph * grr;
+
+    double chi2_register = 0; 
+    double cluster_register_l0 = 0;
+    double cluster_register_l1 = 0;
+    double cluster_register_l2 = 0;
+    double hit3_best_fit_picker_info[7]; // note : first 3 : residual by fittting, second 3 : the selected positions, the 7th : the middle-layer residual by the DUT method
+    double hit2_best_fit_picker_info[2]; // note : first 2 : the selected positions of the first and last layers.
+
+    int multi_track_count = 0; // note : this is for finding the multi_track, if we find a new good track, then +=1;
+
+    double hit2_slope;
+    double event_residual;
+
+    // note : for the output 
+    int track_111_count = 0;
+    int track_101_count = 0;
+    vector<double> middle_layer_residual; middle_layer_residual.clear();
+    vector<double> good_combination_slope_hit3; good_combination_slope_hit3.clear();
+    vector<double> good_combination_slope_hit2; good_combination_slope_hit2.clear();
+
+    vector<double> good_combination_l0_pos_hit3; good_combination_l0_pos_hit3.clear();
+    vector<double> good_combination_l1_pos_hit3; good_combination_l1_pos_hit3.clear();
+    vector<double> good_combination_l2_pos_hit3; good_combination_l2_pos_hit3.clear();
+
+
+    for (int i = 0; i < input_cluster_vec.size(); i++)
+    {
+        if (i % 1000 == 0){ cout<<"Doing the DUT test, eID : "<<input_cluster_vec[i].eID<<endl;}
+
+        // note : abbreviation
+        for (int i1 = 0; i1 < 13; i1++)
+        {
+            for (int i2 = 0; i2 < 3; i2++)
+            {
+                receiver_unit_clu_size[i1][i2] = input_cluster_vec[i].cluster_hit[ i1 ][i2];
+                receiver_unit_clu_pos[i1][i2] = input_cluster_vec[i].cluster_pos[ i1 ][i2];
+                receiver_unit_clu_adc[i1][i2] = input_cluster_vec[i].cluster_adc[ i1 ][i2];
+
+            }
+        }
+
+        // todo : the LoE
+        // todo :       -> right now, what I try is to make sure there is no cluster in the adjacent chips for all three layers (chip 8 and 10, for example)
+        // todo :       -> to avoid any suspicious events. 
+        // todo :       -> works well !!! 2022/11/23
+        // todo : the adc cut
+        // todo : cluster size 
+        // todo : cluster size combined
+        // todo : N cluster in layer 0 and layer 2
+        // todo : slope cut
+        // todo : the edge exclusion
+
+        // todo : residual cut
+        
+        // note : zero cluster in adjacent chips
+        if ( (receiver_unit_clu_size[study_chip-1-1][0].size()+receiver_unit_clu_size[study_chip-1-1][1].size()+receiver_unit_clu_size[study_chip-1-1][2].size()+receiver_unit_clu_size[study_chip-1+1][0].size()+receiver_unit_clu_size[study_chip-1+1][1].size()+receiver_unit_clu_size[study_chip-1+1][2].size()) != 0 ) continue;
+        
+        // note : single cluster in l0 and l2
+        if (receiver_unit_clu_size[study_chip-1][0].size() != hit_allowed_in_adjacent_layers || receiver_unit_clu_size[study_chip-1][2].size() != hit_allowed_in_adjacent_layers) continue;
+        
+        // note : standalone cluster size cut of l0 and l2
+        if ( receiver_unit_clu_size[study_chip-1][0][0] <= cluster_size_requirement || receiver_unit_clu_size[study_chip-1][2][0] <= cluster_size_requirement ) continue;
+
+        // note : standalone cluster adc cut
+        if ( receiver_unit_clu_adc[study_chip-1][0][0] <= cluster_adc_value_requirement || receiver_unit_clu_adc[study_chip-1][2][0] <= cluster_adc_value_requirement ) continue;
+
+        // note : combined cluster size cut
+        if ( receiver_unit_clu_size[study_chip-1][0][0]+receiver_unit_clu_size[study_chip-1][2][0] <= cluster_size_requirement_combine ) continue;
+        
+        // note : edge exclusion cut of the l0
+        if ( receiver_unit_clu_pos[study_chip-1][0][0] <= edge_exclusion_bottom || receiver_unit_clu_pos[study_chip-1][0][0] >= edge_exclusion_upper ) continue;
+
+        // note : edge exclusion cut of the l2
+        if ( receiver_unit_clu_pos[study_chip-1][2][0] <= edge_exclusion_bottom || receiver_unit_clu_pos[study_chip-1][2][0] >= edge_exclusion_upper ) continue;
+
+        hit2_slope = (receiver_unit_clu_pos[study_chip-1][2][0] - receiver_unit_clu_pos[study_chip-1][0][0]) / actual_xpos[2] + slope_correction;
+
+        good_combination_slope_hit2.push_back(hit2_slope);
+
+        // note : the slope cut
+        if ( fabs(hit2_slope) >= slope_cut ) continue;
+
+        // note : to check the N clusters of the middle layer
+        if ( receiver_unit_clu_pos[study_chip-1][1].size() == 0 ) // note : no hits in the middle
+        {
+            track_101_count += 1;
+            cout<<"101 event, eID : "<<input_cluster_vec[i].eID<<" -> no cluster"<<endl;
+        }
+        else if ( receiver_unit_clu_pos[study_chip-1][1].size() > 0 ) // note : at least one hit in the middle
+        {
+            
+            for ( int l1 = 0; l1 < receiver_unit_clu_pos[study_chip-1][1].size(); l1++ )
+            {
+                double hit3_Y_data[3] = {receiver_unit_clu_pos[study_chip-1][0][0], receiver_unit_clu_pos[study_chip-1][1][l1], receiver_unit_clu_pos[study_chip-1][2][0]};
+
+                grr = new TGraph(3,actual_xpos,hit3_Y_data);
+                linear_fit = new TF1("linear_fit","pol1",-1,actual_xpos[2]+2);
+                grr -> Fit("linear_fit","NQ");
+
+                if (l1 == 0) // note : the first one
+                {
+                    chi2_register = ( linear_fit->GetChisquare()/double (linear_fit->GetNDF()) );
+                    
+                    cluster_register_l1 = l1;
+
+                    hit3_best_fit_picker_info[0] = ( hit3_Y_data[0] - ( linear_fit -> GetParameter(1) * actual_xpos[0] + linear_fit -> GetParameter(0) ) );
+                    hit3_best_fit_picker_info[1] = ( hit3_Y_data[1] - ( linear_fit -> GetParameter(1) * actual_xpos[1] + linear_fit -> GetParameter(0) ) );
+                    hit3_best_fit_picker_info[2] = ( hit3_Y_data[2] - ( linear_fit -> GetParameter(1) * actual_xpos[2] + linear_fit -> GetParameter(0) ) );
+                    
+                    hit3_best_fit_picker_info[3] = hit3_Y_data[0];
+                    hit3_best_fit_picker_info[4] = hit3_Y_data[1];
+                    hit3_best_fit_picker_info[5] = hit3_Y_data[2];
+
+                    // note : the middle-layer residual of the DUT method
+                    hit3_best_fit_picker_info[6] = hit3_Y_data[1] - (hit3_Y_data[0]+hit3_Y_data[2])/2.;
+
+                }
+                else 
+                {
+                    if ( linear_fit->GetChisquare()/double (linear_fit->GetNDF()) < chi2_register )
+                    {
+                        chi2_register = ( linear_fit->GetChisquare()/double (linear_fit->GetNDF()) );
+                        
+                        cluster_register_l1 = l1;
+
+                        hit3_best_fit_picker_info[0] = ( hit3_Y_data[0] - ( linear_fit -> GetParameter(1) * actual_xpos[0] + linear_fit -> GetParameter(0) ) );
+                        hit3_best_fit_picker_info[1] = ( hit3_Y_data[1] - ( linear_fit -> GetParameter(1) * actual_xpos[1] + linear_fit -> GetParameter(0) ) );
+                        hit3_best_fit_picker_info[2] = ( hit3_Y_data[2] - ( linear_fit -> GetParameter(1) * actual_xpos[2] + linear_fit -> GetParameter(0) ) );
+                        
+                        hit3_best_fit_picker_info[3] = hit3_Y_data[0];
+                        hit3_best_fit_picker_info[4] = hit3_Y_data[1];
+                        hit3_best_fit_picker_info[5] = hit3_Y_data[2];
+
+                        // note : the middle-layer residual of the DUT method
+                        hit3_best_fit_picker_info[6] = hit3_Y_data[1] - (hit3_Y_data[0]+hit3_Y_data[2])/2.;
+                        
+
+                    }
+                }
+            }
+
+            event_residual = hit3_best_fit_picker_info[4] - ( ( hit3_best_fit_picker_info[3] + hit3_best_fit_picker_info[5] ) / 2. );
+
+            middle_layer_residual.push_back( event_residual );
+
+            good_combination_l0_pos_hit3.push_back( receiver_unit_clu_pos[study_chip-1][0][0] );
+            good_combination_l1_pos_hit3.push_back( hit3_best_fit_picker_info[4] );
+            good_combination_l2_pos_hit3.push_back( receiver_unit_clu_pos[study_chip-1][2][0] );
+
+            if ( fabs(event_residual) < noise_hit_distance )
+            {
+                track_111_count += 1;
+            }
+            else 
+            {
+                track_101_count += 1;   
+                cout<<"101 event, eID : "<<input_cluster_vec[i].eID<<" -> middle has cluster"<<endl;
+            }
+
+        }
+        // note : start clean
+
+    } // note : end of for loop, event
+
+
+    DUT_str output_space;
+    output_space.track_111_count = track_111_count;
+    output_space.track_101_count = track_101_count;
+    output_space.middle_layer_residual = middle_layer_residual;
+    output_space.good_combination_slope_hit3 = good_combination_slope_hit3; // note : empty, 2022/12/03
+    output_space.good_combination_slope_hit2 = good_combination_slope_hit2; // note : 3hits or 2hits cases are included
+    output_space.good_combination_l0_pos_hit3 = good_combination_l0_pos_hit3; 
+    output_space.good_combination_l1_pos_hit3 = good_combination_l1_pos_hit3;
+    output_space.good_combination_l2_pos_hit3 = good_combination_l2_pos_hit3;
+    
+    return output_space;
+
+}
+
+
+// note : make the plot of the middle-layer residual distribution, full range
 void plot_residual (vector<double> input_vec, TString folder_direction)
 {
     TCanvas * c1 = new TCanvas("c1","c1",800,800);
     c1 -> cd();
     c1 -> SetLogy();
 
-    TH1F * N_track_hist = new TH1F("","",100,-10,10);
+    int N_in_range = 0;
+
+    TH1F * l1_residual_hist = new TH1F("","",100,-10,10);
     for (int i = 0; i < input_vec.size(); i++)
     {
-        N_track_hist -> Fill(input_vec[i]);
+        l1_residual_hist -> Fill(input_vec[i]);
+
+        if ( input_vec[i] > -1 * noise_hit_distance && input_vec[i] < noise_hit_distance )
+        {
+            N_in_range += 1;
+        }
     }
 
-    N_track_hist -> SetTitle("DUT layer 1 residual");
-    N_track_hist -> GetXaxis() -> SetTitle("Unit : mm");
-    N_track_hist -> GetYaxis() -> SetTitle("Entry");
+    l1_residual_hist -> SetTitle("DUT layer 1 residual");
+    l1_residual_hist -> GetXaxis() -> SetTitle("Unit : mm");
+    l1_residual_hist -> GetYaxis() -> SetTitle("Entry");
 
-    N_track_hist -> Draw("hist");
+    l1_residual_hist -> Draw("hist");
+
+    cout<<"N event in the range  #pm"<<noise_hit_distance<<" mm : "<< N_in_range<<endl;    
 
     c1 -> Print( Form("%s/DUT_residual_full_range.pdf",folder_direction.Data()) );
     c1 -> Clear();
 }
 
-// note : plot and fit, narrow range
+// note : make the plot of the middle-layer residual distribution, narrow range, and fit with double-gaus function and single-gaus function
 void plot_residual_narrow (vector<double> input_vec, TString folder_direction)
 {
     TCanvas * c1 = new TCanvas("c1","c1",800,800);
@@ -491,23 +673,25 @@ void plot_residual_narrow (vector<double> input_vec, TString folder_direction)
     TF1 * gaus_fit = new TF1 ("gaus_fit","gaus",-0.5,0.5);
 		
     TF1 * D_gaus_fit = new TF1 ("D_gaus_fit",double_gaus,-10,10,5);
-    D_gaus_fit -> SetParameters(40000,0.987,0,0.03,0.1);
+    // note : par[0] could be 10000 for data
+    // note : par[0] could be 40000 for MC
+    D_gaus_fit -> SetParameters(10000,0.987,0,0.03,0.1);
     // D_gaus_fit -> SetParLimits  (1, 0.5,      1); // fraction
-    D_gaus_fit -> SetParLimits  (3, 0.025,      1);
-    D_gaus_fit -> SetParLimits  (1, 0.97,      1);
+    // D_gaus_fit -> SetParLimits  (3, 0.025,      1); // note : ON for MC
+    // D_gaus_fit -> SetParLimits  (1, 0.97,      1);  // note : ON for MC
     D_gaus_fit -> SetLineColor(TColor::GetColor("#F5751D"));
 
-    TH1F * N_track_hist = new TH1F("","",100,-1.5,1.5);
+    TH1F * l1_residual_hist = new TH1F("","",100,-1.5,1.5);
     for (int i = 0; i < input_vec.size(); i++)
     {
-        N_track_hist -> Fill(input_vec[i]);
+        l1_residual_hist -> Fill(input_vec[i]);
     }
 
-    N_track_hist -> SetTitle("DUT layer 1 residual");
-    N_track_hist -> GetXaxis() -> SetTitle("Unit : mm");
-    N_track_hist -> GetYaxis() -> SetTitle("Entry");
+    l1_residual_hist -> SetTitle("DUT layer 1 residual");
+    l1_residual_hist -> GetXaxis() -> SetTitle("Unit : mm");
+    l1_residual_hist -> GetYaxis() -> SetTitle("Entry");
 
-    N_track_hist -> Draw("hist");
+    l1_residual_hist -> Draw("hist");
 
     TLatex *gaus_fit_latex = new TLatex();
     gaus_fit_latex -> SetNDC();
@@ -517,8 +701,10 @@ void plot_residual_narrow (vector<double> input_vec, TString folder_direction)
     double D_gaus_xmax =  10;
     double the_portion = 0.9973;
 
-    N_track_hist->Fit("gaus_fit","NQ");
-    N_track_hist->Fit(D_gaus_fit,"N","",-0.3,0.3);
+    l1_residual_hist -> Fit("gaus_fit","NQ");
+    // note : data for -0.5 ~ 0.5
+    // note : MC could be -0.3 ~ 0.3
+    l1_residual_hist -> Fit(D_gaus_fit,"N","",-1,1);
     bool run_fit_effisig = double_gaus_getsigmarange (D_gaus_fit,the_portion,D_gaus_xmin,D_gaus_xmax);
     
     gaus_fit -> SetNpx(10000);
@@ -542,7 +728,7 @@ void plot_residual_narrow (vector<double> input_vec, TString folder_direction)
     c1 -> Clear();
 }
 
-
+// note : plot the slope distribution, the (l2-l0)/distance
 void plot_angle (vector<double> input_vec_hit3, vector<double> input_vec_hit2, TString folder_direction)
 {
     TCanvas * c1 = new TCanvas("c1","c1",800,800);
@@ -591,6 +777,7 @@ void plot_angle (vector<double> input_vec_hit3, vector<double> input_vec_hit2, T
     c1 -> Clear();
 }
 
+// note : to understand the behavior of run89
 void hit3_plot_residual_slope_2D (vector<double> input_vec_1, vector<double> input_vec_2, TString folder_direction)
 {
     TCanvas * c3 = new TCanvas("c3","c3",1000,800);
@@ -623,7 +810,7 @@ void hit3_plot_residual_slope_2D (vector<double> input_vec_1, vector<double> inp
 
     residual_slope_2Dhist -> SetTitle("Correlation of residual and slope");
     residual_slope_2Dhist -> GetXaxis() -> SetTitle("Residual, unit : mm");
-    residual_slope_2Dhist -> GetYaxis() -> SetTitle("(l2-l1)/distance");
+    residual_slope_2Dhist -> GetYaxis() -> SetTitle("(l2-l0)/distance");
 
     residual_slope_2Dhist -> Draw("colz0");
 
@@ -631,6 +818,7 @@ void hit3_plot_residual_slope_2D (vector<double> input_vec_1, vector<double> inp
     c3 -> Clear();
 }
 
+// note : to understand the behavior of run89
 void hit3_plot_residual_position_2D (vector<double> input_vec_1, vector<double> input_vec_2, TString folder_direction)
 {
     TCanvas * c3 = new TCanvas("c3","c3",1000,800);
@@ -669,6 +857,7 @@ void hit3_plot_residual_position_2D (vector<double> input_vec_1, vector<double> 
     c3 -> Clear();
 }
 
+// note : print the cut value
 void print_used_par ()
 {
     
@@ -689,44 +878,25 @@ void print_used_par ()
     cout<<"=========================== used parameters =============================="<<endl;
 }
 
-// void DUT_test_v1 ()
-// {
-//     // note : the setting pars
-//     TString folder_direction = "/Users/chengweishi/Downloads/BeamTest_2021/noise_ana_data/folder_DUT";
-//     TString file_name = "run52_no_clone_filter_all_int_1000"; // note : not used
-//     TString cluster_file_name = "cluster_information_offset-0.2908_adcinfo";
-//     int study_chip = 8;
-
-//     // vector<profile_str> profile_str_vec; profile_str_vec.clear();
-//     // profile_str_vec = profile_read_and_build(folder_direction, file_name, cluster_file_name, study_chip);
-
-//     vector<cluster_str> cluster_str_vec; cluster_str_vec.clear();
-//     cluster_str_vec = cluster_read_and_build(folder_direction, file_name, cluster_file_name, study_chip);   
-
-//     vector<cluster_reformat_str> cluster_reformat_str_vec; cluster_reformat_str_vec.clear();
-//     cluster_reformat_str_vec = cluster_reformat(cluster_str_vec);
-
-//     DUT_str DUT_data = efficiency_DUT_method(cluster_reformat_str_vec,study_chip);
-
-//     // note : make plot
-//     plot_residual( DUT_data.middle_layer_residual, folder_direction );
-//     plot_angle( DUT_data.good_combination_slope, folder_direction );
-
-//     cout<<"# of 111 : "<<DUT_data.track_111_count<<endl;
-//     cout<<"# of 101 : "<<DUT_data.track_101_count<<endl;
-//     cout<<"Efficiency : "<<double(DUT_data.track_111_count) / double(DUT_data.track_111_count + DUT_data.track_101_count)<<endl;
+// note : print the efficiency, the statistic error is given by the TEfficiency
+void print_effi ( DUT_str input_DUT_data )
+{
+    cout<<"=========================== Detection efficiency =============================="<<endl;
+    cout<<"# of 111 : "<<input_DUT_data.track_111_count<<endl;
+    cout<<"# of 101 : "<<input_DUT_data.track_101_count<<endl;
+    cout<<"Efficiency : "<<double(input_DUT_data.track_111_count) / double(input_DUT_data.track_111_count + input_DUT_data.track_101_count)<<endl;
 
 
-//     TH1F * total_hist = new TH1F ("","",1,0,1);
-//     TH1F * pass_hist = new TH1F ("","",1,0,1);
+    TH1F * total_hist = new TH1F ("","",1,0,1);
+    TH1F * pass_hist = new TH1F ("","",1,0,1);
     
-//     // note : layer - 1 efficiency
-//     total_hist->SetBinContent(1,(DUT_data.track_111_count + DUT_data.track_101_count)); 
-//     pass_hist ->SetBinContent(1,DUT_data.track_111_count);
+    // note : layer - 1 efficiency
+    total_hist->SetBinContent(1,(input_DUT_data.track_111_count + input_DUT_data.track_101_count)); 
+    pass_hist ->SetBinContent(1,input_DUT_data.track_111_count);
 
-//     TEfficiency * detection_effi = new TEfficiency (*pass_hist,*total_hist);
-//     printf("Efficiency by TEfficiency \n");
-//     printf("%.5f\t+%.5f\t-%.5f \n", detection_effi->GetEfficiency(1)*100.,detection_effi->GetEfficiencyErrorUp(1)*100.,detection_effi->GetEfficiencyErrorLow(1)*100.);
+    TEfficiency * detection_effi = new TEfficiency (*pass_hist,*total_hist);
+    printf("Efficiency by TEfficiency \n");
+    printf("%.5f\t+%.5f\t-%.5f \n", detection_effi->GetEfficiency(1)*100.,detection_effi->GetEfficiencyErrorUp(1)*100.,detection_effi->GetEfficiencyErrorLow(1)*100.);
 
-
-// }
+    cout<<"=========================== Detection efficiency =============================="<<endl;
+}
