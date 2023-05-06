@@ -45,6 +45,122 @@ import intt
 # General functions                                        #
 ############################################################
 
+def ReadMap( map_path=None, element_num=None ) :
+
+    try :
+        int( element_num )
+    except ValueError:
+        print( "element_num must be a integer.\nStopped." )
+        return None
+        
+    if os.path.exists( map_path ) is False :
+        print( map_path, "cannot be found....", file=sys.stderr )
+        return None
+        #sys.exit()
+
+    rtn_maps = [] # a list of [Felix ch] [chip ID] [DAC0]
+
+    # read the DAC0 map file
+    with open( map_path ) as file :
+
+        # read each line
+        for line in file :
+            # for comment out or empty line (work???)
+            if line[0] == "#" or len(line.split()) == 0 :
+                continue
+
+            if element_num is None : 
+                rtn_map = line.split()
+            else :
+                rtn_map = line.split()[ 0 : element_num ] 
+
+            rtn_maps.append( rtn_map )
+            # end of for line in file
+        # end of with open( map_file ) as file
+        
+    return rtn_maps
+    
+
+def ReadDac0MapTemp( map_path=None) :
+    """!
+    @biref 
+    @param map_path A path to the DAC0 map file. If nothing give, the default map is taken.
+    @retval A list of map for the INTT DAQ server (intt0, intt1, ...) (I assumed that it's used in an INTT DAQ server) is returned. See below for more details.
+    @details More explanations...
+    # The place for the file and filename
+
+    The path to the file is assumed to be /home/phnxrc/INTT/map_dac0/
+    Each dataset should be in a sub-directory under the map_dac0 directory.
+    You have to make a symbolic link to the sub-directory to be used.
+    The link must be named "latest".
+    The hostname of the INTT DAQ servers is intt[0-7]. So the file name should be, for example, intt4_dac0.txt.
+    You should make a file with a different name from the assumed one. Then you can make a symbolic link to the file.
+    For example, 
+      $ ln -s /home/phnxrc/INTT/map_dac0/intt3_dac0_ver20230501.txt. /home/phnxrc/INTT/map_dac0/intt3_dac0.txt    
+
+    ## Example
+    It helps you to understand it.
+
+        [inttdev@inttdaq 19:04:33 map_dac0] $ tree
+        .
+        ├── latest -> ver_dummy
+        └── ver_dummy
+            ├── intt0_dac0.txt
+            ├── intt1_dac0.txt
+            ├── intt2_dac0.txt
+            ├── intt3_dac0.txt
+            ├── intt4_dac0.txt
+            ├── intt5_dac0.txt
+            ├── intt6_dac0.txt
+            └── intt7_dac0.txt
+
+
+    # Format
+
+    The format of the DAC0 map file is assumed to be 
+        [Felix ch] [chip ID] [DAC0]
+    Here, 
+        - Felix ch: from 0 to 13
+        - chip ID: from 1 26 (not from 1 to 13 + side selection)
+        - DAC0: from 0 to 255
+    Values are separated by a whilte space or tab.
+    Lines starting with "#" are ignored.
+
+    # Returned value
+    A list of the DAC0 map for the INTT DAQ server is returned. It's [FELIX ch][chip id][DAC 0].
+    """
+    # Map file for DAC0 config #####################################
+
+    # None is the default
+    hostname = socket.gethostname()
+    if map_path is None : 
+        username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
+        map_dir = "/home/" + username + "/INTT/map_dac0/latest/"    
+        map_file = hostname + "_dac0.txt"
+        map_path = map_dir + map_file
+
+    print( "DAC0 Map:", map_path )
+    dac0_maps = ReadMap( map_path=map_path, element_num=4 )
+    # a list of [INTT DAQ server] [Felix ch] [chip ID] [DAC0], All integer
+    # but returned list (if it's in the INTT DAQ server) is [Felix ch] [chip ID] [DAC0]
+    
+    dac_server_name_pattern = re.compile( "intt[0-7]" )
+    if bool( dac_server_name_pattern.match( hostname ) ) is False : 
+        # If you are not in an INTT DAQ server, return all 
+        return dac0_maps
+    else :
+        server_num = int( hostname[-1] ) # it's safe conversion!
+
+    rtn_maps = []
+    for dac0_map in dac0_maps :
+        if dac0_map[0] != server_num :
+            continue
+
+        rtn_maps.apend( [ val for val in rtn_maps[1:] ] )
+
+    return rtn
+
+
 def ReadDac0Map( map_path=None) :
     """!
     @biref 
@@ -504,7 +620,6 @@ def check_register( d, chip_set=range(1, 14), reg_set=range(4, 12), ladder_map_p
 # Functions not in intt.py
 # ###########################################################
 
-
 def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until_success=False, trial_num=None, debug=False ) :
     """!
     @brief The DAC0 setting is applied
@@ -555,15 +670,20 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
         dac0_address = 4
         intt.write_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, value=dac0 )
 
+        # printed when debug=True
+        command = intt.make_fphx_cmd( chip, dac0_address, 1, dac0 ) # chipId, regId, cmd, data
         if debug is True : 
-            command = intt.make_fphx_cmd( chip, dac0_address, 1, dac0 ) # chipId, regId, cmd, data
             print( "FELIX CH", felix_ch, "ROC port", roc_port, "Wedges", wedges, "Chip", chip, "Wedge", wedge,  "DAC0", dac0, hex(command) )
 
+        # repeat untill readout value is same as the written value. It's enabled when continue_until_success=True
         if continue_until_success is True :
             counter = 0
-            roc = 0 if chip < 14 else 1
-            rtn = intt.read_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, roc=roc )
-            while dac0 not in rtn :
+
+            roc = 0 if chip < 14 else 1 # ROC selection for read out
+            rtn = intt.read_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, roc=roc ) # 2 values are returned due to a loss of a bit when a bus extender is used.
+
+            # repeat until the read value is turned to same as the written value
+            while command not in rtn :
                 counter += 1
 
                 # If it's limited trial mode and the number of attemps is more than the limit, break the loop
@@ -573,6 +693,11 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
                     
                 intt.write_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, value=dac0 )
                 rtn = intt.read_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, roc=roc )
+                if debug is True :
+                    print( "\t", "#Repat:", counter,
+                           "FELIX CH", felix_ch, "ROC port", roc_port, "Wedges", wedges, "Chip", chip, "Wedge", wedge,  "DAC0", dac0, hex(command),
+                           "Readout:", hex(rtn[0]), hex(rtn[1]), rtn )
+
         #break
         # end of for params in dac0_map
 
