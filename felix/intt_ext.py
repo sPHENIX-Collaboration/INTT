@@ -80,87 +80,6 @@ def ReadMap( map_path=None, element_num=None ) :
         
     return rtn_maps
     
-
-def ReadDac0MapTemp( map_path=None) :
-    """!
-    @biref 
-    @param map_path A path to the DAC0 map file. If nothing give, the default map is taken.
-    @retval A list of map for the INTT DAQ server (intt0, intt1, ...) (I assumed that it's used in an INTT DAQ server) is returned. See below for more details.
-    @details More explanations...
-    # The place for the file and filename
-
-    The path to the file is assumed to be /home/phnxrc/INTT/map_dac0/
-    Each dataset should be in a sub-directory under the map_dac0 directory.
-    You have to make a symbolic link to the sub-directory to be used.
-    The link must be named "latest".
-    The hostname of the INTT DAQ servers is intt[0-7]. So the file name should be, for example, intt4_dac0.txt.
-    You should make a file with a different name from the assumed one. Then you can make a symbolic link to the file.
-    For example, 
-      $ ln -s /home/phnxrc/INTT/map_dac0/intt3_dac0_ver20230501.txt. /home/phnxrc/INTT/map_dac0/intt3_dac0.txt    
-
-    ## Example
-    It helps you to understand it.
-
-        [inttdev@inttdaq 19:04:33 map_dac0] $ tree
-        .
-        ├── latest -> ver_dummy
-        └── ver_dummy
-            ├── intt0_dac0.txt
-            ├── intt1_dac0.txt
-            ├── intt2_dac0.txt
-            ├── intt3_dac0.txt
-            ├── intt4_dac0.txt
-            ├── intt5_dac0.txt
-            ├── intt6_dac0.txt
-            └── intt7_dac0.txt
-
-
-    # Format
-
-    The format of the DAC0 map file is assumed to be 
-        [Felix ch] [chip ID] [DAC0]
-    Here, 
-        - Felix ch: from 0 to 13
-        - chip ID: from 1 26 (not from 1 to 13 + side selection)
-        - DAC0: from 0 to 255
-    Values are separated by a whilte space or tab.
-    Lines starting with "#" are ignored.
-
-    # Returned value
-    A list of the DAC0 map for the INTT DAQ server is returned. It's [FELIX ch][chip id][DAC 0].
-    """
-    # Map file for DAC0 config #####################################
-
-    # None is the default
-    hostname = socket.gethostname()
-    if map_path is None : 
-        username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
-        map_dir = "/home/" + username + "/INTT/map_dac0/latest/"    
-        map_file = "dac0_map.txt"
-        map_path = map_dir + map_file
-
-    print( "DAC0 Map:", map_path )
-    dac0_maps = ReadMap( map_path=map_path, element_num=4 )
-    # a list of [INTT DAQ server] [Felix ch] [chip ID] [DAC0], All integer
-    # but returned list (if it's in the INTT DAQ server) is [Felix ch] [chip ID] [DAC0]
-    
-    dac_server_name_pattern = re.compile( "intt[0-7]" )
-    if bool( dac_server_name_pattern.match( hostname ) ) is False : 
-        # If you are not in an INTT DAQ server, return all 
-        return dac0_maps
-    else :
-        server_num = int( hostname[-1] ) # it's safe conversion!
-
-    rtn_maps = []
-    for dac0_map in dac0_maps :
-        if dac0_map[0] != server_num :
-            continue
-
-        rtn_maps.apend( [ val for val in rtn_maps[1:] ] )
-
-    return rtn_maps
-
-
 def ReadDac0Map( map_path=None) :
     """!
     @biref 
@@ -194,12 +113,12 @@ def ReadDac0Map( map_path=None) :
             ├── intt6_dac0.txt
             └── intt7_dac0.txt
 
-
     # Format
 
     The format of the DAC0 map file is assumed to be 
-        [Felix ch] [chip ID] [DAC0]
+        [INTT DAQ server num] [Felix ch] [chip ID] [DAC0]
     Here, 
+        - INTT DAQ server num: from 0 to 7 (integer)
         - Felix ch: from 0 to 13
         - chip ID: from 1 26 (not from 1 to 13 + side selection)
         - DAC0: from 0 to 255
@@ -216,51 +135,32 @@ def ReadDac0Map( map_path=None) :
     if map_path is None : 
         username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
         map_dir = "/home/" + username + "/INTT/map_dac0/latest/"    
-        map_file = hostname + "_dac0.txt"
+        map_file = "dac0_map.txt"
         map_path = map_dir + map_file
 
-    if os.path.exists( map_path ) is False :
-        print( map_path, "cannot be found....", file=sys.stderr )
-        return None
-        #sys.exit()
-
     print( "DAC0 Map:", map_path )
-    dac0_maps = [] # a list of [Felix ch] [chip ID] [DAC0]
-
-    dac_server_name_pattern = re.compile( "intt[0-7]" )
+    dac0_maps = ReadMap( map_path=map_path, element_num=4 )
+    # a list of [INTT DAQ server] [Felix ch] [chip ID] [DAC0], All integer
+    # but returned list (if it's in the INTT DAQ server) is [Felix ch] [chip ID] [DAC0]
     
-    # read the DAC0 map file
-    with open( map_path ) as file :
+    dac_server_name_pattern = re.compile( "intt[0-7]" )
+    if bool( dac_server_name_pattern.match( hostname ) ) is False : 
+        # If you are not in an INTT DAQ server, return all 
+        return dac0_maps
+    else :
+        server_num = int( hostname[-1] ) # it's safe conversion!
 
-        # read each line
-        for line in file :
-            # for comment out or empty line (work???)
-            if line[0] == "#" or len(line.split()) == 0 :
-                continue
+    rtn_maps = []
+    for dac0_map in dac0_maps :
 
-            felix_ch = int( line.split()[0] )
-            chip = int( line.split()[1] )
-            dac0 = int( line.split()[2] )
+        # If the DAQ number in the map is difference from the server num, skip it
+        if int(dac0_map[0]) != server_num :
+            continue
 
-            dac0_map = []
-            """
-            if bool( dac_server_name_pattern.match( hostname ) ) is False : 
-                # If you are not in an INTT DAQ server, take the server number
-                #print( [ int( server ), felix_ch, chip, dac0 ] )
-                dac0_map.append( int( server ) )
-            elif hostname[-1] != server :
-                # If you are in an INTT DAQ server, and current values are not your server, skip them
-                continue
-            """
+        # take Felix ch, chip ID, and DAC0 as a list
+        rtn_maps.append( [ int(val) for val in dac0_map[1:] ] )
 
-            dac0_map.append( felix_ch )
-            dac0_map.append( chip )
-            dac0_map.append( dac0 )
-            dac0_maps.append( dac0_map )
-            # end of for line in file
-        # end of with open( map_file ) as file
-        
-    return dac0_maps
+    return rtn_maps
 
 def ReadLadderMap( map_path = None ) :
     """!
