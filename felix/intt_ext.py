@@ -45,7 +45,7 @@ import intt
 # General functions                                        #
 ############################################################
 
-def ReadMap( map_path=None, element_num=None ) :
+def ReadMap( map_path=None, element_num=None, debug=False ) :
 
     try :
         int( element_num )
@@ -63,8 +63,14 @@ def ReadMap( map_path=None, element_num=None ) :
     # read the DAC0 map file
     with open( map_path ) as file :
 
+        if debug is True :
+            print( "Contents in the map file" )
+            
         # read each line
         for line in file :
+            if debug is True :
+                print( line, end='' )
+
             # for comment out or empty line (work???)
             if line[0] == "#" or len(line.split()) == 0 :
                 continue
@@ -72,15 +78,23 @@ def ReadMap( map_path=None, element_num=None ) :
             if element_num is None : 
                 rtn_map = line.split()
             else :
-                rtn_map = line.split()[ 0 : element_num ] 
+                rtn_map = line.split()[ 0 : element_num ]
+
+            if debug is True :
+                print( "Filling ", rtn_map )
 
             rtn_maps.append( rtn_map )
+
             # end of for line in file
         # end of with open( map_file ) as file
         
+    if debug is True :
+        print( "Map to be returned:" )
+        print( rtn_maps )
+        
     return rtn_maps
     
-def ReadDac0Map( map_path=None) :
+def ReadDac0Map( map_path=None, debug=False ) :
     """!
     @biref 
     @param map_path A path to the DAC0 map file. If nothing give, the default map is taken.
@@ -139,29 +153,97 @@ def ReadDac0Map( map_path=None) :
         map_path = map_dir + map_file
 
     print( "DAC0 Map:", map_path )
-    dac0_maps = ReadMap( map_path=map_path, element_num=4 )
+    dac0_maps = ReadMap( map_path=map_path, element_num=4, debug=debug )
     # a list of [INTT DAQ server] [Felix ch] [chip ID] [DAC0], All integer
     # but returned list (if it's in the INTT DAQ server) is [Felix ch] [chip ID] [DAC0]
     
     dac_server_name_pattern = re.compile( "intt[0-7]" )
-    if bool( dac_server_name_pattern.match( hostname ) ) is False : 
-        # If you are not in an INTT DAQ server, return all 
-        return dac0_maps
+    if bool( dac_server_name_pattern.match( hostname ) ) is False :
+        if debug is True :
+            print( "You are not in the INTT DAQ server. Let\'s assume you are in intt1" )
+        server_num = 1
     else :
         server_num = int( hostname[-1] ) # it's safe conversion!
 
     rtn_maps = []
     for dac0_map in dac0_maps :
 
+        if debug is True :
+            print( "This map", dac0_map, "is ", end='' )
         # If the DAQ number in the map is difference from the server num, skip it
         if int(dac0_map[0]) != server_num :
+            if debug is True :
+                print( "not taken." )
             continue
 
+        if debug is True :
+            print( "taken." )
         # take Felix ch, chip ID, and DAC0 as a list
         rtn_maps.append( [ int(val) for val in dac0_map[1:] ] )
 
+    if debug is True :
+        print( "DAC0 map:" )
+        print( rtn_maps )
+        
     return rtn_maps
 
+def ReadLadderMapTemp( map_path = None ) :
+    """!
+    @biref Ladder map (relation of Felix ch, ROC port, and the ladder name) is taken from the map file
+    @param map_path The path to the map file. If nothing given, the default map depending on the INTT DAQ server will be used.
+    @retval The ladder map as a dictionary. See below for more details.
+    @details
+    # The place for the file and filename
+
+    I think /home/phnxrc/INTT/map_ladder/${hostname}_map.txt is fine.
+    When the map needs to be updated (it shound't happen so often), you can make a new map file, namely ${hostname}_map_{whatever you like}.txt.
+    Then you can delete the curreny symbolic link and make new one linked to the new map file.
+
+    # Format 
+    Each line should be
+      [Felix ch] [ROC port] [Ladder Name]
+    For example, 
+      3  A3  B0L000N
+    Values should be separated by a white space or a tab.
+    For the moment, I don't use [Ladder Name]. If requested, I'll take the parameter too.
+    Lines starting with "#" are ignored.
+    It's the same format as the one used by the standalone DAQ.
+
+    # Return value
+    A dictonary is returned. The key is FELIX channel, and ROC port can be found by the key. For example:
+      -1: "None"
+      0 : "A1"
+      1 : "A2"
+      ...
+
+    Key -1 has "None" in any cases.
+    Ladder name is not included for the moment.
+
+    # Misc
+    Text file mapping will be replaced by sPHENIX Database.
+    """
+    
+    # it's the default way to get the map path
+    if map_path is None :
+        hostname = socket.gethostname()
+        username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
+        map_dir = "/home/" + username + "/INTT/map_ladder/"    
+        map_file = hostname + "_map.txt"
+        map_path = map_dir + map_file
+        
+    print( "Ladder Map:", map_path )
+
+    ladder_maps = ReadMap( map_path=map_path, element_num=3 )
+
+    # convert FELIX ch (ladder_maps[0]) from str to int
+    for ladder_map in ladder_maps :
+        ladder_map[0] = int( ladder_map[0] )
+
+
+    # Guarantee that the map is sorted by FELIX ch
+    ladder_maps = sorted( ladder_maps )
+    return ladder_maps 
+    
 def ReadLadderMap( map_path = None ) :
     """!
     @biref Ladder map (relation of Felix ch, ROC port, and the ladder name) is taken from the map file
@@ -502,17 +584,16 @@ def check_register( d, chip_set=range(1, 14), reg_set=range(4, 12), ladder_map_p
     Since the ladder condiguration was fixed for each INTT DAQ server, check register have to be done for each server easily.
     This function provides such great usability to you!
     """
-    ladder_map = ReadLadderMap( map_path=ladder_map_path )
+    ladder_maps = ReadLadderMapTemp( map_path=ladder_map_path )
     rtn = []
-    for key in ladder_map :
-        if key == -1 :
-            continue
-        
-        roc = 0 if key < 7 else 1
-        wedge_set = intt.GetWedgeIDs( ladder_map[key] )
+    for ladder_map in ladder_maps : 
+
+        roc = 0 if int( ladder_map[0] ) < 7 else 1 
+        wedge_set = intt.GetWedgeIDs( ladder_map[1] )
         good_results = intt.check_register( d, wedge_set=wedge_set, chip_set=chip_set, reg_set=reg_set, roc=roc )
+
         rtn.append( good_results )
-        
+        # end of for ladder_map in ladder_maps
 
     return rtn
     
@@ -543,20 +624,42 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
     
     If you are not in the INTT DAQ server, it's better to give a DAC0 map and a ladder map thorugh arguments.
     """
-    dac0_map = ReadDac0Map( map_path=dac0_map_path )
-    ladder_map = ReadLadderMap( map_path=ladder_map_path )
+    dac0_map = ReadDac0Map( map_path=dac0_map_path, debug=debug )
+    #ladder_map = ReadLadderMap( map_path=ladder_map_path )
+    ladder_map = ReadLadderMapTemp( map_path=ladder_map_path )
 
+    print( dac0_map )
+    print( ladder_map )
     for params in dac0_map :
         felix_ch = params[0]
         chip = params[1]
-        chip_0_13 = chip if chip < 14 else chip - 13
         dac0 = params[2]
-        roc_port = ladder_map[ felix_ch ]
+        #roc_port = ladder_map[ felix_ch ]
+
+        try : 
+            roc_port = ladder_map[ felix_ch ][1] # FELIX channel should correspond to the index of the ladder if everything is as expected.
+        except IndexError :
+            print( "Failed finding FELIX ch", felix_ch, ", which was taken from the DAC0 map, in the ladder map...", file=sys.stderr )
+            print( "It can happen, for example, if a ladder(s) are not in the ladder map. I recommend you to check your ladder map.", file=sys.stderr )
+            print( "Let's try search the channel in the ladder map...", file=sys.stderr )
+
+            list_found = [ (felix_ch in line ) for line in ladder_map ] # for example, [False, False, True, ... ]
+            if True not in list_found :
+                print( "Ah, FELIX ch", felix_ch, "is not in the ladder map", file=sys.stderr )
+                print( "Check the map!!! Bye!", file=sys.stderr )
+                sys.exit()
+            else:
+                print( "FELIX ch", felix_ch, "is found in the ladder map.", file=sys.stderr )
+                index = list_found.index( True ) # take an index of the first appearance
+                roc_port = ladder_map[ index ][1]
+
+        if debug is True : 
+            print( felix_ch, chip, dac0, roc_port )
+            
+        chip_0_13 = chip if chip < 14 else chip - 13
         wedges = intt.GetWedgeIDs( roc_port ) # a pair of the DF18 connectors
         wedge = wedges[0] if chip < 14 else wedges[1] # the one for the chip
 
-        #if chip < 14 :
-        #continue
         #################
         # ROC selection: d.reg.sc_target
         if d is not None : 
