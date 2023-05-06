@@ -187,7 +187,7 @@ def ReadDac0Map( map_path=None, debug=False ) :
         
     return rtn_maps
 
-def ReadLadderMapTemp( map_path = None ) :
+def ReadLadderMap( map_path = None ) :
     """!
     @biref Ladder map (relation of Felix ch, ROC port, and the ladder name) is taken from the map file
     @param map_path The path to the map file. If nothing given, the default map depending on the INTT DAQ server will be used.
@@ -244,78 +244,50 @@ def ReadLadderMapTemp( map_path = None ) :
     ladder_maps = sorted( ladder_maps )
     return ladder_maps 
     
-def ReadLadderMap( map_path = None ) :
+def ReadServerRocMap() :
     """!
-    @biref Ladder map (relation of Felix ch, ROC port, and the ladder name) is taken from the map file
-    @param map_path The path to the map file. If nothing given, the default map depending on the INTT DAQ server will be used.
-    @retval The ladder map as a dictionary. See below for more details.
+    @brief
+    @retval
     @details
-    # The place for the file and filename
-
-    I think /home/phnxrc/INTT/map_ladder/${hostname}_map.txt is fine.
-    When the map needs to be updated (it shound't happen so often), you can make a new map file, namely ${hostname}_map_{whatever you like}.txt.
-    Then you can delete the curreny symbolic link and make new one linked to the new map file.
-
-    # Format 
-    Each line should be
-      [Felix ch] [ROC port] [Ladder Name]
-    For example, 
-      3  A3  B0L000N
-    Values should be separated by a white space or a tab.
-    For the moment, I don't use [Ladder Name]. If requested, I'll take the parameter too.
-    Lines starting with "#" are ignored.
-    It's the same format as the one used by the standalone DAQ.
-
-    # Return value
-    A dictonary is returned. The key is FELIX channel, and ROC port can be found by the key. For example:
-      -1: "None"
-      0 : "A1"
-      1 : "A2"
-      ...
-
-    Key -1 has "None" in any cases.
-    Ladder name is not included for the moment.
-
-    # Misc
-    Text file mapping will be replaced by sPHENIX Database.
+    """
+    server_ROC_map = {
+        "intt0" : ['RC-0S','RC-1S'],
+        "intt1" : ['RC-2S','RC-3S'],
+        "intt2" : ['RC-4S','RC-5S'],
+        "intt3" : ['RC-6S','RC-7S'],
+        "intt4" : ['RC-0N','RC-1N'],
+        "intt5" : ['RC-2N','RC-3N'],
+        "intt6" : ['RC-4N','RC-5N'],
+        "intt7" : ['RC-6N','RC-7N']
+    }
+    return server_ROC_map
+    
+def GetPortIDWithName( port_name=None ) :    
+    """!
+    @brief
+    @retval
+    @details
     """
     
-    # it's the default way to get the map path
-    if map_path is None :
-        hostname = socket.gethostname()
-        username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
-        map_dir = "/home/" + username + "/INTT/map_ladder/"    
-        map_file = hostname + "_map.txt"
-        map_path = map_dir + map_file
-        
-    if os.path.exists( map_path ) is False :
-        print( map_path, "cannot be found....", file=sys.stderr )
-        sys.exit()
+    port_to_id_map = {"A1" : 0,  "A2" : 1, "A3" : 2,
+                      "B1" : 3,  "B2" : 4, "B3" : 5,
+                      "C1" : 6,  "C2" : 7, "C3" : 8,
+                      "D1" : 9, "D2" : 10, "D3" : 11
+                      }
+    
+    # if no name if given, return all of them
+    if port_name is None :
+        return port_to_id_map
+    
+    return port_to_id_map[ port_name ]
 
-    print( "Ladder Map:", map_path )
-    ladder_maps = {-1: "None" } # dict { felix ch: ROC port} 
-    # read the DAC0 map file
-    with open( map_path ) as file :
-
-        # read each line
-        for line in file :
-            # for comment out or empty line
-            if line[0] == "#" or len(line.split()) == 0 :
-                continue
-                
-            print( line ) 
-            felix_ch = int(line.split()[0])
-            roc_port = line.split()[1]
-            # ladder_name = line.split()[2] # enabled if required
-            ladder_maps[ felix_ch ] = roc_port
-            # end of for line in file
-        # end of with open( map_file ) as file
-
-    #for key in ladder_maps :
-    # print( key, ladder_maps[ key ] )
-    return ladder_maps
-
-
+#def GetWedgesWithPortID( wedge ) :
+"""!
+@brief
+@retval
+@details
+"""
+    
 ############################################################
 # Overwritting functions                                   #
 ############################################################
@@ -491,7 +463,6 @@ def cold_start(d):
 
     return rtn_string
 
-
 def cold_start_new(d): # H.Imai
     intt.dma_datasel(d, test_mode=False)
 
@@ -584,7 +555,7 @@ def check_register( d, chip_set=range(1, 14), reg_set=range(4, 12), ladder_map_p
     Since the ladder condiguration was fixed for each INTT DAQ server, check register have to be done for each server easily.
     This function provides such great usability to you!
     """
-    ladder_maps = ReadLadderMapTemp( map_path=ladder_map_path )
+    ladder_maps = ReadLadderMap( map_path=ladder_map_path )
     rtn = []
     for ladder_map in ladder_maps : 
 
@@ -625,8 +596,7 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
     If you are not in the INTT DAQ server, it's better to give a DAC0 map and a ladder map thorugh arguments.
     """
     dac0_map = ReadDac0Map( map_path=dac0_map_path, debug=debug )
-    #ladder_map = ReadLadderMap( map_path=ladder_map_path )
-    ladder_map = ReadLadderMapTemp( map_path=ladder_map_path )
+    ladder_map = ReadLadderMap( map_path=ladder_map_path )
 
     print( dac0_map )
     print( ladder_map )
@@ -692,21 +662,26 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
                 # If it's limited trial mode and the number of attemps is more than the limit, break the loop
                 if trial_num is not None :
                     if trial_num <= counter :
-                        break
+                        if debug is True :
+                            print( trial_num, "times attemped, but written(", command, ") and read-out(", rtn, ") didn\'t match. I give up.", file=sys.stderr )
+                            break
                     
                 intt.write_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, value=dac0 )
                 rtn = intt.read_fphx( d, chip=chip_0_13, register=dac0_address, wedge=wedge, roc=roc )
                 if debug is True :
                     print( "\t", "#Repat:", counter,
-                           "FELIX CH", felix_ch, "ROC port", roc_port, "Wedges", wedges, "Chip", chip, "Wedge", wedge,  "DAC0", dac0, hex(command),
+                           "FELIX CH", felix_ch, "ROC port", roc_port, "Wedges", wedges,
+                           "Chip", chip, "Wedge", wedge,  "DAC0", dac0,
+                           hex(command),
                            "Readout:", hex(rtn[0]), hex(rtn[1]), rtn )
-
-        #break
+                # end of while command not in rtn
+            # end of if continue_until_success
         # end of for params in dac0_map
 
     time.sleep( 0.01 ) # needed? I'm not sure...
     d.reg.sc_target = 0x3
 
+""" moved to def GetServerRocMap(), It has to be hard coded but should not be writable by users.
 server_ROC_map = {
     "intt0" : ['RC-0S','RC-1S'],
     "intt1" : ['RC-2S','RC-3S'],
@@ -717,12 +692,16 @@ server_ROC_map = {
     "intt6" : ['RC-4N','RC-5N'],
     "intt7" : ['RC-6N','RC-7N']
 }
+"""
 
+""" Use intt.GetWedgeIDs to minize hard coding... if possible """
 portid_to_wedge_map = {0:[8,9]   , 1 :[16,17], 2 :[24,25],  # note : column A
                        3:[10,11] , 4 :[18,19], 5 :[26,27],  # note : column B
                        6:[12,13] , 7 :[20,21], 8 :[28,29],  # note : column C
                        9:[14,15] , 10:[22,23], 11:[30,31]}  # note : column D
 
+
+""" Hard coding is the only solution, but why don't you make a function or define in the function?
 port_to_id_map = {"A1" : 0,
                   "A2" : 1,
                   "A3" : 2,
@@ -738,9 +717,9 @@ port_to_id_map = {"A1" : 0,
                   "D1" : 9,
                   "D2" : 10,
                   "D3" : 11}
+"""
 
 port_selection = {"talk_NO_port" : 0x0, "talk_port_0" : 0x1, "talk_port_1" : 0x2, "talk_All_port" : 0x3}
-
 
 mask_ch_array = ["/home/phnxrc/INTT/sphenix_inttpy/run_scripts/mask_ch_south_v1.txt","/home/phnxrc/INTT/sphenix_inttpy/run_scripts/mask_ch_north_v1.txt"]
 close_FC_map = "/home/phnxrc/INTT/sphenix_inttpy/run_scripts/close_FC_gate.txt"
@@ -755,15 +734,17 @@ def mask_ch_convert (d, port, chip, channel):
         chip_conv = chip
         wedge_index = 0
     
-    print("mask channel, chip_conv :",chip_conv, "wedge :", portid_to_wedge_map[port][wedge_index], "chan :", channel)
-    intt.mask_channel(d, chip_conv, portid_to_wedge_map[port][wedge_index], channel=channel)
+    wedge = GetPortID( port )[ wedge_index ]
+    print("mask channel, chip_conv :",chip_conv, "wedge :", wedge, "chan :", channel)
+    intt.mask_channel(d, chip_conv, wedge, channel=channel)
 
 # read the txt file and ask the mask_ch_convert to mask the channel, channel by channel
 def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array): # note : two files 
 
     txt_file_in = txt_file_array[0] if int(server[4]) < 4 else txt_file_array[1]
 
-    ROC_index = int(server_ROC_map[server][flx_port][3])
+    #ROC_index = int(server_ROC_map[server][flx_port][3])
+    ROC_index = int( GetServerRocMap[server][flx_port][3] )
 
     with open( txt_file_in ) as file :
         for line in file :
