@@ -244,7 +244,7 @@ def ReadLadderMap( map_path = None ) :
     ladder_maps = sorted( ladder_maps )
     return ladder_maps 
     
-def ReadServerRocMap() :
+def GetServerRocMap() :
     """!
     @brief
     @retval
@@ -734,7 +734,7 @@ def mask_ch_convert (d, port, chip, channel):
         chip_conv = chip
         wedge_index = 0
     
-    wedge = GetPortID( port )[ wedge_index ]
+    wedge = GetPortIDWithName( port )[ wedge_index ]
     print("mask channel, chip_conv :",chip_conv, "wedge :", wedge, "chan :", channel)
     intt.mask_channel(d, chip_conv, wedge, channel=channel)
 
