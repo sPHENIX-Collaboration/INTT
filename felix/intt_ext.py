@@ -136,7 +136,7 @@ def ReadDac0MapTemp( map_path=None) :
     if map_path is None : 
         username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
         map_dir = "/home/" + username + "/INTT/map_dac0/latest/"    
-        map_file = hostname + "_dac0.txt"
+        map_file = "dac0_map.txt"
         map_path = map_dir + map_file
 
     print( "DAC0 Map:", map_path )
