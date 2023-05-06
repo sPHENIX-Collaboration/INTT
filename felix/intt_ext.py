@@ -724,9 +724,11 @@ port_selection = {"talk_NO_port" : 0x0, "talk_port_0" : 0x1, "talk_port_1" : 0x2
 mask_ch_array = ["/home/phnxrc/INTT/sphenix_inttpy/run_scripts/mask_ch_south_v1.txt","/home/phnxrc/INTT/sphenix_inttpy/run_scripts/mask_ch_north_v1.txt"]
 close_FC_map = "/home/phnxrc/INTT/sphenix_inttpy/run_scripts/close_FC_gate.txt"
 
-# mask the channel
 def mask_ch_convert (d, port, chip, channel):
-    
+    """!
+    @brief mask the channel
+    """
+
     if (chip > 13) : 
         chip_conv = chip - 13
         wedge_index = 1
@@ -738,9 +740,11 @@ def mask_ch_convert (d, port, chip, channel):
     print("mask channel, chip_conv :",chip_conv, "wedge :", wedge, "chan :", channel)
     intt.mask_channel(d, chip_conv, wedge, channel=channel)
 
-# read the txt file and ask the mask_ch_convert to mask the channel, channel by channel
-def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array): # note : two files 
 
+def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array): # note : two files 
+    """!
+    @brief read the txt file and ask the mask_ch_convert to mask the channel, channel by channel
+    """    
     txt_file_in = txt_file_array[0] if int(server[4]) < 4 else txt_file_array[1]
 
     #ROC_index = int(server_ROC_map[server][flx_port][3])
