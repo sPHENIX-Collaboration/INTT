@@ -158,7 +158,7 @@ def ReadDac0MapTemp( map_path=None) :
 
         rtn_maps.apend( [ val for val in rtn_maps[1:] ] )
 
-    return rtn
+    return rtn_maps
 
 
 def ReadDac0Map( map_path=None) :
