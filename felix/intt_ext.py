@@ -734,7 +734,7 @@ def mask_ch_convert (d, port, chip, channel):
         chip_conv = chip
         wedge_index = 0
     
-    wedge = GetPortIDWithName( port )[ wedge_index ]
+    wedge = portid_to_wedge_map[ port ][ wedge_index ]
     print("mask channel, chip_conv :",chip_conv, "wedge :", wedge, "chan :", channel)
     intt.mask_channel(d, chip_conv, wedge, channel=channel)
 
@@ -744,7 +744,7 @@ def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array):
     txt_file_in = txt_file_array[0] if int(server[4]) < 4 else txt_file_array[1]
 
     #ROC_index = int(server_ROC_map[server][flx_port][3])
-    ROC_index = int( GetServerRocMap[server][flx_port][3] )
+    ROC_index = int( GetServerRocMap()[server][flx_port][3] )
 
     with open( txt_file_in ) as file :
         for line in file :
