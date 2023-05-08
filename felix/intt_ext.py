@@ -242,7 +242,56 @@ def ReadLadderMap( map_path = None ) :
 
     # Guarantee that the map is sorted by FELIX ch
     ladder_maps = sorted( ladder_maps )
-    return ladder_maps 
+    return ladder_maps
+
+def ReadServerMap( map_path = None ) :
+    """!
+    @biref Server map (relation of hostname, IP address, and covering direction (South/North)) is taken from the map file
+    @param map_path The path to the map file. If nothing given, the default map depending on the INTT DAQ server will be used.
+    @retval The ladder map as a dictionary. See below for more details.
+    @details
+    # The place for the file and filename
+
+    I think /home/phnxrc/INTT/map_server/map_server is fine.
+    Most probabaly, it will not be changed.
+
+    # Format 
+    Each line should be
+      [Hostname] [IP address] [Direction]
+    For example, 
+      intt9 255.255.255.255 East
+    Values should be separated by a white space or a tab.
+    Lines starting with "#" are ignored.
+
+    # Return value
+    A dictonary is returned. The key is hostname. For example:
+      "intt8" : [ "255.255.255.254", "West" ]
+      "intt9" : [ "255.255.255.255", "East" ]
+      ...
+
+    # Misc
+    Text file mapping will be replaced by sPHENIX Database.
+    """
+    
+    # it's the default way to get the map path
+    if map_path is None :
+        hostname = socket.gethostname()
+        username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
+        map_dir = "/home/" + username + "/INTT/map_ladder/"    
+        map_file = hostname + "_map.txt"
+        map_path = map_dir + map_file
+        
+    print( "Server Map:", map_path )
+
+    server_maps = ReadMap( map_path=map_path, element_num=3 )
+    #server_dict = { -1 : [ "0.0.0.0", "None" ] }
+    server_dict = {}
+    # convert FELIX ch (ladder_maps[0]) from str to int
+    for server_map in server_maps :
+        print( server_map )
+        server_dict[ server_map[0] ] = [ server_map[1], server_map[2] ]
+
+    return server_dict
     
 def GetServerRocMap() :
     """!
