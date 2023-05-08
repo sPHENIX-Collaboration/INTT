@@ -278,7 +278,7 @@ def ReadServerMap( map_path = None ) :
         hostname = socket.gethostname()
         username = os.getlogin() # notmally phnxrc, it can be inttdev in the test environment
         map_dir = "/home/" + username + "/INTT/map_server/"
-        map_file = "server_map.txt"
+        map_file = "map_server.txt"
         map_path = map_dir + map_file
         
     print( "Server Map:", map_path )
