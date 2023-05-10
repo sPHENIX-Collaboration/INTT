@@ -31,6 +31,7 @@ So your code is probably,
 import datetime
 import numpy as np
 import os
+import pprint
 import re # for str comparison using regular expression
 import socket # to get hostname
 import sys
@@ -648,8 +649,9 @@ def apply_dac0( d=None, dac0_map_path=None, ladder_map_path=None, continue_until
     dac0_map = ReadDac0Map( map_path=dac0_map_path, debug=debug )
     ladder_map = ReadLadderMap( map_path=ladder_map_path )
 
-    print( dac0_map )
-    print( ladder_map )
+    print( "DAC0 map:", dac0_map )
+    print( "Ladder map:", ladder_map )
+    
     for params in dac0_map :
         felix_ch = params[0]
         chip = params[1]
@@ -824,6 +826,13 @@ def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array):
 
 
 def disable_FC(server, txt_file_in = close_FC_map):
+    """!
+    @brief
+    @param server
+    @param txt_file_in
+    @todo Name is confusing. Does it return a list of channels to be enabled or disabled?
+    @details
+    """
     Port_ch = [0,1,2,3,4,5,6, 7,8,9,10,11,12,13]
 
     with open( txt_file_in ) as file :
@@ -862,23 +871,26 @@ def threshold_setting(d,threshold):
     intt.send_fphx_cmd(d, command)
     print("Set threshold %i"%threshold)
 
-def calibration_measurement( fphx_parameters=None,
-                             customize_dac0=None,
-                             custromize_dac=None,
-                             channel_mask=None,
-                             does_scp=None,
-                             felix_ch_mask=None,
-                             is_rcdaq=False,
-                             is_gtmcalib=True,
-                             output_name=None,
-                             output_dir=None,
-                             measurement_time=None,
-                            ) :
+def calibration_measurement(
+        fphx_parameters=None,
+        customize_dac0=None,
+        customize_dac=None,
+        channel_mask=None,
+        does_scp=False,
+        felix_ch_mask=False,
+        is_rcdaq=False,
+        is_gtmcalib=True,
+        output_name=None,
+        output_dir=None,
+        measurement_time=None,
+        verbosity=0,
+        help=False
+) :
     """!
     @biref
     @param fphx_parameters=None
     @param customize_dac0=None,
-    @param custromize_dac=None
+    @param customize_dac=None
     @param channel_mask=None
     @param does_scp=None
     @param felix_ch_mask=None
@@ -886,16 +898,22 @@ def calibration_measurement( fphx_parameters=None,
     @param is_gtmcalib
     @param output_name
     @param measurement_time in sec
+    @param verbosity An integer to show more information on your terminal. It's from 0 (default, minimum) to ?
+    @param help
     @retval
     @details
     """
 
+    if help is True :
+        print( "I help you" )
+        return None
+    
     RC_DAQ = is_rcdaq
     CALIB_STCLK = True
     GTM_CALIB = is_gtmcalib
 
     # initialize dam
-    d = dam()
+    d = dam.dam()
     # reset dam
     d.reset()
     # disable all readout channels
@@ -910,13 +928,41 @@ def calibration_measurement( fphx_parameters=None,
 
     today = datetime.datetime.now()
     script_dir = os.path.realpath(os.path.dirname(__file__))
+    #@todo check whether output_name has a suffix or not
+    if output_name is None and output_dir is None :
+        # If both output_name and output_dir are not given, just do like Raul
+        output_dir = script_dir + "/data/"
+        filename = output_dir + "calib_packv5_" + str(os.uname()[1]) + "_" + today.strftime("%m%d%y_%H%M")
+    elif output_dir is None :
+        # If output_dir is given...
+        if output_name is not None : 
+            filename = output_dir + output_name
+        else : 
+            filename = output_dir + "calib_packv5_" + str(os.uname()[1]) + "_" + today.strftime("%m%d%y_%H%M")
+    else :
+        # If output_dir is not given...
+        output_dir = script_dit + "/data/"
+        filename = output_dir + output_name
     
-    filename = script_dir+"/data/"+"calib_packv5_"+str(os.uname()[1])+"_"+today.strftime("%m%d%y_%H%M")
-
     intt.macro_calib(d)
-    #intt_ext.apply_dac0( d )
 
-    enabled_channels = [int(l) for l in sys.argv[1:]]
+    if customize_dac0 is True :
+        print( "Customize DAC0 configuraton applied." )
+        apply_dac0( d, debug=(verbosity>0) )
+
+    if felix_ch_mask is False :
+        # If no mask provided, use all 13 channels
+        enabled_channels = [ l for l in range(0, 14) ]
+    else :
+        # note : Felix channel, open the gate of the felix 0 to 13.
+        hostname = socket.gethostname()
+        enabled_channels = disable_FC( server=hostname ) # <-- I think it's the list of channels to be used (Genki).
+        if verbosity > 0 :
+            print( "Take Cheng-Wei\'s FELIX channel mask. Hostname:", hostname )
+
+    if verbosity > 0 :
+        print( "Enabled FELIX channels:", *enabled_channels )
+        
     intt.enable_ro(d)
     intt.mask_channel(d, 21, 0xff)
     #d.reg.ldd_enable = 1<<12
@@ -948,38 +994,72 @@ def calibration_measurement( fphx_parameters=None,
         SECONDS = 0
         TIME = MINUTES*60 + SECONDS # [s]
 
-    while (end - start < TIME):
+    was_killed = False # a flag to know whether the while loop was stopped by an user or not
+    try:
+        while (end - start < TIME):
 
-        # switch process depending on RC_DAQ mode or not
-        if RC_DAQ == True:
-            rd = []
-        else:
-            rd = d.read(PEDACO)
+            # switch process depending on RC_DAQ mode or not
+            if RC_DAQ == True:
+                rd = []
+            else:
+                rd = d.read(PEDACO)
 
-        # if the number of data in the buffer (rd) is 0, wait shortly, otherwise add them to another buffer (a) to write then in a npy file
-        if len(rd) == 0:
-            time.sleep(0.1)
-        else:
-            a.append(rd)
+            # if the number of data in the buffer (rd) is 0, wait shortly, otherwise add them to another buffer (a) to write then in a npy file
+            if len(rd) == 0:
+                time.sleep(0.1)
+            else:
+                a.append(rd)
 
-        # comment will be written
-        if len(rd) < int(PEDACO/2) and len(rd) != 0:
-            time.sleep(0.1)
-            print(len(rd))
+            # comment will be written
+            if len(rd) < int(PEDACO/2) and len(rd) != 0:
+                time.sleep(0.1)
+                print(len(rd))
 
-        # comment will be written
-        if len(rd) == int(PEDACO/2):
-            print("NO LIMITE ----------")
+            # comment will be written
+            if len(rd) == int(PEDACO/2):
+                print("NO LIMITE ----------")
 
-        # take the current time to judge whether this loop shold be finished or not
-        end = time.time()
+            # take the current time to judge whether this loop shold be finished or not
+            end = time.time()
+            # end of while (end - start < TIME )
 
+    except KeyboardInterrupt:
+        # If users stop calibration process by ctrl+c, set FELIX registers to the default values
+        print( "Killed by hand, how dare you !!!" )
+        d.reg.ldd_enable = 0
+        d.reg.n_collisions = 0
+        d.reg.roc_wildcard &= ~(1<<6)
+        was_killed = True 
+        #end of except KeyboardInterrupt
+
+    # After all processes, set FELIX registers to the default values, which are for calibration measurement
     d.reg.ldd_enable = 0
+    d.reg.n_collisions = 0
+    d.reg.roc_wildcard &= ~(1<<6)
+
+    a.append(d.read(PEDACO))
 
     # roc_wildcard(2) is used after data acquisition is done to fill up the fifos with
     # dummy data, since we can't flush its contents to server memory. This garantees
     # that all valid data is transferred to server memory, as well as (some) dummy data
     # as well.
+    if len(a) != 0 and RC_DAQ is False and was_killed is False :
+        np.save(filename,a)
 
-    if len(a) != 0 and RC_DAQ == False:
-	np.save(filename,a)
+        if verbosity > 1 : 
+            print("------------------------------------------------------------------------------------")
+            print("file done, file name : ",filename)
+            print("run time : ", int( TIME/60 ), "min", TIME % 60 ,"sec")
+            os.system("du -h %s.npy"%filename)
+            print("")
+            
+            print("opened Felix channel :", enabled_channels )
+
+        if does_scp is True : 
+            command = "scp " + filename + ".npy " + "inttdev@inttdaq:~/data/IR_DAQ_server/"
+            process = subprocess.Popen( command, shell=True )
+            # wait until scp is done
+            process.wait()
+            print("scp done, job finish")
+        
+    d.reg.ldd_enable = 0
