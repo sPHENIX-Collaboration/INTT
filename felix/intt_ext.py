@@ -28,12 +28,13 @@ So your code is probably,
     intt_ext.cold_start( d ) # If you know the difference from the original cold start...
 
 """
+import datetime
+import numpy as np
 import os
 import re # for str comparison using regular expression
 import socket # to get hostname
 import sys
 import time
-import sys
 
 current_dir = os.path.join( os.path.dirname(__file__) ) 
 sys.path.append( current_dir )
@@ -860,3 +861,125 @@ def threshold_setting(d,threshold):
     command = intt.make_fphx_cmd( 21, 4, 1, threshold ) # note : register 4 : ADC0
     intt.send_fphx_cmd(d, command)
     print("Set threshold %i"%threshold)
+
+def calibration_measurement( fphx_parameters=None,
+                             customize_dac0=None,
+                             custromize_dac=None,
+                             channel_mask=None,
+                             does_scp=None,
+                             felix_ch_mask=None,
+                             is_rcdaq=False,
+                             is_gtmcalib=True,
+                             output_name=None,
+                             output_dir=None,
+                             measurement_time=None,
+                            ) :
+    """!
+    @biref
+    @param fphx_parameters=None
+    @param customize_dac0=None,
+    @param custromize_dac=None
+    @param channel_mask=None
+    @param does_scp=None
+    @param felix_ch_mask=None
+    @param is_rcdaq
+    @param is_gtmcalib
+    @param output_name
+    @param measurement_time in sec
+    @retval
+    @details
+    """
+
+    RC_DAQ = is_rcdaq
+    CALIB_STCLK = True
+    GTM_CALIB = is_gtmcalib
+
+    # initialize dam
+    d = dam()
+    # reset dam
+    d.reset()
+    # disable all readout channels
+    d.reg.ldd_enable=0
+    #reset FELIX logic
+    d.reg.rst=3
+    d.reg.rst=0
+
+    d.reg.sc_target = 0x3
+
+    d.reg.n_collisions = 0
+
+    today = datetime.datetime.now()
+    script_dir = os.path.realpath(os.path.dirname(__file__))
+    
+    filename = script_dir+"/data/"+"calib_packv5_"+str(os.uname()[1])+"_"+today.strftime("%m%d%y_%H%M")
+
+    intt.macro_calib(d)
+    #intt_ext.apply_dac0( d )
+
+    enabled_channels = [int(l) for l in sys.argv[1:]]
+    intt.enable_ro(d)
+    intt.mask_channel(d, 21, 0xff)
+    #d.reg.ldd_enable = 1<<12
+    for ch in enabled_channels:
+        intt.enable_channel(d, ch)
+        
+    if GTM_CALIB == False:
+        if CALIB_STCLK == True:
+            time.sleep(1)
+            d.reg.clks_ctl.calib_stclk = 1
+            time.sleep(1)
+            d.reg.clks_ctl.calib_stclk = 0
+        else:
+            intt.calib(d)
+
+    print('Taking Data')
+    #intt.unmask_channel(d, 20, 0xff)
+    start = time.time()
+    end = time.time()
+
+    a = []
+    b = []
+    PEDACO = 10000000
+
+    if measurement_time is not None :
+        TIME = measurement_time
+    else:
+        MINUTES = 4
+        SECONDS = 0
+        TIME = MINUTES*60 + SECONDS # [s]
+
+    while (end - start < TIME):
+
+        # switch process depending on RC_DAQ mode or not
+        if RC_DAQ == True:
+            rd = []
+        else:
+            rd = d.read(PEDACO)
+
+        # if the number of data in the buffer (rd) is 0, wait shortly, otherwise add them to another buffer (a) to write then in a npy file
+        if len(rd) == 0:
+            time.sleep(0.1)
+        else:
+            a.append(rd)
+
+        # comment will be written
+        if len(rd) < int(PEDACO/2) and len(rd) != 0:
+            time.sleep(0.1)
+            print(len(rd))
+
+        # comment will be written
+        if len(rd) == int(PEDACO/2):
+            print("NO LIMITE ----------")
+
+        # take the current time to judge whether this loop shold be finished or not
+        end = time.time()
+
+    d.reg.ldd_enable = 0
+
+    # roc_wildcard(2) is used after data acquisition is done to fill up the fifos with
+    # dummy data, since we can't flush its contents to server memory. This garantees
+    # that all valid data is transferred to server memory, as well as (some) dummy data
+    # as well.
+
+    if len(a) != 0 and RC_DAQ == False:
+	np.save(filename,a)
