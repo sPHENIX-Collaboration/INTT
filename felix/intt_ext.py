@@ -338,7 +338,69 @@ def GetPortIDWithName( port_name=None ) :
 @retval
 @details
 """
-    
+
+def GetFPHXParameterAddress() :
+    """!
+    @brief 
+    """
+    parameter_address_dict = {}
+    parameter_address_dict["Mask"] = 1
+    parameter_address_dict["DigiCtrl"] = 2 
+    parameter_address_dict["Vref"]     = 3 
+    parameter_address_dict["DAC0"]     = 4 
+    parameter_address_dict["DAC1"]     = 5 
+    parameter_address_dict["DAC2"]     = 6 
+    parameter_address_dict["DAC3"]     = 7 
+    parameter_address_dict["DAC4"]     = 8 
+    parameter_address_dict["DAC5"]     = 9 
+    parameter_address_dict["DAC6"]     = 10
+    parameter_address_dict["DAC7"]     = 11
+    parameter_address_dict["N1sel"]    = 12
+    parameter_address_dict["N2sel"]    = 12
+    parameter_address_dict["FB1sel"]   = 13
+    parameter_address_dict["Leaksel"]  = 13
+    parameter_address_dict["P3sel"]    = 14
+    parameter_address_dict["P2sel"]    = 14
+    parameter_address_dict["Gsel"]     = 15
+    parameter_address_dict["BWsel"]    = 15
+    parameter_address_dict["P1sel"]    = 16
+    parameter_address_dict["Injsel"]   = 16
+    parameter_address_dict["LVDS"]     = 17
+    return parameter_address_dict
+
+def Is1stFPHXParam( name ) :
+    """!
+    @brief If the argument is the 1st parameter, which shares the same register with the 2nd parameter, True is returned.
+    """
+    if name == "N1sel" or name == "FB1sel" or name == "P3sel" or name == "Gsel" or name == "P1sel" :
+        return True
+
+    return False
+
+def Is2ndFPHXParam( name ) :
+    """
+    @brief If the argument is the 2nd parameter, which shares the same register with the 1st parameter, True is returned.
+    """
+    if name == "N2sel" or name == "Leaksel" or name == "P2sel" or name == "BWsel" or name == "Injsel" :
+        return True
+
+    return False
+
+def GenerateCommand( name, value_first, value_second ) :
+    rtn = 0x0
+    shift_val = 4 # for N2sel, Leaksel, P2sel
+    #if name == "N2sel" or name == "Leaksel" or name == "P2sel":
+    #    value = (int(value_second) << 4 ) + value_first
+    #    rtn = intt.make_fphx_cmd( 21, FPHXRegister.register[name][0], 1, value )
+    if name == "BWsel" or name == "Injsel":
+        shift_val = 3
+        
+    value = (int(value_second) << shift_val ) + value_first
+    address = GetFPHXParameterAddress()[ name ] 
+    rtn = intt.make_fphx_cmd( 21, address, 1, value )
+        
+    return rtn
+ 
 ############################################################
 # Overwritting functions                                   #
 ############################################################
@@ -397,7 +459,49 @@ def send_fphxparam_from_file( d, file_path, verbosity=0 ) :
         parameter_dict[ param[0] ] = int(param[1])
 
     print( parameter_dict )
+    parameter_address_dict = GetFPHXParameterAddress()
     #print( "send_fphxparam_from_file:", parameters )
+
+    commands = []
+    command_sets = []
+    # loop over all FPHX parameters to generate commands
+    for keyword in parameter_dict :
+
+        #def make_fphx_cmd(chipId, regId, cmd, data), normaly chipID=21(all), cmd=1(?)
+        if keyword == "Mask" :
+            command = intt.make_fphx_cmd( 21, 1, 2, 128 ) # 0xcf50a800 #  hex(make_fphx_cmd( 21, 1, 2, 128 ) )
+            command_set = [ keyword, "N/A", command ]
+            command_sets.append( command_set )
+        else : # if not Mask
+            address = parameter_address_dict[ keyword ]
+            value = int( parameter_dict[ keyword ] )
+            command = intt.make_fphx_cmd( 21, address, 1, value )
+
+        # for parameters sharing the same register
+        if Is1stFPHXParam( keyword ) is True :
+            # keep the value and process in the next loop
+            value_prev = value
+            command_set = [ keyword, str(value), 0 ]
+            command_sets.append( command_set )
+            continue
+        elif Is2ndFPHXParam( keyword ) is True :
+            # make the command using the value of 2 parameters
+            command = GenerateCommand( keyword, value_first=value_prev, value_second=value )
+            command_sets[ -1 ][0] += "/" + keyword
+            command_sets[ -1 ][1] += '/' +str(value)
+            command_sets[ -1 ][2] = command
+        else :
+            command_set = [ keyword, value, command]
+            command_sets.append( command_set )
+
+        commands.append( command )
+        # end of for keyword, maybe...
+        
+    if verbosity > 0 : 
+        for command_set in command_sets : 
+            print( command_set[0], command_set[1], command_set[2], "->", hex( command_set[2] ) )
+
+    send_fphxparam( d, commands, verbosity=verbosity )
     
 def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
     """!
