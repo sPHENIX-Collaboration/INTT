@@ -343,16 +343,62 @@ def GetPortIDWithName( port_name=None ) :
 # Overwritting functions                                   #
 ############################################################
 
-def send_fphxparam( d, cheat ) :
+def send_fphxparam( d, cheat, verbosity=0 ) :
     """!
     @brief Given FPHX commands are sent
     @param d the dam object
     @param cheat A list of FPHX commands
     """    
     for item in cheat:
+        if verbosity > 0 :
+            print( "FPHX command", item, "is sent." )
         intt.send_fphx_cmd(d, item)
         time.sleep(.001)        
 
+def send_fphxparam_from_file( d, file_path, verbosity=0 ) :
+    """!
+    @brief FPHX parameters written in a text are sent to all FPHX chips.
+    @param d
+    @param file_path A path to a file containig FPHX parameters
+    @param verbosity 
+    @details The format of the file is
+    [name] [value]
+    here, [name] is the name of the parameter, and [value] is an integer value of the parameter.
+    Available names are
+        - Vref
+        - DAC0
+        - DAC1
+        - DAC2
+        - DAC3
+        - DAC4
+        - DAC5
+        - DAC6
+        - DAC7
+        - N1sel
+        - N2sel
+        - FB1sel
+        - Leaksel
+        - P3sel
+        - P2sel
+        - Gsel
+        - BWsel
+        - P1sel
+        - Injsel
+        - LVDS
+
+    Remember that N1sel, FB1sel, P3sel, Gsel, P1sel, N2sel, Leaksel, P2sel, BWsel, Injsel cannot be alone. 
+    You have to provide pairs.
+    Lines starting with "#" are ignored.    
+"""
+
+    parameters = ReadMap( map_path=file_path, element_num=20, debug=verbosity )
+    parameter_dict = {}
+    for param in parameters :
+        parameter_dict[ param[0] ] = int(param[1])
+
+    print( parameter_dict )
+    #print( "send_fphxparam_from_file:", parameters )
+    
 def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
     """!
     @brief A set of commands for pedestal (self-trigger) run
@@ -793,7 +839,7 @@ def mask_ch_convert (d, port, chip, channel):
     intt.mask_channel(d, chip_conv, wedge, channel=channel)
 
 
-def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array): # note : two files 
+def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array, verbosity=0 ): # note : two files 
     """!
     @brief read the txt file and ask the mask_ch_convert to mask the channel, channel by channel
     """    
@@ -823,7 +869,6 @@ def file_mask_channel_txt (d, server, flx_port, txt_file_array = mask_ch_array):
                 print("channel mask, ROC :", noisy_roc, "FC :", noisy_felix_ch, "port :", noisy_port, "chip :", noisy_chip, "chan :", noisy_chan, "entry :",noisy_ch_entry)
                 mask_ch_convert(d, int(noisy_port), int(noisy_chip), int(noisy_chan))
                 print("")
-
 
 def disable_FC(server, txt_file_in = close_FC_map):
     """!
@@ -871,13 +916,15 @@ def threshold_setting(d,threshold):
     intt.send_fphx_cmd(d, command)
     print("Set threshold %i"%threshold)
 
-def calibration_measurement(
+def take_data(
+        take_data=True,
+        mode="calibration",
         fphx_parameters=None,
         customize_dac0=None,
         customize_dac=None,
-        channel_mask=None,
+        mask_channel=False,
         does_scp=False,
-        felix_ch_mask=False,
+        mask_felix_ch=False,
         is_rcdaq=False,
         is_gtmcalib=True,
         output_name=None,
@@ -888,12 +935,14 @@ def calibration_measurement(
 ) :
     """!
     @biref
+    @param take_data
+    @param mode
     @param fphx_parameters=None
     @param customize_dac0=None,
     @param customize_dac=None
-    @param channel_mask=None
+    @param mask_channel=None
     @param does_scp=None
-    @param felix_ch_mask=None
+    @param mask_felix_ch=None
     @param is_rcdaq
     @param is_gtmcalib
     @param output_name
@@ -908,6 +957,31 @@ def calibration_measurement(
         print( "I help you" )
         return None
     
+    ###############################################################
+    # Show parameters                                             #
+    ###############################################################
+    if verbosity > 1 :
+        print( "\t", "- Take data?:", take_data )
+        if take_data is True :
+            print( "\t", "- Mode:", mode )
+            if mode == "calibration" : 
+                print( "\t", "- GTM calib mode?:", is_gtmcalib )
+        print( "\t", "- RCDAQ mode?:", is_rcdaq )
+        print( "\t", "- General FPHX parameters:", end="" )
+        if fphx_parameters is None :
+            print( "Not used" )
+        elif type( fphx_parameters ) is str :
+            print( "Written in", fphx_parameters )
+        elif type( fphx_parameters ) is list :
+            print( fphx_parameters )
+        print( "\t", "- Indv. DAC0?:", customize_dac0 )
+        print( "\t", "- Indv. DAC?:", customize_dac )
+        print( "\t", "- Mask CH?  :", mask_channel )
+        print( "\t", "- Mask FELIX CH?:", mask_felix_ch )
+        print( "\t", "- Mask CH?  :", mask_channel )
+        print( "\t", "- Output dir:", "Default" if output_dir is None else output_dir )
+        print( "\t", "- Output name:", "Default" if output_name is None else output_name )
+
     RC_DAQ = is_rcdaq
     CALIB_STCLK = True
     GTM_CALIB = is_gtmcalib
@@ -926,8 +1000,11 @@ def calibration_measurement(
 
     d.reg.n_collisions = 0
 
+    # some variables to be used
     today = datetime.datetime.now()
     script_dir = os.path.realpath(os.path.dirname(__file__))
+    hostname = socket.gethostname()
+    
     #@todo check whether output_name has a suffix or not
     if output_name is None and output_dir is None :
         # If both output_name and output_dir are not given, just do like Raul
@@ -943,19 +1020,48 @@ def calibration_measurement(
         # If output_dir is not given...
         output_dir = script_dit + "/data/"
         filename = output_dir + output_name
-    
-    intt.macro_calib(d)
 
+    if mode == "calibration" : 
+        intt.macro_calib(d)
+    elif mode == "self" :
+        intt.macro_pedestal(d)
+        d.reg.n_collisions=130
+        d.reg.open_time=15
+        d.reg.roc_wildcard |= 1<<6
+        # end of if mode == "calibration"
+        
+    ###############################################################
+    # General FPHX parameters                                     #
+    ###############################################################
+    print( "General FPHX parameter configuration:", end="" )
+    
+    if type( fphx_parameters ) is list :
+        print( fphx_parameters )
+        send_fphxparam( d , fphx_parameters, verbosity=verbosity )
+    elif type( fphx_parameters ) is str :
+        print( "written in", fphx_parameters, "are applied for all FPHX chips at first." )
+        send_fphxparam_from_file( d, file_path=fphx_parameters, verbosity=verbosity )
+    elif fphx_parameters is None :
+        print( "Nothing given. The default is used." )
+    else :
+        print( "Given parameter is not valid:", type( fphx_parameters ), fphx_parameters )
+        print( "Please give a list of parameters (integer) or a path to a file containig parameters" )
+
+    ###############################################################
+    # Custom DAC0                                                 #
+    ###############################################################
     if customize_dac0 is True :
         print( "Customize DAC0 configuraton applied." )
         apply_dac0( d, debug=(verbosity>0) )
 
-    if felix_ch_mask is False :
+    ###############################################################
+    # FELIX channel selection                                     #
+    ###############################################################
+    if mask_felix_ch is False :
         # If no mask provided, use all 13 channels
         enabled_channels = [ l for l in range(0, 14) ]
     else :
         # note : Felix channel, open the gate of the felix 0 to 13.
-        hostname = socket.gethostname()
         enabled_channels = disable_FC( server=hostname ) # <-- I think it's the list of channels to be used (Genki).
         if verbosity > 0 :
             print( "Take Cheng-Wei\'s FELIX channel mask. Hostname:", hostname )
@@ -964,7 +1070,34 @@ def calibration_measurement(
         print( "Enabled FELIX channels:", *enabled_channels )
         
     intt.enable_ro(d)
+
+    ###############################################################
+    # Channel selection                                           #
+    ###############################################################
+    # unmask all channels
     intt.mask_channel(d, 21, 0xff)
+
+    if mask_channel is True : 
+        # note : first unmask all the channels
+        d.reg.sc_target = port_selection["talk_All_port"]
+        intt.unmask_channel(d, 21, 0xff)
+
+        # I think they are test codes
+        #for channel in range(128):
+        #    if channel <= 32:
+        #        intt.mask_channel(d, 21, 0xff, channel=channel)
+
+        # note : mask the noisy channel Felix port 0
+        # note : 0xff wildcard
+        d.reg.sc_target = port_selection["talk_port_0"]
+        file_mask_channel_txt(d, hostname, 0, verbosity=verbosity )
+
+        # note : mask the noisy channel Felix port 1
+        # note : 0xff wildcard
+        d.reg.sc_target = port_selection["talk_port_1"]
+        file_mask_channel_txt(d, hostname, 1, verbosity=verbosity )
+        # end of if mask_channel is True
+    
     #d.reg.ldd_enable = 1<<12
     for ch in enabled_channels:
         intt.enable_channel(d, ch)
@@ -976,9 +1109,9 @@ def calibration_measurement(
             time.sleep(1)
             d.reg.clks_ctl.calib_stclk = 0
         else:
-            intt.calib(d)
+            if mode == "calibration" : 
+                intt.calib(d)
 
-    print('Taking Data')
     #intt.unmask_channel(d, 20, 0xff)
     start = time.time()
     end = time.time()
@@ -995,6 +1128,13 @@ def calibration_measurement(
         TIME = MINUTES*60 + SECONDS # [s]
 
     was_killed = False # a flag to know whether the while loop was stopped by an user or not
+    if take_data is False :
+        d.reg.ldd_enable = 0
+        d.reg.n_collisions = 0
+        d.reg.roc_wildcard &= ~(1<<6)
+        return None
+    
+    print('Taking Data')
     try:
         while (end - start < TIME):
 
