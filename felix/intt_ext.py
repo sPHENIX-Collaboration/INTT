@@ -523,7 +523,7 @@ def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =
     time.sleep(0.01)
         
     if fphxparam == None :
-	#ld_fphxparam(d)
+        #ld_fphxparam(d)
         intt.ld_fphxparam_high_daqs(d)
     else:
         intt_ext.send_fphxparam( d, fphxparam )
