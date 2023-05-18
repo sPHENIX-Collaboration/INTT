@@ -581,7 +581,7 @@ def verify_latch_new(d): # H.Imai, I changed return
     d.reg.latch_sync_rst = 1
     d.reg.latch_sync_rst = 0
     if d.reg.latch_sync == 0:
-        latch_fpga(d)
+        intt.latch_fpga(d)
         time.sleep(1)
         
         latch_arr = bin(d.reg.latch_sync)[2:].zfill(28)
