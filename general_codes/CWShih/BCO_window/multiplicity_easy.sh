@@ -28,7 +28,7 @@ while IFS= read -r line; do
     servername=$(echo "$line" | grep -o 'intt[0-7]\+')
     echo servername $servername
 
-    nohup root -l -b -q multiplicity_easy.cpp\(\"$mother_directory\",\"$set_name\",\"$line\",\"$servername\",\"$set_logY\",$chip_N_bin,$chip_L_edge,$chip_R_edge\)&>run_log/$servername.out&
+    nohup root -l -b -q multiplicity_easy.cpp\(\"$mother_directory\",\"$set_name\",\"$line\",\"$servername\",$set_logY,$chip_N_bin,$chip_L_edge,$chip_R_edge\)&>run_log/$servername.out&
     sleep 0.4
 
     # for Open_FC in "${Port_ch[@]}"; 
@@ -38,4 +38,8 @@ while IFS= read -r line; do
     # done
 
 done < "$file"
+
+sleep 20 # note : wait for the job above done
+
+root -l -b -q make_stack.cpp\(\"$mother_directory\",\"$set_name\",$set_logY\)
 
