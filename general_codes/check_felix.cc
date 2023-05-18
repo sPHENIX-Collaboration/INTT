@@ -79,9 +79,11 @@ int check_felix
     draw_list.push_back( "ampl_adc" );
     draw_list.push_back( "ch_ampl" );
   }
+  else{
+    draw_list.push_back( "adc" );
+  }
   
   draw_list.push_back( "ch" );
-  draw_list.push_back( "adc" );
   
   vector < int > modules = GetModules( usemod );
 
@@ -93,7 +95,7 @@ int check_felix
       // Shell command for this module. It completes when the parameter to be drawn is given.
       // It should be, for example,
       // root -q -b -l 'soft/INTT/general_codes/functions/DrawPlotsMultipleLadders.cc("data/calib_packv1_220927_1700.root", 0, "calib", "ampl_adc")'
-      string command_base = "root -q -b -l \'soft/INTT_fork_genki/general_codes/functions/DrawPlotsMultipleLadders.cc(";
+      string command_base = "root -q -b -l \'/home/inttdev/soft/INTT_fork_genki/general_codes/functions/DrawPlotsMultipleLadders.cc(";
       command_base += "\"" + fname + "\", "
 	+ "" + modules[i] + ", "
 	+ "\"" + mode + "\", ";
@@ -136,6 +138,7 @@ int check_felix
       }
       else{
 	cerr << "OK, let's wait for another 30s" << endl;
+	break;
 	counter = 0;
       }
       
@@ -168,7 +171,7 @@ int check_felix
 
       // make the name of the ROOT file for this parameter
       string root_name = fname.substr( 0, fname.size() - 5 ) + "_" + draw_list[j] + "_"
-	+ "module" + to_string( i ) + ".root";
+	+ "module" + to_string( modules[i] ) + ".root";
 
       // Open th ROOT file and store the canvas.
       TFile* tf = new TFile( root_name.c_str(), "READ" );
@@ -184,14 +187,14 @@ int check_felix
       } // end of for( int j=0; j<canvases.size(); j++ )
     
     // save the master canvas into a PDF file. 
-    string output =  fname.substr( 0, fname.size() - 5 ) + "_module" + to_string( i ) + ".pdf";
+    string output =  fname.substr( 0, fname.size() - 5 ) + "_module" + to_string( modules[i] ) + ".pdf";
     c_master->Print( output.c_str() );
     cout << " output: " << output << endl;
 
     // Open the PDF file
-    string command = "open " ;
-    command += output + " >/dev/null 2>/dev/null &";
-    gSystem->Exec( command.c_str() );
+    // string command = "open " ;
+    // command += output + " >/dev/null 2>/dev/null &";
+    // gSystem->Exec( command.c_str() );
     
   }  // end of for( int i=0; i<modules.size(); i++ )
 

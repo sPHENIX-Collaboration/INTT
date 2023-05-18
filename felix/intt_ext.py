@@ -527,7 +527,7 @@ def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =
     time.sleep(0.01)
         
     if fphxparam == None :
-	#ld_fphxparam(d)
+        #ld_fphxparam(d)
         intt.ld_fphxparam_high_daqs(d)
     else:
         intt_ext.send_fphxparam( d, fphxparam )
@@ -585,7 +585,7 @@ def verify_latch_new(d): # H.Imai, I changed return
     d.reg.latch_sync_rst = 1
     d.reg.latch_sync_rst = 0
     if d.reg.latch_sync == 0:
-        latch_fpga(d)
+        intt.latch_fpga(d)
         time.sleep(1)
         
         latch_arr = bin(d.reg.latch_sync)[2:].zfill(28)

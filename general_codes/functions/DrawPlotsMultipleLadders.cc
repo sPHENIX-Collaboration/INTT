@@ -152,7 +152,7 @@ void DrawPlots_AmplADC( string output_base, TTree* tree, string cut, bool revers
     hist_ampl_adc[i]->GetXaxis()->SetLabelSize(0.06);
     hist_ampl_adc[i]->GetYaxis()->SetTitleSize(0.1);
     hist_ampl_adc[i]->GetYaxis()->SetLabelSize(0.08);
-
+    hist_ampl_adc[i]->GetZaxis()->SetRangeUser( 1, 1000 );
     gPad->Update();
 
     // draw the title of the histo manually to change the size
@@ -248,12 +248,13 @@ void DrawPlots_ChAmpl( string output_base, TTree* tree, string cut, bool reverse
 
     hist_ampl_ch->GetZaxis()->SetRangeUser(0, 15);
 
+    /* // turned off for presentation, Dec/5/2022 G. Nukazuka
     if (is_warned == true) {
       TLatex* warning = new TLatex();
       warning->SetTextSize(0.25);
       warning->DrawLatex(5.0, 40.0, "over 15");
     }
-			
+    */ 			
     gPad->Update();
     auto pave_title = (TPaveText*)gPad->GetPrimitive("title");
     pave_title->SetTextSize(0.1);
@@ -278,7 +279,7 @@ void DrawPlots_Ch( string output_base, TTree* tree, string cut, bool reverse_chi
 
   string canvas_name = string("ch");
   TCanvas *c = new TCanvas( canvas_name.c_str(), canvas_name.c_str(), 0, 560, 1625, 250);
-  TH2D* hist_ch_chip = new TH2D("ch_chip", "Channel vs Chip;Channel;Chip", 130, 0, 130, 26, 0, 26);
+  TH2D* hist_ch_chip = new TH2D("ch_chip", "Channel vs Chip;Channel;Chip", 128, 0, 128, 26, 0, 26);
 
   string expression_ch_chip = string("chip_id:chan_id>>") + hist_ch_chip->GetName();
   tree->Draw(expression_ch_chip.c_str(), cut.c_str(), "goff");
@@ -291,9 +292,10 @@ void DrawPlots_Ch( string output_base, TTree* tree, string cut, bool reverse_chi
     int chip_num = GetChipNum( i, reverse_chip_order );
     auto hist_ch = hist_ch_chip->ProjectionX(Form("ch_chip%d", chip_num), chip_num + 1, chip_num + 1, "goff");
     hist_ch->SetTitle(Form("chip_id==%d", chip_num));
+    hist_ch->SetLineColor( kGreen + 2 );
+    hist_ch->SetLineWidth( 1 );
     hist_ch->SetFillColor( hist_ch->GetLineColor() );
     hist_ch->SetFillStyle( 1001 );
-
 
     hist_ch->Draw();
     gPad->SetLogy(true);
