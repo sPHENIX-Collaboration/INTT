@@ -340,7 +340,7 @@ map<TString,int> layer_map = {
     {"B1L1",4}
 };
 
-void multiplicity_easy ( TString mother_folder_directory, TString set_name, string full_file_directory, TString server_name )
+void multiplicity_easy ( TString mother_folder_directory, TString set_name, string full_file_directory, TString server_name, bool set_logY = true, int chip_N_bin = 30, int chip_L_edge = 1, int chip_R_edge = 31 )
 {
 
     // TString mother_folder_directory = "/home/inttdev/data/IR_DAQ_server/INTT_study_run/BCO_window"; 
@@ -361,15 +361,15 @@ void multiplicity_easy ( TString mother_folder_directory, TString set_name, stri
     // system( Form("mkdir %s",create_file_folder.Data()) );
 
     // todo : the range has to be tuned
-    int chip_N_bin = 30;
-    int chip_L_edge = 1; // note : recommended to be 1
-    int chip_R_edge = 31;
+    // int chip_N_bin = 30;
+    // int chip_L_edge = 1; // note : recommended to be 1
+    // int chip_R_edge = 31;
 
     // note : create the TH1F
     // note : one file, one server, one hist, one plot
-    int statsbox = 1; // todo : statistic box is here
+    int statsbox = 2; // todo : statistic box is here
     TString color_ID = "#1A3947";
-    bool set_logY = true; // todo : log scale here
+    // bool set_logY = true; // todo : log scale here
     bool do_comp = false;
     TString title = Form("Server level, %s", server_name.Data());
     TString X_title = "N_hit, single event";

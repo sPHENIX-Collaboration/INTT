@@ -2,6 +2,10 @@
 
 mother_directory="/home/inttdev/data/IR_DAQ_server/INTT_study_run/BCO_window"
 set_name="test_set"
+set_logY=true # note : or false
+chip_N_bin=60
+chip_L_edge=1 # note : recommended to be 1
+chip_R_edge=61
 
 file=$mother_directory/data_analysis/$set_name/file_list.txt
 
@@ -24,7 +28,7 @@ while IFS= read -r line; do
     servername=$(echo "$line" | grep -o 'intt[0-7]\+')
     echo servername $servername
 
-    nohup root -l -b -q multiplicity_easy.cpp\(\"$mother_directory\",\"$set_name\",\"$line\",\"$servername\"\)&>run_log/$servername.out&
+    nohup root -l -b -q multiplicity_easy.cpp\(\"$mother_directory\",\"$set_name\",\"$line\",\"$servername\",\"$set_logY\",$chip_N_bin,$chip_L_edge,$chip_R_edge\)&>run_log/$servername.out&
     sleep 0.4
 
     # for Open_FC in "${Port_ch[@]}"; 

@@ -89,7 +89,14 @@ void Characterize_Hist1F (TH1F *hist,  int statsbox = 0, TString color_ID = "#1A
     }
 
 
-    if (statsbox == 0) {hist -> SetStats(0);}
+    if (statsbox == 0) 
+    {
+        hist -> SetStats(0);
+    }
+    else if (statsbox == 2)
+    {
+        gStyle->SetOptStat(111111);
+    }
 }
 
 
