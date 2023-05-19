@@ -503,7 +503,7 @@ def send_fphxparam_from_file( d, file_path, verbosity=0 ) :
 
     send_fphxparam( d, commands, verbosity=verbosity )
     
-def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
+def macro_self(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
     """!
     @brief A set of commands for pedestal (self-trigger) run
     @param d the dam object
@@ -541,7 +541,7 @@ def macro_calib(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, 
     @details Extended version of intt.macro_calib.
     Users can give FPHX commands.
     """
-    macro_pedestal(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
+    macro_self(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
     intt_ext.send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
 
     return None
@@ -1128,7 +1128,7 @@ def take_data(
     if mode == "calibration" : 
         intt.macro_calib(d)
     elif mode == "self" :
-        intt.macro_pedestal(d)
+        intt.macro_self(d)
         d.reg.n_collisions=130
         d.reg.open_time=15
         d.reg.roc_wildcard |= 1<<6
