@@ -34,6 +34,7 @@ import os
 import pprint
 import re # for str comparison using regular expression
 import socket # to get hostname
+import subprocess
 import sys
 import time
 
@@ -454,6 +455,9 @@ def send_fphxparam_from_file( d, file_path, verbosity=0 ) :
 """
 
     parameters = ReadMap( map_path=file_path, element_num=20, debug=verbosity )
+    if parameters is None :
+        return None
+    
     parameter_dict = {}
     for param in parameters :
         parameter_dict[ param[0] ] = int(param[1])
@@ -1024,8 +1028,8 @@ def take_data(
         take_data=True,
         mode="calibration",
         fphx_parameters=None,
-        customize_dac0=None,
-        customize_dac=None,
+        customize_dac0=False,
+        customize_dac=False,
         mask_channel=False,
         does_scp=False,
         mask_felix_ch=False,
@@ -1039,15 +1043,15 @@ def take_data(
 ) :
     """!
     @biref
-    @param take_data
-    @param mode
-    @param fphx_parameters=None
-    @param customize_dac0=None,
-    @param customize_dac=None
-    @param mask_channel=None
-    @param does_scp=None
-    @param mask_felix_ch=None
-    @param is_rcdaq
+    @param take_data A flag to do the DAQ loop or not. The default is True. For RCDAQ, give False.
+    @param mode "calibration" (default) or "self" are available.
+    @param fphx_parameters None (default) not to do anything, a path to a file (see send_fphxparam_from_file), or list of commands, which have to be integer, are allowed.
+    @param customize_dac0 A flag to apply the individual DAC0 setting (True) or do nothing (False, default)
+    @param customize_dac A flag to apply the individual DAC setting (True) or do nothing (False, default). NOT READY.
+    @param mask_channel A flag to mask channels using Cheng-Wei's map (True) or do nothing (False, default).
+    @param does_scp A flag to send the data file to inttdev@inttdaq (True) or do nothing (False, default).
+    @param mask_felix_ch A flag to disable FELIX channels using Cheng-Wei's map (True) or do nothing (False, default).
+    @param is_rcdaq A flag to switch RCDAQ mode (True).
     @param is_gtmcalib
     @param output_name
     @param measurement_time in sec
@@ -1133,6 +1137,8 @@ def take_data(
         d.reg.open_time=15
         d.reg.roc_wildcard |= 1<<6
         # end of if mode == "calibration"
+    else :
+        print( "Invalid mode" )
         
     ###############################################################
     # General FPHX parameters                                     #
@@ -1156,7 +1162,7 @@ def take_data(
     ###############################################################
     if customize_dac0 is True :
         print( "Customize DAC0 configuraton applied." )
-        apply_dac0( d, debug=(verbosity>0) )
+        apply_dac0( d, debug=(verbosity>0), continue_until_success=False, trial_num=5 )
 
     ###############################################################
     # FELIX channel selection                                     #
@@ -1203,18 +1209,25 @@ def take_data(
         # end of if mask_channel is True
     
     #d.reg.ldd_enable = 1<<12
+    
     for ch in enabled_channels:
         intt.enable_channel(d, ch)
-        
-    if GTM_CALIB == False:
-        if CALIB_STCLK == True:
-            time.sleep(1)
-            d.reg.clks_ctl.calib_stclk = 1
-            time.sleep(1)
-            d.reg.clks_ctl.calib_stclk = 0
-        else:
-            if mode == "calibration" : 
+
+    if mode == "calibration" : 
+        if GTM_CALIB == False:
+            if CALIB_STCLK == True:
+                time.sleep(1)
+                d.reg.clks_ctl.calib_stclk = 1
+                time.sleep(1)
+                d.reg.clks_ctl.calib_stclk = 0
+            else:
                 intt.calib(d)
+
+    if is_rcdaq is True :
+        return 0
+    
+    #######################################################
+    # only if local mode
 
     #intt.unmask_channel(d, 20, 0xff)
     start = time.time()
@@ -1276,6 +1289,7 @@ def take_data(
         was_killed = True 
         #end of except KeyboardInterrupt
 
+
     # After all processes, set FELIX registers to the default values, which are for calibration measurement
     d.reg.ldd_enable = 0
     d.reg.n_collisions = 0
@@ -1291,7 +1305,7 @@ def take_data(
         np.save(filename,a)
 
         if verbosity > 1 : 
-            print("------------------------------------------------------------------------------------")
+            print( '-'*100 )
             print("file done, file name : ",filename)
             print("run time : ", int( TIME/60 ), "min", TIME % 60 ,"sec")
             os.system("du -h %s.npy"%filename)
