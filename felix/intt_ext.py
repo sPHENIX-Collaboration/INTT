@@ -546,7 +546,7 @@ def macro_calib(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, 
     Users can give FPHX commands.
     """
     macro_self(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
-    send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
+    intt.send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
 
     return None
 
