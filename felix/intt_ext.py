@@ -530,7 +530,7 @@ def macro_self(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, f
         #ld_fphxparam(d)
         intt.ld_fphxparam_high_daqs(d)
     else:
-        intt_ext.send_fphxparam( d, fphxparam )
+        send_fphxparam( d, fphxparam )
         
     time.sleep(0.01)
     intt.enable_ro(d)
@@ -546,10 +546,9 @@ def macro_calib(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, 
     Users can give FPHX commands.
     """
     macro_self(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
-    intt_ext.send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
+    send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
 
     return None
-
 
 def verify_latch(d):
     '''!
