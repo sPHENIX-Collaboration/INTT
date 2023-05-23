@@ -1129,9 +1129,9 @@ def take_data(
         filename = output_dir + output_name
 
     if mode == "calibration" : 
-        intt.macro_calib(d)
+        intt_ext.macro_calib(d)
     elif mode == "self" :
-        intt.macro_self(d)
+        intt_ext.macro_self(d)
         d.reg.n_collisions=130
         d.reg.open_time=15
         d.reg.roc_wildcard |= 1<<6
