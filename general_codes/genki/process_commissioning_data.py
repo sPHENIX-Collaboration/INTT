@@ -8,11 +8,13 @@ import sys
 
 class Process() :
     def __init__( self, args ) :
+        # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
         self.run = args.run
         self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_2/"
         self.root_subdir = args.root_subdir if args.root_subdir is not None else "hit_files/"
         self.run_type = args.run_type if args.run_type is not None else "beam"
+        
         self.processes = []
         
     def Print( self ) :
@@ -50,32 +52,34 @@ class Process() :
 
     def SendCommandToAll( self, command ) :
         for num in range(0, 8 ) :
+            if num ==1 or num==7 :
+                continue
+            
             if self.is_dry_run is True : 
                 print( "SendCommandToAll:", command )
-            else:
-                self.SendCommand( num, command )
 
+            self.SendCommand( num, command )
 
     def Decode( self ) :
         init_commands = "source /etc/profile ; source .bashrc ; source .bash_profile ; "
         # cd ${conversion_to_hit_base_dir}; ls ${data_dir}${data_name1}?${data_name2}????${raw_suffix}  | xargs -I {} -P 8 bash ./myfirstproject.sh {} "
         command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
-        command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
+        command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
         #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
         whole_command = init_commands + command_to_dir + command_decode
         if self.is_dry_run is True : 
             print( "Decode:", whole_command )
-        else:
-            self.SendCommandToAll( whole_command )
-            for proc in self.processes :
-                print( "Waiting for decoding", proc )
-                proc.wait()
 
-            print( "All decoding ended" )
+        self.SendCommandToAll( whole_command )
+        for proc in self.processes :
+            print( "Waiting for decoding", proc )
+            proc.wait()
+
+        print( "All decoding ended" )
 
     def Do( self ) :
         # show evt files to be processed
-        print( "test" )
+        
         self.Decode()
         
         
