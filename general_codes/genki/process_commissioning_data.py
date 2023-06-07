@@ -14,17 +14,32 @@ class Process() :
         self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_2/"
         self.root_subdir = args.root_subdir if args.root_subdir is not None else "hit_files/"
         self.run_type = args.run_type if args.run_type is not None else "beam"
-        
+
+        # process flags
+        self.decode = args.no_decode if args.decode is not None else True
+        self.decode_hit_wise = args.decode_hit_wise if args.decode_hit_wise is not None else True
+        self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else True
         self.processes = []
+
+
+        if args.only is True :
+            print( "Only ..." )
+
+    def PrintLine( self ) :
+        print( '+' + '-'*50 + '+' )
         
     def Print( self ) :
-        print( '+' + '-'*50 + '+' )
+        self.PrintLine()
         print( "| Run:", self.run )
         print( "| Run type:", self.run_type )
         print( "| Is dry run:", self.is_dry_run )
         print( "| ROOT file directory:", self.root_dir )
         print( "| ROOT file sub-directory:", self.root_subdir )
-        print( '+' + '-'*50 + '+' )
+        self.PrintLine()
+        print( "| Does decode?", self.decode )
+        print( "|    hit-wise?", self.decode_hit_wise )
+        print( "|  event-wise?", self.decode_event_wise )
+        self.PrintLine()
 
     def GetEventFilePath( self ) :
         directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
@@ -52,21 +67,29 @@ class Process() :
 
     def SendCommandToAll( self, command ) :
         for num in range(0, 8 ) :
-            if num ==1 or num==7 :
-                continue
+            #if num ==1 or num==7 :
+            #continue
             
             if self.is_dry_run is True : 
                 print( "SendCommandToAll:", command )
 
             self.SendCommand( num, command )
 
-    def Decode( self ) :
+    def Decode( self, is_event_wise=False ) :
         init_commands = "source /etc/profile ; source .bashrc ; source .bash_profile ; "
         # cd ${conversion_to_hit_base_dir}; ls ${data_dir}${data_name1}?${data_name2}????${raw_suffix}  | xargs -I {} -P 8 bash ./myfirstproject.sh {} "
-        command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
-        command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
-        #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
-        whole_command = init_commands + command_to_dir + command_decode
+
+        if is_event_wise is False :
+            command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
+            #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
+            whole_command = init_commands + command_to_dir + command_decode
+        else:
+            command_to_dir = "cd /home/phnxrc/INTT/hachiya/convertInttRaw/test1/ ; "
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
+            whole_command = init_commands + command_to_dir + command_decode
+            
         if self.is_dry_run is True : 
             print( "Decode:", whole_command )
 
@@ -79,8 +102,12 @@ class Process() :
 
     def Do( self ) :
         # show evt files to be processed
-        
-        self.Decode()
+
+        if self.decode is True :
+            if self.decode_hit_wise is True:
+                self.Decode()
+            if self.decode_event_wise is True:
+                self.Decode( is_event_wise=True )
         
         
 if __name__ == "__main__" :
@@ -99,28 +126,36 @@ if __name__ == "__main__" :
                          help="A name of sub-directory that contains ROOT files. hit_files is default." )
     
     
-    
     parser.add_argument( "--dry-run",
                          action=argparse.BooleanOptionalAction,
                          help="A type of ADC configuration for DAC scan. 1 to 10 as integers are accepted. " )
 
-    parser.add_argument( "--only-decode",
+    # process flags
+    parser.add_argument( "--decode",
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
-    parser.add_argument( "--only-making-plots",
+    parser.add_argument( "--decode-hit-wise",
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
-    parser.add_argument( "--only-decode-event-wise",
+    parser.add_argument( "--decode-event-wise",
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
-    parser.add_argument( "--only-decode-hit-wise",
+    parser.add_argument( "--make-plot",
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
+    parser.add_argument( "--transfer-plot",
+                         action=argparse.BooleanOptionalAction,
+                         help="" )
 
+    parser.add_argument( "--only",
+                         action=argparse.BooleanOptionalAction,
+                         help="" )
+
+    # 
     #parser.add_argument( "--n_collisions", type=int, help="A value of one of FELIX parameter n_collisions, which is a size of an acceptance window for hits BCO value. An unsigned integer is expected." )
     #parser.add_argument( "--open_time", type=int, help="A value of one of FELIX parameter open_time, which is waiting time for arrival of hit information from ROCs in the units of BCO. An unsigned integer is expected." )
 
