@@ -142,9 +142,9 @@ def LaunchDAQ() :
     gui_size = [ 1118, 1116 ]
     location_gui = [ primary_monitor.x, primary_monitor.y ] # y offset for the title bar
     location_terminal = [ primary_monitor.x, primary_monitor.y + gui_size[1] + 100 ] # y offset for the title bar
-    command = "gnome-terminal --window --geometry=86x36+" \
+    command = "gnome-terminal -p --window --geometry=86x36+" \
         + str(location_terminal[0]) + "+" + str(location_terminal[1]) + " " \
-        + "-- ~/bin/daq --location=" + str(location_gui[0]) + "+" + str(location_gui[1])
+        + "-- source ~/.bashrc ; ~/bin/daq --location=" + str(location_gui[0]) + "+" + str(location_gui[1])
 
     print( command )
     process = sp.Popen( command, shell=True )
@@ -162,6 +162,19 @@ def LaunchExpertGui() :
     process = sp.Popen( command, shell=True )
     return process
 
+def OperateExpertGuiGrpc( mode="start" ) : 
+    primary_monitor = GetPrimaryMonitor()
+    gui_size = [ 1200, 700 ]
+    location = [ primary_monitor.x + primary_monitor.width - gui_size[0],
+                 primary_monitor.y + primary_monitor.height - gui_size[1] - 300 ]
+    command = "gnome-terminal --window --geometry=92x26+" \
+        + str(location[0]) + "+" + str(location[1]) + " " \
+        + "-- ~/bin/operate_grpc_servers " \
+        + mode
+
+    process = sp.Popen( command, shell=True )
+    return process
+
 def LaunchElog() :
     command = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/elog/INTT/"
     process = sp.Popen( command, shell=True )
@@ -174,6 +187,12 @@ def LaunchRunLog() :
 
 def LaunchWiki() :
     command = "firefox https://wiki.sphenix.bnl.gov/index.php/Intermediate_Tracker_\(INTT\)"
+    print( command ) 
+    process = sp.Popen( command, shell=True )
+    return process
+
+def LaunchBeamMonitor() :
+    command = "firefox https://cadweb.bnl.gov/dashs/Operations/BroadcastWeb/BroadcastMain.dash"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
@@ -218,18 +237,18 @@ def app() :
             sg.Button( "ALL", size_px=button_size, font=font_button ),
             sg.Button( "LV", size_px=button_size, font=font_button ),
             sg.Button( "HV", size_px=button_size, font=font_button ),
-            sg.Button( "DAQ", size_px=button_size, font=font_button)
-        ],
-        [
-            sg.Button( "Launch\ngRPCs", key="expert_gui_grpc", size_px=button_size, font=font_button ),
+            sg.Button( "DAQ", size_px=button_size, font=font_button),
+            #sg.Button( "Start\ngRPCs", key="expert_gui_start_grpc", size_px=button_size, font=font_button ),
+            #sg.Button( "Kill\ngRPCs", key="expert_gui_kill_grpc", size_px=button_size, font=font_button ),
             sg.Button( "Expert\nGUI", key="expert_gui", size_px=button_size, font=font_button ),
-            sg.Button( "OPC0\nTunnel", key="opc0_tunnel", size_px=button_size, font=font_button),
         ],
         [ frame ],
         [
+            sg.Button( "OPC0\nTunnel", key="opc0_tunnel", size_px=button_size, font=font_button),
             sg.Button( "Elog", size_px=button_size, font=font_button ),
             sg.Button( "Run\nLog", key="run_log", size_px=button_size, font=font_button ),
             sg.Button( "Wiki", size_px=button_size, font=font_button ),
+            sg.Button( "Beam", size_px=button_size, font=font_button ),
             sg.Button( "Close", size_px=button_size, font=font_button )
         ]
 
@@ -287,32 +306,23 @@ def app() :
                       #any_key_closes = True,
                       non_blocking=True
                      )
-            #processes.append( LaunchDAQ() )
+            processes.append( LaunchDAQ() )
         elif event == "Elog" :
             processes.append( LaunchElog() )
         elif event == "Wiki" :
             processes.append( LaunchWiki() )
         elif event == "run_log" :
             processes.append( LaunchRunLog() )
+        elif event == "Beam" :
+            processes.append( LaunchBeamMonitor() )
         elif event == "opc0_tunnel" :
             processes.append( LaunchOpc0Tunnel() )
         elif event == "expert_gui" :
             processes.append( LaunchExpertGui() )
-            """
-            location = [window.current_location()[0], window.current_location()[1] ]
-            location = [ location[0]-200, location[1] ]
-
-            sg.popup( "Not Ready",
-                      auto_close = True,
-                      auto_close_duration = 5,
-                      font = font_title,
-                      location=location,
-                      no_titlebar = True,
-                      keep_on_top = True,
-                      #any_key_closes = True,
-                      non_blocking=True
-                     )
-            """
+        elif event == "expert_gui_start_grpc" :
+            processes.append( OperateExpertGuiGrpc( mode="start" ) )
+        elif event == "expert_gui_kill_grpc" :
+            processes.append( OperateExpertGuiGrpc( mode="kill" ) )
             
     print( "Terminate all processes" )
     for proc in processes :
