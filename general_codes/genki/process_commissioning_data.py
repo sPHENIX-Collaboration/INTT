@@ -14,11 +14,18 @@ class Process() :
         self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_2/"
         self.root_subdir = args.root_subdir if args.root_subdir is not None else "hit_files/"
         self.run_type = args.run_type if args.run_type is not None else "beam"
+        self.plotting_server = "inttdaq"
+        self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir
+        self.data_dir_in_plotting_server = "/home/inttdev/INTT/data/" + self.root_dir + self.root_subdir
 
         # process flags
-        self.decode = args.no_decode if args.decode is not None else True
+        self.decode = args.decode if args.decode is not None else True
         self.decode_hit_wise = args.decode_hit_wise if args.decode_hit_wise is not None else True
         self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else True
+        self.make_symbolic = args.make_symbolic if args.make_symbolic is not None else True 
+        self.make_plot = args.make_plot if args.make_plot is not None else True 
+
+        # misc
         self.processes = []
 
 
@@ -39,6 +46,10 @@ class Process() :
         print( "| Does decode?", self.decode )
         print( "|    hit-wise?", self.decode_hit_wise )
         print( "|  event-wise?", self.decode_event_wise )
+        self.PrintLine()
+        print( "| Making symbolics?", self.make_symbolic )
+        print( "|    Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
+        print( "|    root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
         self.PrintLine()
 
     def GetEventFilePath( self ) :
@@ -100,6 +111,18 @@ class Process() :
 
         print( "All decoding ended" )
 
+    def MakeSymbolic( self ) :
+        command = "ssh " + self.plotting_server + " \""
+        command += "cd " + self.data_dir_in_plotting_server + " ; "
+        command += "ls " + self.root_dir_in_plotting_server + "* | xargs -I {} ln -s {}"
+
+        command += "\""
+        print( command )
+        proc = subprocess.Popen( command, shell=True )
+        
+    def MakePlots( self ) :
+        print( 123 )
+        
     def Do( self ) :
         # show evt files to be processed
 
@@ -108,6 +131,12 @@ class Process() :
                 self.Decode()
             if self.decode_event_wise is True:
                 self.Decode( is_event_wise=True )
+
+        if self.make_symbolic is True : 
+            self.MakeSymbolic()
+
+        if self.make_plot is True : 
+            self.MakePlots()
         
         
 if __name__ == "__main__" :
@@ -143,6 +172,10 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
+    parser.add_argument( "--make-symbolic",
+                         action=argparse.BooleanOptionalAction,
+                         help="" )
+    
     parser.add_argument( "--make-plot",
                          action=argparse.BooleanOptionalAction,
                          help="" )
@@ -160,6 +193,7 @@ if __name__ == "__main__" :
     #parser.add_argument( "--open_time", type=int, help="A value of one of FELIX parameter open_time, which is waiting time for arrival of hit information from ROCs in the units of BCO. An unsigned integer is expected." )
 
     args = parser.parse_args()
+    print( args )
     process = Process( args )
     process.Print()
     process.Do()
