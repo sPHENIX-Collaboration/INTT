@@ -5,27 +5,44 @@ import os
 import socket
 import subprocess
 import sys
+import time
 
 class Process() :
     def __init__( self, args ) :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
-        self.run = args.run
-        self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_2/"
+        self.run = str(args.run).zfill( 8 ) 
+        self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_4/"
+        # add a directory separator if it's not at the end of string
+        if self.root_dir[-1] != "/" :
+            self.root_dir += "/"
+            
         self.root_subdir = args.root_subdir if args.root_subdir is not None else "hit_files/"
+        # add a directory separator if it's not at the end of string
+        if self.root_subdir[-1] != "/" :
+            self.root_subdir += "/"
+            
         self.run_type = args.run_type if args.run_type is not None else "beam"
         self.plotting_server = "inttdaq"
+        self.home_dir_in_plotting_server = "/home/inttdev/"
         self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir
-        self.data_dir_in_plotting_server = "/home/inttdev/INTT/data/" + self.root_dir + self.root_subdir
+        self.data_dir_in_plotting_server = self.home_dir_in_plotting_server + "INTT/data/" + self.root_dir + self.root_subdir
 
         # process flags
-        self.decode = args.decode if args.decode is not None else True
-        self.decode_hit_wise = args.decode_hit_wise if args.decode_hit_wise is not None else True
-        self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else True
-        self.make_symbolic = args.make_symbolic if args.make_symbolic is not None else True 
-        self.make_plot = args.make_plot if args.make_plot is not None else True 
+        self.process_only = args.only if args.only is not None else False
+        default = not self.process_only
+        
+        self.decode = args.decode if args.decode is not None else default
+        self.decode_hit_wise = args.decode_hit_wise if args.decode_hit_wise is not None else default
+        self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else default
+        self.make_symbolic = args.make_symbolic if args.make_symbolic is not None else default
+        self.make_plot = args.make_plot if args.make_plot is not None else default
+        self.transfer_plot = args.transfer_plot if args.transfer_plot is not None else default
 
+            
         # misc
+        self.plotter = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
+
         self.processes = []
 
 
@@ -54,12 +71,14 @@ class Process() :
 
     def GetEventFilePath( self ) :
         directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
-        name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000" + ".evt"
+        #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000" + ".evt"
+        name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :
         directory = "/home/inttdev/INTT/data/" + self.root_dir + self.root_subdir 
-        name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000"
+        #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000"
+        name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000"
         if is_event_wise is True :
             name += ".root"
         else :
@@ -114,14 +133,34 @@ class Process() :
     def MakeSymbolic( self ) :
         command = "ssh " + self.plotting_server + " \""
         command += "cd " + self.data_dir_in_plotting_server + " ; "
-        command += "ls " + self.root_dir_in_plotting_server + "* | xargs -I {} ln -s {}"
-
+        command += "ls " + self.root_dir_in_plotting_server + "/*.root | xargs -I {} ln -s {} 2>/dev/null"
         command += "\""
         print( command )
-        proc = subprocess.Popen( command, shell=True )
+
+        if self.is_dry_run is False : 
+            proc = subprocess.Popen( command, shell=True )
+            proc.wait()
         
-    def MakePlots( self ) :
-        print( 123 )
+    def MakePlot( self ) :
+        command = "ssh " + self.plotting_server + " \""
+        command += "cd " + self.data_dir_in_plotting_server + " ; "
+        command += "ls *" + self.run + "*.root | grep -v event_base | xargs -I {} -P 8  root -q -l -b \'" + self.plotter + "(\\\"{}\\\", \\\".pdf\\\" )\'"
+        command += "\""
+        print( command )
+
+        if self.is_dry_run is False : 
+            proc = subprocess.Popen( command, shell=True )
+            proc.wait()
+            print( "All plots were made." )
+
+    def TransferPlot( self ) :
+        command = "scp " + self.plotting_server + ":" + self.data_dir_in_plotting_server + "*" + self.run + "*.pdf ."
+        print( command )
+
+        if self.is_dry_run is False : 
+            proc = subprocess.Popen( command, shell=True )
+            proc.wait()
+            print( "All plots were transfered to here." )
         
     def Do( self ) :
         # show evt files to be processed
@@ -136,8 +175,10 @@ class Process() :
             self.MakeSymbolic()
 
         if self.make_plot is True : 
-            self.MakePlots()
-        
+            self.MakePlot()
+
+        if self.transfer_plot is True :
+            self.TransferPlot()
         
 if __name__ == "__main__" :
     # A argument parser class to accept command-line options
@@ -197,4 +238,7 @@ if __name__ == "__main__" :
     process = Process( args )
     process.Print()
     process.Do()
+
+    time.sleep( 1 )
+    print( "All processes were ended" )
 
