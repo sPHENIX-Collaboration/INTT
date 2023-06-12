@@ -38,10 +38,15 @@ class Process() :
         self.make_symbolic = args.make_symbolic if args.make_symbolic is not None else default
         self.make_plot = args.make_plot if args.make_plot is not None else default
         self.transfer_plot = args.transfer_plot if args.transfer_plot is not None else default
+        self.transfer_dir = args.transfer_dir if args.transfer_dir  is not None else "./"
 
-            
+        self.auto_update = args.auto_update if  args.auto_update  is not None else False
+        
         # misc
         self.plotter = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
+        source_dir = os.path.dirname( __file__ ) + "/"
+        self.evt_list = source_dir + "evt_list.txt"
+        self.evt_list_previous = source_dir + "evt_list_previous.txt"
 
         self.processes = []
 
@@ -67,6 +72,17 @@ class Process() :
         print( "| Making symbolics?", self.make_symbolic )
         print( "|    Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
         print( "|    root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
+        self.PrintLine()
+        print( "| Making plots?", self.make_plot )
+        print( "|    ROOT macro", self.plotter )
+        self.PrintLine()
+        print( "| Transferring plots?", self.transfer_plot )
+        print( "|     Output directory:", self.transfer_dir )
+        self.PrintLine()
+        print( "| Auto Update?", self.auto_update )
+        print( "|     New list:", self.evt_list )
+        print( "|     Old list:", self.evt_list_previous )
+
         self.PrintLine()
 
     def GetEventFilePath( self ) :
@@ -154,17 +170,58 @@ class Process() :
             print( "All plots were made." )
 
     def TransferPlot( self ) :
-        command = "scp " + self.plotting_server + ":" + self.data_dir_in_plotting_server + "*" + self.run + "*.pdf ."
+        command = "scp " + self.plotting_server + ":" + self.data_dir_in_plotting_server + "*" + self.run + "*.pdf " + self.transfer_dir
         print( command )
 
         if self.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
             proc.wait()
             print( "All plots were transfered to here." )
+
+    def MakeEvtList( self ):
+        command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.GetEventFilePath() ) + " | head -n 400"
+        #command = "ssh intt2 ls /bbox/commissioning/INTT/calibration"
+        #command = "ssh intt2 pwd"
+        print( command )
+
+        if self.is_dry_run is False :
+            proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
+            proc.wait( timeout=30 )
+            outputs = proc.communicate()[0].decode().split( '\n' )
+
+            all_runs = []
+            for output in outputs[0:-2] :
+                pos_left = len( self.run_type ) + 7
+                pos_right = pos_left + 8
+                #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output )
+                all_runs.append( output[ pos_left:pos_right ] )
+
+                
+            # keep only unique elements
+            runs = sorted( list(set(all_runs)) )
+            print( runs )
+
+            with open( self.evt_list, 'w' ) as file :
+                for run in runs :
+                    file.write( run+"\n" )
+            
+        
+    def AutoUpdate( self ) :
+        if os.path.exists( self.evt_list ) : 
+            command = "mv " + self.evt_list + " " + self.evt_list_previous
+            proc = subprocess.Popen( command, shell=True )
+            proc.wait()
+            
+        self.MakeEvtList()
+
+        
         
     def Do( self ) :
         # show evt files to be processed
 
+        if self.auto_update is True :
+            self.AutoUpdate()
+        
         if self.decode is True :
             if self.decode_hit_wise is True:
                 self.Decode()
@@ -225,7 +282,14 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
+    parser.add_argument( "--transfer-dir", type=str,
+                         help="" )
+
     parser.add_argument( "--only",
+                         action=argparse.BooleanOptionalAction,
+                         help="" )
+
+    parser.add_argument( "--auto-update",
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
