@@ -11,8 +11,8 @@ class Process() :
     def __init__( self, args ) :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
-        self.run = str(args.run).zfill( 8 ) 
-        self.root_dir = args.root_dir if args.root_dir is not None else "commissioning_6_4/"
+        self.run        = str(args.run).zfill( 8 ) 
+        self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning_6_4/"
         # add a directory separator if it's not at the end of string
         if self.root_dir[-1] != "/" :
             self.root_dir += "/"
@@ -22,8 +22,8 @@ class Process() :
         if self.root_subdir[-1] != "/" :
             self.root_subdir += "/"
             
-        self.run_type = args.run_type if args.run_type is not None else "beam"
-        self.plotting_server = "inttdaq"
+        self.run_type                    = args.run_type if args.run_type is not None else "beam"
+        self.plotting_server             = "inttdaq"
         self.home_dir_in_plotting_server = "/home/inttdev/"
         self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir
         self.data_dir_in_plotting_server = self.home_dir_in_plotting_server + "INTT/data/" + self.root_dir + self.root_subdir
@@ -32,20 +32,20 @@ class Process() :
         self.process_only = args.only if args.only is not None else False
         default = not self.process_only
         
-        self.decode = args.decode if args.decode is not None else default
-        self.decode_hit_wise = args.decode_hit_wise if args.decode_hit_wise is not None else default
+        self.decode            = args.decode            if args.decode            is not None else default
+        self.decode_hit_wise   = args.decode_hit_wise   if args.decode_hit_wise   is not None else default
         self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else default
-        self.make_symbolic = args.make_symbolic if args.make_symbolic is not None else default
-        self.make_plot = args.make_plot if args.make_plot is not None else default
-        self.transfer_plot = args.transfer_plot if args.transfer_plot is not None else default
-        self.transfer_dir = args.transfer_dir if args.transfer_dir  is not None else "./"
+        self.make_symbolic     = args.make_symbolic     if args.make_symbolic     is not None else default
+        self.make_plot         = args.make_plot         if args.make_plot         is not None else default
+        self.transfer_plot     = args.transfer_plot     if args.transfer_plot     is not None else default
+        self.transfer_dir      = args.transfer_dir      if args.transfer_dir      is not None else "./"
 
-        self.auto_update = args.auto_update if  args.auto_update  is not None else False
+        self.auto_update       = args.auto_update       if  args.auto_update      is not None else False
         
         # misc
-        self.plotter = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
-        source_dir = os.path.dirname( __file__ ) + "/"
-        self.evt_list = source_dir + "evt_list.txt"
+        self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
+        source_dir             = os.path.dirname( __file__ ) + "/"
+        self.evt_list          = source_dir + "evt_list.txt"
         self.evt_list_previous = source_dir + "evt_list_previous.txt"
 
         self.processes = []
@@ -53,6 +53,17 @@ class Process() :
 
         if args.only is True :
             print( "Only ..." )
+
+    def SetFlagsForAutoUpdate( self ) :
+        self.is_dry_run        = False
+        self.decode            = True
+        self.decode_hit_wise   = True
+        self.decode_event_wise = True
+        self.make_symbolic     = True
+        self.make_plot         = True
+        self.transfer_plot     = True
+        self.auto_update       = False
+
 
     def PrintLine( self ) :
         print( '+' + '-'*50 + '+' )
@@ -180,8 +191,6 @@ class Process() :
 
     def MakeEvtList( self ):
         command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.GetEventFilePath() ) + " | head -n 400"
-        #command = "ssh intt2 ls /bbox/commissioning/INTT/calibration"
-        #command = "ssh intt2 pwd"
         print( command )
 
         if self.is_dry_run is False :
@@ -205,8 +214,31 @@ class Process() :
                 for run in runs :
                     file.write( run+"\n" )
             
+    def GetNewRuns( self ) :
+        if self.is_dry_run is True :
+            return []
         
+        runs = []
+        with open( self.evt_list ) as file :
+            for line in file : 
+                runs.append( line.split()[0] )
+            
+        runs_previous = []
+        with open( self.evt_list_previous ) as file :
+            for line in file : 
+                runs_previous.append( line.split()[0] )
+
+        runs_processed = []
+        for run in runs :
+            if run not in runs_previous :
+                runs_processed.append( run )
+
+        print( "Automatic update, Runs to be processed:" )
+        print( runs_processed )
+        return runs_processed
+
     def AutoUpdate( self ) :
+
         if os.path.exists( self.evt_list ) : 
             command = "mv " + self.evt_list + " " + self.evt_list_previous
             proc = subprocess.Popen( command, shell=True )
@@ -214,13 +246,19 @@ class Process() :
             
         self.MakeEvtList()
 
-        
+        runs_processed = self.GetNewRuns()
+        self.SetFlagsForAutoUpdate() # chaning flags for: evt->root (hit-wise), evt->root (event-wise), root->plots, etc.
+            # loop over all runs to be processed
+        for run in runs_processed :
+            self.run = run # change the run to be processed
+            print( "Auto update, Processing Run", self.run )
+            self.Do()
         
     def Do( self ) :
-        # show evt files to be processed
 
         if self.auto_update is True :
             self.AutoUpdate()
+            return None
         
         if self.decode is True :
             if self.decode_hit_wise is True:
