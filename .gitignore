@@ -65,3 +65,7 @@ Thumbs.db
 *.exe
 *.out
 *.app
+
+# manually added files
+general_codes/genki/evt_list.txt
+general_codes/genki/evt_list_previous.txt
