@@ -40,7 +40,8 @@ class Process() :
         self.transfer_plot     = args.transfer_plot     if args.transfer_plot     is not None else default
         self.transfer_dir      = args.transfer_dir      if args.transfer_dir      is not None else "./"
 
-        self.auto_update       = args.auto_update       if  args.auto_update      is not None else False
+        self.auto_update       = args.auto_update       if args.auto_update       is not None else False
+        self.update_list       = args.update_list       if args.update_list       is not None else default
         
         # misc
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
@@ -55,7 +56,6 @@ class Process() :
             print( "Only ..." )
 
     def SetFlagsForAutoUpdate( self ) :
-        self.is_dry_run        = False
         self.decode            = True
         self.decode_hit_wise   = True
         self.decode_event_wise = True
@@ -91,6 +91,7 @@ class Process() :
         print( "|     Output directory:", self.transfer_dir )
         self.PrintLine()
         print( "| Auto Update?", self.auto_update )
+        print( "| Update list?", self.update_list )
         print( "|     New list:", self.evt_list )
         print( "|     Old list:", self.evt_list_previous )
 
@@ -138,12 +139,12 @@ class Process() :
 
         if is_event_wise is False :
             command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
-            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice bash ./myfirstproject.sh {}"
             #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
             whole_command = init_commands + command_to_dir + command_decode
         else:
             command_to_dir = "cd /home/phnxrc/INTT/hachiya/convertInttRaw/test1/ ; "
-            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
             #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
             whole_command = init_commands + command_to_dir + command_decode
             
@@ -153,7 +154,9 @@ class Process() :
         self.SendCommandToAll( whole_command )
         for proc in self.processes :
             print( "Waiting for decoding", proc )
-            proc.wait()
+            # wait only for hit-wise TTree because it may be needed in the following processes
+            if is_event_wise is False :
+                proc.wait()
 
         print( "All decoding ended" )
 
@@ -187,7 +190,7 @@ class Process() :
         if self.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
             proc.wait()
-            print( "All plots were transfered to here." )
+            print( "All plots were transfered to", self.transfer_dir )
 
     def MakeEvtList( self ):
         command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.GetEventFilePath() ) + " | head -n 400"
@@ -204,20 +207,17 @@ class Process() :
                 pos_right = pos_left + 8
                 #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output )
                 all_runs.append( output[ pos_left:pos_right ] )
-
+                # end of for output in outputs[0:-2]
+            # end of if self.is_dry_run is False
                 
             # keep only unique elements
             runs = sorted( list(set(all_runs)) )
-            print( runs )
 
             with open( self.evt_list, 'w' ) as file :
                 for run in runs :
                     file.write( run+"\n" )
             
     def GetNewRuns( self ) :
-        if self.is_dry_run is True :
-            return []
-        
         runs = []
         with open( self.evt_list ) as file :
             for line in file : 
@@ -239,24 +239,46 @@ class Process() :
 
     def AutoUpdate( self ) :
 
-        if os.path.exists( self.evt_list ) : 
-            command = "mv " + self.evt_list + " " + self.evt_list_previous
-            proc = subprocess.Popen( command, shell=True )
-            proc.wait()
+        if self.update_list is True :
+            print( "Update list", "(dry run)" if self.is_dry_run else "" )
             
-        self.MakeEvtList()
+            # Change the current list (generated before) to a previous list
+            if os.path.exists( self.evt_list ) : 
+                command = "mv " + self.evt_list + " " + self.evt_list_previous
+                print( "Rename the current list, which was generated before, to a previous list." )
+                print( command )
+                if self.is_dry_run is False:
+                    proc = subprocess.Popen( command, shell=True )
+                    proc.wait()
 
-        runs_processed = self.GetNewRuns()
-        self.SetFlagsForAutoUpdate() # chaning flags for: evt->root (hit-wise), evt->root (event-wise), root->plots, etc.
-            # loop over all runs to be processed
+            # Generate new list
+            self.MakeEvtList()
+
+            # if --only is used (with --update-list is assumed), here is the end of processes
+            if self.process_only is True :
+                self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
+                return None
+            # end of if self.update_list is True 
+
+        runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
+        #self.SetFlagsForAutoUpdate() # chaning flags for: evt->root (hit-wise), evt->root (event-wise), root->plots, etc.
+        self.auto_update = False
+        # loop over all runs to be processed
+        counter = 0 
         for run in runs_processed :
             self.run = run # change the run to be processed
             print( "Auto update, Processing Run", self.run )
             self.Do()
+
+            counter += 1
+            if counter > 3 :
+                break
+
         
     def Do( self ) :
-
-        if self.auto_update is True :
+        print( "Do process!", "(dry run)" if self.is_dry_run else "" )
+        
+        if self.auto_update is True or self.update_list is True:
             self.AutoUpdate()
             return None
         
@@ -331,6 +353,10 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="" )
 
+    parser.add_argument( "--update-list",
+                         action=argparse.BooleanOptionalAction,
+                         help="" )
+
     # 
     #parser.add_argument( "--n_collisions", type=int, help="A value of one of FELIX parameter n_collisions, which is a size of an acceptance window for hits BCO value. An unsigned integer is expected." )
     #parser.add_argument( "--open_time", type=int, help="A value of one of FELIX parameter open_time, which is waiting time for arrival of hit information from ROCs in the units of BCO. An unsigned integer is expected." )
@@ -343,4 +369,3 @@ if __name__ == "__main__" :
 
     time.sleep( 1 )
     print( "All processes were ended" )
-
