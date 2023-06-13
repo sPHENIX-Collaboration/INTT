@@ -1,0 +1,4 @@
+#!/bin/bash
+
+dir=$(dirname $(readlink -f $0))
+python3 ${dir}/process_commissioning_data.py $@
