@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 import os
+import pprint
 import socket
 import subprocess
 import sys
@@ -12,7 +13,7 @@ class Process() :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
         self.run        = str(args.run).zfill( 8 ) 
-        self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning_6_4/"
+        self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning_6_6/"
         # add a directory separator if it's not at the end of string
         if self.root_dir[-1] != "/" :
             self.root_dir += "/"
@@ -274,10 +275,25 @@ class Process() :
             if counter > 3 :
                 break
 
-        
+    def IsOtherProcessRunning( self, name ) :
+        command = "ps aux | grep -v grep | grep " + __file__
+        #command = "ls -1"
+        proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
+        outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
+        #print( "ps:", outputs )
+        #print( type(outputs), len(outputs) )
+
+        if len(outputs) > 1 :
+            return True
+        else:
+            return False
+
     def Do( self ) :
+        if self.IsOtherProcessRunning( __file__ ) is True:
+            print( "Other process is running. Nothing done.", "(dry run)" if self.is_dry_run else "" )
+            return None
+            
         print( "Do process!", "(dry run)" if self.is_dry_run else "" )
-        
         if self.auto_update is True or self.update_list is True:
             self.AutoUpdate()
             return None
@@ -367,10 +383,11 @@ if __name__ == "__main__" :
     #parser.add_argument( "--open_time", type=int, help="A value of one of FELIX parameter open_time, which is waiting time for arrival of hit information from ROCs in the units of BCO. An unsigned integer is expected." )
 
     args = parser.parse_args()
-    print( args )
+    #print( args )
     process = Process( args )
     process.Print()
     process.Do()
 
     time.sleep( 1 )
     print( "All processes were ended" )
+
