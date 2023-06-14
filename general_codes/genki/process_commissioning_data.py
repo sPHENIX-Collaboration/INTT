@@ -41,7 +41,7 @@ class Process() :
         self.transfer_dir      = args.transfer_dir      if args.transfer_dir      is not None else "./"
 
         self.auto_update       = args.auto_update       if args.auto_update       is not None else False
-        self.update_list       = args.update_list       if args.update_list       is not None else default
+        self.update_list       = args.update_list       if args.update_list       is not None else self.auto_update
         
         # misc
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
@@ -285,17 +285,22 @@ class Process() :
         if self.decode is True :
             if self.decode_hit_wise is True:
                 self.Decode()
+                print( "Hit-wise TTree made!", "(dry run)" if self.is_dry_run else "" )
             if self.decode_event_wise is True:
                 self.Decode( is_event_wise=True )
+                print( "Event-wise TTree made!", "(dry run)" if self.is_dry_run else "" )
 
         if self.make_symbolic is True : 
             self.MakeSymbolic()
+            print( "Symbolics made!", "(dry run)" if self.is_dry_run else "" )
 
         if self.make_plot is True : 
             self.MakePlot()
+            print( "Plots made!", "(dry run)" if self.is_dry_run else "" )
 
         if self.transfer_plot is True :
             self.TransferPlot()
+            print( "Plots transferred!", "(dry run)" if self.is_dry_run else "" )
         
 if __name__ == "__main__" :
     # A argument parser class to accept command-line options
