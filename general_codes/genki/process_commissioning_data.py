@@ -155,9 +155,7 @@ class Process() :
         self.SendCommandToAll( whole_command )
         for proc in self.processes :
             print( "Waiting for decoding", proc )
-            # wait only for hit-wise TTree because it may be needed in the following processes
-            if is_event_wise is False :
-                proc.wait()
+            proc.wait()
 
         print( "All decoding ended" )
 
