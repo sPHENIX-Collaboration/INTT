@@ -275,13 +275,13 @@ class Process() :
             if counter > 3 :
                 break
 
-    def IsOtherProcessRunning( self, name ) :
+    def IsOtherProcessRunning( self ) :
         command = "ps aux | grep -v grep | grep " + __file__
         #command = "ls -1"
         proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
         outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
-        #print( "ps:", outputs )
-        #print( type(outputs), len(outputs) )
+        print( "ps:", outputs )
+        print( type(outputs), len(outputs) )
 
         if len(outputs) > 1 :
             return True
@@ -289,7 +289,7 @@ class Process() :
             return False
 
     def Do( self ) :
-        if self.IsOtherProcessRunning( __file__ ) is True:
+        if self.IsOtherProcessRunning() is True:
             print( "Other process is running. Nothing done.", "(dry run)" if self.is_dry_run else "" )
             return None
             
