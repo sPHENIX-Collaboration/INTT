@@ -3,6 +3,10 @@
 ## Contents and descriptions
 * Reference.C and Reference.sh
 	* These are minimal implementations the mostly serve as templates or references for what certain includes and syntax should be.
+* RawDataDecoder.C and RawDataDecoder.sh
+	* These are for producing one DST file per one PRDF file (for now)
+	* run `sh RawDataDecoder.sh -h` for more information
+	* I may need to change the default location of the output files and potentially the format
 * ...
 
 ## How to run these macros
