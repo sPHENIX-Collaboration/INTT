@@ -5,7 +5,7 @@ then
 	echo "More than 2 arguments; taking first two arguments and excess will be ignored"
 fi
 
-if [ $# -eq 2 ]
+if [ $# -ge 2 ]
 then
 	root -l Reference.C\(\"$1\",\"$2\"\)
 else
