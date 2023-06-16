@@ -294,7 +294,7 @@ class Process() :
 
         # Update the run list without the last run in the new run list otherwise it will be in the previous run list
         # (the previous run list means a list of runs already processed)
-        #self.MakeEvtList( [ self.GetNewRuns()[-1] ] )
+        self.MakeEvtList( [ self.GetNewRuns()[-1] ] )
 
         self.auto_update = False
         self.update_list = False
