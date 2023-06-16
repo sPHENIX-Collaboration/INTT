@@ -53,4 +53,6 @@ As this function is inherited from the ROOT::TH2Poly, you can simply do
 Also, add the legend, text or other stuff same way as how do you it with TH2F.  
 
 ### Draw
-* -> Draw("colz0");
+```
+-> Draw("colz0");
+```
