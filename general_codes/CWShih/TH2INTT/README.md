@@ -12,4 +12,23 @@
 TH2INTT * INTT_effi = new TH2INTT(); #No variable in the parentheses.
 
 ```
-* INTT_effi -> 
+### Ways to fill the bin (half-ladder) content  
+1. void SetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side, double content) 
+```
+ INTT -> SetLadderIContent(1,1,10,1, 300); // B1L110N, content : 300
+```
+ 
+2. void SetLadderSContent(TString ladder_name, double content)
+```
+ INTT -> SetLadderSContent(“B1L110N”, 9.8); // B1L110N, content : 9.8
+```
+
+3. void SetSerFCIContent(int server_id, int FC_id, double content) 
+```
+INTT -> SetSerFCIContent(4,3,100); // intt4_FC3, content : 100
+```
+
+4. void SetSerFCSContent(TString server_FC, double content)
+```
+INTT -> SetSerFCSContent(“intt4_3”,20) // intt4_FC3, content : 20
+```
