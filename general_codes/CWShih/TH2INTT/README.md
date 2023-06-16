@@ -17,6 +17,7 @@ TH2INTT * INTT_effi = new TH2INTT(); #No variable in the parentheses.
 #### Instead, here we use "SetContent". You can determine the HL to be set by giving the "ladder name + directions" or the "server + Felix channel". Examples are shown below.
  
 1. void SetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side, double content) 
+* side : 0 -> South, 1 -> North
 ```
  INTT -> SetLadderIContent(1,1,10,1, 300); // B1L110N, content : 300
 ```
@@ -37,8 +38,16 @@ INTT -> SetSerFCSContent(“intt4_3”,20) // intt4_FC3, content : 20
 ```
 
 ### Ways to get content 
-* Same ways as how you do the SetContent. Just change the "Set" of functions mentioned above to "Get". For example
+* Same ways as how you do the SetContent. Just change the "Set" of functions mentioned above to "Get". For example : 
 void GetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side) 
 ```
- INTT -> SetLadderIContent(1,1,10,1); // B1L110N, return content : XXX
+ INTT -> GetLadderIContent(1,1,10,1); // B1L110N, return content : XXX
 ```
+### Name, Label, Legned
+As this function is inherited from the ROOT::TH2Poly, you can simply do 
+```
+->SetTitle();
+->GetXaxis()->SetTitle();
+->GetYaxis()->SetTitle();
+```
+Also, add the legend, text or other stuff same way as how do you it with TH2F.  
