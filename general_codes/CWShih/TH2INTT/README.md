@@ -14,7 +14,7 @@ TH2INTT * INTT_effi = new TH2INTT(); #No variable in the parentheses.
 
 ### Ways to fill the bin (half-ladder) content  
 #### One thing different from the TH2F, you CAN NOT use "TH2::Fill" to fill the content
-#### Instead, here we use "SetContent", you can determine the HL to be set by giving the "ladder name + directions" or the "server + Felix channel". Examples are shown below.
+#### Instead, here we use "SetContent". You can determine the HL to be set by giving the "ladder name + directions" or the "server + Felix channel". Examples are shown below.
  
 1. void SetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side, double content) 
 ```
@@ -34,4 +34,11 @@ INTT -> SetSerFCIContent(4,3,100); // intt4_FC3, content : 100
 4. void SetSerFCSContent(TString server_FC, double content)
 ```
 INTT -> SetSerFCSContent(“intt4_3”,20) // intt4_FC3, content : 20
+```
+
+### Ways to get content 
+* Same ways as how you do the SetContent. Just change the "Set" of functions mentioned above to "Get". For example
+void GetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side) 
+```
+ INTT -> SetLadderIContent(1,1,10,1); // B1L110N, return content : XXX
 ```
