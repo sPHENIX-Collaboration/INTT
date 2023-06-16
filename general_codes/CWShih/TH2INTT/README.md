@@ -1,7 +1,7 @@
 # TH2INTT
 
 ## Quick introduction
-* A tool aiming to have a better way to present the overall INTT status, up to half-ladder level. 
+* A tool aiming to have a better way to present the overall INTT status, up to half-ladder (HL) level. 
 * Inherit from the ROOT::TH2Poly
 * The examaple plot can be seen in output_example_1.png
 
@@ -13,6 +13,9 @@ TH2INTT * INTT_effi = new TH2INTT(); #No variable in the parentheses.
 
 ```
 ### Ways to fill the bin (half-ladder) content  
+#### One thing different from the TH2F, you CAN NOT use "TH2::Fill" to fill the content
+#### Instead, here we use "SetContent", you can determine the HL to be set by giving the "ladder name + directions" or the "server + Felix channel". Examples are shown below.
+ 
 1. void SetLadderIContent(int barrel_id, int layer_id, int ladder_id, int side, double content) 
 ```
  INTT -> SetLadderIContent(1,1,10,1, 300); // B1L110N, content : 300
