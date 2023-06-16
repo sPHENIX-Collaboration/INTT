@@ -7,7 +7,7 @@ fi
 
 if [ $# -ge 2 ]
 then
-	root -l Reference.C\(\"$1\",\"$2\"\)
+	root -l Example.C\(\"$1\",\"$2\"\)
 else
 	echo "Script should be called with at least 2 arguments"
 fi
