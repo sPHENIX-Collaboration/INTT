@@ -507,7 +507,7 @@ def send_fphxparam_from_file( d, file_path, verbosity=0 ) :
 
     send_fphxparam( d, commands, verbosity=verbosity )
     
-def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
+def macro_self(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, fphxparam=None):
     """!
     @brief A set of commands for pedestal (self-trigger) run
     @param d the dam object
@@ -530,7 +530,7 @@ def macro_pedestal(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =
         #ld_fphxparam(d)
         intt.ld_fphxparam_high_daqs(d)
     else:
-        intt_ext.send_fphxparam( d, fphxparam )
+        send_fphxparam( d, fphxparam )
         
     time.sleep(0.01)
     intt.enable_ro(d)
@@ -545,11 +545,10 @@ def macro_calib(d, spacing =1199, n_pulses =10, n_ampl_steps =63, ampl_step =1, 
     @details Extended version of intt.macro_calib.
     Users can give FPHX commands.
     """
-    macro_pedestal(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
-    intt_ext.send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
+    macro_self(d, spacing, n_pulses, n_ampl_steps, ampl_step, fphxparam)
+    intt.send_calib_param(d, spacing, n_pulses, n_ampl_steps, ampl_step)
 
     return None
-
 
 def verify_latch(d):
     '''!
@@ -1130,12 +1129,12 @@ def take_data(
         filename = output_dir + output_name
 
     if mode == "calibration" : 
-        intt.macro_calib(d)
+        macro_calib(d)
     elif mode == "self" :
-        macro_pedestal(d)
-        d.reg.n_collisions=0 # 130
-        d.reg.open_time=30 # 15 # in the units of BCO #todo artument
-        #d.reg.roc_wildcard |= 1<<6
+        macro_self(d)
+        d.reg.n_collisions=130
+        d.reg.open_time=15
+        d.reg.roc_wildcard |= 1<<6
         # end of if mode == "calibration"
     else :
         print( "Invalid mode" )
