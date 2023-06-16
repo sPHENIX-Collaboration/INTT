@@ -98,6 +98,21 @@ class Process() :
 
         self.PrintLine()
 
+    def IsOtherProcessRunning( self ) :
+        command = "ps aux | grep -v -e grep -v -e emacs -v -e vi | grep " + __file__
+        print( command )
+        #command = "ls -1"
+        proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
+        outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
+        #print( "ps:", outputs )
+        #print( type(outputs), len(outputs) )
+
+        if len(outputs) > 1 :
+            return True
+        else:
+            return False
+
+
     def GetEventFilePath( self ) :
         directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
         #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000" + ".evt"
@@ -191,7 +206,7 @@ class Process() :
             proc.wait()
             print( "All plots were transfered to", self.transfer_dir )
 
-    def MakeEvtList( self ):
+    def MakeEvtList( self, ignored_runs=[] ):
         command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.GetEventFilePath() ) + " | head -n 400"
         print( command )
 
@@ -205,41 +220,52 @@ class Process() :
                 pos_left = len( self.run_type ) + 7
                 pos_right = pos_left + 8
                 #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output )
-                all_runs.append( output[ pos_left:pos_right ] )
+
+                # There may be files with a name different from the assumed format
+                # ( {self.run_type}_intt?-????????-????.evt, e.g. beam_intt1-00001234-0056.evt)
+                # For the moment, I exclude files with shorter name than the assumed format not to affect in reading file.
+                run = output[ pos_left:pos_right ]
+                #print( "MakeEvtList:", ignored_runs, run, run in ignored_runs )
+                if run != '' :
+                    if run not in ignored_runs : 
+                        all_runs.append( run )
                 # end of for output in outputs[0:-2]
             # end of if self.is_dry_run is False
                 
             # keep only unique elements
             runs = sorted( list(set(all_runs)) )
-
+            #print( runs )
+            
             with open( self.evt_list, 'w' ) as file :
                 for run in runs :
                     file.write( run+"\n" )
-            
+
     def GetNewRuns( self ) :
         runs = []
         with open( self.evt_list ) as file :
-            for line in file : 
+            for line in file :
                 runs.append( line.split()[0] )
-            
+
+        print( "Runs in the current list:", runs )
         runs_previous = []
         with open( self.evt_list_previous ) as file :
-            for line in file : 
+            for line in file :
                 runs_previous.append( line.split()[0] )
+        print( "Runs in the previous list:", runs_previous )
 
         runs_processed = []
         for run in runs :
             if run not in runs_previous :
                 runs_processed.append( run )
 
-        print( "Automatic update, Runs to be processed:" )
-        print( runs_processed )
+        print( "Automatic update, Runs to be processed:", runs_processed )
         return runs_processed
 
     def AutoUpdate( self ) :
-
+        print( "AutoUpdate!" )
+        
         if self.update_list is True :
-            print( "Update list", "(dry run)" if self.is_dry_run else "" )
+            print( "Update list", "(dry run)" if self.is_dry_run else "!" )
             
             # Change the current list (generated before) to a previous list
             if os.path.exists( self.evt_list ) : 
@@ -250,7 +276,11 @@ class Process() :
                     proc = subprocess.Popen( command, shell=True )
                     proc.wait()
 
+            else:
+                print( self.evt_list, "is not found. The previous list is not updated." )
+                    
             # Generate new list
+            print( "Let\'s make a current run list." )
             self.MakeEvtList()
 
             # if --only is used (with --update-list is assumed), here is the end of processes
@@ -259,37 +289,33 @@ class Process() :
                 return None
             # end of if self.update_list is True 
 
+        print( "Let\'s find new runs!" )
         runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
-        #self.SetFlagsForAutoUpdate() # chaning flags for: evt->root (hit-wise), evt->root (event-wise), root->plots, etc.
+
+        # Update the run list without the last run in the new run list otherwise it will be in the previous run list
+        # (the previous run list means a list of runs already processed)
+        #self.MakeEvtList( [ self.GetNewRuns()[-1] ] )
+
         self.auto_update = False
+        self.update_list = False
         # loop over all runs to be processed
-        counter = 0 
+        counter = 0
+
+        print( "Loop over new runs", runs_processed )
         for run in runs_processed :
             self.run = run # change the run to be processed
             print( "Auto update, Processing Run", self.run )
             self.Do()
+            # end of for run in runs_processed
 
-            counter += 1
-            if counter > 3 :
-                break
-
-    def IsOtherProcessRunning( self ) :
-        command = "ps aux | grep -v grep | grep " + __file__
-        #command = "ls -1"
-        proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
-        outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
-        print( "ps:", outputs )
-        print( type(outputs), len(outputs) )
-
-        if len(outputs) > 1 :
-            return True
-        else:
-            return False
-
+        print( "Processed runs:", runs_processed )
+            
     def Do( self ) :
         if self.IsOtherProcessRunning() is True:
             print( "Other process is running. Nothing done.", "(dry run)" if self.is_dry_run else "" )
             return None
+        else:
+            self.Print()
             
         print( "Do process!", "(dry run)" if self.is_dry_run else "" )
         if self.auto_update is True or self.update_list is True:
@@ -383,9 +409,7 @@ if __name__ == "__main__" :
     args = parser.parse_args()
     #print( args )
     process = Process( args )
-    process.Print()
     process.Do()
 
     time.sleep( 1 )
     print( "All processes were ended" )
-
