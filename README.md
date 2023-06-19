@@ -24,3 +24,4 @@ General macros for the INTT and the ladder classification macros are here.
 * Hikaru Imai (Rikkyo Univ.), ???. Nov/2021 - current
 * Milan Stojanovic (Purdue Univ.) https://github.com/milanchestojanovic, Jan/2022 - current
 * Miu Morita (NWU), https://github.com/miumorita, Oct/2021 - Mar/2022
+* Joseph Bertaux (Purdue University), https://github.com/josephbertaux, June/2023 - current

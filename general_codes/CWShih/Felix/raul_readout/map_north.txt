@@ -1,0 +1,4 @@
+/home/inttdev/data/IR/commissioning/20230424_calib_pedestal/RC-0N_1N/calib_packv5_042523_0409_map.txt
+/home/inttdev/data/IR/commissioning/20230424_calib_pedestal/RC-2N_3N/calib_packv5_042523_1252_map.txt
+/home/inttdev/data/IR/commissioning/20230424_calib_pedestal/RC-4N_5N/calib_packv5_042523_1343_map.txt
+/home/inttdev/data/IR/commissioning/20230424_calib_pedestal/RC-6N_7N/calib_packv5_042523_1617_map.txt
