@@ -13,7 +13,7 @@ class Process() :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
         self.run        = str(args.run).zfill( 8 ) 
-        self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning_6_6/"
+        self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
         if self.root_dir[-1] != "/" :
             self.root_dir += "/"
@@ -36,6 +36,14 @@ class Process() :
         self.decode            = args.decode            if args.decode            is not None else default
         self.decode_hit_wise   = args.decode_hit_wise   if args.decode_hit_wise   is not None else default
         self.decode_event_wise = args.decode_event_wise if args.decode_event_wise is not None else default
+        # check confliction, if hit_wise or event_wise is True, self.decode should be True. The opposite pattern may not happen
+        if self.decode is not (self.decode_hit_wise or self.decode_event_wise ) :
+            if args.decode is not None :
+                self.decode_hit_wise  = self.decode
+                self.decode_event_wise = self.decode
+            else:
+                self.decode            =  (self.decode_hit_wise or self.decode_event_wise )
+        
         self.make_symbolic     = args.make_symbolic     if args.make_symbolic     is not None else default
         self.make_plot         = args.make_plot         if args.make_plot         is not None else default
         self.transfer_plot     = args.transfer_plot     if args.transfer_plot     is not None else default
@@ -104,14 +112,13 @@ class Process() :
         #command = "ls -1"
         proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
         outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
-        #print( "ps:", outputs )
-        #print( type(outputs), len(outputs) )
+        print( "ps:", outputs )
+        print( type(outputs), len(outputs) )
 
         if len(outputs) > 1 :
             return True
         else:
             return False
-
 
     def GetEventFilePath( self ) :
         directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
