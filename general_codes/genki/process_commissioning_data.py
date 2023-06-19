@@ -348,70 +348,117 @@ class Process() :
         if self.transfer_plot is True :
             self.TransferPlot()
             print( "Plots transferred!", "(dry run)" if self.is_dry_run else "" )
-        
+
+
+from argparse import (OPTIONAL, SUPPRESS, ZERO_OR_MORE,
+                      ArgumentDefaultsHelpFormatter, ArgumentParser,
+                      RawDescriptionHelpFormatter, RawTextHelpFormatter)
+
+
+class MyHelpFormatter(
+    RawTextHelpFormatter, RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter
+):
+    def _format_action(self, action: argparse.Action) -> str:
+        return super()._format_action(action) + "\n"
+
+    def _get_help_string(self, action):
+        help = action.help
+        if action.required:
+            help += " (required)"
+
+        if "%(default)" not in action.help:
+            if action.default is not SUPPRESS:
+                defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
+                if action.option_strings or action.nargs in defaulting_nargs:
+                    if action.default is not None and not action.const:
+                        help += " (default: %(default)s)"
+        return help
+    
 if __name__ == "__main__" :
     # A argument parser class to accept command-line options
-    parser = argparse.ArgumentParser()
+
+    description="A python program for decoding event files, making plots, transferring plots to your local env. \n" \
+        "See https://indico.bnl.gov/event/19834/contributions/77742/attachments/48046/81565/20230615_data_process.pdf for some explanation." 
+    epilog = "Examples:\n" \
+        "  * I just want to see the plots of run 123456!!!\n" \
+        "    $ process_data 123456\n\n" \
+        "  * Only making hit-wise TTree of run 123\n" \
+        "    $ process_data --only --decode-hit-wise 123\n\n" \
+        "  * Re-analyze run 123 without making event-wise TTree to save time\n" \
+        "    $ process_data --no-decode-event-wise 123\n\n" \
+        "  * Only getting plots of run 123 to my PC\n" \
+        "    $ process_data --only --transfer-plot 123\n\n" \
+        "  * Analyzing runs from 100 to 120\n" \
+        "    $ seq 100 120 | xargs -I {} process_data {}\n" \
+        "    It's better to stop the cron job in advance not to be interfered. Do in inttdaq:\n" \
+        "    $ crontab -e\n" \
+        "    And Comment the line out by adding # at the begginig ofthe line.\n" \
+        "    The line to be commented out is something like: */1 * * * * /home/inttdev/bin/process_data --root-dir\n\n" \
+        "  * I want to process new runs by hand\n" \
+        "    $ process_data --auto-update 0\n" \
+        "    Because the run number is mandatory, you need to give a fake value, for example, 0\n"\
+
+    parser = argparse.ArgumentParser( description=description,
+                                      epilog=epilog,
+                                      formatter_class=MyHelpFormatter
+                                     )
+
     parser.add_argument( "run", type=int,
-                         help="" )
-    
-    parser.add_argument( "--run-type", type=str,
-                         help="beam/calib/junk/calibration" )
-    
-    parser.add_argument( "--root-dir", type=str,
-                         help="A name of directory that contains ROOT files. commissioning_6_2 is default." )
-    
-    parser.add_argument( "--root-subdir", type=str,
-                         help="A name of sub-directory that contains ROOT files. hit_files is default." )
-    
-    
-    parser.add_argument( "--dry-run",
+                         help="**Mandatory** The run number to be processed. It doesn't need to be 8 digit." )
+
+    parser.add_argument( "--only",
                          action=argparse.BooleanOptionalAction,
-                         help="A type of ADC configuration for DAC scan. 1 to 10 as integers are accepted. " )
+                         help="Only specified steps are done if specified. Otherwise (default), all steps are done unless \"no\" options are specified." )
 
     # process flags
     parser.add_argument( "--decode",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Decoding to make a hit-wise and an event-wise TTree is done if specified (default)." )
 
     parser.add_argument( "--decode-hit-wise",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Decoding to make a hit-wise Tree is done if specified (default)." )
 
     parser.add_argument( "--decode-event-wise",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Decoding to make a event-wise Tree is done if specified (default)." )
 
     parser.add_argument( "--make-symbolic",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Making symbolic link in inttdaq to the ROOT files in the sPHENIX common disc is done if specified (default). " )
     
     parser.add_argument( "--make-plot",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Making plots of ADC and channel dists in intt is done if specified (default)." )
 
     parser.add_argument( "--transfer-plot",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Transferring the plots to your local env is done if specified ((default). Use --transfer-dir to select a directory to contain the plots." )
 
     parser.add_argument( "--transfer-dir", type=str,
-                         help="" )
-
-    parser.add_argument( "--only",
-                         action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="A directory to contain the plots can be specified (default: .)." )
 
     parser.add_argument( "--auto-update",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="Automatic updating process (decode, making plots, transferring plots) for the new runs appear in /bbox/commissioning/INTT/{run-type} is done if specified. {run-type} is given by --run-type. Default: off" )
 
     parser.add_argument( "--update-list",
                          action=argparse.BooleanOptionalAction,
-                         help="" )
+                         help="The current run list (evt_list.txt) and the previous run list (run_list_previous.txt) are updated if specified (default). Turning off is mainly for debugging." )
 
-    # 
-    #parser.add_argument( "--n_collisions", type=int, help="A value of one of FELIX parameter n_collisions, which is a size of an acceptance window for hits BCO value. An unsigned integer is expected." )
-    #parser.add_argument( "--open_time", type=int, help="A value of one of FELIX parameter open_time, which is waiting time for arrival of hit information from ROCs in the units of BCO. An unsigned integer is expected." )
+    # arguments for detailed control, almost absolete
+    parser.add_argument( "--run-type", type=str,
+                         help="A type of run, which determins the directory in the buffer box, i.e. /bbox/commissioning/INTT/{here}. A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"beam\" is default." )
+    
+    parser.add_argument( "--root-dir", type=str,
+                         help="A name of directory that contains ROOT files. \"commissioning\" is default. You may use commissioning_6_6, 6_4, 6_2, 5_30, or 5_23 for old data. You don't need to change it normally." )
+    
+    parser.add_argument( "--root-subdir", type=str,
+                         help="A name of sub-directory that contains ROOT files. \"hit_files\" is default. You don't need to change it normally." )
+        
+    parser.add_argument( "--dry-run",
+                         action=argparse.BooleanOptionalAction,
+                         help="A flag for testing the processes. It's better to use it before launching processes." )
 
     args = parser.parse_args()
     #print( args )
