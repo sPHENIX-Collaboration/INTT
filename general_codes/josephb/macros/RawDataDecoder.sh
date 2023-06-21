@@ -1,7 +1,7 @@
 #!/bin/bash
 
 i_format="/sphenix/lustre01/sphnxpro/commissioning/INTT/beam/beam_intt%d-%08d-0000.evt"
-o_format="/sphenix/user/jbertaux/commissioning/root_files/beam_intt%d-%08d-0000.root"
+o_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt%d-%08d-0000.root"
 
 show_help()
 {
