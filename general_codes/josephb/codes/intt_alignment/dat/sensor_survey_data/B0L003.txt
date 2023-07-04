@@ -1,0 +1,116 @@
+
+
+     Machine Serial Number: SVL6252331                                     Page:    1
+     ================================================================================
+     Routine Name                                     Run #       Date & Time        
+     ================================================================================
+     INTT-Ladder-Survey-East.RTN                          5 Thu Jun 10 13:35:49 2021
+     ================================================================================
+     ================================================================================
+     Feature      Unit   Nominal     Actual      Tolerances      Deviation   Exceeded
+     ================================================================================
+      
+     Step 9
+     X Location    mm            +013.51186                                          
+     Y Location    mm            +006.01020                                          
+     Z Location    mm            +000.12878                                          
+      
+     Step 10
+     X Location    mm            +115.01124                                          
+     Y Location    mm            +005.96258                                          
+     Z Location    mm            +000.18374                                          
+      
+     Step 11
+     X Location    mm            +115.02318                                          
+     Y Location    mm            +027.96625                                          
+     Z Location    mm            +000.20728                                          
+      
+     Step 12
+     X Location    mm            +013.52209                                          
+     Y Location    mm            +028.01296                                          
+     Z Location    mm            +000.15882                                          
+      
+     Step 13
+     X Location    mm            +115.67436                                          
+     Y Location    mm            +005.98725                                          
+     Z Location    mm            +000.18024                                          
+      
+     Step 14
+     X Location    mm            +245.17611                                          
+     Y Location    mm            +005.93291                                          
+     Z Location    mm            +000.17695                                          
+      
+     Step 15
+     X Location    mm            +245.18569                                          
+     Y Location    mm            +027.93712                                          
+     Z Location    mm            +000.20449                                          
+      
+     Step 16
+     X Location    mm            +115.68369                                          
+     Y Location    mm            +027.98950                                          
+     Z Location    mm            +000.20478                                          
+      
+     Step 17
+     X Location    mm            +246.72404                                          
+     Y Location    mm            +005.90101                                          
+     Z Location    mm            +000.15021                                          
+      
+     Step 18
+     X Location    mm            +376.22373                                          
+     Y Location    mm            +005.93607                                          
+     Z Location    mm            +000.20217                                          
+
+     Machine Serial Number: SVL6252331                                     Page:    2
+     ================================================================================
+     Feature      Unit   Nominal     Actual      Tolerances      Deviation   Exceeded
+     ================================================================================
+      
+     Step 19
+     X Location    mm            +376.21715                                          
+     Y Location    mm            +027.94137                                          
+     Z Location    mm            +000.25972                                          
+      
+     Step 20
+     X Location    mm            +246.71862                                          
+     Y Location    mm            +027.90417                                          
+     Z Location    mm            +000.21875                                          
+      
+     Step 21
+     X Location    mm            +376.92204                                          
+     Y Location    mm            +005.92103                                          
+     Z Location    mm            +000.15856                                          
+      
+     Step 22
+     X Location    mm            +478.42354                                          
+     Y Location    mm            +005.96037                                          
+     Z Location    mm            +000.14276                                          
+      
+     Step 23
+     X Location    mm            +478.41616                                          
+     Y Location    mm            +027.96459                                          
+     Z Location    mm            +000.20231                                          
+      
+     Step 24
+     X Location    mm            +376.91380                                          
+     Y Location    mm            +027.92419                                          
+     Z Location    mm            +000.24760                                          
+      
+     Step 25
+     X Location    mm            -000.00000                                          
+     Y Location    mm            +000.00000                                          
+     Z Location    mm            +000.00751                                          
+      
+     Step 26
+     X Location    mm            +491.97921                                          
+     Y Location    mm            -000.00003                                          
+     Z Location    mm            -000.00751                                          
+      
+     Step 27
+     X Location    mm            +491.93784                                          
+     Y Location    mm            +033.95470                                          
+     Z Location    mm            +000.00751                                          
+      
+     Step 28
+     X Location    mm            -000.01341                                          
+     Y Location    mm            +033.94305                                          
+     Z Location    mm            -000.00751                                          

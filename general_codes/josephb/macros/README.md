@@ -6,6 +6,12 @@
 * RawDataDecoder.C and RawDataDecoder.sh
 	* These are for producing one DST file per one PRDF file (for now)
 	* run `sh RawDataDecoder.sh -h` for more information
+	* I may need to change the default location of the output files
+* RawDataConverter.C and RawDataConverter.sh
+	* These are for producing one ROOT file per one PRDF file (for now)
+	* The output is a ROOT TTree with branches for decoded information
+	* The entries are organized by event, so values that vary hit-to-hit have multiple instances per event
+	* run `sh RawDataConverter.sh -h` for more information
 	* I may need to change the default location of the output files and potentially the format
 * ConvenctionCheck.C
 	* This creates 2D histograms with a layout commensurate with the actual layout of any ladder of the INTT

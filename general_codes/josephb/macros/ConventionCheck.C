@@ -6,21 +6,36 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <intt/InttMapping.h>
 R__LOAD_LIBRARY(libintt.so)
 
 
 
+Double_t T_MRGN = 0.1;
+Double_t B_MRGN = 0.1;
+Double_t L_MRGN = 0.1;
+Double_t R_MRGN = 0.1;
+
 void SetStyle();
 
 typedef Double_t(*FillFunc_t)(struct Intt::Online_s const&);
-TH2D* MakeLadderHist(std::string const&, FillFunc_t);
+
+struct Params_s
+{
+	std::string name;
+	std::string description;
+	FillFunc_t func;
+};
+void MakeLadderHist(struct Params_s const&);
+
 Double_t GetChp(struct Intt::Online_s const& s){return s.chp;}
 Double_t GetChn(struct Intt::Online_s const& s){return s.chn;}
 Double_t GetStripX(struct Intt::Online_s const& s){return Intt::ToOffline(s).strip_x;}
 Double_t GetStripY(struct Intt::Online_s const& s){return Intt::ToOffline(s).strip_y;}
 Double_t GetLadderZ(struct Intt::Online_s const& s){return Intt::ToOffline(s).ladder_z;}
+
 
 void InttToBin(struct Intt::Online_s const&, int&, int&);
 void BinToIntt(struct Intt::Online_s&, int, int);
@@ -31,17 +46,16 @@ void ConventionCheck()
 {
 	SetStyle();
 
-	TCanvas* online_chp_cnvs = new TCanvas("online_chp_canvas", "online_chp_canvas");
-	online_chp_cnvs->cd();
-	TH2D* online_chp_hist = MakeLadderHist("online_chp_hist", &GetChp);
-	online_chp_hist->DrawCopy("COLZ");
-	delete online_chp_hist;
+	std::vector<struct Params_s> v =
+	{
+		(struct Params_s){.name = "online_chp", .description = "Online Chip", .func = &GetChp},
+		(struct Params_s){.name = "online_chn", .description = "Online Channel", .func = &GetChn},
+		(struct Params_s){.name = "offline_strip_x", .description = "Offline Strip X", .func = &GetStripX},
+		(struct Params_s){.name = "offline_strip_y", .description = "Offline Strip Y", .func = &GetStripY},
+		(struct Params_s){.name = "offline_ladder_z", .description = "Offline Ladder Z", .func = &GetLadderZ},
+	};
 
-	TCanvas* online_chn_cnvs = new TCanvas("online_chn_canvas", "online_chn_canvas");
-	online_chn_cnvs->cd();
-	TH2D* online_chn_hist = MakeLadderHist("online_chn_hist", &GetChn);
-	online_chn_hist->DrawCopy("COLZ");
-	delete online_chn_hist;
+	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
 }
 
 
@@ -51,14 +65,30 @@ void SetStyle()
 	gStyle->SetOptStat(0);
 }
 
-TH2D* MakeLadderHist(std::string const& name, FillFunc_t func)
+void MakeLadderHist(struct Params_s const& params)
 {
-	SetStyle();
+	TCanvas* cnvs = new TCanvas(params.name.c_str(), params.name.c_str());
+	cnvs->Range(0.0, 0.0, 1.0, 1.0);
+	cnvs->SetTopMargin(T_MRGN);
+	cnvs->SetBottomMargin(B_MRGN);
+	cnvs->SetLeftMargin(L_MRGN);
+	cnvs->SetRightMargin(R_MRGN);
+
+	TPad* hist_pad = new TPad((params.name + "_hist_pad").c_str(), (params.name + "_hist_pad").c_str(), 0.0, 0.0, 1.0, 1.0);
+	hist_pad->SetFillStyle(4000);
+	hist_pad->Range(0.0, 0.0, 1.0, 1.0);
+	hist_pad->SetTopMargin(T_MRGN);
+	hist_pad->SetBottomMargin(B_MRGN);
+	hist_pad->SetLeftMargin(L_MRGN);
+	hist_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	hist_pad->Draw();
+	hist_pad->cd();
 
 	TH2D* hist = new TH2D
 	(
-		name.c_str(),
-		name.c_str(),
+		params.name.c_str(),
+		params.description.c_str(),
 		26,
 		-0.5,
 		25.5,
@@ -82,7 +112,7 @@ TH2D* MakeLadderHist(std::string const& name, FillFunc_t func)
 	{
 		InttToBin(s, bin_x, bin_y);
 		bin = hist->GetBin(bin_x, bin_y);
-		hist->SetBinContent(bin, (*func)(s));
+		hist->SetBinContent(bin, (*params.func)(s));
 
 		++s.chn;
 		if(s.chn < 128)continue;
@@ -99,7 +129,48 @@ TH2D* MakeLadderHist(std::string const& name, FillFunc_t func)
 		break;
 	}
 
-	return hist;
+	cnvs->cd();
+	hist->DrawCopy("COLZ");
+	delete hist;
+
+	TPad* grid_pad = new TPad((params.name + "_grid_pad").c_str(), (params.name + "_grid_pad").c_str(), 0.0, 0.0, 1.0, 1.0);
+	grid_pad->SetFillStyle(4000);
+	grid_pad->Range(0.0, 0.0, 1.0, 1.0);
+	grid_pad->SetTopMargin(T_MRGN);
+	grid_pad->SetBottomMargin(B_MRGN);
+	grid_pad->SetLeftMargin(L_MRGN);
+	grid_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	grid_pad->Draw();
+	grid_pad->cd();
+
+	Double_t temp = 0.0;
+	Double_t lower = 0.0;
+	Double_t upper = 1.0;
+	for(int i = 0; i <= 26; ++i)
+	{
+		temp = R_MRGN + i * (1.0 - L_MRGN - R_MRGN) / 26.0;
+
+		lower = B_MRGN;
+		upper = 1.0 - T_MRGN;
+
+		TLine* line = new TLine(temp, lower, temp, upper);
+		line->SetLineStyle(i % 13 == 0 ? 1 : 3);
+		line->SetLineWidth(i % 13 == 0 ? 2 : 1);
+		line->Draw();
+	}
+	for(int i = 0; i <= 256; i += 4)
+	{
+		temp = B_MRGN + i * (1.0 - T_MRGN - B_MRGN) / 256.0;
+
+		lower = L_MRGN;
+		upper = 1.0 - R_MRGN;
+
+		TLine* line = new TLine(lower, temp, upper, temp);
+		line->SetLineStyle(i % 128 == 0 ? 1 : 3);
+		line->SetLineWidth(i % 128 == 0 ? 2 : 1);
+		line->Draw();
+	}
 }
 
 void InttToBin(struct Intt::Online_s const& s, int& bin_x, int& bin_y)
