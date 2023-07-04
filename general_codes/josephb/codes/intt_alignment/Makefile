@@ -1,41 +1,39 @@
-# a great resource:
-# https://makefiletutorial.com/
-
 SHELL=/bin/bash
 
-TRGS = main.exe
+GXX = g++
 
-SRC_DIR = ./src
-OBJ_DIR = ./bld
+CXX = cc
+HXX = h
+OXX = o
 
-CC = cc
-GG = g++
+FLGS = $(shell root-config --cflags)
+INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt $(shell root-config --glibs)
 
-FLAGS = `root-config --cflags`
-INCS = -I`root-config --incdir` #already included with root-config --cflags
-LIBS = `root-config --evelibs` -lTMVA -lTMVAGui -lRooFitCore -lRooFitMore -lRooFit
+BIN = ./bin/
+SRC = ./src/
 
-SRCS = $(shell find $(SRC_DIR) -name *.$(CC))
-OBJS = $(patsubst $(SRC_DIR)/%.$(CC),$(OBJ_DIR)/%.o,$(SRCS))
+TRGT = ./main.exe
 
-$(TRGS) : $(OBJS)
-	mkdir -p $(dir $@)
-	$(GG) $(FLAGS) $(INCS) -o $@  $(OBJS) $(LIBS)
+OBJS = \
+	$(BIN)main.$(OXX) \
+	$(BIN)align/AlignTransform.$(OXX) \
+	$(BIN)align/AngleConvention.$(OXX) \
+	$(BIN)align/TaitBryanZYX.$(OXX) \
+	$(BIN)dtctr/InttSensorSurveyReader.$(OXX)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.$(CC)
-	mkdir -p $(dir $@)
-	$(GG) $(FLAGS) $(INCS) -c $< -o $@
+$(TRGT): $(OBJS)
+	mkdir -p $(@D)
+	@$(GXX) $(FLGS) $(INCS) -o $@ $^ $(LIBS)
+
+$(BIN)%.$(OXX): $(SRC)%.$(CXX)
+	mkdir -p $(@D)
+	@$(GXX) $(FLGS) $(INCS) -c $< -o $@ $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJ_DIR)
-
-.PHONY: srcs
-srcs:
-# list the path to each source relative to the root project directory
-	@echo $(SRCS)
+	rm $(TRGT) $(OBJS)
 
 .PHONY: objs
 objs:
-# list the path to each object relative to the root project directory
 	@echo $(OBJS)
