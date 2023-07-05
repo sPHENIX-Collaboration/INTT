@@ -1,4 +1,6 @@
+#include "align/AlignTransform.h"
 #include "dtctr/InttSensorReader.h"
+
 #include <intt/InttMapping.h>
 #include <trackbase/InttDefs.h>
 
@@ -8,31 +10,46 @@ std::string path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/joseph
 
 int main()
 {
+	char buff[256];
+	TrkrDefs::hitsetkey key;
+	AlignTransform sensor_to_ladder;
+	AlignTransform ladder_to_global;
+
 	InttSensorReader isr;
 	isr.SetMarksDefault();
 
-	isr.ReadFile(path + "B0L001.txt");
-	for(InttSensorReader::Map_t::const_iterator itr = isr.marks.begin(); itr != isr.marks.end(); ++itr)
-	{
-		isr.PrintMark(itr);
-		//isr.GetTransformFromCorners(itr->second).Inverse().Print();
-		isr.GetTransformFromCorners(itr->second).Print();
-		printf("\n\n");
-	}
-
 	Intt::Offline_s ofl;
 	ofl.layer = 3;
-	ofl.ladder_phi = 1;
+	ofl.ladder_phi = 0;
 	ofl.ladder_z = 0;
-	ofl.strip_x = 0;
-	ofl.strip_y = 0;
-
-	printf("\n\n\n\n\n\n");
-	for(ofl.ladder_z = 0; ofl.ladder_z < 4; ++ofl.ladder_z)
+	while(true)
 	{
-		std::cout << InttDefs::genHitSetKey(ofl.layer, ofl.ladder_z, ofl.ladder_phi, 0) << std::endl;
-		isr.GetSensorTransform(ofl.ladder_z).Print();
-		printf("\n\n");
+		isr.SetMarksDefault();
+		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", (ofl.layer - 3) / 2, ((ofl.layer - 3) % 2 * 100) + ofl.ladder_phi);
+		printf("%s\n", buff);
+
+		isr.ReadFile(path + buff);
+
+		for(ofl.ladder_z = 0; ofl.ladder_z < 4; ++ofl.ladder_z)
+		{
+			key = InttDefs::genHitSetKey(ofl.layer, ofl.ladder_z, ofl.ladder_phi, 0);
+			sensor_to_ladder = isr.GetSensorTransform(ofl.ladder_z);
+
+			printf("%d\n", key);
+			sensor_to_ladder.Print();
+
+			printf("\n\n");
+		}
+
+		++ofl.ladder_phi;
+		if(ofl.ladder_phi < ((ofl.layer - 3) < 2 ? 12 : 16))continue;
+		ofl.ladder_phi = 0;
+
+		++ofl.layer;
+		if(ofl.layer < 7)continue;
+		ofl.layer = 3;
+
+		break;
 	}
 
 	return 0;

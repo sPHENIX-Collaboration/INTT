@@ -69,11 +69,12 @@ AlignTransform InttSensorReader::GetTransformFromCorners(Corners_t const& corner
 	//t * v
 	//transforms a v in the coordinate system defined by the corners
 	//to the coordinate system the corners were measured in
+	//(e.g., sensor to world/ladder to world)
 }
 
 AlignTransform InttSensorReader::GetSensorTransform(int ladder_z)
 {
-	Corners_t endcap_corners = marks["Endcap Hole %d"];
+	Corners_t ladder_corners = marks["Endcap Hole %d"];
 	Corners_t sensor_corners;
 	switch(ladder_z)
 	{
@@ -97,13 +98,16 @@ AlignTransform InttSensorReader::GetSensorTransform(int ladder_z)
 		break;
 	}
 
-	AlignTransform sensor_from_world = GetTransformFromCorners(sensor_corners).Inverse();
-	AlignTransform world_from_endcap = GetTransformFromCorners(endcap_corners);
+	AlignTransform world_from_sensor = GetTransformFromCorners(sensor_corners);
+	AlignTransform ladder_from_world = GetTransformFromCorners(ladder_corners).Inverse();
 
-	return sensor_from_world * world_from_endcap;
+	return ladder_from_world * world_from_sensor;
 
-	//Transforms a vector in the ladder's coordinate system
-	//to the sensor's coordinate system
+	//Transforms a vector in the sensor's coordinate system
+	//to the ladder's coordinate system
+
+	//The same transform that puts a sensor aligned with the ladder
+	//to its position relative to the ladder
 }
 
 void InttSensorReader::ReadFile(std::string const& filename)
