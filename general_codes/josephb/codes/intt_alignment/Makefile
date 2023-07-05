@@ -16,11 +16,12 @@ SRC = ./src/
 TRGT = ./main.exe
 
 OBJS = \
-	$(BIN)main.$(OXX) \
+	$(BIN)test.$(OXX) \
 	$(BIN)align/AlignTransform.$(OXX) \
 	$(BIN)align/AngleConvention.$(OXX) \
 	$(BIN)align/TaitBryanZYX.$(OXX) \
-	$(BIN)dtctr/InttSensorSurveyReader.$(OXX)
+	$(BIN)dtctr/InttSensorReader.$(OXX) \
+	#$(BIN)dtctr/InttSensorSurveyReader.$(OXX) \
 
 $(TRGT): $(OBJS)
 	mkdir -p $(@D)

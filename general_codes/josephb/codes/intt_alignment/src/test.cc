@@ -1,31 +1,17 @@
-//#include "foo/AlignTransform.h"
-
 #include <cstdio>
+
+#include "dtctr/InttSensorReader.h"
 
 int main()
 {
+	InttSensorReader isr;
+	isr.SetMarksDefault();
 
-	printf("Hello World\n");
-
-	//AlignTransform a;
-	//a.Ang("z") = atan(1.0);
-	//a.SetTransformFromAngles();
-	//a.Print();
-	//std::cout << std::endl;
-
-	//AlignTransform b;
-	//b.Ang("z") = 2.0 / 3.0 * atan(1.0);
-	//b.SetTransformFromAngles();
-	//b.Print();
-	//std::cout << std::endl;
-
-	//a = a * b;
-	//a.SetAnglesFromTransform();
-	//a.Print();
-	//std::cout << std::endl;
-
-	//std::cout << a.Ang(0) << std::endl;
-	//std::cout << 5.0 / 3.0 * atan(1.0) << std::endl;
+	for(std::map<std::string, InttSensorReader::Corners_t>::const_iterator itr = isr.marks.begin(); itr != isr.marks.end(); ++itr)
+	{
+		isr.PrintMark(itr);
+		isr.GetTransformFromCorners(itr->second).Inverse().Print();
+	}
 
 	return 0;
 }
