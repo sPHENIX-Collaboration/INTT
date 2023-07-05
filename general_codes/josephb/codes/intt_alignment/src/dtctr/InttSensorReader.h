@@ -17,17 +17,17 @@
 class InttSensorReader
 {
 public:
-	//typedef std::array<std::array<double, 3>, 4> Corners_t;
 	typedef std::vector<TVector3> Corners_t;
-	std::map<std::string, Corners_t> marks;
+	typedef std::map<std::string, Corners_t> Map_t;
+	Map_t marks;
 
 	void SetMarksDefault();
-
+	void ReadFile(std::string const&);
 
 	AlignTransform GetTransformFromCorners(Corners_t const&);
+	AlignTransform GetSensorTransform(int);
 
-	//int SetMarksFromFile(std::string const&);
-	void PrintMark(std::map<std::string, Corners_t>::const_iterator const&);
+	void PrintMark(Map_t::const_iterator const&);
 	void PrintMarks();
 };
 

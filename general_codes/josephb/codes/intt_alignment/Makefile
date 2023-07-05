@@ -8,7 +8,7 @@ OXX = o
 
 FLGS = $(shell root-config --cflags)
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt $(shell root-config --glibs)
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)
 
 BIN = ./bin/
 SRC = ./src/
@@ -20,16 +20,15 @@ OBJS = \
 	$(BIN)align/AlignTransform.$(OXX) \
 	$(BIN)align/AngleConvention.$(OXX) \
 	$(BIN)align/TaitBryanZYX.$(OXX) \
-	$(BIN)dtctr/InttSensorReader.$(OXX) \
-	#$(BIN)dtctr/InttSensorSurveyReader.$(OXX) \
+	$(BIN)dtctr/InttSensorReader.$(OXX)
 
 $(TRGT): $(OBJS)
-	mkdir -p $(@D)
-	@$(GXX) $(FLGS) $(INCS) -o $@ $^ $(LIBS)
+	@mkdir -p $(@D)
+	$(GXX) $(FLGS) $(INCS) -o $@ $^ $(LIBS)
 
 $(BIN)%.$(OXX): $(SRC)%.$(CXX)
-	mkdir -p $(@D)
-	@$(GXX) $(FLGS) $(INCS) -c $< -o $@ $(LIBS)
+	@mkdir -p $(@D)
+	$(GXX) $(FLGS) $(INCS) -c $< -o $@ $(LIBS)
 
 .PHONY: clean
 clean:
