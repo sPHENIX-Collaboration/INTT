@@ -19,17 +19,18 @@ int main()
 	isr.SetMarksDefault();
 
 	Intt::Offline_s ofl;
-	ofl.layer = 3;
-	ofl.ladder_phi = 0;
-	ofl.ladder_z = 0;
+	Intt::Online_s onl;
+	onl.lyr = 0;
+	onl.ldr = 0;
 	while(true)
 	{
 		isr.SetMarksDefault();
-		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", (ofl.layer - 3) / 2, ((ofl.layer - 3) % 2 * 100) + ofl.ladder_phi);
+		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		printf("%s\n", buff);
 
 		isr.ReadFile(path + buff);
 
+		ofl = Intt::ToOffline(onl);
 		for(ofl.ladder_z = 0; ofl.ladder_z < 4; ++ofl.ladder_z)
 		{
 			key = InttDefs::genHitSetKey(ofl.layer, ofl.ladder_z, ofl.ladder_phi, 0);
@@ -42,13 +43,13 @@ int main()
 			printf("\n\n");
 		}
 
-		++ofl.ladder_phi;
-		if(ofl.ladder_phi < ((ofl.layer - 3) < 2 ? 12 : 16))continue;
-		ofl.ladder_phi = 0;
+		++onl.ldr;
+		if(onl.ldr < (onl.lyr < 2 ? 12 : 16))continue;
+		onl.ldr = 0;
 
-		++ofl.layer;
-		if(ofl.layer < 7)continue;
-		ofl.layer = 3;
+		++onl.lyr;
+		if(onl.lyr < 4)continue;
+		onl.lyr = 0;
 
 		break;
 	}
