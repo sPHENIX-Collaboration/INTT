@@ -20,7 +20,8 @@ OBJS = \
 	$(BIN)align/AlignTransform.$(OXX) \
 	$(BIN)align/AngleConvention.$(OXX) \
 	$(BIN)align/TaitBryanZYX.$(OXX) \
-	$(BIN)dtctr/InttSensorReader.$(OXX)
+	$(BIN)dtctr/InttSensorReader.$(OXX) \
+	$(BIN)dtctr/InttLadderReader.$(OXX)
 
 $(TRGT): $(OBJS)
 	@mkdir -p $(@D)
