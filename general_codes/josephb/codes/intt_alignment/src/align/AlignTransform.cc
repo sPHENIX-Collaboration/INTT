@@ -161,7 +161,7 @@ void AlignTransform::Reset()
 
 }
 
-void AlignTransform::PrintRow(const int& i, std::string s)
+void AlignTransform::PrintRow(const int& i, std::string const& s)
 {
 	int j = 0;
 	while(true)
@@ -174,7 +174,7 @@ void AlignTransform::PrintRow(const int& i, std::string s)
 	}
 }
 
-void AlignTransform::Print(std::string s)
+void AlignTransform::Print(std::string const& s)
 {
 	int i = 0;
 	while(true)

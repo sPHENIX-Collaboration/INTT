@@ -105,7 +105,7 @@ void InttLadderReader::ReadFile(std::string const& filename)
 				j = sscanf(line.c_str(), "%*s %f, %f, %f", &(f[0]), &(f[1]), &(f[2]));
 				itr->second[i].SetX(f[0]);
 				itr->second[i].SetY(f[2]);
-				itr->second[i].SetZ(f[1]);
+				itr->second[i].SetZ(-1.0 * f[1]);
 			}
 
 			++i;

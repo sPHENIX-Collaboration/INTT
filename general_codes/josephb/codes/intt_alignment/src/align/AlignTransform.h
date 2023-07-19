@@ -34,8 +34,8 @@ public:
 
 	void Reset();
 
-	void PrintRow(const int&, std::string= "%+10.4f");
-	void Print(std::string = "%+10.4f");
+	void PrintRow(const int&, std::string const& = "%+12.8f");
+	void Print(std::string const& = "%+12.8f");
 
 	template <typename T>
 	AlignTransform()

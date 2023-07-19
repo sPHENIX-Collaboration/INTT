@@ -1,7 +1,8 @@
 #ifndef CONVENTION_CHECK_C
 #define CONVENTION_CHECK_C
 
-#include "TH2D.h"
+#include <TH2D.h>
+#include <TVector2.h>
 
 #include <cstdio>
 #include <iostream>
@@ -10,7 +11,6 @@
 
 #include <intt/InttMapping.h>
 R__LOAD_LIBRARY(libintt.so)
-
 
 
 Double_t T_MRGN = 0.1;
@@ -29,6 +29,8 @@ struct Params_s
 	FillFunc_t func;
 };
 void MakeLadderHist(struct Params_s const&);
+
+void MakeBarrelHist();
 
 Double_t GetChp(struct Intt::Online_s const& s){return s.chp;}
 Double_t GetChn(struct Intt::Online_s const& s){return s.chn;}
@@ -55,7 +57,8 @@ void ConventionCheck()
 		(struct Params_s){.name = "offline_ladder_z", .description = "Offline Ladder Z", .func = &GetLadderZ},
 	};
 
-	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
+	//for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
+	MakeBarrelHist();
 }
 
 
@@ -170,6 +173,128 @@ void MakeLadderHist(struct Params_s const& params)
 		line->SetLineStyle(i % 128 == 0 ? 1 : 3);
 		line->SetLineWidth(i % 128 == 0 ? 2 : 1);
 		line->Draw();
+	}
+}
+
+void MakeBarrelHist()
+{
+	std::string name = "barrel_hist";
+	TCanvas* cnvs = new TCanvas(name.c_str(), name.c_str());
+	cnvs->Range(0.0, 0.0, 1.0, 1.0);
+	cnvs->SetTopMargin(T_MRGN);
+	cnvs->SetBottomMargin(B_MRGN);
+	cnvs->SetLeftMargin(L_MRGN);
+	cnvs->SetRightMargin(R_MRGN);
+
+	TPad* onl_pad = new TPad((name + "_onl_pad").c_str(), (name + "_onl_pad").c_str(), 0.0, 0.0, 0.5, 1.0);
+	onl_pad->SetFillStyle(4000);
+	onl_pad->Range(0.0, 0.0, 1.0, 1.0);
+	onl_pad->SetTopMargin(T_MRGN);
+	onl_pad->SetBottomMargin(B_MRGN);
+	onl_pad->SetLeftMargin(L_MRGN);
+	onl_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	onl_pad->Draw();
+
+	TPad* ofl_pad = new TPad((name + "_ofl_pad").c_str(), (name + "_ofl_pad").c_str(), 0.5, 0.0, 1.0, 1.0);
+	ofl_pad->SetFillStyle(4000);
+	ofl_pad->Range(0.0, 0.0, 1.0, 1.0);
+	ofl_pad->SetTopMargin(T_MRGN);
+	ofl_pad->SetBottomMargin(B_MRGN);
+	ofl_pad->SetLeftMargin(L_MRGN);
+	ofl_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	ofl_pad->Draw();
+
+	float two_pi = 2 * 3.1415926535897932394;
+	float width = 0.03;
+	float height = 0.01;
+	float X[4] = {-1.0, -1.0, +1.0, +1.0};
+	float Y[4] = {+1.0, -1.0, -1.0, +1.0};
+	float r[4] = {0.30, 0.35, 0.40, 0.45};
+	int colors[16] =
+	{
+		kRed+0,
+		kRed+1,
+		kRed+2,
+		kRed+3,
+
+		kYellow+0,
+		kYellow+1,
+		kYellow+2,
+		kYellow+3,
+
+		kBlue+0,
+		kBlue+1,
+		kBlue+2,
+		kBlue+3,
+
+		kGreen+0,
+		kGreen+1,
+		kGreen+2,
+		kGreen+3
+	};
+
+	float theta;
+	float d_theta;
+	float x[4];
+	float y[4];
+	float a[4];
+	float b[4];
+
+	struct Intt::Online_s onl;
+	struct Intt::Offline_s ofl = (struct Intt::Offline_s)
+	{
+		.layer = 3,
+		.ladder_phi = 0,
+		.ladder_z = 0,
+		.strip_x = 0,
+		.strip_y = 0
+	};
+
+	while(true)
+	{
+		onl = Intt::ToOnline(ofl);
+		d_theta = two_pi / (ofl.layer < 5 ? 12 : 16);
+		theta =  d_theta * (ofl.ladder_phi - (ofl.layer % 2) * 0.5);
+
+		for(int i = 0; i < 4; ++i)
+		{
+			a[i] = X[i] * height + r[ofl.layer - 3];
+			b[i] = Y[i] * width;
+		}
+
+		for(int i = 0; i < 4; ++i)
+		{
+			x[i] = cos(theta) * a[i] - sin(theta) * b[i] + 0.5;
+			y[i] = cos(theta) * b[i] + sin(theta) * a[i] + 0.5;
+
+			//printf("x:%+0.6f\ty:%+0.6f\n", x[i], y[i]);
+		}
+
+		onl_pad->cd();
+		TPolyLine* onl_box = new TPolyLine(4, x, y);
+		onl_box->SetFillColor(colors[ofl.ladder_phi]);
+		onl_box->SetLineColor(kBlack);
+		onl_box->SetLineWidth(1);
+		onl_box->Draw("f");
+
+		ofl_pad->cd();
+		TPolyLine* ofl_box = new TPolyLine(4, x, y);
+		ofl_box->SetFillColor(colors[onl.ldr]);
+		ofl_box->SetLineColor(kBlack);
+		ofl_box->SetLineWidth(1);
+		ofl_box->Draw("f");
+
+		++ofl.ladder_phi;
+		if(ofl.ladder_phi < (ofl.layer < 5 ? 12 : 16))continue;
+		ofl.ladder_phi = 0;
+
+		++ofl.layer;
+		if(ofl.layer < 7)continue;
+		ofl.layer = 0;
+
+		break;
 	}
 }
 
