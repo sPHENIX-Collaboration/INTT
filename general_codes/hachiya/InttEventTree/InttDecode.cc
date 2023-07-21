@@ -186,6 +186,8 @@ int InttPacket::decode(EventBcoHitBuf* evtBcoHitBuf)
         int x = bcoHitBuf->vHit[0];
         eventNum[iladder] =  ((x>>16)&0xFFFF);
         eventNum[iladder] |= ((x&0xFFFF)<<16);
+
+        bco[iladder] = bcoHitBuf->bco; // 40bits
         
         for(int ihit=1; ihit<size-1; ihit++){
             x = bcoHitBuf->vHit[ihit];
@@ -357,7 +359,7 @@ InttDecode::InttDecode(fileEventiterator* eventItr, int pID) :
          packetID(pID), evtItr(eventItr), 
          debugMode(false), endOfFile(false)
 { 
-  int target_lad = 6; // for debug
+   int target_lad = 6; // for debug
 };
 
 InttPacket* InttDecode::getNextPacket()
@@ -487,8 +489,7 @@ InttPacket* InttDecode::getNextPacket()
         //  create BcoHitBuffer for ladder by ladder 
         for(int ilad=0; ilad<16; ilad++)
         {
-          //fillBcoHitBuf(vHitBuf[ilad], &(vBcoHitBuf[ilad]), ilad==target_lad);
-	  fillBcoHitBuf(vHitBuf[ilad], &(vBcoHitBuf[ilad]), false);
+          fillBcoHitBuf(vHitBuf[ilad], &(vBcoHitBuf[ilad]), debugMode&(ilad==target_lad));
         }
 
         // fill EventBcoHitBuffer using vBcoHitBuf (BcoHitBuf array)

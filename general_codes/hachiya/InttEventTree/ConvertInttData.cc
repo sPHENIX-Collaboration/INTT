@@ -14,6 +14,8 @@ int init_done = 0;
 
 using namespace std;
 
+const bool debug=false;
+
 struct LadderInfo
 {
     int barrel;
@@ -64,8 +66,13 @@ int Process_event (InttPacket * p)
     int nHitTotal = 0;
     inttEvt->clear();
 
-    inttEvt->evtSeq = p->getEventNum();
-    //cout<<"type : "<<evtType<<" "<<inttEvt->evtSeq<<endl;
+    for(int iladder=0; iladder<14; iladder++){
+      inttEvt->evtSeq = p->getEventNum(iladder);
+      inttEvt->bco    = p->getBCO(iladder);
+      if(inttEvt->evtSeq>=0) break;
+    }
+    if(debug)
+        cout<<" "<<inttEvt->evtSeq<<" "<<hex<<inttEvt->bco<<" "<<p->getBCO()<<dec<<endl;
 
     //for(int id = 3001; id < 3009; ++id)
     {
@@ -138,11 +145,13 @@ int Run(const char *evtFile){
         fileEventiterator *evtItr = new fileEventiterator(evtFile);
 
         InttDecode decode(evtItr, id);
+        decode.setDebug(debug, 6);
 
         int nevt=0;
         InttPacket *p=nullptr;
         while(p=decode.getNextPacket()){
-	  //p->dump();
+            if(debug) p->dump();
+            if((nevt%10000)==0) cout<<"nevt : "<<nevt<<endl;
             Process_event(p);
             nevt++;
         }

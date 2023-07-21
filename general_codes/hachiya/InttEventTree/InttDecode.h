@@ -70,15 +70,16 @@ struct EventBcoHitBuf{
 class InttPacket{
   public:
     InttPacket(int pid, EventBcoHitBuf* evtBcoHitBuf) : packetID(pid) {
-        for(int i=0; i<14; i++){ eventNum[i]=0;}
+        for(int i=0; i<14; i++){ eventNum[i]=-1; bco[i]=0;}
     
         decode(evtBcoHitBuf);
     };
 
     virtual ~InttPacket();
 
-    int  getPacketID(){return packetID;}
-    int  getEventNum(int i=0){return eventNum[i];}
+    int       getPacketID(){return packetID;}
+    int       getEventNum(int i=0){return eventNum[i];}
+    uint64_t  getBCO(int i=0){return bco[i];}
 
     void dump(std::ostream& os=std::cout);
 
@@ -109,8 +110,9 @@ class InttPacket{
     };
 
 
-    int packetID;
-    int eventNum[16];
+    int      packetID;
+    int      eventNum[16];
+    uint64_t bco[16];
     std::vector<intt_hit *> intt_hits;
 };
 

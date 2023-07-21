@@ -17,36 +17,35 @@ InttHit::InttHit() {
   //cout<<"ctor InttHit"<<endl;
 }
 
-/*
 void InttHit::copy(InttHit& hit){
-  //cout<<"copy: "<<hit.pid<<" : "<<endl;
+//  //cout<<"copy: "<<hit.pid<<" : "<<endl;
   pid       = hit.pid;
-  cout<<"copy t1"<<endl;
+//  cout<<"copy t1"<<endl;
   adc       = hit.adc;
-  amp       = hit.amp;
-  chp       = hit.chp;
+  ampl      = hit.ampl;
+  chip_id   = hit.chip_id;
   module    = hit.module;
           
-  cout<<"copy1"<<endl;
-  chn       = hit.chn;
+//  cout<<"copy1"<<endl;
+  chan_id   = hit.chan_id;
   bco       = hit.bco;
   bco_full  = hit.bco_full;
 
-  cout<<"copy2"<<endl;
+//  cout<<"copy2"<<endl;
   evt       = hit.evt;
          
   roc       = hit.roc;
   barrel    = hit.barrel;
   layer     = hit.layer;
   ladder    = hit.ladder;
-  direction = hit.direction;
+  arm       = hit.arm;
         
-  cout<<"copy3"<<endl;
+//  cout<<"copy3"<<endl;
   full_fphx = hit.full_fphx;
   full_roc  = hit.full_roc;
-  cout<<"copy end"<<endl;
+//  cout<<"copy end"<<endl;
 }
-*/
+
 void InttHit::show(bool explanation_flag){
   if(explanation_flag){
     cout<<"   module chip_id chan_id adc ampl";
@@ -93,7 +92,7 @@ Int_t  InttHit::Compare(const TObject* obj) const {
 
 /////////////////////
 
-InttEvent::InttEvent(): evtSeq(0), fNhits(0), fhitArray(NULL) {
+InttEvent::InttEvent(): evtSeq(0), bco(0), fNhits(0), fhitArray(NULL) {
   fhitArray = new TClonesArray("InttHit", NHITS_INIT);
   cout<<"ctor InttEvent"<<endl;
 }
@@ -124,10 +123,29 @@ void InttEvent::clear() {
   fhitArray->Clear(); 
   fNhits=0;
   evtSeq=0;
+  bco=0;
+};
+
+void InttEvent::copy(InttEvent* org) {
+  if(org==NULL) return;
+
+  clear();
+
+  evtSeq = org->evtSeq;
+  bco    = org->bco;
+
+  for(int ihit=0; ihit<org->getNHits(); ihit++){
+      InttHit* hitnew = addHit();
+      InttHit* hit    = org->getHit(ihit);
+      hitnew->copy(*hit);
+      //cout<<"debug hit: "<<endl;
+      //hitnew->show();
+      //hit->show();
+  }
 };
 
 void InttEvent::show() {
-  cout<<"Evt : "<<evtSeq<<endl;
+  cout<<"Evt : "<<evtSeq<<" 0x"<<hex<<bco<<dec<<endl;
   cout<<"  Nhits : "<<fNhits<<endl;
 
   for(int ihit=0; ihit<fNhits; ihit++){

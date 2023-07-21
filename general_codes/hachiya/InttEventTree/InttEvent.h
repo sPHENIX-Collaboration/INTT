@@ -12,7 +12,7 @@ class InttHit : public TObject {
     virtual ~InttHit(){};
 //    InttHit(int Pid);
 
-//    void copy(InttHit& hit);
+    void copy(InttHit& hit);
     void show(bool explanation_flag=false);
 
     virtual Bool_t IsEqual(const TObject *obj) const;
@@ -56,6 +56,7 @@ class InttEvent : public TObject {
 
     InttHit* addHit();
     void     clear();
+    void     copy(InttEvent* org);
 
     int      getNHits();
     InttHit* getHit(const int ihit);
@@ -65,10 +66,11 @@ class InttEvent : public TObject {
 
   //protected:
     int           evtSeq;
+    Long64_t      bco;
     int           fNhits;
     TClonesArray* fhitArray;
  
-    ClassDef(InttEvent, 1)
+    ClassDef(InttEvent, 2)
 
 };
 
