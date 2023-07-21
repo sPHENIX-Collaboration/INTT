@@ -1,6 +1,7 @@
 
 #include "InttEvent.h"
 #include "ConvertInttData.h"
+#include "InttDecode.h"
 
 #include <iostream>
 #include <fstream>
@@ -51,7 +52,7 @@ int Init(const char* outRootfile)
   return 0;
 }
 
-int Process_event (Event * e)
+int Process_event (InttPacket * p)
 {
     if(module_map_flag)
     {
@@ -60,35 +61,26 @@ int Process_event (Event * e)
     }
 
 
-    int evtType = e->getEvtType();
-    if(evtType!=DATAEVENT) {
-      cout<<"Bad event type : "<<evtType<<endl;
-      return 0;
-    }
-
     int nHitTotal = 0;
     inttEvt->clear();
 
-    inttEvt->evtSeq = e->getEvtSequence();
-    cout<<"type : "<<evtType<<" "<<inttEvt->evtSeq<<endl;
+    inttEvt->evtSeq = p->getEventNum();
+    //cout<<"type : "<<evtType<<" "<<inttEvt->evtSeq<<endl;
 
-    Packet *p = nullptr;
-
-    for(int id = 3001; id < 3009; ++id)
+    //for(int id = 3001; id < 3009; ++id)
     {
-          p = e->getPacket(id);
-          if (p)
-          {
+        //p = e->getPacket(id);
+        //
+        if (p)
+        {
             int N = p->iValue(0, "NR_HITS");
-            //if(N)std::cout << "Num hits: " << N << "  "<<id<<std::endl;
-	    //if(N)std::cout << "Num hits: " << N << "  "<< id << "\r";
             for(int i = 0; i < N; ++i)
             {
                 //if((p->iValue(i, "DATAWORD") >> 0xf) & 0x1)continue;
 
                 InttHit* hit = inttEvt->addHit();
 
-                hit->pid = id;
+                hit->pid = p->getPacketID();
 
                 hit->adc     = p->iValue(i, "ADC");
                 hit->ampl    = p->iValue(i, "AMPLITUDE");
@@ -101,34 +93,34 @@ int Process_event (Event * e)
                 hit->bco_full = p->lValue(i, "BCO");
                 //cout<<hit->adc<<" "<<hit->chip_id<<" "<<hit->chan_id<<endl;
 
-                hit->evt++;
+                hit->evt     = p->iValue(i, "EVTCTR");
 
-                //hit->felix = id % 100
-                hit->roc = 2 * (id - 3001);
+                //hit->felix = p->getPacketID() % 100
+                hit->roc = 2 * (p->getPacketID() - 3001);
                 if(hit->module > 6) hit->roc++;
                 hit->roc %= 8;
-                hit->arm = (id - 3001) / 4;
+                hit->arm = (p->getPacketID() - 3001) / 4;
 
                 if(0<=hit->module&&hit->module<14){
-                  hit->barrel = felix_map[id - 3001][hit->module].barrel;
-                  hit->layer  = felix_map[id - 3001][hit->module].layer;
-                  hit->ladder = felix_map[id - 3001][hit->module].ladder;
+                    hit->barrel = felix_map[p->getPacketID() - 3001][hit->module].barrel;
+                    hit->layer  = felix_map[p->getPacketID() - 3001][hit->module].layer;
+                    hit->ladder = felix_map[p->getPacketID() - 3001][hit->module].ladder;
                 } else {
-                  hit->barrel = 0;
-                  hit->layer  = 0;
-                  hit->ladder = 0;
-                  cout<<"module : "<<hit->module<<endl;
+                    hit->barrel = 0;
+                    hit->layer  = 0;
+                    hit->ladder = 0;
+                    cout<<"module : "<<hit->module<<endl;
                 }
                 ////direction = (id / 100 + 1) % 2;
 
                 hit->full_fphx = p->iValue(i, "FULL_FPHX");
                 hit->full_roc  = p->iValue(i, "FULL_ROC");
-    
+
                 nHitTotal++;
             }
-    
+
             delete p;
-          }
+        }
     }
     //inttEvt->show();
     inttEvt->sort();
@@ -140,11 +132,24 @@ int Process_event (Event * e)
 
 int Run(const char *evtFile){
 
-    fileEventiterator *evtItr = new fileEventiterator(evtFile);
+    for(int id = 3001; id < 3009; ++id)
+    {
+        cout<<"packet = "<<id<<endl;
+        fileEventiterator *evtItr = new fileEventiterator(evtFile);
 
-    Event *e=nullptr;
-    while(e=evtItr->getNextEvent()){
-        Process_event(e);
+        InttDecode decode(evtItr, id);
+
+        int nevt=0;
+        InttPacket *p=nullptr;
+        while(p=decode.getNextPacket()){
+	  //p->dump();
+            Process_event(p);
+            nevt++;
+        }
+
+        cout<<"    "<<nevt<<endl;
+
+        delete evtItr;
     }
 
     tree->Write();

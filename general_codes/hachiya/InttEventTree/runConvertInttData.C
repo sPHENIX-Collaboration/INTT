@@ -4,8 +4,9 @@ R__LOAD_LIBRARY(libInttEvent.so)
 
 void runConvertInttData(const char * filename)
 {
-  std::string save_dir = "/home/phnxrc/INTT/commissioning/hit_files/";
+  //std::string save_dir = "/home/phnxrc/INTT/commissioning/hit_files/";
   //std::string save_dir = "./";
+  std::string save_dir = "/bbox/commissioning/INTT/commissioning/hit_files/";
 
   std::string tree_file_name = filename;
   while(tree_file_name.find("/") != std::string::npos)

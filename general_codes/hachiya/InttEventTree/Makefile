@@ -11,11 +11,11 @@ LDFLAGS = -Wl,--no-as-needed  $(ROOTLIBS) -fPIC -L$(ONLINE_MAIN)/lib -L$(OFFLINE
 
 
 
-HDRFILES = $(PACKAGE).h ConvertInttData.h
+HDRFILES = $(PACKAGE).h ConvertInttData.h InttDecode.h
 LINKFILE = LinkDef.h
 
 
-ADDITIONAL_SOURCES = ConvertInttData.cc
+ADDITIONAL_SOURCES = ConvertInttData.cc InttDecode.cc
 ADDITIONAL_LIBS = 
 
 
