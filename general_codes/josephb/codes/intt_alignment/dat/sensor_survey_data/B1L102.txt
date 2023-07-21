@@ -1,0 +1,116 @@
+
+
+     Machine Serial Number: SVL6252331                                     Page:    1
+     ================================================================================
+     Routine Name                                     Run #       Date & Time        
+     ================================================================================
+     INTT-Ladder-Survey-East.RTN                          2 Thu Oct 07 12:30:12 2021
+     ================================================================================
+     ================================================================================
+     Feature      Unit   Nominal     Actual      Tolerances      Deviation   Exceeded
+     ================================================================================
+      
+     Step 10 - Sensor A - Cross 1
+     X Location    mm +013.56485 +013.46711                     -000.09774           
+     Y Location    mm +005.99526 +005.94252                     -000.05274           
+     Z Location    mm +000.15466 +000.05509                     -000.09957           
+      
+     Step 12 - Sensor A - Cross 2
+     X Location    mm +115.06485 +114.96729                     -000.09756           
+     Y Location    mm +005.99526 +005.95462                     -000.04064           
+     Z Location    mm +000.15466 +000.07183                     -000.08283           
+      
+     Step 14 - Sensor A - Cross 3
+     X Location    mm +115.06485 +114.96500                     -000.09985           
+     Y Location    mm +027.99526 +027.95925                     -000.03601           
+     Z Location    mm +000.15466 +000.14585                     -000.00881           
+      
+     Step 16 - Sensor A - Cross 4
+     X Location    mm +013.56485 +013.46472                     -000.10013           
+     Y Location    mm +027.99526 +027.94522                     -000.05004           
+     Z Location    mm +000.15466 +000.17461                     +000.01995           
+      
+     Step 18 - Sensor B - Cross 1
+     X Location    mm +115.76485 +115.64670                     -000.11815           
+     Y Location    mm +005.99526 +005.94844                     -000.04682           
+     Z Location    mm +000.15466 +000.07774                     -000.07692           
+      
+     Step 20 - Sensor B - Cross 2
+     X Location    mm +245.26485 +245.14758                     -000.11727           
+     Y Location    mm +005.99526 +005.97983                     -000.01543           
+     Z Location    mm +000.15466 +000.06583                     -000.08883           
+      
+     Step 22 - Sensor B - Cross 3
+     X Location    mm +245.26485 +245.14230                     -000.12255           
+     Y Location    mm +027.99526 +027.98416                     -000.01110           
+     Z Location    mm +000.15466 +000.12135                     -000.03331           
+      
+     Step 24 - Sensor B - Cross 4
+     X Location    mm +115.76485 +115.64157                     -000.12328           
+     Y Location    mm +027.99526 +027.95072                     -000.04454           
+     Z Location    mm +000.15466 +000.16276                     +000.00810           
+      
+     Step 26 - Sensor C - Cross 1 
+     X Location    mm +246.86485 +246.75160                     -000.11325           
+     Y Location    mm +005.99526 +005.98494                     -000.01032           
+     Z Location    mm +000.15466 +000.04319                     -000.11147           
+      
+     Step 28 - Sensor C - Cross 2
+     X Location    mm +376.36485 +376.25158                     -000.11327           
+     Y Location    mm +005.99526 +005.95076                     -000.04450           
+     Z Location    mm +000.15466 +000.07608                     -000.07858           
+
+     Machine Serial Number: SVL6252331                                     Page:    2
+     ================================================================================
+     Feature      Unit   Nominal     Actual      Tolerances      Deviation   Exceeded
+     ================================================================================
+      
+     Step 30 - Sensor C - Cross 3
+     X Location    mm +376.36485 +376.25735                     -000.10750           
+     Y Location    mm +027.99526 +027.95527                     -000.03999           
+     Z Location    mm +000.15466 +000.11061                     -000.04405           
+      
+     Step 32 - Sensor C - Cross 4
+     X Location    mm +246.86485 +246.75737                     -000.10748           
+     Y Location    mm +027.99526 +027.98870                     -000.00656           
+     Z Location    mm +000.15466 +000.14821                     -000.00645           
+      
+     Step 34 - Sensor D - Cross 1
+     X Location    mm +377.06485 +376.95295                     -000.11190           
+     Y Location    mm +005.99526 +005.95023                     -000.04503           
+     Z Location    mm +000.15466 +000.07051                     -000.08415           
+      
+     Step 36 - Sensor D - Cross 2
+     X Location    mm +478.56485 +478.45532                     -000.10953           
+     Y Location    mm +005.99526 +005.94039                     -000.05487           
+     Z Location    mm +000.15466 +000.04268                     -000.11198           
+      
+     Step 38 - Sensor D - Cross 3
+     X Location    mm +478.56485 +478.45695                     -000.10790           
+     Y Location    mm +027.99526 +027.94440                     -000.05086           
+     Z Location    mm +000.15466 +000.04970                     -000.10496           
+      
+     Step 40 - Sensor D - Cross 4
+     X Location    mm +377.06485 +376.95531                     -000.10954           
+     Y Location    mm +027.99526 +027.95378                     -000.04148           
+     Z Location    mm +000.15466 +000.10753                     -000.04713           
+      
+     Step 41 - Endcap Hole 1
+     X Location    mm            +000.00000                                          
+     Y Location    mm            -000.00000                                          
+     Z Location    mm            +000.00751                                          
+      
+     Step 42 - Endcap Hole 2
+     X Location    mm            +492.01745                                          
+     Y Location    mm            -000.00002                                          
+     Z Location    mm            -000.00751                                          
+      
+     Step 43 - Endcap Hole 3
+     X Location    mm            +491.91533                                          
+     Y Location    mm            +033.96391                                          
+     Z Location    mm            +000.00751                                          
+      
+     Step 44 - Endcap Hole 4
+     X Location    mm            -000.02003                                          
+     Y Location    mm            +033.95584                                          
+     Z Location    mm            -000.00751                                          

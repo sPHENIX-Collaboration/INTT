@@ -6,8 +6,20 @@
 * RawDataDecoder.C and RawDataDecoder.sh
 	* These are for producing one DST file per one PRDF file (for now)
 	* run `sh RawDataDecoder.sh -h` for more information
+	* I may need to change the default location of the output files
+* RawDataConverter.C and RawDataConverter.sh
+	* These are for producing one ROOT file per one PRDF file (for now)
+	* The output is a ROOT TTree with branches for decoded information
+	* The entries are organized by event, so values that vary hit-to-hit have multiple instances per event
+	* run `sh RawDataConverter.sh -h` for more information
 	* I may need to change the default location of the output files and potentially the format
-* ...
+* ConvenctionCheck.C
+	* This creates 2D histograms with a layout commensurate with the actual layout of any ladder of the INTT
+	* run `root ConventionCheck.C` to run the macro; it will automatically produce several histograms
+	* The bin content is set based on a hardware index, so in effect a ladder is drawn with how the strips are labeled
+	* It is designed to show how we are labeling locations in hardware so:
+		* We can check for consistency over different conventions (e.g., against the tracking group's convention)
+		* We can verify we are labeling and referring to the detector in the way we want
 
 ## How to run these macros
 Ideally, if you have a recent build of the [sPHENIX coresoftware](https://github.com/sPHENIX-Collaboration/coresoftware) repository, you can do
