@@ -1,4 +1,19 @@
 #!/bin/bash
 
+echo $@ | grep  -e '\-\-dry-run' -e '\-\-help' -e '\-h' 2>&1 >/dev/null
+is_recorded=$? # 0 (grep successful) no, 1 (grep failed) yes
+
 dir=$(dirname $(readlink -f $0))
-python3 ${dir}/process_commissioning_data.py $@
+if [ ${is_recorded} -eq 0 ]
+then
+    echo "No log is taken"
+    python3 ${dir}/process_commissioning_data.py $@
+    
+else
+    log=/home/inttdev/INTT/log/inttdaq_cron/`date +\%Y\%m\%d_\%H\%M\%S`.log
+    echo -e "\nLog file: ${log}\n"
+    
+    python3 ${dir}/process_commissioning_data.py $@ 2>&1 | tee $log
+    echo -e "\n\nLog file: ${log}"
+    
+fi
