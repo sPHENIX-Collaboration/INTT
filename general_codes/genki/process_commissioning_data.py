@@ -277,7 +277,8 @@ class Process() :
             "ls " + self.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) + " | xargs -I {} bash ./submit_file_farm.sh {}\""
 
         print( "Command:", command )
-        proc = subprocess.Popen( command, shell=True )
+        if self.dry_run is False : 
+            proc = subprocess.Popen( command, shell=True )
         # I don't wait till the end of the process
         
     def MakeEvtList( self, ignored_runs=[] ):
