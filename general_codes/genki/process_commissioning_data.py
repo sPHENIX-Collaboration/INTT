@@ -280,6 +280,13 @@ class Process() :
         if self.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
         # I don't wait till the end of the process
+
+    def ProcessSDCC( self ) :
+        """!
+        @brief Execute some processes at SDCC
+        @details The processes are defined by Milan's application. This function just submits jobs.
+        """
+        print( "Processes at SDCC" )
         
     def MakeEvtList( self, ignored_runs=[] ):
         print( "MakeEvtList" )
@@ -443,7 +450,11 @@ class Process() :
         # Sending evt files to SDCC
         if self.send_SDCC is True :
             self.SendSDCC()
-            
+
+        # Processes at SDCC
+        if self.process_SDCC is True :
+            self.ProcessSDCC()
+        
         if self.decode is True :
             if self.decode_hit_wise is True:
                 self.Decode()
@@ -519,14 +530,61 @@ if __name__ == "__main__" :
                                       formatter_class=MyHelpFormatter
                                      )
 
+    ####################################################
+    # Mandatory parameter                              #
+    ####################################################
     parser.add_argument( "run", type=int,
                          help="**Mandatory** The run number to be processed. It doesn't need to be 8 digit." )
 
+    ####################################################
+    # General flags                                    #
+    ####################################################
+    run_types = ["beam",               "calib",              "calibration",       "commissioning",
+                 "commissioning_5_23", "commissioning_5_30", "commissioning_6_2", "commissioning_6_4",
+                 "commissioning_6_6",  "cosmics",            "josephb",           "junk",
+                 "pedestal",           "root_files_obsolete"
+                 ]
+    
+    parser.add_argument( "--run-type", type=str,
+                         choices=run_types,
+                         help="A type of run, which determins the directory in the buffer box, i.e. /bbox/commissioning/INTT/{here}. "\
+                         "A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"beam\" is default." )
+    
     parser.add_argument( "--only",
                          action=argparse.BooleanOptionalAction,
                          help="Only specified steps are done if specified. Otherwise (default), all steps are done unless \"no\" options are specified." )
 
-    # process flags
+    parser.add_argument( "--dry-run",
+                         action=argparse.BooleanOptionalAction,
+                         help="A flag for testing the processes. It's better to use it before launching processes." )
+
+    parser.add_argument( "--force-run",
+                         action=argparse.BooleanOptionalAction,
+                         help="A flag to force running this program even if other processes with the same name are running."\
+                         "Using this flag to decode large evt files are not recommended." )
+
+    # Auto-update flags
+    parser.add_argument( "--auto-update",
+                         action=argparse.BooleanOptionalAction,
+                         help="Automatic updating process (decode, making plots, transferring plots) for the new runs appear "\
+                         "in /bbox/commissioning/INTT/{run-type} is done if specified. {run-type} is given by --run-type. Default: off" )
+
+    parser.add_argument( "--update-list",
+                         action=argparse.BooleanOptionalAction,
+                         help="The current run list (evt_list.txt) and the previous run list (run_list_previous.txt) are updated if specified (default)."\
+                         "Turning off is mainly for debugging." )
+
+    # arguments for detailed control, almost absolete
+    parser.add_argument( "--root-dir", type=str,
+                         help="A name of directory that contains ROOT files. \"commissioning\" is default. You may use commissioning_6_6, 6_4, 6_2, 5_30, or 5_23"\
+                         "for old data. You don't need to change it normally." )
+    
+    parser.add_argument( "--root-subdir", type=str,
+                         help="A name of sub-directory that contains ROOT files. \"hit_files\" is default. You don't need to change it normally." )
+        
+    ####################################################
+    # Decoding and making plots (general)              #
+    ####################################################
     parser.add_argument( "--decode",
                          action=argparse.BooleanOptionalAction,
                          help="Decoding to make a hit-wise and an event-wise TTree is done if specified (default)." )
@@ -539,14 +597,17 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="Decoding to make a event-wise Tree is done if specified (default)." )
 
-    parser.add_argument( "--make-symbolic",
-                         action=argparse.BooleanOptionalAction,
-                         help="Making symbolic link in inttdaq to the ROOT files in the sPHENIX common disc is done if specified (default). " )
-    
     parser.add_argument( "--make-plot",
                          action=argparse.BooleanOptionalAction,
                          help="Making plots of ADC and channel dists in intt is done if specified (default)." )
 
+    ####################################################
+    # Processes in inttdaq (obsolate )                 #
+    ####################################################
+    parser.add_argument( "--make-symbolic",
+                         action=argparse.BooleanOptionalAction,
+                         help="Making symbolic link in inttdaq to the ROOT files in the sPHENIX common disc is done if specified (default). " )
+    
     parser.add_argument( "--transfer-plot",
                          action=argparse.BooleanOptionalAction,
                          help="Transferring the plots to your local env is done if specified ((default). Use --transfer-dir to select a directory to contain the plots." )
@@ -554,6 +615,9 @@ if __name__ == "__main__" :
     parser.add_argument( "--transfer-dir", type=str,
                          help="A directory to contain the plots can be specified (default: .)." )
 
+    ####################################################
+    # Processes at SDCC                                #
+    ####################################################
     parser.add_argument( "--send-SDCC",
                          action=argparse.BooleanOptionalAction,
                          help="Transferring evt files from the buffer box to SDCC if it's ON." )
@@ -562,31 +626,6 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="Some processes (decoding for hit-wise and event-wise TTrees, and making plots) are done in SDCC." )
 
-    parser.add_argument( "--auto-update",
-                         action=argparse.BooleanOptionalAction,
-                         help="Automatic updating process (decode, making plots, transferring plots) for the new runs appear in /bbox/commissioning/INTT/{run-type} is done if specified. {run-type} is given by --run-type. Default: off" )
-
-    parser.add_argument( "--update-list",
-                         action=argparse.BooleanOptionalAction,
-                         help="The current run list (evt_list.txt) and the previous run list (run_list_previous.txt) are updated if specified (default). Turning off is mainly for debugging." )
-
-    # arguments for detailed control, almost absolete
-    parser.add_argument( "--run-type", type=str,
-                         help="A type of run, which determins the directory in the buffer box, i.e. /bbox/commissioning/INTT/{here}. A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"beam\" is default." )
-    
-    parser.add_argument( "--root-dir", type=str,
-                         help="A name of directory that contains ROOT files. \"commissioning\" is default. You may use commissioning_6_6, 6_4, 6_2, 5_30, or 5_23 for old data. You don't need to change it normally." )
-    
-    parser.add_argument( "--root-subdir", type=str,
-                         help="A name of sub-directory that contains ROOT files. \"hit_files\" is default. You don't need to change it normally." )
-        
-    parser.add_argument( "--dry-run",
-                         action=argparse.BooleanOptionalAction,
-                         help="A flag for testing the processes. It's better to use it before launching processes." )
-
-    parser.add_argument( "--force-run",
-                         action=argparse.BooleanOptionalAction,
-                         help="A flag to force running this program even if other processes with the same name are running. Using this flag to decode large evt files are not recommended." )
 
     args = parser.parse_args()
     print( args )
