@@ -12,6 +12,8 @@ class Process() :
     def __init__( self, args ) :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
+        self.is_force_run = args.force_run if args.force_run is not None else False
+        
         self.run        = str(args.run).zfill( 8 ) 
         self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
@@ -28,7 +30,9 @@ class Process() :
         self.home_dir_in_plotting_server = "/home/inttdev/"
         self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir
         self.data_dir_in_plotting_server = self.home_dir_in_plotting_server + "INTT/data/" + self.root_dir + self.root_subdir
-
+        self.sphenix_common_home = "/home/phnxrc/"
+        self.sphenix_intt_home = self.sphenix_common_home + "INTT/"
+        
         # process flags
         self.process_only = args.only if args.only is not None else False
         default = not self.process_only
@@ -54,6 +58,7 @@ class Process() :
         
         # misc
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
+        self.plotter_in_server = self.sphenix_intt_home + "macro/FelixQuickViewer_1Felix.C"
         source_dir             = os.path.dirname( __file__ ) + "/"
         self.evt_list          = source_dir + "evt_list.txt"
         self.evt_list_previous = source_dir + "evt_list_previous.txt"
@@ -82,22 +87,30 @@ class Process() :
         print( "| Run:", self.run )
         print( "| Run type:", self.run_type )
         print( "| Is dry run:", self.is_dry_run )
+        print( "| Force running?:", self.is_force_run )
         print( "| ROOT file directory:", self.root_dir )
         print( "| ROOT file sub-directory:", self.root_subdir )
         self.PrintLine()
         print( "| Does decode?", self.decode )
-        print( "|    hit-wise?", self.decode_hit_wise )
-        print( "|  event-wise?", self.decode_event_wise )
+        if self.decode is True : 
+            print( "|    hit-wise?", self.decode_hit_wise )
+            print( "|  event-wise?", self.decode_event_wise )
         self.PrintLine()
+        
         print( "| Making symbolics?", self.make_symbolic )
-        print( "|    Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
-        print( "|    root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
+        if self.make_symbolic is True : 
+            print( "|    Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
+            print( "|    root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
+            
         self.PrintLine()
         print( "| Making plots?", self.make_plot )
         print( "|    ROOT macro", self.plotter )
         self.PrintLine()
+        
         print( "| Transferring plots?", self.transfer_plot )
-        print( "|     Output directory:", self.transfer_dir )
+        if self.transfer_plot is True : 
+            print( "|     Output directory:", self.transfer_dir )
+        
         self.PrintLine()
         print( "| Auto Update?", self.auto_update )
         print( "| Update list?", self.update_list )
@@ -127,10 +140,11 @@ class Process() :
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :
-        directory = "/home/inttdev/INTT/data/" + self.root_dir + self.root_subdir 
+        #directory = "/home/inttdev/INTT/data/" + self.root_dir + self.root_subdir 
+        directory = "/bbox/commissioning/INTT/" + self.root_dir + self.root_subdir 
         #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000"
         name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000"
-        if is_event_wise is True :
+        if is_event_wise is False :
             name += ".root"
         else :
             name += "_event_base.root"
@@ -148,12 +162,13 @@ class Process() :
 
     def SendCommandToAll( self, command ) :
         for num in range(0, 8 ) :
-            #if num ==1 or num==7 :
-            #continue
-            
             if self.is_dry_run is True : 
                 print( "SendCommandToAll:", command )
 
+            #if num ==1:
+            #    print( "intt", num, "is skipped" )
+            #    continue
+            
             self.SendCommand( num, command )
 
     def Decode( self, is_event_wise=False ) :
@@ -162,13 +177,15 @@ class Process() :
 
         if is_event_wise is False :
             command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
-            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice bash ./myfirstproject.sh {}"
-            #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
+            #command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice bash ./myfirstproject.sh {}"
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
+
             whole_command = init_commands + command_to_dir + command_decode
         else:
             command_to_dir = "cd /home/phnxrc/INTT/hachiya/convertInttRaw/test1/ ; "
-            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
-            #command_decode = "ls " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} ls {}"
+            #command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            command_decode = "ls -r " + self.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            
             whole_command = init_commands + command_to_dir + command_decode
             
         if self.is_dry_run is True : 
@@ -176,7 +193,7 @@ class Process() :
 
         self.SendCommandToAll( whole_command )
         for proc in self.processes :
-            print( "Waiting for decoding", proc )
+            #print( "Waiting for decoding" )
             proc.wait()
 
         print( "All decoding ended" )
@@ -204,6 +221,26 @@ class Process() :
             proc.wait()
             print( "All plots were made." )
 
+    def MakePlotInServer( self ) :
+        init_commands = "source /etc/profile ; source .bashrc ; source .bash_profile ; "
+        # cd ${conversion_to_hit_base_dir}; ls ${data_dir}${data_name1}?${data_name2}????${raw_suffix}  | xargs -I {} -P 8 bash ./myfirstproject.sh {} "
+
+        command_to_dir = "cd " + self.sphenix_intt_home + "/macro; "
+        command_root = "ls -r " + self.GetRootFilePath(is_event_wise=False).replace( "-0000.", "-????." ) + " | grep -v event_base | xargs -I {} -P 8  root -q -l -b \'" + self.plotter_in_server + "(\\\"{}\\\", \\\".pdf\\\" )\'"
+
+        whole_command = init_commands + command_to_dir + command_root
+            
+        if self.is_dry_run is True : 
+            print( "Making plots in each DAQ server:", whole_command )
+            #return None
+
+        self.SendCommandToAll( whole_command )
+        for proc in self.processes :
+            ##print( "Waiting for decoding" )
+            proc.wait()
+
+        print( "All plots were made." )
+
     def TransferPlot( self ) :
         command = "scp " + self.plotting_server + ":" + self.data_dir_in_plotting_server + "*" + self.run + "*.pdf " + self.transfer_dir
         print( command )
@@ -214,12 +251,14 @@ class Process() :
             print( "All plots were transfered to", self.transfer_dir )
 
     def MakeEvtList( self, ignored_runs=[] ):
+        print( "MakeEvtList" )
+        print( "Ignored runs:", ignored_runs )
         command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.GetEventFilePath() ) + " | head -n 400"
         print( command )
 
         if self.is_dry_run is False :
             proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
-            proc.wait( timeout=30 )
+            proc.wait( timeout=60 )
             outputs = proc.communicate()[0].decode().split( '\n' )
 
             all_runs = []
@@ -232,16 +271,16 @@ class Process() :
                 # ( {self.run_type}_intt?-????????-????.evt, e.g. beam_intt1-00001234-0056.evt)
                 # For the moment, I exclude files with shorter name than the assumed format not to affect in reading file.
                 run = output[ pos_left:pos_right ]
+                #print( "debugging:", run ) 
                 #print( "MakeEvtList:", ignored_runs, run, run in ignored_runs )
                 if run != '' :
                     if run not in ignored_runs : 
                         all_runs.append( run )
                 # end of for output in outputs[0:-2]
             # end of if self.is_dry_run is False
-                
             # keep only unique elements
+            #runs = sorted( list(set(all_runs)) )
             runs = sorted( list(set(all_runs)) )
-            #print( runs )
             
             with open( self.evt_list, 'w' ) as file :
                 for run in runs :
@@ -259,7 +298,11 @@ class Process() :
             for line in file :
                 runs_previous.append( line.split()[0] )
         print( "Runs in the previous list:", runs_previous )
-
+        if len( runs_previous ) == 0 :
+            print( "No runs found in the previous list. Something wrong!!!" )
+            print( "No runs to be processed\n" )
+            return []
+        
         runs_processed = []
         for run in runs :
             if run not in runs_previous :
@@ -270,6 +313,12 @@ class Process() :
 
     def AutoUpdate( self ) :
         print( "AutoUpdate!" )
+        ignored_runs = [ '00000001', '00000002', '00000003', '00000012', '00000013',
+                         '00000014', '00000015', '00009999', '00099000', '00099001',
+                         '00099002', '00099003', '00099004', '00099005', '00099006',
+                         '00099019', '00099020', '00099021', '00099022', '00099023',
+                         '00099024', '00099025', '03000002', '03000003', '03000005'
+                        ]
         
         if self.update_list is True :
             print( "Update list", "(dry run)" if self.is_dry_run else "!" )
@@ -278,7 +327,7 @@ class Process() :
             if os.path.exists( self.evt_list ) : 
                 command = "mv " + self.evt_list + " " + self.evt_list_previous
                 print( "Rename the current list, which was generated before, to a previous list." )
-                print( command )
+                print( command, "\n" )
                 if self.is_dry_run is False:
                     proc = subprocess.Popen( command, shell=True )
                     proc.wait()
@@ -288,20 +337,24 @@ class Process() :
                     
             # Generate new list
             print( "Let\'s make a current run list." )
-            self.MakeEvtList()
+            self.MakeEvtList( ignored_runs=ignored_runs )
 
             # if --only is used (with --update-list is assumed), here is the end of processes
-            if self.process_only is True :
+            if self.process_only is True and self.update_list is True and self.auto_update is False : 
                 self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
                 return None
             # end of if self.update_list is True 
 
         print( "Let\'s find new runs!" )
         runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
-
+        if runs_processed == [] :
+            print( "No runs processed" )
+            return None
+        
         # Update the run list without the last run in the new run list otherwise it will be in the previous run list
         # (the previous run list means a list of runs already processed)
-        self.MakeEvtList( [ self.GetNewRuns()[-1] ] )
+        ignored_runs.append( self.GetNewRuns()[-1] ) 
+        self.MakeEvtList( ignored_runs=ignored_runs )
 
         self.auto_update = False
         self.update_list = False
@@ -320,9 +373,14 @@ class Process() :
     def Do( self ) :
         if self.IsOtherProcessRunning() is True:
             print( "Other process is running. Nothing done.", "(dry run)" if self.is_dry_run else "" )
-            return None
-        else:
-            self.Print()
+
+            if self.is_force_run is True :
+                print( "** But the force flag is True. This program runs anyway. **" )
+            else:
+                return None
+
+        self.Print()
+        time.sleep( 5 ) 
             
         print( "Do process!", "(dry run)" if self.is_dry_run else "" )
         if self.auto_update is True or self.update_list is True:
@@ -342,7 +400,8 @@ class Process() :
             print( "Symbolics made!", "(dry run)" if self.is_dry_run else "" )
 
         if self.make_plot is True : 
-            self.MakePlot()
+            #self.MakePlot()
+            self.MakePlotInServer()
             print( "Plots made!", "(dry run)" if self.is_dry_run else "" )
 
         if self.transfer_plot is True :
@@ -459,6 +518,10 @@ if __name__ == "__main__" :
     parser.add_argument( "--dry-run",
                          action=argparse.BooleanOptionalAction,
                          help="A flag for testing the processes. It's better to use it before launching processes." )
+
+    parser.add_argument( "--force-run",
+                         action=argparse.BooleanOptionalAction,
+                         help="A flag to force running this program even if other processes with the same name are running. Using this flag to decode large evt files are not recommended." )
 
     args = parser.parse_args()
     #print( args )
