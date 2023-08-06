@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 import os
+import pathlib
 import pprint
 import socket
 import subprocess
@@ -10,11 +11,14 @@ import time
 
 class Process() :
     def __init__( self, args ) :
+        #############################################################################
+        # Processes for flags determined by command-line arguments                  #
+        #############################################################################
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
         self.is_force_run = args.force_run if args.force_run is not None else False
         
-        self.run        = str(args.run).zfill( 8 ) 
+        self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
         self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
         if self.root_dir[-1] != "/" :
@@ -26,14 +30,14 @@ class Process() :
             self.root_subdir += "/"
             
         self.run_type                    = args.run_type if args.run_type is not None else "beam"
-        self.plotting_server             = "inttdaq"
-        self.home_dir_in_plotting_server = "/home/inttdev/"
-        self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir
-        self.data_dir_in_plotting_server = self.home_dir_in_plotting_server + "INTT/data/" + self.root_dir + self.root_subdir
+        self.plotting_server             = "inttdaq" # Obsolete, We don't use inttdaq to make plots anymore
+        self.home_dir_in_plotting_server = "/home/inttdev/" # Obsolete, We don't use inttdaq to make plots anymore
+        self.root_dir_in_plotting_server = "/1008_home/phnxrc/INTT/" + self.root_dir + self.root_subdir # Obsolete, We don't use inttdaq to make plots anymore
+        self.data_dir_in_plotting_server = self.home_dir_in_plotting_server + "INTT/data/" + self.root_dir + self.root_subdir # Obsolete, We don't use inttdaq to make plots anymore
         self.sphenix_common_home = "/home/phnxrc/"
         self.sphenix_intt_home = self.sphenix_common_home + "INTT/"
         
-        # process flags
+        # process flags ####################3
         self.process_only = args.only if args.only is not None else False
         default = not self.process_only
         
@@ -55,16 +59,21 @@ class Process() :
 
         self.auto_update       = args.auto_update       if args.auto_update       is not None else False
         self.update_list       = args.update_list       if args.update_list       is not None else self.auto_update
+
+        # Flags related to SDCC
+        self.send_SDCC         = args.send_SDCC if args.send_SDCC is not None else False
+        self.process_SDCC      = args.process_SDCC if args.process_SDCC is not None else False
+        self.is_SDCC_used = self.send_SDCC or self.process_SDCC
         
         # misc
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
         self.plotter_in_server = self.sphenix_intt_home + "macro/FelixQuickViewer_1Felix.C"
         source_dir             = os.path.dirname( __file__ ) + "/"
-        self.evt_list          = source_dir + "evt_list.txt"
-        self.evt_list_previous = source_dir + "evt_list_previous.txt"
+        
+        self.evt_list          = source_dir + self.run_type + "_list.txt"
+        self.evt_list_previous = source_dir + self.run_type + "_list_previous.txt"
 
         self.processes = []
-
 
         if args.only is True :
             print( "Only ..." )
@@ -110,6 +119,12 @@ class Process() :
         print( "| Transferring plots?", self.transfer_plot )
         if self.transfer_plot is True : 
             print( "|     Output directory:", self.transfer_dir )
+
+        self.PrintLine()
+        print( "| Is SDCC used?", self.is_SDCC_used )
+        if self.is_SDCC_used :
+            print( "|     Send files to SDCC?", self.send_SDCC )
+            print( "|     Do processes at SDCC?", self.process_SDCC )
         
         self.PrintLine()
         print( "| Auto Update?", self.auto_update )
@@ -250,6 +265,21 @@ class Process() :
             proc.wait()
             print( "All plots were transfered to", self.transfer_dir )
 
+    def SendSDCC( self ) :
+        """!
+        @brief Sending evt files from the buffer box to SDCC.
+        @This is done by sphnxpro@bbox0. The introcution for transferring data is in https://sphenix-intra.sdcc.bnl.gov/WWW/run/2023/filetransfer.html
+        """
+        print( "Sending evt files from the buffer box to SDCC. Run", self.run )
+
+        command = "ssh bbox3 \"" \
+            "cd /home/sphnxpro/mlp_transfer ; " \
+            "ls " + self.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) + " | xargs -I {} bash ./submit_file_farm.sh {}\""
+
+        print( "Command:", command )
+        proc = subprocess.Popen( command, shell=True )
+        # I don't wait till the end of the process
+        
     def MakeEvtList( self, ignored_runs=[] ):
         print( "MakeEvtList" )
         print( "Ignored runs:", ignored_runs )
@@ -281,7 +311,7 @@ class Process() :
             # keep only unique elements
             #runs = sorted( list(set(all_runs)) )
             runs = sorted( list(set(all_runs)) )
-            
+
             with open( self.evt_list, 'w' ) as file :
                 for run in runs :
                     file.write( run+"\n" )
@@ -312,6 +342,16 @@ class Process() :
         return runs_processed
 
     def AutoUpdate( self ) :
+        """!
+        @brief A function to update (decoding, etc) automatically.
+        @details It does
+            1. Update evt list (if --update-list is given)
+                1. If the evt list is not found (it happen rarely), an empty file is generated.
+                2. If the previous evt list is not found (it happen rarely), an empty file is generated.
+                3. The current evt list "in the last execution" is renamed as the current list. It means the precious list is deleted.
+            2.  
+        """
+        
         print( "AutoUpdate!" )
         ignored_runs = [ '00000001', '00000002', '00000003', '00000012', '00000013',
                          '00000014', '00000015', '00009999', '00099000', '00099001',
@@ -319,7 +359,8 @@ class Process() :
                          '00099019', '00099020', '00099021', '00099022', '00099023',
                          '00099024', '00099025', '03000002', '03000003', '03000005'
                         ]
-        
+
+        # Step 1
         if self.update_list is True :
             print( "Update list", "(dry run)" if self.is_dry_run else "!" )
             
@@ -334,7 +375,18 @@ class Process() :
 
             else:
                 print( self.evt_list, "is not found. The previous list is not updated." )
-                    
+
+                # Step 1.1 Make an evt file if it's not found
+                touch_file = pathlib.Path( self.evt_list )
+                touch_file.touch()
+                print( self.evt_list, "was generated. It's an empty file." )
+
+            # Step 1.2 Make a previous evt file if it's not found
+            if pathlib.Path( self.evt_list_previous ).exists() is False :
+                print( self.evt_list_previous, "is not found." )
+                pathlib.Path( self.evt_list_previous ).touch()
+                print( self.evt_list_previous, "was generated. It's an empty file." )
+                
             # Generate new list
             print( "Let\'s make a current run list." )
             self.MakeEvtList( ignored_runs=ignored_runs )
@@ -386,7 +438,11 @@ class Process() :
         if self.auto_update is True or self.update_list is True:
             self.AutoUpdate()
             return None
-        
+
+        # Sending evt files to SDCC
+        if self.send_SDCC is True :
+            self.SendSDCC()
+            
         if self.decode is True :
             if self.decode_hit_wise is True:
                 self.Decode()
@@ -497,6 +553,14 @@ if __name__ == "__main__" :
     parser.add_argument( "--transfer-dir", type=str,
                          help="A directory to contain the plots can be specified (default: .)." )
 
+    parser.add_argument( "--send-SDCC",
+                         action=argparse.BooleanOptionalAction,
+                         help="Transferring evt files from the buffer box to SDCC if it's ON." )
+
+    parser.add_argument( "--process-SDCC",
+                         action=argparse.BooleanOptionalAction,
+                         help="Some processes (decoding for hit-wise and event-wise TTrees, and making plots) are done in SDCC." )
+
     parser.add_argument( "--auto-update",
                          action=argparse.BooleanOptionalAction,
                          help="Automatic updating process (decode, making plots, transferring plots) for the new runs appear in /bbox/commissioning/INTT/{run-type} is done if specified. {run-type} is given by --run-type. Default: off" )
@@ -524,7 +588,7 @@ if __name__ == "__main__" :
                          help="A flag to force running this program even if other processes with the same name are running. Using this flag to decode large evt files are not recommended." )
 
     args = parser.parse_args()
-    #print( args )
+    print( args )
     process = Process( args )
     process.Do()
 
