@@ -9,8 +9,99 @@ import subprocess
 import sys
 import time
 
+class Printer() :
+    def __init__( self ) :
+        self.lines = []
+        self.separator = ""
+        self.separator_sign = "---separator---"
+        self.wall = '|'
+        self.junction = '+'
+        self.line = '-'
+        self.left_margin_length = 1
+        self.right_margin_length = 3
+        self.max_length = 0
+
+        self.color_dict = {
+            "Black" : "0;30m",
+            "Red"   : "0;31m",
+            "Green" : "0;32m",
+            "Yellow": "0;33m",
+            "Blue"  : "0;34m",
+            "Purple": "0;35m",
+            "Cyan"  : "0;36m",
+            "White" : "0;37m"
+        }
+        self.color_starter = '\033['
+        self.color_closure = self.color_starter + self.color_dict[ "White" ]
+        
+    def ColorIt( self, words, color='Red' ) :
+        if color not in self.color_dict :
+            print( "class Printer.ColorIt, Given color", color, "is not found in the list.", file=sys.stderr )
+
+        words = self.color_starter + self.color_dict[ color ] + words + self.color_closure
+        return words
+
+    def CountColorSign( self, words ) :
+        num = 0
+        # loop over all coloring words to count the number of their occurrences
+        for key in self.color_dict :
+            count_num = words.count( self.color_dict[key] )
+            # somehow this modification works well....
+            num += count_num * ( len( self.color_dict[key] ) + len(self.color_starter) )
+            
+        return num
+    
+    def AddLine( self, *all_words, sep=' ', color='White' ) :
+        line = ""
+        for words in all_words :
+            if words is True :
+                words = self.ColorIt( str(words), color='Blue' )
+            elif  words is False :
+                words = self.ColorIt( str(words), color='Red' )
+                
+            line += str(words) + sep
+        self.lines.append( self.ColorIt(line, color) )
+
+    def AddSeparator( self ) :
+        self.lines.append( self.separator_sign )
+
+    def PrintOuterLine( self ) : 
+        print( self.junction,
+               self.line * (self.max_length + self.left_margin_length + self.right_margin_length ),
+               self.junction,
+               sep='')
+        
+    def Print( self ) :
+        self.max_length = len( max( self.lines, key=len ) )
+        self.separator = self.line * self.max_length
+        
+        self.PrintOuterLine()
+        for line in self.lines :
+
+            # replace the separator sign with the separator
+            if self.separator_sign in line :
+                line = self.separator
+
+            # If these words are colored,
+            length_correction = self.CountColorSign( line )
+            #if self.color_closure in line :
+            #    length_correction = len( self.color_starter + self.color_dict[ "Black" ] + self.color_closure )
+                
+            print( self.wall,
+                   " " * self.left_margin_length,
+                   line,
+                   " " * (self.max_length - len(line) + length_correction ),
+                   " " * self.right_margin_length,
+                   self.wall,
+                   sep='' )
+        self.PrintOuterLine()
+        
+        
+        
 class Information() :
     def __init__( self, args ) :
+        self.printer = Printer()
+        
         #############################################################################
         # Processes for flags determined by command-line arguments                  #
         #############################################################################
@@ -28,7 +119,8 @@ class Information() :
         # add a directory separator if it's not at the end of string
         if self.root_subdir[-1] != "/" :
             self.root_subdir += "/"
-            
+
+        # A variable to specify the type of run. It's determined by rcdaq. The file name starts from this string.
         self.run_type                    = args.run_type if args.run_type is not None else "beam"
         self.plotting_server             = "inttdaq" # Obsolete, We don't use inttdaq to make plots anymore
         self.home_dir_in_plotting_server = "/home/inttdev/" # Obsolete, We don't use inttdaq to make plots anymore
@@ -90,52 +182,53 @@ class Information() :
         self.transfer_plot     = True
         self.auto_update       = False
 
-
     def PrintLine( self ) :
         print( '+' + '-'*50 + '+' )
         
     def Print( self ) :
-        self.PrintLine()
-        print( "| Run:", self.run )
-        print( "| Run type:", self.run_type )
-        print( "| Is dry run:", self.is_dry_run )
-        print( "| Force running?:", self.is_force_run )
-        print( "| ROOT file directory:", self.root_dir )
-        print( "| ROOT file sub-directory:", self.root_subdir )
-        self.PrintLine()
-        print( "| Does decode?", self.decode )
+        header_color = 'Green'
+        self.printer.AddLine( "Run:", self.run, color=header_color )
+        
+        self.printer.AddLine( "Run type:", self.run_type )
+        self.printer.AddLine( "Is dry run:", self.is_dry_run )
+        self.printer.AddLine( "Force running?:", self.is_force_run )
+        self.printer.AddLine( "ROOT file directory:", self.root_dir )
+        self.printer.AddLine( "ROOT file sub-directory:", self.root_subdir )
+        self.printer.AddSeparator()
+        
+        self.printer.AddLine( "Does decode?", self.decode, color=header_color )
         if self.decode is True : 
-            print( "|    hit-wise?", self.decode_hit_wise )
-            print( "|  event-wise?", self.decode_event_wise )
-        self.PrintLine()
+            self.printer.AddLine( "   hit-wise?", self.decode_hit_wise )
+            self.printer.AddLine( " event-wise?", self.decode_event_wise )
+        self.printer.AddSeparator()
         
-        print( "| Making symbolics?", self.make_symbolic )
+        self.printer.AddLine( "Making symbolics?", self.make_symbolic, color=header_color )
         if self.make_symbolic is True : 
-            print( "|    Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
-            print( "|    root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
+            self.printer.AddLine( "   Data dir in", self.plotting_server, ":", self.data_dir_in_plotting_server )
+            self.printer.AddLine( "   root dir in", self.plotting_server, ":", self.root_dir_in_plotting_server )
             
-        self.PrintLine()
-        print( "| Making plots?", self.make_plot )
-        print( "|    ROOT macro", self.plotter )
-        self.PrintLine()
+        self.printer.AddSeparator()
+        self.printer.AddLine( "Making plots?", self.make_plot, color=header_color )
+        self.printer.AddLine( "   ROOT macro", self.plotter )
+        self.printer.AddSeparator()
         
-        print( "| Transferring plots?", self.transfer_plot )
+        self.printer.AddLine( "Transferring plots?", self.transfer_plot, color=header_color )
         if self.transfer_plot is True : 
-            print( "|     Output directory:", self.transfer_dir )
+            self.printer.AddLine( "    Output directory:", self.transfer_dir )
 
-        self.PrintLine()
-        print( "| Is SDCC used?", self.is_SDCC_used )
+        self.printer.AddSeparator()
+        self.printer.AddLine( "Is SDCC used?", self.is_SDCC_used, color=header_color )
         if self.is_SDCC_used :
-            print( "|     Send files to SDCC?", self.send_SDCC )
-            print( "|     Do processes at SDCC?", self.process_SDCC )
+            self.printer.AddLine( "    Send files to SDCC?", self.send_SDCC )
+            self.printer.AddLine( "    Do processes at SDCC?", self.process_SDCC )
         
-        self.PrintLine()
-        print( "| Auto Update?", self.auto_update )
-        print( "| Update list?", self.update_list )
-        print( "|     New list:", self.evt_list )
-        print( "|     Old list:", self.evt_list_previous )
+        self.printer.AddSeparator()
+        self.printer.AddLine( "Auto Update?", self.auto_update, color=header_color )
+        self.printer.AddLine( "Update list?", self.update_list, color=header_color )
+        self.printer.AddLine( "    New list:", self.evt_list )
+        self.printer.AddLine( "    Old list:", self.evt_list_previous )
 
-        self.PrintLine()
+        self.printer.Print()
 
     def IsOtherProcessRunning( self ) :
         command = "ps aux | grep -v -e grep -v -e emacs -v -e vi | grep " + __file__
