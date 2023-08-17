@@ -178,34 +178,6 @@ void MakeLadderHist(struct Params_s const& params)
 
 void MakeBarrelHist()
 {
-	std::string name = "barrel_hist";
-	TCanvas* cnvs = new TCanvas(name.c_str(), name.c_str());
-	cnvs->Range(0.0, 0.0, 1.0, 1.0);
-	cnvs->SetTopMargin(T_MRGN);
-	cnvs->SetBottomMargin(B_MRGN);
-	cnvs->SetLeftMargin(L_MRGN);
-	cnvs->SetRightMargin(R_MRGN);
-
-	TPad* onl_pad = new TPad((name + "_onl_pad").c_str(), (name + "_onl_pad").c_str(), 0.0, 0.0, 0.5, 1.0);
-	onl_pad->SetFillStyle(4000);
-	onl_pad->Range(0.0, 0.0, 1.0, 1.0);
-	onl_pad->SetTopMargin(T_MRGN);
-	onl_pad->SetBottomMargin(B_MRGN);
-	onl_pad->SetLeftMargin(L_MRGN);
-	onl_pad->SetRightMargin(R_MRGN);
-	cnvs->cd();
-	onl_pad->Draw();
-
-	TPad* ofl_pad = new TPad((name + "_ofl_pad").c_str(), (name + "_ofl_pad").c_str(), 0.5, 0.0, 1.0, 1.0);
-	ofl_pad->SetFillStyle(4000);
-	ofl_pad->Range(0.0, 0.0, 1.0, 1.0);
-	ofl_pad->SetTopMargin(T_MRGN);
-	ofl_pad->SetBottomMargin(B_MRGN);
-	ofl_pad->SetLeftMargin(L_MRGN);
-	ofl_pad->SetRightMargin(R_MRGN);
-	cnvs->cd();
-	ofl_pad->Draw();
-
 	float two_pi = 2 * 3.1415926535897932394;
 	float width = 0.03;
 	float height = 0.01;
@@ -242,6 +214,140 @@ void MakeBarrelHist()
 	float a[4];
 	float b[4];
 
+	std::string name = "barrel_hist";
+	TCanvas* cnvs = new TCanvas(name.c_str(), name.c_str());
+	cnvs->Range(0.0, 0.0, 1.0, 1.0);
+	cnvs->SetTopMargin(T_MRGN);
+	cnvs->SetBottomMargin(B_MRGN);
+	cnvs->SetLeftMargin(L_MRGN);
+	cnvs->SetRightMargin(R_MRGN);
+
+	TPad* key_pad = new TPad((name + "_key_pad").c_str(), (name + "_key_pad").c_str(), 0.8, 0.0, 1.0, 0.9);
+	key_pad->SetFillStyle(4000);
+	key_pad->Range(0.0, 0.0, 1.0, 1.0);
+	key_pad->SetTopMargin(T_MRGN);
+	key_pad->SetBottomMargin(B_MRGN);
+	key_pad->SetLeftMargin(L_MRGN);
+	key_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	key_pad->Draw();
+	key_pad->cd();
+
+	//Draw key
+	float text_width = 0.04;
+	for(int i = 0; i < 16; ++i)
+	{
+		x[0] = 0.5 - width / 2.0 - text_width;
+		x[1] = 0.5 + width / 2.0 - text_width;
+		x[2] = 0.5 + width / 2.0 - text_width;
+		x[3] = 0.5 - width / 2.0 - text_width;
+
+		y[0] = 0.1 + 0.8 * (i / 15.0) - height / 2.0;
+		y[1] = 0.1 + 0.8 * (i / 15.0) - height / 2.0;
+		y[2] = 0.1 + 0.8 * (i / 15.0) + height / 2.0;
+		y[3] = 0.1 + 0.8 * (i / 15.0) + height / 2.0;
+
+		TPolyLine* box = new TPolyLine(4, x, y);
+		box->SetFillColor(colors[i]);
+		box->SetLineColor(kBlack);
+		box->SetLineWidth(1);
+		box->Draw("f");
+
+		TText* text = new TText((x[0] + x[1]) / 2.0 + 2 * text_width, (y[0] + y[2]) / 2.0, Form(" -> %2d", i));
+		text->SetTextAlign(22);
+		text->Draw();
+	}
+
+	TPad* onl_label_pad = new TPad((name + "_onl_label_pad").c_str(), (name + "_onl_label_pad").c_str(), 0.0, 0.9, 0.4, 1.0);
+	onl_label_pad->SetFillStyle(4000);
+	onl_label_pad->Range(0.0, 0.0, 1.0, 1.0);
+	onl_label_pad->SetTopMargin(T_MRGN);
+	onl_label_pad->SetBottomMargin(B_MRGN);
+	onl_label_pad->SetLeftMargin(L_MRGN);
+	onl_label_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	onl_label_pad->Draw();
+	onl_label_pad->cd();
+	{
+		TText* text = new TText(0.5, 0.5, "Online Convention (sPHENIX Global Coord's)");
+		text->SetTextAlign(22);
+		text->SetTextSize(0.2);
+		text->Draw();
+	}
+
+	TPad* onl_pad = new TPad((name + "_onl_pad").c_str(), (name + "_onl_pad").c_str(), 0.0, 0.0, 0.4, 0.9);
+	onl_pad->SetFillStyle(4000);
+	onl_pad->Range(0.0, 0.0, 1.0, 1.0);
+	onl_pad->SetTopMargin(T_MRGN);
+	onl_pad->SetBottomMargin(B_MRGN);
+	onl_pad->SetLeftMargin(L_MRGN);
+	onl_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	onl_pad->Draw();
+	onl_pad->cd();
+	{
+		//x_arrow->SetLineColor(kRed);
+		//x_arrow->SetFillColor(kRed);
+
+		TArrow* x_arrow = new TArrow(0.5, 0.5, 0.6, 0.5, 0.01, "|>");
+		x_arrow->Draw();
+
+		TText* x_label = new TText(0.65, 0.5, "+x");
+		x_label->SetTextAlign(22);
+		x_label->Draw();
+
+		TArrow* y_arrow = new TArrow(0.5, 0.5, 0.5, 0.6, 0.01, "|>");
+		y_arrow->Draw();
+
+		TText* y_label = new TText(0.5, 0.65, "+y");
+		y_label->SetTextAlign(22);
+		y_label->Draw();
+	}
+
+	TPad* ofl_label_pad = new TPad((name + "_ofl_label_pad").c_str(), (name + "_ofl_label_pad").c_str(), 0.4, 0.9, 0.8, 1.0);
+	ofl_label_pad->SetFillStyle(4000);
+	ofl_label_pad->Range(0.0, 0.0, 1.0, 1.0);
+	ofl_label_pad->SetTopMargin(T_MRGN);
+	ofl_label_pad->SetBottomMargin(B_MRGN);
+	ofl_label_pad->SetLeftMargin(L_MRGN);
+	ofl_label_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	ofl_label_pad->Draw();
+	ofl_label_pad->cd();
+	{
+		TText* text = new TText(0.5, 0.5, "Offline Convention (sPHENIX Global Coord's)");
+		text->SetTextAlign(22);
+		text->SetTextSize(0.2);
+		text->Draw();
+	}
+	TPad* ofl_pad = new TPad((name + "_ofl_pad").c_str(), (name + "_ofl_pad").c_str(), 0.4, 0.0, 0.8, 0.9);
+	ofl_pad->SetFillStyle(4000);
+	ofl_pad->Range(0.0, 0.0, 1.0, 1.0);
+	ofl_pad->SetTopMargin(T_MRGN);
+	ofl_pad->SetBottomMargin(B_MRGN);
+	ofl_pad->SetLeftMargin(L_MRGN);
+	ofl_pad->SetRightMargin(R_MRGN);
+	cnvs->cd();
+	ofl_pad->Draw();
+	ofl_pad->cd();
+	{
+		//x_arrow->SetLineColor(kRed);
+		//x_arrow->SetFillColor(kRed);
+
+		TArrow* x_arrow = new TArrow(0.5, 0.5, 0.6, 0.5, 0.01, "|>");
+		x_arrow->Draw();
+
+		TText* x_label = new TText(0.65, 0.5, "+x");
+		x_label->SetTextAlign(22);
+		x_label->Draw();
+
+		TArrow* y_arrow = new TArrow(0.5, 0.5, 0.5, 0.6, 0.01, "|>");
+		y_arrow->Draw();
+
+		TText* y_label = new TText(0.5, 0.65, "+y");
+		y_label->SetTextAlign(22);
+		y_label->Draw();
+	}
 	struct Intt::Online_s onl;
 	struct Intt::Offline_s ofl = (struct Intt::Offline_s)
 	{
@@ -256,7 +362,7 @@ void MakeBarrelHist()
 	{
 		onl = Intt::ToOnline(ofl);
 		d_theta = two_pi / (ofl.layer < 5 ? 12 : 16);
-		theta =  d_theta * (ofl.ladder_phi - (ofl.layer % 2) * 0.5);
+		theta =  d_theta * (ofl.ladder_phi + (ofl.layer % 2) * 0.5);
 
 		for(int i = 0; i < 4; ++i)
 		{
@@ -274,14 +380,14 @@ void MakeBarrelHist()
 
 		onl_pad->cd();
 		TPolyLine* onl_box = new TPolyLine(4, x, y);
-		onl_box->SetFillColor(colors[ofl.ladder_phi]);
+		onl_box->SetFillColor(colors[onl.ldr]);
 		onl_box->SetLineColor(kBlack);
 		onl_box->SetLineWidth(1);
 		onl_box->Draw("f");
 
 		ofl_pad->cd();
 		TPolyLine* ofl_box = new TPolyLine(4, x, y);
-		ofl_box->SetFillColor(colors[onl.ldr]);
+		ofl_box->SetFillColor(colors[ofl.ladder_phi]);
 		ofl_box->SetLineColor(kBlack);
 		ofl_box->SetLineWidth(1);
 		ofl_box->Draw("f");
