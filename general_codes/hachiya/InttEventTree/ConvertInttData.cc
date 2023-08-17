@@ -92,7 +92,8 @@ int Process_event (InttPacket * p)
                 hit->adc     = p->iValue(i, "ADC");
                 hit->ampl    = p->iValue(i, "AMPLITUDE");
                 hit->chip_id = p->iValue(i, "CHIP_ID");
-                hit->chip_id = hit->chip_id % 26;
+                if(hit->chip_id>=27)  hit->chip_id -= 26;
+
                 hit->module  = p->iValue(i, "FEE");    //felix port, martin might change the name
                 hit->chan_id = p->iValue(i, "CHANNEL_ID");
                 ////fem
