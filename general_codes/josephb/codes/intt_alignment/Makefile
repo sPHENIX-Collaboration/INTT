@@ -17,12 +17,13 @@ SRC = ./src/
 TRGT = $(BIN)main$(EXE)
 
 OBJS = \
-	$(BIN)main$(OXX) \
-	$(BIN)align/AlignTransform$(OXX) \
-	$(BIN)align/AngleConvention$(OXX) \
-	$(BIN)align/TaitBryanZYX$(OXX) \
-	$(BIN)dtctr/InttSensorReader$(OXX) \
-	$(BIN)dtctr/InttLadderReader$(OXX)
+	$(BIN)test$(OXX) \
+	$(BIN)eigen/InttSensorReader$(OXX) \
+	$(BIN)eigen/InttLadderReader$(OXX)
+	#$(BIN)align/AlignTransform$(OXX) \
+	#$(BIN)align/AngleConvention$(OXX) \
+	#$(BIN)align/TaitBryanZYX$(OXX) \
+	#$(BIN)dtctr/InttLadderReader$(OXX)
 
 $(TRGT): $(OBJS)
 	@mkdir -p $(@D)

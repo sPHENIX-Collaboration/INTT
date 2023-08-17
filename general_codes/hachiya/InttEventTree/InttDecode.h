@@ -129,6 +129,9 @@ public:
         debugMode=flag;
         target_lad = target;
     }
+
+    unsigned int getNBadHits(const int ladder) { return nBadHits[ladder]; }
+    unsigned int getNGoodHits(const int ladder) { return nGoodHits[ladder]; }
     
 protected:
   int                packetID;
@@ -143,6 +146,9 @@ protected:
   std::map<uint64_t, EventBcoHitBuf*> vEvtBcoHitBuf;
 
   bool endOfFile=false;
+
+  unsigned int nBadHits[16]; // data not belong to anyBCOFULL
+  unsigned int nGoodHits[16];// data belong to BCOFULL
 };
 
 #endif // __INTTDECODE_H__

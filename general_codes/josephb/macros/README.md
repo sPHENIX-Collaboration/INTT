@@ -3,7 +3,11 @@
 ## Contents and descriptions
 * Example.C and Example.sh
 	* These are minimal implementations the mostly serve as templates or references for what certain includes and syntax should be.
-* RawDataDecoder.C and RawDataDecoder.sh
+* CombinedRawDataConverter.C and CombinedRawDataConverter.sh
+	* Very similar to the RawDataConverter.C and RawDataConverter.sh described below
+	* However, these will search for and combine .evt files from all INTT FEEs in a single .root file
+	* Needs to be cross-checked but works at a superficial level at least for now
+* RawDataDecoder.C and RawDataDecoder.s
 	* These are for producing one DST file per one PRDF file (for now)
 	* run `sh RawDataDecoder.sh -h` for more information
 	* I may need to change the default location of the output files

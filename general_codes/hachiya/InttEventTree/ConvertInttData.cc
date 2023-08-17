@@ -14,6 +14,7 @@ int init_done = 0;
 
 using namespace std;
 
+//const bool debug=true;
 const bool debug=false;
 
 struct LadderInfo
@@ -92,13 +93,14 @@ int Process_event (InttPacket * p)
                 hit->adc     = p->iValue(i, "ADC");
                 hit->ampl    = p->iValue(i, "AMPLITUDE");
                 hit->chip_id = p->iValue(i, "CHIP_ID");
-                hit->chip_id = hit->chip_id % 26;
+                if(hit->chip_id>=27)  hit->chip_id -= 26;
+
                 hit->module  = p->iValue(i, "FEE");    //felix port, martin might change the name
                 hit->chan_id = p->iValue(i, "CHANNEL_ID");
                 ////fem
                 hit->bco      = p->iValue(i, "FPHX_BCO");
                 hit->bco_full = p->lValue(i, "BCO");
-                //cout<<hit->adc<<" "<<hit->chip_id<<" "<<hit->chan_id<<endl;
+                //cout<<"chip : "<<hit->adc<<" "<<hit->chip_id<<" "<<chip<<" "<<hit->chip_id-chip<<" "<<hit->chan_id<<endl;
 
                 hit->evt     = p->iValue(i, "EVTCTR");
 
@@ -140,6 +142,7 @@ int Process_event (InttPacket * p)
 int Run(const char *evtFile){
 
     for(int id = 3001; id < 3009; ++id)
+    //for(int id = 3002; id < 3003; ++id)
     {
         cout<<"packet = "<<id<<endl;
         fileEventiterator *evtItr = new fileEventiterator(evtFile);
@@ -150,13 +153,26 @@ int Run(const char *evtFile){
         int nevt=0;
         InttPacket *p=nullptr;
         while(p=decode.getNextPacket()){
-            if(debug) p->dump();
             if((nevt%10000)==0) cout<<"nevt : "<<nevt<<endl;
+            if(debug) p->dump();
             Process_event(p);
             nevt++;
+
+            //if(nevt>=1000) {
+            //  break;
+            //  //decode.setDebug(false,6);
+            //}
         }
 
         cout<<"    "<<nevt<<endl;
+        if(nevt>0){
+          cout<<"NBad Hits    "<<endl;
+          for(int ilad=0; ilad<14; ilad++){
+              cout<<"   lader="<<setw(3)<<ilad
+                  <<", ngood "<<setw(20)<<decode.getNGoodHits(ilad)
+                  <<", nbad " <<setw(20)<<decode.getNBadHits(ilad)<<endl;
+          }
+        }
 
         delete evtItr;
     }

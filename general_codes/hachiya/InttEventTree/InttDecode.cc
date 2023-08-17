@@ -3,20 +3,23 @@
 
 using namespace std;
 
-void fillBcoHitBuf(deque<int>& vHitBuf, deque<BcoHitBuf*>* vBcoHitBuf, bool debug=false)
+int fillBcoHitBuf(deque<int>& vHitBuf, deque<BcoHitBuf*>* vBcoHitBuf, bool debug=false)
+    // return number_of_badhits
 {
     BcoHitBuf* bcoHitBuf = (vBcoHitBuf->size()>0 ? vBcoHitBuf->back() : NULL);
 
     int nNewBcoHitBuf=0;
     if(bcoHitBuf!=NULL&&!bcoHitBuf->done) nNewBcoHitBuf++; //  to print "not done hit in previous event"
 
+    int nBadHits=0;
+
     while(vHitBuf.size()>0){
         int w = vHitBuf[0]; vHitBuf.pop_front();
-        //--if(debug) cout<<" w : 0x"<<hex<<w<<dec;
+        if(debug) cout<<" w : 0x"<<hex<<w<<dec;
 
         uint64_t ltmp;
         if((w&0xFF00FFFF) == 0xAD00CADE) {   // find hit header
-            //--if(debug) cout<<"  : hit header"<<endl;
+            if(debug) cout<<"  : hit header"<<endl;
 
             if(bcoHitBuf!=NULL){
                 bcoHitBuf->done=true;
@@ -42,12 +45,15 @@ void fillBcoHitBuf(deque<int>& vHitBuf, deque<BcoHitBuf*>* vBcoHitBuf, bool debu
             vBcoHitBuf->push_back(bcoHitBuf);
             nNewBcoHitBuf++; // for debug
 
-            //--if(debug) cout<<" w : 0x"<<hex<<w<<dec<<"  : BCO: 0x"<<hex<<BCO<<dec;
+            if(debug) cout<<" w : 0x"<<hex<<w<<dec<<"  : BCO: 0x"<<hex<<BCO<<dec;
         }
         else {
             if(bcoHitBuf!=NULL) bcoHitBuf->vHit.push_back(w);
+            else { // bad hit
+                nBadHits++;
+            }
         }
-        //--if(debug) cout<<endl;
+        if(debug) cout<<endl;
     }
     // debug
     if(debug)
@@ -57,6 +63,8 @@ void fillBcoHitBuf(deque<int>& vHitBuf, deque<BcoHitBuf*>* vBcoHitBuf, bool debu
         }
     }
     if(debug) cout<<"-- hitbuf size ="<<vHitBuf.size()<<" "<<vBcoHitBuf->size()<<endl;
+
+    return nBadHits;
 }
 
 bool checkReadyToDecode(map<uint64_t, EventBcoHitBuf*>& vEvtBcoHitBuf){
@@ -168,6 +176,8 @@ int InttPacket::decode(EventBcoHitBuf* evtBcoHitBuf)
         if(!evtBcoHitBuf->status[iladder]){
             continue;
         }
+        
+        //cout<<iladder<<" "<<evtBcoHitBuf->status[iladder]<<" "<<evtBcoHitBuf->bcoHitBuf[iladder]->vHit.size()<<endl;
 
         BcoHitBuf* bcoHitBuf = evtBcoHitBuf->bcoHitBuf[iladder]; 
 
@@ -360,6 +370,10 @@ InttDecode::InttDecode(fileEventiterator* eventItr, int pID) :
          debugMode(false), endOfFile(false)
 { 
    int target_lad = 6; // for debug
+   for(int i=0; i<16; i++){
+       nBadHits[i]=0;
+       nGoodHits[i]=0;
+   }
 };
 
 InttPacket* InttDecode::getNextPacket()
@@ -439,6 +453,7 @@ InttPacket* InttDecode::getNextPacket()
         continue;
       }
 
+
       oncsSubevent *p = (oncsSubevent*)e->getPacket(packetID);
       if(p){
 
@@ -464,22 +479,22 @@ InttPacket* InttDecode::getNextPacket()
               int len= (((array[i]>>16)&0xF)>>1);
               int lad=  ((array[i]>>20)&0xF);
 
-              if(lad==target_lad){
-                //--cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  ";
-                //--cout<<" packet header : len, lad="<<len<<" "<<lad<<endl;
-              }
+              //-if(lad==target_lad){
+              //-  cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  ";
+              //-  cout<<" packet header : len, lad="<<len<<" "<<lad<<endl;
+              //-}
 
               i++;
               
               for(int ipkt=0; ipkt<len; ipkt++,i++){ 
                 vHitBuf[lad].push_back(array[i]); 
-                //--if(lad==target_lad) cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  "<<lad<<endl;
+                //-if(lad==target_lad) cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  "<<lad<<endl;
               }
 
            }
            else { 
-             //--cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  ";
-             //--cout<<endl;
+             //-cout<<setw(5)<<i<<"  0x"<<hex<<setw(8)<<array[i]<<dec<<"  :  ";
+             //-cout<<endl;
              i++;
            }
         }
@@ -487,9 +502,36 @@ InttPacket* InttDecode::getNextPacket()
         ///////////////////
         // post packet process
         //  create BcoHitBuffer for ladder by ladder 
+        static unsigned int nhits_prev[16]={0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0}; // only for debug
         for(int ilad=0; ilad<16; ilad++)
         {
-          fillBcoHitBuf(vHitBuf[ilad], &(vBcoHitBuf[ilad]), debugMode&(ilad==target_lad));
+          // debug
+          if(debugMode)
+          //if(ilad==7)
+          {
+              cout<<"raw "<<ilad<<"  : "<<vHitBuf[ilad].size()<<endl;
+              for(unsigned int i=0; i<vHitBuf[ilad].size(); i++){
+                cout<<" "<<hex<<vHitBuf[ilad][i]<<dec<<" ";
+                if((i%8)==7) cout<<endl;
+              }
+              cout<<endl;
+          }
+
+          unsigned int nhits = vHitBuf[ilad].size() - nhits_prev[ilad]; // vHitBuf may keep the previous hit. This should be removed for nGoodHits in this event
+          unsigned int nbad  = fillBcoHitBuf(vHitBuf[ilad], &(vBcoHitBuf[ilad]), debugMode&&(ilad==target_lad));
+
+          nBadHits[ilad] += nbad;
+          nGoodHits[ilad] += (nhits-nbad); 
+
+          nhits_prev[ilad] = vHitBuf[ilad].size(); //nhits-nbad;
+
+        }
+        if(debugMode)
+        {
+            cout<<endl<<"NBad Hits    "<<endl;
+            for(int ilad=0; ilad<14; ilad++){
+                cout<<"   lader="<<setw(3)<<ilad<<", ngood "<<setw(20)<<getNGoodHits(ilad)<<", nbad "<<setw(20)<<getNBadHits(ilad)<<endl;
+            }
         }
 
         // fill EventBcoHitBuffer using vBcoHitBuf (BcoHitBuf array)
@@ -534,8 +576,8 @@ InttPacket* InttDecode::getNextPacket()
         isPrevEvent=true;
       }
       else{
-          if(debugMode)
-              cout<<"Skip : "<<e->getEvtType()<<endl;
+          //if(debugMode)
+          //    cout<<"Skip : "<<e->getEvtType()<<endl;
           isPrevEvent=false;
       }
 
