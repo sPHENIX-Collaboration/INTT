@@ -167,7 +167,8 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 	/////////////////////
 	if(ievent_>=tree_->GetEntries()){
 		cout<<"all events are already processed. quit InttRawData"<<endl;
-		return Fun4AllReturnCodes::EVENT_OK;
+		//return Fun4AllReturnCodes::EVENT_OK;
+		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
 	tree_->GetEntry(ievent_++);
