@@ -1,0 +1,65 @@
+# Macro file for example ED
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+
+/run/initialize
+
+# Limit thread output to 1 thread
+#/control/cout/ignoreThreadsExcept 0
+
+# Set particle production thresholds (cuts)
+/run/setCut 1 mm
+/run/setCutForAGivenParticle e- 0.1 mm
+/run/setCutForAGivenParticle e+ 0.2 mm
+/run/setCutForAGivenParticle gamma 0.3 mm
+
+# following parameters give no difference but consume huge amount of memory and takes longer time
+# /run/setCutForAGivenParticle e- 40 um
+# /run/setCutForAGivenParticle e+ 40 um
+# /run/setCutForAGivenParticle gamma 40 um
+
+################################################################
+# Debugging commands                                           #
+################################################################
+/run/verbose 0
+/hits/verbose 0 # for HitsCollection and SensitiveDetector
+/event/verbose 0 # for event and step
+/tracking/verbose 0 # for tracking action
+# /random/setSeeds 200
+
+################################################################
+# Run processing                                               #
+################################################################
+/gun/particle e+ # it's necesasry anyway
+/gun/energy 934 MeV # it works if the beam is not smeared
+
+#/process/inactivate msc e+
+#/process/inactivate eIoni e+
+#/process/inactivate eBrem e+
+#/process/inactivate annihil e+
+#/process/inactivate CoulombScat e+
+
+#/process/inactivate msc e-
+#/process/inactivate eIoni e-
+#/process/inactivate eBrem e-
+#/process/inactivate annihil e-
+#/process/inactivate CoulombScat e-
+
+#/process/activate CoulombScat e+
+#/process/activate CoulombScat e-
+
+# Dump particle processes
+# /particle/select e+
+# /particle/process/dump
+
+# /particle/select e-
+# /particle/process/dump
+
+#/process/msc/EnergyLimit 1 GeV
+
+################################################################
+# Start the run                                                #
+################################################################
+/run/printProgress  1000
+/run/beamOn 100000

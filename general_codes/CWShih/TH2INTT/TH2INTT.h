@@ -428,6 +428,23 @@ class TH2INTT : public TH2Poly
             side_text -> DrawLatex(-10, 8, "South" );
             side_text -> DrawLatex(10, 8, "North" );
 
+            TArrow *arx = new TArrow(-1.5,-8,1.5,-8,0.015,"|>");
+            arx->SetAngle(40);
+            arx->SetLineWidth(2);
+            arx->Draw("");
+
+            TArrow *ary = new TArrow(-1.5,-8,-1.5,-5,0.015,"|>");
+            ary->SetAngle(40);
+            ary->SetLineWidth(2);
+            ary->Draw("");
+
+            TLatex *coord_text = new TLatex();
+            coord_text -> SetTextSize(0.05);
+            coord_text -> SetTextAlign(21);
+            coord_text -> DrawLatex(2, -8.5, "X");
+            coord_text -> DrawLatex(-1.5, -4.5, "Y");
+            coord_text -> DrawLatex(1, -6, "#odot Z");
+
             // side_text -> DrawLatex(0.285, 0.83, "South" );
             // side_text -> DrawLatex(0.64, 0.83, "North" );
 
@@ -506,10 +523,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <12; i++)
     {
         temp_vec.push_back({
-            B0L0_12_r * cos((B0L0_point1_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L0_12_r * sin((B0L0_point1_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_12_r * cos((B0L0_point2_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L0_12_r * sin((B0L0_point2_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_34_r * cos((B0L0_point3_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L0_34_r * sin((B0L0_point3_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_34_r * cos((B0L0_point4_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L0_34_r * sin((B0L0_point4_initial - 5 * 30 + i * 30) / (180./TMath::Pi()))
+            B0L0_12_r * cos((B0L0_point1_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + south_x_offset, B0L0_12_r * sin((B0L0_point1_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_12_r * cos((B0L0_point2_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + south_x_offset, B0L0_12_r * sin((B0L0_point2_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_34_r * cos((B0L0_point3_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + south_x_offset, B0L0_34_r * sin((B0L0_point3_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_34_r * cos((B0L0_point4_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + south_x_offset, B0L0_34_r * sin((B0L0_point4_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B0L0S"] = temp_vec; temp_vec.clear();
@@ -518,10 +535,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <12; i++)
     {
         temp_vec.push_back({
-            B0L1_12_r * cos((B0L1_point1_initial + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_12_r * sin((B0L1_point1_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_12_r * cos((B0L1_point2_initial + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_12_r * sin((B0L1_point2_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_34_r * cos((B0L1_point3_initial + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_34_r * sin((B0L1_point3_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_34_r * cos((B0L1_point4_initial + i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_34_r * sin((B0L1_point4_initial + i * 30) / (180./TMath::Pi()))
+            B0L1_12_r * cos((B0L1_point1_initial - i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_12_r * sin((B0L1_point1_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_12_r * cos((B0L1_point2_initial - i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_12_r * sin((B0L1_point2_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_34_r * cos((B0L1_point3_initial - i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_34_r * sin((B0L1_point3_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_34_r * cos((B0L1_point4_initial - i * 30) / (180./TMath::Pi())) + south_x_offset, B0L1_34_r * sin((B0L1_point4_initial - i * 30) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B0L1S"] = temp_vec; temp_vec.clear();
@@ -530,10 +547,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <16; i++)
     {
         temp_vec.push_back({
-            B1L0_12_r * cos((B1L0_point1_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_12_r * sin((B1L0_point1_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_12_r * cos((B1L0_point2_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_12_r * sin((B1L0_point2_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_34_r * cos((B1L0_point3_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_34_r * sin((B1L0_point3_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_34_r * cos((B1L0_point4_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_34_r * sin((B1L0_point4_initial + i * 22.5) / (180./TMath::Pi()))
+            B1L0_12_r * cos((B1L0_point1_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_12_r * sin((B1L0_point1_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_12_r * cos((B1L0_point2_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_12_r * sin((B1L0_point2_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_34_r * cos((B1L0_point3_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_34_r * sin((B1L0_point3_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_34_r * cos((B1L0_point4_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + south_x_offset, B1L0_34_r * sin((B1L0_point4_initial - i * 22.5 - 22.5) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B1L0S"] = temp_vec; temp_vec.clear();
@@ -542,10 +559,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <16; i++)
     {
         temp_vec.push_back({
-            B1L1_12_r * cos((B1L1_point1_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_12_r * sin((B1L1_point1_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_12_r * cos((B1L1_point2_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_12_r * sin((B1L1_point2_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_34_r * cos((B1L1_point3_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_34_r * sin((B1L1_point3_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_34_r * cos((B1L1_point4_initial + i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_34_r * sin((B1L1_point4_initial + i * 22.5) / (180./TMath::Pi()))
+            B1L1_12_r * cos((B1L1_point1_initial - i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_12_r * sin((B1L1_point1_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_12_r * cos((B1L1_point2_initial - i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_12_r * sin((B1L1_point2_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_34_r * cos((B1L1_point3_initial - i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_34_r * sin((B1L1_point3_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_34_r * cos((B1L1_point4_initial - i * 22.5) / (180./TMath::Pi())) + south_x_offset, B1L1_34_r * sin((B1L1_point4_initial - i * 22.5) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B1L1S"] = temp_vec; temp_vec.clear();
@@ -558,10 +575,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <12; i++)
     {
         temp_vec.push_back({
-            B0L0_12_r * cos((B0L0_point1_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L0_12_r * sin((B0L0_point1_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_12_r * cos((B0L0_point2_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L0_12_r * sin((B0L0_point2_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_34_r * cos((B0L0_point3_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L0_34_r * sin((B0L0_point3_initial - 5 * 30 + i * 30) / (180./TMath::Pi())),
-            B0L0_34_r * cos((B0L0_point4_initial - 5 * 30 + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L0_34_r * sin((B0L0_point4_initial - 5 * 30 + i * 30) / (180./TMath::Pi()))
+            B0L0_12_r * cos((B0L0_point1_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + north_x_offset, B0L0_12_r * sin((B0L0_point1_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_12_r * cos((B0L0_point2_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + north_x_offset, B0L0_12_r * sin((B0L0_point2_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_34_r * cos((B0L0_point3_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + north_x_offset, B0L0_34_r * sin((B0L0_point3_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())),
+            B0L0_34_r * cos((B0L0_point4_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi())) + north_x_offset, B0L0_34_r * sin((B0L0_point4_initial - 5 * 30 - i * 30 - 30) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B0L0N"] = temp_vec; temp_vec.clear();
@@ -570,10 +587,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <12; i++)
     {
         temp_vec.push_back({
-            B0L1_12_r * cos((B0L1_point1_initial + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_12_r * sin((B0L1_point1_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_12_r * cos((B0L1_point2_initial + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_12_r * sin((B0L1_point2_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_34_r * cos((B0L1_point3_initial + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_34_r * sin((B0L1_point3_initial + i * 30) / (180./TMath::Pi())),
-            B0L1_34_r * cos((B0L1_point4_initial + i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_34_r * sin((B0L1_point4_initial + i * 30) / (180./TMath::Pi()))
+            B0L1_12_r * cos((B0L1_point1_initial - i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_12_r * sin((B0L1_point1_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_12_r * cos((B0L1_point2_initial - i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_12_r * sin((B0L1_point2_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_34_r * cos((B0L1_point3_initial - i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_34_r * sin((B0L1_point3_initial - i * 30) / (180./TMath::Pi())),
+            B0L1_34_r * cos((B0L1_point4_initial - i * 30) / (180./TMath::Pi())) + north_x_offset, B0L1_34_r * sin((B0L1_point4_initial - i * 30) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B0L1N"] = temp_vec; temp_vec.clear();
@@ -582,10 +599,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <16; i++)
     {
         temp_vec.push_back({
-            B1L0_12_r * cos((B1L0_point1_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_12_r * sin((B1L0_point1_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_12_r * cos((B1L0_point2_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_12_r * sin((B1L0_point2_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_34_r * cos((B1L0_point3_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_34_r * sin((B1L0_point3_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L0_34_r * cos((B1L0_point4_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_34_r * sin((B1L0_point4_initial + i * 22.5) / (180./TMath::Pi()))
+            B1L0_12_r * cos((B1L0_point1_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_12_r * sin((B1L0_point1_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_12_r * cos((B1L0_point2_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_12_r * sin((B1L0_point2_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_34_r * cos((B1L0_point3_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_34_r * sin((B1L0_point3_initial - i * 22.5 - 22.5) / (180./TMath::Pi())),
+            B1L0_34_r * cos((B1L0_point4_initial - i * 22.5 - 22.5) / (180./TMath::Pi())) + north_x_offset, B1L0_34_r * sin((B1L0_point4_initial - i * 22.5 - 22.5) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B1L0N"] = temp_vec; temp_vec.clear();
@@ -594,10 +611,10 @@ void TH2INTT::fill_ladder_pos_map(){
     for (int i = 0; i <16; i++)
     {
         temp_vec.push_back({
-            B1L1_12_r * cos((B1L1_point1_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_12_r * sin((B1L1_point1_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_12_r * cos((B1L1_point2_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_12_r * sin((B1L1_point2_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_34_r * cos((B1L1_point3_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_34_r * sin((B1L1_point3_initial + i * 22.5) / (180./TMath::Pi())),
-            B1L1_34_r * cos((B1L1_point4_initial + i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_34_r * sin((B1L1_point4_initial + i * 22.5) / (180./TMath::Pi()))
+            B1L1_12_r * cos((B1L1_point1_initial - i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_12_r * sin((B1L1_point1_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_12_r * cos((B1L1_point2_initial - i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_12_r * sin((B1L1_point2_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_34_r * cos((B1L1_point3_initial - i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_34_r * sin((B1L1_point3_initial - i * 22.5) / (180./TMath::Pi())),
+            B1L1_34_r * cos((B1L1_point4_initial - i * 22.5) / (180./TMath::Pi())) + north_x_offset, B1L1_34_r * sin((B1L1_point4_initial - i * 22.5) / (180./TMath::Pi()))
         });
     }
     ladder_pos_map["B1L1N"] = temp_vec; temp_vec.clear();
