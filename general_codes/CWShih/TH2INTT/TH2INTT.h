@@ -445,6 +445,11 @@ class TH2INTT : public TH2Poly
             coord_text -> DrawLatex(-1.5, -4.5, "Y");
             coord_text -> DrawLatex(1, -6, "#odot Z");
 
+            TLatex *note_text = new TLatex();
+            note_text -> SetTextSize(0.035);
+            note_text -> SetTextAlign(32);
+            note_text -> DrawLatex(22, -9, "View from North to South");
+
             // side_text -> DrawLatex(0.285, 0.83, "South" );
             // side_text -> DrawLatex(0.64, 0.83, "North" );
 
