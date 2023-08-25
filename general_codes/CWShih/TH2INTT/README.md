@@ -5,6 +5,7 @@
 * Inherit from the ROOT::TH2Poly
 * The examaple plot can be seen in output_example_1.png
 * The arrows in the plot show the sPHENIX coordinate, view from North to South
+* The ladder location is according to https://wiki.sphenix.bnl.gov/index.php/INTT_Barrel
 
 ## How to use it
 * It's a class. So just like how you use the ROOT::TH2F. For example : 
