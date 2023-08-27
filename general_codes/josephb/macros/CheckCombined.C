@@ -139,15 +139,15 @@ void CheckCombined()
 		//check_tree->Scan();
 	}
 
-	std::map<std::string, std::vector<Long64_t>*> combined_branches =
+	std::map<std::string, std::vector<Int_t>*> combined_branches =
 	{
-		{"flx_svr",	new std::vector<Long64_t>()},
-		{"flx_chn",	new std::vector<Long64_t>()},
-		{"lyr",		new std::vector<Long64_t>()},
-		{"ldr",		new std::vector<Long64_t>()},
-		{"arm",		new std::vector<Long64_t>()},
-		{"chp",		new std::vector<Long64_t>()},
-		{"chn",		new std::vector<Long64_t>()},
+		{"flx_svr",	new std::vector<Int_t>()},
+		{"flx_chn",	new std::vector<Int_t>()},
+		{"lyr",		new std::vector<Int_t>()},
+		{"ldr",		new std::vector<Int_t>()},
+		{"arm",		new std::vector<Int_t>()},
+		{"chp",		new std::vector<Int_t>()},
+		{"chn",		new std::vector<Int_t>()},
 	};
 
 	for(auto& itr: combined_branches)
@@ -171,7 +171,7 @@ void CheckCombined()
 			{
 				for(auto& itr: combined_branches)
 				{
-					printf("%*lld", DEBUG_WIDTH, (*itr.second)[s]);
+					printf("%*d", DEBUG_WIDTH, (*itr.second)[s]);
 				}
 				printf("\n");
 
