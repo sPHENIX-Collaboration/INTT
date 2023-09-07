@@ -28,6 +28,8 @@ if __name__ == "__main__" :
         "  * I want to process new runs by hand\n" \
         "    $ process_data --auto-update 0\n" \
         "    Because the run number is mandatory, you need to give a fake value, for example, 0\n"\
+        "  * I'm taking data in pedestal run mode. I just want to decode the run 26098.\n"\
+        "   $ process_data --run-type pedestal --only --decode --no-check-bbox --send-SDCC 26098\n"\
 
     parser = argparse.ArgumentParser( description=description,
                                       epilog=epilog,
@@ -38,7 +40,22 @@ if __name__ == "__main__" :
     # Mandatory parameter                              #
     ####################################################
     parser.add_argument( "run", type=int,
-                         help="**Mandatory** The run number to be processed. It doesn't need to be 8 digit." )
+                         help="**Mandatory** The run number to be processed. It doesn't need to be 8 digit.",
+                         nargs='*' )
+
+    ####################################################
+    # Switch: Processes at 1008 or SDCC                #
+    ####################################################
+    parser.add_argument( "--1008",
+                         action=argparse.BooleanOptionalAction,
+                         default=True,
+                         help="Use it to process data at 1008 (INTT DAQ FELIX servers).\n" )
+
+    parser.add_argument( "--SDCC",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Use it to process data at SDCC.\n" )
+
 
     ####################################################
     # General flags                                    #
@@ -51,30 +68,36 @@ if __name__ == "__main__" :
     
     parser.add_argument( "--run-type", type=str,
                          choices=run_types,
+                         default="cosmics",
                          help="A type of run, which determins the directory in the buffer box, i.e. /bbox/commissioning/INTT/{here}. "\
                          "A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"beam\" is default." )
     
     parser.add_argument( "--only",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Only specified steps are done if specified. Otherwise (default), all steps are done unless \"no\" options are specified." )
 
     parser.add_argument( "--dry-run",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="A flag for testing the processes. It's better to use it before launching processes." )
 
     parser.add_argument( "--force-run",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="A flag to force running this program even if other processes with the same name are running."\
                          "Using this flag to decode large evt files are not recommended." )
 
     # Auto-update flags
     parser.add_argument( "--auto-update",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Automatic updating process (decode, making plots, transferring plots) for the new runs appear "\
                          "in /bbox/commissioning/INTT/{run-type} is done if specified. {run-type} is given by --run-type. Default: off" )
 
     parser.add_argument( "--update-list",
                          action=argparse.BooleanOptionalAction,
+                         #default=True, # better not to specify the default value, so 3 states can be here
                          help="The current run list (evt_list.txt) and the previous run list (run_list_previous.txt) are updated if specified (default)."\
                          "Turning off is mainly for debugging." )
 
@@ -91,18 +114,22 @@ if __name__ == "__main__" :
     ####################################################
     parser.add_argument( "--decode",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Decoding to make a hit-wise and an event-wise TTree is done if specified (default)." )
 
     parser.add_argument( "--decode-hit-wise",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Decoding to make a hit-wise Tree is done if specified (default)." )
 
     parser.add_argument( "--decode-event-wise",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Decoding to make a event-wise Tree is done if specified (default)." )
 
     parser.add_argument( "--make-plot",
                          action=argparse.BooleanOptionalAction,
+                         default=False,
                          help="Making plots of ADC and channel dists in intt is done if specified (default)." )
 
     ####################################################
@@ -122,6 +149,10 @@ if __name__ == "__main__" :
     ####################################################
     # Processes at SDCC                                #
     ####################################################
+    parser.add_argument( "--check-bbox",
+                         action=argparse.BooleanOptionalAction,
+                         help="Check whether the run files were successfully transferred the buffer box. Checks are done by --send-SDCC and --process-SDCC in any cases." )
+
     parser.add_argument( "--send-SDCC",
                          action=argparse.BooleanOptionalAction,
                          help="Transferring evt files from the buffer box to SDCC if it's ON." )
@@ -130,11 +161,11 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="Some processes (decoding for hit-wise and event-wise TTrees, and making plots) are done in SDCC." )
 
-
     args = parser.parse_args()
     #print( args )
     process = Process.Process( args )
+    process.info.Print()
     process.Do()
 
     time.sleep( 1 )
-    print( "All processes were ended" )
+    print( "All processes were ended" , flush=True )
