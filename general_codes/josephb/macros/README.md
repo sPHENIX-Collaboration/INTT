@@ -6,7 +6,10 @@
 * CombinedRawDataConverter.C and CombinedRawDataConverter.sh
 	* Very similar to the RawDataConverter.C and RawDataConverter.sh described below
 	* However, these will search for and combine .evt files from all INTT FEEs in a single .root file
-	* Needs to be cross-checked but works at a superficial level at least for now
+	* Very near their final state
+* CheckCombined.C
+	* Simple ROOT macro that produces histograms comparing the chip and channel distributions for a fixed run
+	* Comparison is between output of the CombinedRawDataConverter workflow and the RawDataConverter workflow
 * RawDataDecoder.C and RawDataDecoder.s
 	* These are for producing one DST file per one PRDF file (for now)
 	* run `sh RawDataDecoder.sh -h` for more information

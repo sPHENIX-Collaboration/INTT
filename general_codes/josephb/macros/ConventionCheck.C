@@ -57,8 +57,8 @@ void ConventionCheck()
 		(struct Params_s){.name = "offline_ladder_z", .description = "Offline Ladder Z", .func = &GetLadderZ},
 	};
 
-	//for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
-	MakeBarrelHist();
+	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
+	//MakeBarrelHist();
 }
 
 

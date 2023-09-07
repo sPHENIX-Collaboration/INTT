@@ -55,12 +55,12 @@ void CombinedRawDataConverter(std::string i_format, std::string o_format, int ru
 
 	//analysis
 	InttCombinedRawDataConverter* intt_converter = new InttCombinedRawDataConverter();
-	intt_converter->Verbosity(21);
+	intt_converter->Verbosity(0);
 	se->registerSubsystem(intt_converter);
 	intt_converter->SetOutputFile(o_filename);
 
 	//output
-	se->run(10);
+	se->run();
 	intt_converter->WriteOutputFile();
 	se->End();
 
