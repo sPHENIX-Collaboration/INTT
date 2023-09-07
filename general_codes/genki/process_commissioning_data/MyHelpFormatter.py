@@ -24,13 +24,15 @@ class MyHelpFormatter(
         help = action.help
         if action.required:
             help += " (required)"
-
+            
         if "%(default)" not in action.help:
             if action.default is not SUPPRESS:
                 defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
-                if action.option_strings or action.nargs in defaulting_nargs:
-                    if action.default is not None and not action.const:
-                        help += " (default: %(default)s)"
+                #help += "\n"
+                #if action.option_strings or action.nargs in defaulting_nargs:
+                #    if action.default is not None and not action.const:
+                #        #help += " (default: %(default)s)"
+                #        help += "\n"
         return help
 
 if __name__ == "__main__" :
