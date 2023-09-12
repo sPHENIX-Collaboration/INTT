@@ -9,98 +9,11 @@ import subprocess
 import sys
 import time
 
-class Printer() :
-    def __init__( self ) :
-        self.lines = []
-        self.separator = ""
-        self.separator_sign = "---separator---"
-        self.wall = '|'
-        self.junction = '+'
-        self.line = '-'
-        self.left_margin_length = 1
-        self.right_margin_length = 3
-        self.max_length = 0
-
-        self.color_dict = {
-            "Black" : "0;30m",
-            "Red"   : "0;31m",
-            "Green" : "0;32m",
-            "Yellow": "0;33m",
-            "Blue"  : "0;34m",
-            "Purple": "0;35m",
-            "Cyan"  : "0;36m",
-            "White" : "0;37m"
-        }
-        self.color_starter = '\033['
-        self.color_closure = self.color_starter + self.color_dict[ "White" ]
-        
-    def ColorIt( self, words, color='Red' ) :
-        if color not in self.color_dict :
-            print( "class Printer.ColorIt, Given color", color, "is not found in the list.", file=sys.stderr )
-
-        words = self.color_starter + self.color_dict[ color ] + words + self.color_closure
-        return words
-
-    def CountColorSign( self, words ) :
-        num = 0
-        # loop over all coloring words to count the number of their occurrences
-        for key in self.color_dict :
-            count_num = words.count( self.color_dict[key] )
-            # somehow this modification works well....
-            num += count_num * ( len( self.color_dict[key] ) + len(self.color_starter) )
-            
-        return num
-    
-    def AddLine( self, *all_words, sep=' ', color='White' ) :
-        line = ""
-        for words in all_words :
-            if words is True :
-                words = self.ColorIt( str(words), color='Blue' )
-            elif  words is False :
-                words = self.ColorIt( str(words), color='Red' )
-                
-            line += str(words) + sep
-        self.lines.append( self.ColorIt(line, color) )
-
-    def AddSeparator( self ) :
-        self.lines.append( self.separator_sign )
-
-    def PrintOuterLine( self ) : 
-        print( self.junction,
-               self.line * (self.max_length + self.left_margin_length + self.right_margin_length ),
-               self.junction,
-               sep='')
-        
-    def Print( self ) :
-        self.max_length = len( max( self.lines, key=len ) )
-        self.separator = self.line * self.max_length
-        
-        self.PrintOuterLine()
-        for line in self.lines :
-
-            # replace the separator sign with the separator
-            if self.separator_sign in line :
-                line = self.separator
-
-            # If these words are colored,
-            length_correction = self.CountColorSign( line )
-            #if self.color_closure in line :
-            #    length_correction = len( self.color_starter + self.color_dict[ "Black" ] + self.color_closure )
-                
-            print( self.wall,
-                   " " * self.left_margin_length,
-                   line,
-                   " " * (self.max_length - len(line) + length_correction ),
-                   " " * self.right_margin_length,
-                   self.wall,
-                   sep='' )
-        self.PrintOuterLine()
-        
-        
+import Printer
         
 class Information() :
     def __init__( self, args ) :
-        self.printer = Printer()
+        self.printer = Printer.Printer()
         
         #############################################################################
         # Processes for flags determined by command-line arguments                  #
@@ -108,8 +21,10 @@ class Information() :
         # storing flags
         self.is_dry_run = args.dry_run if args.dry_run is not None else False
         self.is_force_run = args.force_run if args.force_run is not None else False
-        
-        self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
+
+        #self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
+        self.run = [ str(element).zfill(8) for element in args.run ]
+        self.runs_processed = [] # A list of runs to be processed. It's for auto-update mode for now.
         self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
         if self.root_dir[-1] != "/" :
@@ -153,25 +68,36 @@ class Information() :
         self.update_list       = args.update_list       if args.update_list       is not None else self.auto_update
 
         # Flags related to SDCC
-        self.send_SDCC         = args.send_SDCC if args.send_SDCC is not None else False
+        self.send_SDCC         = args.send_SDCC    if args.send_SDCC    is not None else False
         self.process_SDCC      = args.process_SDCC if args.process_SDCC is not None else False
-        self.is_SDCC_used = self.send_SDCC or self.process_SDCC
-        
+        self.check_bbox        = args.check_bbox   if args.check_bbox   is not None else True
+
+        # Priority of send_SDCC and process_SDCC is higher than check_box.
+        # If one of send_SDCC and process_SDCC is specified, but check_box was not given, determin check_box by the flag.
+        if args.check_bbox is None :
+            # If check_box is not given, set is_SDCC_used using send_SDCC and process_SDCC. Then check_box is determined by is_SDCC_used
+            self.is_SDCC_used      = self.send_SDCC or self.process_SDCC
+            self.check_bbox        = self.is_SDCC_used
+        else :
+            # If check_box is given, set is_SDCC_used using the 3 flags
+            self.is_SDCC_used      = self.send_SDCC or self.process_SDCC or self.check_bbox
+                
         # misc
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
         self.plotter_in_server = self.sphenix_intt_home + "macro/FelixQuickViewer_1Felix.C"
 
         source_dir             = os.path.dirname( __file__ ) + "/"
-        config_dir             = str( pathlib.Path().home() / ".INTT" )
-        self.evt_list          = config_dir + "/" + self.run_type + "_list.txt"
-        self.evt_list_previous = config_dir + "/" + self.run_type + "_list_previous.txt"
-        if pathlib.Path( config_dir ).exists() is False : 
-            pathlib.Path( config_dir ).mkdir()
+        self.config_dir             = str( pathlib.Path().home() / ".INTT" )
+        self.evt_list          = self.config_dir + "/" + self.run_type + "_list.txt"
+        self.evt_list_previous = self.config_dir + "/" + self.run_type + "_list_previous.txt"
+        self.evt_list_temp     = self.config_dir + "/" + self.run_type + "_list_temp.txt"
+        if pathlib.Path( self.config_dir ).exists() is False : 
+            pathlib.Path( self.config_dir ).mkdir()
 
         self.processes = []
 
         if args.only is True :
-            print( "Only ..." )
+            print( "Only ..." , flush=True )
 
     def SetFlagsForAutoUpdate( self ) :
         self.decode            = True
@@ -183,7 +109,7 @@ class Information() :
         self.auto_update       = False
 
     def PrintLine( self ) :
-        print( '+' + '-'*50 + '+' )
+        print( '+' + '-'*50 + '+' , flush=True )
         
     def Print( self ) :
         header_color = 'Green'
@@ -219,6 +145,7 @@ class Information() :
         self.printer.AddSeparator()
         self.printer.AddLine( "Is SDCC used?", self.is_SDCC_used, color=header_color )
         if self.is_SDCC_used :
+            self.printer.AddLine( "    Check files to SDCC?", self.check_bbox )
             self.printer.AddLine( "    Send files to SDCC?", self.send_SDCC )
             self.printer.AddLine( "    Do processes at SDCC?", self.process_SDCC )
         
@@ -231,13 +158,20 @@ class Information() :
         self.printer.Print()
 
     def IsOtherProcessRunning( self ) :
-        command = "ps aux | grep -v -e grep -v -e emacs -v -e vi | grep " + __file__
-        print( command )
+        
+        command = "ps aux | grep -v -e grep -v -e emacs -v -e vi "
+
+        #if self.is_SDCC_used :
+        #    command += "-e SDCC "
+            
+        command += " | grep " + __file__
+        
+        #print( command , flush=True )
         #command = "ls -1"
         proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
         outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
-        print( "ps:", outputs )
-        print( type(outputs), len(outputs) )
+        #print( "ps:", outputs , flush=True )
+        #print( type(outputs), flush=True )
 
         if len(outputs) > 1 :
             return True
@@ -247,7 +181,11 @@ class Information() :
     def GetEventFilePath( self ) :
         directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
         #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000" + ".evt"
-        name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
+
+        if self.run_type == "pedestal" or self.run_type == "junk" : 
+            name = "intt_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
+        else :
+            name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :
@@ -255,6 +193,12 @@ class Information() :
         directory = "/bbox/commissioning/INTT/" + self.root_dir + self.root_subdir 
         #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000"
         name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000"
+
+        if self.run_type == "pedestal" : 
+            name = "intt_" + "inttX" + "-" + self.run + "-" + "0000"
+        else :
+            name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000"
+
         if is_event_wise is False :
             name += ".root"
         else :
