@@ -12,6 +12,7 @@
 
 std::string check_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt%d-%08d-0000.root";
 std::string combined_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt_combined-%08d-0000.root";
+std::string combined_1_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt_combined-%08d-0000_1.root";
 
 bool DEBUG = true;
 int DEBUG_WIDTH = 12;
@@ -83,7 +84,34 @@ void CheckCombined()
 
 		exit(1);
 	}
+	name = Form(combined_1_format.c_str(), run_num);
+	TFile* combined_1_file = TFile::Open(name.c_str(), "READ");
+	if(!combined_1_file)
+	{
+		std::cout << std::endl;
+		std::cout << "Could not open file:" << std::endl;
+		std::cout << "\t" << name << std::endl;
+		std::cout << "Exiting" << std::endl;
+		std::cout << std::endl;
 
+		exit(1);
+	}
+	std::cout << std::endl;
+	std::cout << "Got file:" << std::endl;
+	std::cout << "\t" << name << std::endl;
+	TTree* combined_1_tree = (TTree*)combined_file->Get("prdf_tree");
+	if(!combined_1_tree)
+	{
+		std::cout << std::endl;
+		std::cout << "Could not get tree \"prdf_tree\" from file:" << std::endl;
+		std::cout << "\t" << name << std::endl;
+		std::cout << "(Contains:)" << std::endl;
+		combined_1_file->ls();
+		std::cout << "Exiting" << std::endl;
+		std::cout << std::endl;
+
+		exit(1);
+	}
 	//Branch addressing/branch addressing verification
 	Int_t check_hits = 0;
 	Int_t max_hits = 0;
@@ -217,6 +245,25 @@ void CheckCombined()
 			combined_chn_dis->Fill((*combined_branches["chn"])[s]);
 		}
 	}
+
+	if(!combined_1_tree)goto JUMP_POINT;
+	for(auto& itr: combined_branches)
+	{
+		combined_1_tree->SetBranchAddress(itr.first.c_str(), &(itr.second));
+	}
+	for(Long64_t n = 0; n < combined_1_tree->GetEntriesFast(); ++n)
+	{
+		combined_1_tree->GetEntry(n);
+
+		for(std::size_t s = 0; s < combined_branches.begin()->second->size(); ++s)
+		{
+			//Do things
+			if((*combined_branches["flx_svr"])[s] != server)continue;
+			combined_chp_dis->Fill((*combined_branches["chp"])[s]);
+			combined_chn_dis->Fill((*combined_branches["chn"])[s]);
+		}
+	}
+	JUMP_POINT:
 
 	TCanvas* check_chp_cnvs = new TCanvas("check_chp_cnvs", "check_chp_cnvs");
 	check_chp_cnvs->cd();
