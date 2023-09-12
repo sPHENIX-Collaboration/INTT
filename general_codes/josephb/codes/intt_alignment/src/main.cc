@@ -58,6 +58,8 @@ int main()
 	goto LOOP;
 	while(true)
 	{
+		k = key;
+		t.SetTransformMatrix(sensor_to_global);
 		tree->Fill();
 
 		//------------------------------//
