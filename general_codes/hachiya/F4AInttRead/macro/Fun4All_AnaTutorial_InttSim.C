@@ -22,17 +22,17 @@
 #include <Trkr_Clustering.C>
 #include <Trkr_LaserClustering.C>
 #include <Trkr_Reco.C>
-#include <Trkr_Eval.C>
+//#include <Trkr_Eval.C>
 #include <Trkr_QA.C>
 
 #include <Trkr_Diagnostics.C>
 #include <G4_User.C>
 #include <QA.C>
 
-#include <anatutorial/AnaTutorial.h>
-#include <anatutorial/InttRawData.h>
-#include <anatutorial/InttDummyData.h>
-#include <anatutorial/InttAna.h>
+//#include <inttread/AnaTutorial.h>
+#include <inttread/InttRawData.h>
+#include <inttread/InttDummyData.h>
+#include <inttread/InttAna.h>
 
 #include <ffamodules/FlagHandler.h>
 #include <ffamodules/HeadReco.h>
@@ -49,7 +49,8 @@
 //R__LOAD_LIBRARY(libintt.so)
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libffamodules.so)
-R__LOAD_LIBRARY(libanatutorial.so)
+//R__LOAD_LIBRARY(libanatutorial.so)
+R__LOAD_LIBRARY(libinttread.so)
 // For HepMC Hijing
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
 
