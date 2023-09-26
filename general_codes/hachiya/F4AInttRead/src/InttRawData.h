@@ -14,7 +14,11 @@ class InttEvent;
 class InttRawData : public SubsysReco
 {
  public:
-  /// Constructor
+  /*!
+  @brief Constructor
+  @param name Used to initialize Subsysreco
+  @param fname It's assigned to fname_
+  */
   InttRawData(const std::string &name = "InttRawData",
               const std::string &fname = "inttevent.root");
 
@@ -57,7 +61,7 @@ class InttRawData : public SubsysReco
     }
   };
 
-
+  /// The path to the input file. The file must have TTree "tree".
   std::string fname_;
   std::string hotfilename_;
 

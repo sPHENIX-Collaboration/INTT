@@ -11,6 +11,7 @@ import time
 
 import Information
 import ProcessSDCC
+import Printer
 
 class Process() :
     def __init__( self, args ) :
@@ -20,13 +21,12 @@ class Process() :
         self.info = Information.Information( args )
         self.proc_sdcc = ProcessSDCC.ProcessSDCC( self.info )
         self.processes = []
-
     
     def SendCommand( self, intt_num, command ) :
         server="intt" + str( intt_num )
         ssh_command = "ssh " + server + " \"" + command.replace( "inttX" , "intt"+str(intt_num) ) + "\""
         if self.info.is_dry_run is True : 
-            print( "SendCommand:", ssh_command )
+            print( "SendCommand:", ssh_command , flush=True )
         else:
             proc = subprocess.Popen( ssh_command, shell=True )
             self.processes.append( proc )
@@ -34,10 +34,10 @@ class Process() :
     def SendCommandToAll( self, command ) :
         for num in range(0, 8 ) :
             if self.info.is_dry_run is True : 
-                print( "SendCommandToAll:", command )
+                print( "SendCommandToAll:", command , flush=True )
 
             #if num ==1:
-            #    print( "intt", num, "is skipped" )
+            #    print( "intt", num, "is skipped" , flush=True )
             #    continue
             
             self.SendCommand( num, command )
@@ -60,21 +60,21 @@ class Process() :
             whole_command = init_commands + command_to_dir + command_decode
             
         if self.info.is_dry_run is True : 
-            print( "Decode:", whole_command )
+            print( "Decode:", whole_command , flush=True )
 
         self.SendCommandToAll( whole_command )
         for proc in self.processes :
-            #print( "Waiting for decoding" )
+            #print( "Waiting for decoding" , flush=True )
             proc.wait()
 
-        print( "All decoding ended" )
+        print( "All decoding ended" , flush=True )
 
     def MakeSymbolic( self ) :
         command = "ssh " + self.info.plotting_server + " \""
         command += "cd " + self.info.data_dir_in_plotting_server + " ; "
         command += "ls " + self.info.root_dir_in_plotting_server + "/*.root | xargs -I {} ln -s {} 2>/dev/null"
         command += "\""
-        print( command )
+        print( command , flush=True )
 
         if self.info.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
@@ -85,12 +85,12 @@ class Process() :
         command += "cd " + self.info.data_dir_in_plotting_server + " ; "
         command += "ls *" + self.info.run + "*.root | grep -v event_base | xargs -I {} -P 8  root -q -l -b \'" + self.info.plotter + "(\\\"{}\\\", \\\".pdf\\\" )\'"
         command += "\""
-        print( command )
+        print( command , flush=True )
 
         if self.info.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
             proc.wait()
-            print( "All plots were made." )
+            print( "All plots were made." , flush=True )
 
     def MakePlotInServer( self ) :
         init_commands = "source /etc/profile ; source .bashrc ; source .bash_profile ; "
@@ -102,30 +102,30 @@ class Process() :
         whole_command = init_commands + command_to_dir + command_root
             
         if self.info.is_dry_run is True : 
-            print( "Making plots in each DAQ server:", whole_command )
+            print( "Making plots in each DAQ server:", whole_command , flush=True )
             #return None
 
         self.SendCommandToAll( whole_command )
         for proc in self.processes :
-            ##print( "Waiting for decoding" )
+            ##print( "Waiting for decoding" , flush=True )
             proc.wait()
 
-        print( "All plots were made." )
+        print( "All plots were made." , flush=True )
 
     def TransferPlot( self ) :
         command = "scp " + self.info.plotting_server + ":" + self.info.data_dir_in_plotting_server + "*" + self.info.run + "*.pdf " + self.info.transfer_dir
-        print( command )
+        print( command , flush=True )
 
         if self.info.is_dry_run is False : 
             proc = subprocess.Popen( command, shell=True )
             proc.wait()
-            print( "All plots were transfered to", self.info.transfer_dir )
+            print( "All plots were transfered to", self.info.transfer_dir , flush=True )
         
     def MakeEvtList( self, ignored_runs=[] ):
-        print( "MakeEvtList" )
-        print( "Ignored runs:", ignored_runs )
+        print( "MakeEvtList" , flush=True )
+        print( "Ignored runs:", ignored_runs , flush=True )
         command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.info.GetEventFilePath() ) + " | head -n 400"
-        print( command )
+        print( command , flush=True )
 
         if self.info.is_dry_run is False :
             proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
@@ -136,14 +136,14 @@ class Process() :
             for output in outputs[0:-2] :
                 pos_left = len( self.info.run_type ) + 7
                 pos_right = pos_left + 8
-                #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output )
+                #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output , flush=True )
 
                 # There may be files with a name different from the assumed format
                 # ( {self.info.run_type}_intt?-????????-????.evt, e.g. beam_intt1-00001234-0056.evt)
                 # For the moment, I exclude files with shorter name than the assumed format not to affect in reading file.
                 run = output[ pos_left:pos_right ]
-                #print( "debugging:", run ) 
-                #print( "MakeEvtList:", ignored_runs, run, run in ignored_runs )
+                #print( "debugging:", run ), flush=True )
+                #print( "MakeEvtList:", ignored_runs, run, run in ignored_runs , flush=True )
                 if run != '' :
                     if run not in ignored_runs : 
                         all_runs.append( run )
@@ -163,15 +163,15 @@ class Process() :
             for line in file :
                 runs.append( line.split()[0] )
 
-        print( "Runs in the current list:", runs )
+        print( "Runs in the current list:", runs , flush=True )
         runs_previous = []
         with open( self.info.evt_list_previous ) as file :
             for line in file :
                 runs_previous.append( line.split()[0] )
-        print( "Runs in the previous list:", runs_previous )
+        print( "Runs in the previous list:", runs_previous , flush=True )
         if len( runs_previous ) == 0 :
-            print( "No runs found in the previous list. Something wrong!!!" )
-            print( "No runs to be processed\n" )
+            print( "No runs found in the previous list. Something wrong!!!" , flush=True )
+            print( "No runs to be processed\n" , flush=True )
             return []
         
         runs_processed = []
@@ -179,7 +179,7 @@ class Process() :
             if run not in runs_previous :
                 runs_processed.append( run )
 
-        print( "Automatic update, Runs to be processed:", runs_processed )
+        print( "Automatic update, Runs to be processed:", runs_processed , flush=True )
         return runs_processed
 
     def AutoUpdate( self ) :
@@ -193,7 +193,7 @@ class Process() :
             2.  
         """
         
-        print( "AutoUpdate!" )
+        print( "AutoUpdate!" , flush=True )
         ignored_runs = [ '00000001', '00000002', '00000003', '00000012', '00000013',
                          '00000014', '00000015', '00009999', '00099000', '00099001',
                          '00099002', '00099003', '00099004', '00099005', '00099006',
@@ -203,41 +203,41 @@ class Process() :
 
         # Step 1
         if self.info.update_list is True :
-            print( "Update list", "(dry run)" if self.info.is_dry_run else "!" )
+            print( "Update list", "(dry run)" if self.info.is_dry_run else "!" , flush=True )
 
             # copy the current list as a temp file
-            command = "cp " + self.evt_list + " " + self.evt_list_temp
-            print( "Copy the current list to a temp file as a backup." )
-            print( command, "\n" )
-            if self.is_dry_run is False:
+            command = "cp " + self.info.evt_list + " " + self.info.evt_list_temp
+            print( "Copy the current list to a temp file as a backup." , flush=True )
+            print( command, "\n" , flush=True )
+            if self.info.is_dry_run is False:
                 proc = subprocess.Popen( command, shell=True )
                 proc.wait()
             
             # Change the current list (generated before) to a previous list
             if os.path.exists( self.info.evt_list ) : 
                 command = "mv " + self.info.evt_list + " " + self.info.evt_list_previous
-                print( "Rename the current list, which was generated before, to a previous list." )
-                print( command, "\n" )
+                print( "Rename the current list, which was generated before, to a previous list." , flush=True )
+                print( command, "\n" , flush=True )
                 if self.info.is_dry_run is False:
                     proc = subprocess.Popen( command, shell=True )
                     proc.wait()
 
             else:
-                print( self.info.evt_list, "is not found. The previous list is not updated." )
+                print( self.info.evt_list, "is not found. The previous list is not updated." , flush=True )
 
                 # Step 1.1 Make an evt file if it's not found
                 touch_file = pathlib.Path( self.info.evt_list )
                 touch_file.touch()
-                print( self.info.evt_list, "was generated. It's an empty file." )
+                print( self.info.evt_list, "was generated. It's an empty file." , flush=True )
 
             # Step 1.2 Make a previous evt file if it's not found
             if pathlib.Path( self.info.evt_list_previous ).exists() is False :
-                print( self.info.evt_list_previous, "is not found." )
+                print( self.info.evt_list_previous, "is not found." , flush=True )
                 pathlib.Path( self.info.evt_list_previous ).touch()
-                print( self.info.evt_list_previous, "was generated. It's an empty file." )
+                print( self.info.evt_list_previous, "was generated. It's an empty file." , flush=True )
                 
             # Generate new list
-            print( "Let\'s make a current run list." )
+            print( "Let\'s make a current run list." , flush=True )
             self.MakeEvtList( ignored_runs=ignored_runs )
 
             # if --only is used (with --update-list is assumed), here is the end of processes
@@ -246,15 +246,17 @@ class Process() :
                 return None
             # end of if self.info.update_list is True 
 
-        print( "Let\'s find new runs!" )
+        print( "Let\'s find new runs!" , flush=True )
         runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
+        self.info_runs_processed = runs_processed # give the list of runs to be processed.
+        
         if runs_processed == [] :
-            print( "No runs processed" )
+            print( "No runs processed" , flush=True )
             # Get the current list back from the temp file
-            command = "cp " + self.evt_list_temp + " " + self.evt_list
-            print( "  --> Restore the status. Copy the temp file as a previous list." )
-            print( command, "\n" )
-            if self.is_dry_run is False:
+            command = "cp " + self.info.evt_list_temp + " " + self.info.evt_list
+            print( "  --> Restore the status. Copy the temp file as a previous list." , flush=True )
+            print( command, "\n" , flush=True )
+            if self.info.is_dry_run is False:
                 proc = subprocess.Popen( command, shell=True )
                 proc.wait()
             return None
@@ -268,58 +270,75 @@ class Process() :
         self.info.update_list = False
         # loop over all runs to be processed
         counter = 0
+        self.DoIteratively()
 
-        print( "Loop over new runs", runs_processed )
-        for run in runs_processed :
+    def DoIteratively( self ) :        
+        print( "Loop over new runs", self.info.runs_processed , flush=True )
+        for run in self.info.runs_processed :
             self.info.run = run # change the run to be processed
-            print( "Auto update, Processing Run", self.info.run )
+            print( "Auto update, Processing Run", self.info.run , flush=True )
             self.Do()
             # end of for run in runs_processed
 
-        print( "Processed runs:", runs_processed )
+        print( "Processed runs:", self.info.runs_processed , flush=True )
             
     def Do( self ) :
         if self.info.IsOtherProcessRunning() is True:
-            print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" )
+            print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" , flush=True )
 
             if self.info.is_force_run is True :
-                print( "** But the force flag is True. This program runs anyway. **" )
+                print( "** But the force flag is True. This program runs anyway. **" , flush=True )
             else:
                 return None
 
-        self.info.Print()
+        #self.info.Print()
         #time.sleep( 5 ) 
             
-        print( "Do process!", "(dry run)" if self.info.is_dry_run else "" )
+        print( "Do process!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
         if self.info.auto_update is True or self.info.update_list is True:
+            #self.info.Print()
             self.AutoUpdate()
             return None
+
+        # it's historical reason... if self.info.run is a list, execute DoIteratively (it's always a list now...)
+        if type( self.info.run ) is list :
+            print( self.info.run, self.info.runs_processed )
+            self.info.runs_processed = self.info.run
+            self.info.run = 0
+            print( self.info.run, self.info.runs_processed )
+            self.DoIteratively()
+            return None
+        
+        if self.info.check_bbox is True :
+            is_ended = self.proc_sdcc.CheckSendEnd()
+            done_or_not = Printer.Printer.ColorIt( "been done.", color='Green') if is_ended else Printer.Printer.ColorIt( "not been done.", color='Red')
+            print( " - Sending run", self.info.run, "has", done_or_not , flush=True, file=sys.stderr )
 
         # Sending evt files to SDCC
         if self.info.send_SDCC is True :
             self.proc_sdcc.SendSDCC()
-
-        # Processes at SDCC
-        if self.info.process_SDCC is True :
-            self.proc_sdcc.ProcessSDCC()
         
         if self.info.decode is True :
             if self.info.decode_hit_wise is True:
                 self.Decode()
-                print( "Hit-wise TTree made!", "(dry run)" if self.info.is_dry_run else "" )
+                print( "Hit-wise TTree made!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
             if self.info.decode_event_wise is True:
                 self.Decode( is_event_wise=True )
-                print( "Event-wise TTree made!", "(dry run)" if self.info.is_dry_run else "" )
+                print( "Event-wise TTree made!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
 
         if self.info.make_symbolic is True : 
             self.MakeSymbolic()
-            print( "Symbolics made!", "(dry run)" if self.info.is_dry_run else "" )
+            print( "Symbolics made!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
 
         if self.info.make_plot is True : 
             #self.MakePlot()
             self.MakePlotInServer()
-            print( "Plots made!", "(dry run)" if self.info.is_dry_run else "" )
+            print( "Plots made!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
 
         if self.info.transfer_plot is True :
             self.TransferPlot()
-            print( "Plots transferred!", "(dry run)" if self.info.is_dry_run else "" )
+            print( "Plots transferred!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
+
+        # Processes at SDCC
+        if self.info.process_SDCC is True :
+            self.proc_sdcc.ProcessSDCC()            

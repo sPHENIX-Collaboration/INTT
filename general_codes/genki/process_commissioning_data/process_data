@@ -10,10 +10,17 @@ then
     python3 ${dir}/process_commissioning_data.py $@
     
 else
-    log=/home/inttdev/INTT/log/inttdaq_cron/`date +\%Y\%m\%d_\%H\%M\%S`.log
+    log=/home/inttdev/INTT/log/inttdaq_cron/`date +\%Y\%m\%d_\%H\%M\%S\%3N`.log
     echo -e "\nLog file: ${log}\n"
     
     python3 ${dir}/process_commissioning_data.py $@ 2>&1 | tee $log
     echo -e "\n\nLog file: ${log}"
+
+    echo $@ | grep '\-\-check-bbox'  2>&1 >/dev/null
+    is_checked=$? # 0 (grep successful) no, 1 (grep failed) yes
+    if [ ${is_checked} -eq 0 ]
+    then
+	grep "Sending run" $log
+    fi
     
 fi
