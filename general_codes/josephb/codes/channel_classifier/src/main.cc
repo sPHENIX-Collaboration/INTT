@@ -43,5 +43,10 @@ int main()
 		break;
 	}
 
+
+	c.AppendFile("/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt_combined-00020445-0000.root");
+
+	std::cout << "Done" << std::endl;
+
 	return 0;
 }
