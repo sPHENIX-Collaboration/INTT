@@ -1,13 +1,13 @@
 #!/bin/bash
 
-i_format="/sphenix/lustre01/sphnxpro/commissioning/INTT/beam/beam_intt%d-%08d-0000.evt"
-o_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt_combined-%08d-0000.root"
+i_format="/sphenix/tg/tg01/commissioning/INTT/root_files/beam_intt_combined-%08d-0000.root"
+o_format="/sphenix/user/jbertaux/combined_debug/intt_muplicity_run%08d.root"
 
 show_help()
 {
 	printf "\n"
 	printf "\tScript should be called as\n"
-	printf "\t\tsh CombinedRawDataConverter.sh [run number]\n"
+	printf "\t\tsh RawDataConverter.sh [run number]\n"
 	printf "\tWhere [run number] is the run number\n"
 	printf "\n"
 	printf "\tThe input PRDF file names are assumed to have the format:\n"
@@ -35,5 +35,5 @@ then
 	exit 1
 fi
 
-root -l "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/macros/CombinedRawDataConverter.C(\"$i_format\", \"$o_format\", $1)"
+root -l "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/macros/DebugCombined.C(\"$i_format\", \"$o_format\", $1)"
 exit 0
