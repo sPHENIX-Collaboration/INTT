@@ -9,7 +9,7 @@ EXE = .exe
 
 FLGS = $(shell root-config --cflags)
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)# -lRooFit -lRooFitCore -lRooFitMore
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)#-lRooFit -lRooFitCore -lRooFitMore
 
 BIN = ./bin/
 SRC = ./src/

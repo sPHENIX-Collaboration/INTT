@@ -58,7 +58,7 @@ void ConventionCheck()
 	};
 
 	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
-	//MakeBarrelHist();
+	MakeBarrelHist();
 }
 
 
