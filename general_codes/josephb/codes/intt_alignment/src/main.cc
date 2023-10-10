@@ -98,6 +98,7 @@ int main()
 		onl = Intt::ToOnline(ofl);
 		raw = Intt::ToRawData(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
+
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
 		ofl.ladder_z = 0;
@@ -106,6 +107,16 @@ int main()
 		key = InttDefs::genHitSetKey(ofl.layer, ofl.ladder_z, ofl.ladder_phi, 0);
 		sensor_to_ladder = isr.GetSensorTransform(ofl.ladder_z);
 		sensor_to_global = ladder_to_global * sensor_to_ladder;
+
+		//shift the position by 3.32mm radially inward
+		{
+			Eigen::Vector3d y_axis(sensor_to_global.matrix()(0, 1), sensor_to_global.matrix()(1, 1), sensor_to_global.matrix()(2, 1));
+			y_axis /= y_axis.norm();
+			for(int i = 0; i < 3; ++i)
+			{
+				sensor_to_global.matrix()(i, 3) += y_axis(i) * 3.32;
+			}
+		}
 
 		switch(ofl.ladder_z)
 		{
