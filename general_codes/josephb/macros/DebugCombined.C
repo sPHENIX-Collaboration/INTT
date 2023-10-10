@@ -1,6 +1,9 @@
 #ifndef DEBUG_COMBINED_C
 #define DEBUG_COMBINED_C
 
+#include "sPhenixStyle.h"
+#include "sPhenixStyle.C"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -13,10 +16,13 @@
 #include <TH1.h>
 #include <TH1D.h>
 
+const int N_BINS = 70;
 const int BUFF_SIZE = 256;
 
 void DebugCombined(std::string i_format, std::string o_format, int run_num)
 {
+	SetsPhenixStyle();
+
 	char buff[BUFF_SIZE];
 
 	snprintf(buff, BUFF_SIZE, i_format.c_str(), run_num);
@@ -55,10 +61,10 @@ void DebugCombined(std::string i_format, std::string o_format, int run_num)
 
 	std::map<std::string, std::vector<Int_t>*> branches =
 	{
-		//{"flx_svr",	new std::vector<Int_t>()},
+		{"flx_svr",	new std::vector<Int_t>()},
 		//{"flx_chn",	new std::vector<Int_t>()},
 		{"lyr",		new std::vector<Int_t>()},
-		//{"ldr",	new std::vector<Int_t>()},
+		{"ldr",		new std::vector<Int_t>()},
 		//{"arm",	new std::vector<Int_t>()},
 		//{"chp",	new std::vector<Int_t>()},
 		//{"chn",	new std::vector<Int_t>()},
@@ -91,17 +97,15 @@ void DebugCombined(std::string i_format, std::string o_format, int run_num)
 		}
 	}
 
-	int min_multiplicity = INT_MAX;
-	int max_multiplicity = 0;
-
+	int max = 0;
 	snprintf(buff, BUFF_SIZE, o_format.c_str(), run_num);
 	std::string o_name = buff;
 	TFile* o_file = TFile::Open(o_name.c_str(), "RECREATE");
 	TTree* o_tree = new TTree("correlation_tree", "correlation_tree");
 	std::map<std::string, int> o_branches =
 	{
-		{"inner_hits", 0},
-		{"outer_hits", 0},
+		{"east_hits", 0},
+		{"west_hits", 0},
 	};
 	for(auto& itr: o_branches)
 	{
@@ -112,28 +116,48 @@ void DebugCombined(std::string i_format, std::string o_format, int run_num)
 	{
 		tree->GetEntry(n);
 
-		o_branches["inner_hits"] = 0;
-		o_branches["outer_hits"] = 0;
+		for(auto& itr: o_branches)itr.second = 0;
 		for(std::size_t s = 0; s < branches.begin()->second->size(); ++s)
 		{
-			if(branches["lyr"]->operator[](s) < 2)	++o_branches["inner_hits"];
-			else					++o_branches["outer_hits"];
+			if(branches["lyr"]->operator[](s) < 2)
+			{
+				if(branches["ldr"]->operator[](s) < 6)	++(o_branches["west_hits"]);
+				else					++(o_branches["east_hits"]);
+			}
+			else
+			{
+				if(branches["ldr"]->operator[](s) < 8)	++(o_branches["west_hits"]);
+				else					++(o_branches["east_hits"]);
+			}
 		}
-		o_tree->Fill();
+		for(auto itr: o_branches)if(itr.second > max)max = itr.second;
 
-		//for(auto itr: o_branches)
-		//{
-		//	if(itr.second < min_multiplicity)min_multiplicity = itr.second;
-		//	if(itr.second > max_multiplicity)max_multiplicity = itr.second;
-		//}
+		o_tree->Fill();
 	}
 
 	TCanvas* cnvs = new TCanvas(
-		Form("INTT_Multiplicity_Correlation_Run_%08d", run_num), 
-		Form("INTT_Multiplicity_Correlation_Run_%08d", run_num));
-
+		Form("INTT_Multiplicity_Correlation_Run_%08d_Cnvs", run_num), 
+		Form("INTT_Multiplicity_Correlation_Run_%08d_Cnvs", run_num));
 	cnvs->cd();
-	o_tree->Draw("outer_hits:inner_hits");
+
+	TH2D* hist = new TH2D(
+		Form("INTT_Multiplicity_Correlation_Run_%08d_Hist", run_num),
+		Form("INTT_Multiplicity_Correlation_Run_%08d_Hist", run_num),
+		N_BINS, 0, max,
+		N_BINS, 0, max);
+
+	hist->SetXTitle(std::next(o_branches.begin(), 0)->first.c_str());
+	hist->SetYTitle(std::next(o_branches.begin(), 1)->first.c_str());
+
+	for(int n = 0; n < o_tree->GetEntriesFast(); ++n)
+	{
+		o_tree->GetEntry(n);
+
+		hist->Fill(std::next(o_branches.begin(), 0)->second, std::next(o_branches.begin(), 1)->second);
+	}
+
+	hist->Draw("col z");
+
 	cnvs->SaveAs(Form("INTT_Multiplicity_Correlation_Run_%08d.pdf", run_num));
 
 	o_tree->Write();
