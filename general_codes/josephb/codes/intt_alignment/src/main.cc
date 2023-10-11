@@ -27,7 +27,6 @@ std::string root_file = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/j
 
 int main()
 {
-
 	InttLadderReader ilr;
 	ilr.SetMarksDefault();
 	ilr.ReadFile(ladder_path + "EAST_INTT.txt");
@@ -43,10 +42,18 @@ int main()
 	Eigen::Affine3d sensor_to_global;
 
 	Intt::Offline_s ofl;
+	Intt::RawData_s raw;
 	Intt::Online_s onl;
 
 	Int_t k;
 	ROOT::Math::Transform3D t;
+	Int_t sensor_type;
+	Double_t x;
+	Double_t y;
+	Double_t z;
+	Double_t a;
+	Double_t b;
+	Double_t c;
 
 	TFile* file = TFile::Open(root_file.c_str(), "RECREATE");
 	file->cd();
@@ -54,6 +61,15 @@ int main()
 	tree->SetDirectory(file);
 	tree->Branch("hitsetkey", &k);
 	tree->Branch("transform", &t);
+	tree->Branch("server", &(raw.felix_server));
+	tree->Branch("module", &(raw.felix_channel));
+	tree->Branch("sensor_type", &sensor_type);
+	tree->Branch("x", &x);
+	tree->Branch("y", &y);
+	tree->Branch("z", &z);
+	tree->Branch("a", &a);
+	tree->Branch("b", &b);
+	tree->Branch("c", &c);
 
 	goto LOOP;
 	while(true)
@@ -80,7 +96,9 @@ int main()
 
 		LADDER_PHI_INC:
 		onl = Intt::ToOnline(ofl);
+		raw = Intt::ToRawData(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
+
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
 		ofl.ladder_z = 0;
@@ -89,6 +107,43 @@ int main()
 		key = InttDefs::genHitSetKey(ofl.layer, ofl.ladder_z, ofl.ladder_phi, 0);
 		sensor_to_ladder = isr.GetSensorTransform(ofl.ladder_z);
 		sensor_to_global = ladder_to_global * sensor_to_ladder;
+
+		//shift the position by 3.32mm radially inward
+		{
+			Eigen::Vector3d y_axis(sensor_to_global.matrix()(0, 1), sensor_to_global.matrix()(1, 1), sensor_to_global.matrix()(2, 1));
+			y_axis /= y_axis.norm();
+			for(int i = 0; i < 3; ++i)
+			{
+				sensor_to_global.matrix()(i, 3) += y_axis(i) * 3.32;
+			}
+		}
+
+		switch(ofl.ladder_z)
+		{
+			case 0:
+			sensor_type = 0;
+			break;
+
+			case 1:
+			sensor_type = 1;
+			break;
+
+			case 2:
+			sensor_type = 0;
+			break;
+
+			case 3:
+			sensor_type = 1;
+			break;
+
+			default:
+			break;
+		}
+
+		x = sensor_to_global.matrix()(0, 3);
+		y = sensor_to_global.matrix()(1, 3);
+		z = sensor_to_global.matrix()(2, 3);
+		Debug::AnglesFromTransform(a, b, c, sensor_to_global);
 	}
 
 	tree->Write();

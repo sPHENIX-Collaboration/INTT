@@ -1,6 +1,7 @@
 #ifndef COMBINED_RAW_DATA_CONVERTER_C
 #define COMBINED_RAW_DATA_CONVERTER_C
 
+#include <intt/InttMapping.h>
 #include <intt/InttCombinedRawDataConverter.h>
 
 #include <fun4all/SubsysReco.h>
@@ -8,6 +9,7 @@
 #include <fun4all/Fun4AllInputManager.h>
 #include <fun4all/Fun4AllOutputManager.h>
 
+#include <fun4allraw/SingleInttInput.h>
 #include <fun4allraw/Fun4AllEvtInputPoolManager.h>
 #include <fun4allraw/Fun4AllEventOutputManager.h>
 
@@ -19,6 +21,7 @@
 
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libfun4allraw.so)
+R__LOAD_LIBRARY(libffarawmodules.so)
 R__LOAD_LIBRARY(libintt.so)
 
 void CombinedRawDataConverter(std::string i_format, std::string o_format, int run_num)
@@ -45,7 +48,9 @@ void CombinedRawDataConverter(std::string i_format, std::string o_format, int ru
 		std::cout << "\t" << i_filename << std::endl;
 		std::cout << std::endl;
 
-		in->AddEvtInputFile(i_filename);
+		SingleInttInput* sngl = new SingleInttInput("INTT_" + std::to_string(pid_itr->second));
+		sngl->AddFile(i_filename);
+		in->registerStreamingInput(sngl);
 	}
 	se->registerInputManager(in);
 
@@ -67,4 +72,4 @@ void CombinedRawDataConverter(std::string i_format, std::string o_format, int ru
 	delete se;
 }
 
-#endif//INTT_RAW_DATA_COMBINED_CONVERTER_C
+#endif//COMBINED_RAW_DATA_CONVERTER_C
