@@ -19,6 +19,7 @@ Double_t L_MRGN = 0.1;
 Double_t R_MRGN = 0.1;
 
 void SetStyle();
+void RoundTrip();
 
 typedef Double_t(*FillFunc_t)(struct Intt::Online_s const&);
 
@@ -58,7 +59,12 @@ void ConventionCheck()
 	};
 
 	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
-	MakeBarrelHist();
+	//MakeBarrelHist();
+	
+	//RoundTrip();
+
+	//gSystem->Exit(0);
+	//exit(0);
 }
 
 
@@ -402,6 +408,74 @@ void MakeBarrelHist()
 
 		break;
 	}
+}
+
+void RoundTrip()
+{
+	struct Intt::Offline_s ofl;
+	struct Intt::Online_s onl = (struct Intt::Online_s){.lyr = 0, .ldr = 0, .arm = 0, .chp = 0, .chn = 0};
+
+	struct Intt::Online_s tmp;
+
+	bool b = true;
+
+	while(true)
+	{
+		ofl = Intt::ToOffline(onl);
+		tmp = Intt::ToOnline(ofl);
+
+		if(tmp != onl)
+		{
+			printf("\n");
+
+			printf("%16s%3d\n",	"onl.lyr:",		onl.lyr);
+			printf("%16s%3d\n",	"onl.ldr:",		onl.ldr);
+			printf("%16s%3d\n",	"onl.arm:",		onl.arm);
+			printf("%16s%3d\n",	"onl.chp:",		onl.chp);
+			printf("%16s%3d\n",	"onl.chn:",		onl.chn);
+
+			printf("\n");
+
+			printf("%16s%3d\n",	"ofl.layer:",		ofl.layer);
+			printf("%16s%3d\n",	"ofl.ladder_phi:",	ofl.ladder_phi);
+			printf("%16s%3d\n",	"ofl.ladder_z:",	ofl.ladder_z);
+			printf("%16s%3d\n",	"ofl.strip_x:",		ofl.strip_x);
+			printf("%16s%3d\n",	"ofl.strip_y:",		ofl.strip_y);
+
+			printf("\n");
+
+			printf("%16s%3d\n",	"tmp.lyr:",		tmp.lyr);
+			printf("%16s%3d\n",	"tmp.ldr:",		tmp.ldr);
+			printf("%16s%3d\n",	"tmp.arm:",		tmp.arm);
+			printf("%16s%3d\n",	"tmp.chp:",		tmp.chp);
+			printf("%16s%3d\n",	"tmp.chn:",		tmp.chn);
+
+			printf("\n");
+
+			b = false;
+
+			break;
+		}
+
+		if(++onl.chn < 128)continue;
+		onl.chn = 0;
+
+		if(++onl.chp < 26)continue;
+		onl.chp = 0;
+
+		if(++onl.arm < 2)continue;
+		onl.arm = 0;
+
+		if(++onl.ldr < (onl.lyr < 2 ? 12 : 16))continue;
+		onl.ldr = 0;
+
+		if(++onl.lyr < 4)continue;
+		onl.lyr = 0;
+
+		break;
+	}
+
+	if(b)std::cout << "Works" << std::endl;
 }
 
 void InttToBin(struct Intt::Online_s const& s, int& bin_x, int& bin_y)

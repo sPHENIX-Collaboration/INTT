@@ -1,8 +1,8 @@
-#ifndef COMBINED_RAW_DATA_CONVERTER_C
-#define COMBINED_RAW_DATA_CONVERTER_C
+#ifndef COMBINED_RAW_DATA_DECODER_C
+#define COMBINED_RAW_DATA_DECODER_C
 
 #include <intt/InttMapping.h>
-#include <intt/InttCombinedRawDataConverter.h>
+#include <intt/InttCombinedRawDataDecoder.h>
 
 #include <fun4all/SubsysReco.h>
 #include <fun4all/Fun4AllServer.h>
@@ -24,7 +24,7 @@ R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libffarawmodules.so)
 R__LOAD_LIBRARY(libintt.so)
 
-void CombinedRawDataConverter(std::string i_format, std::string o_format, int run_num)
+void CombinedRawDataDecoder(std::string i_format, std::string o_format, int run_num)
 {
 	Fun4AllServer* se = Fun4AllServer::instance();
 	se->Verbosity(0);
@@ -59,17 +59,15 @@ void CombinedRawDataConverter(std::string i_format, std::string o_format, int ru
 	std::cout << "\t" << o_filename << std::endl;
 
 	//analysis
-	InttCombinedRawDataConverter* intt_converter = new InttCombinedRawDataConverter();
-	intt_converter->Verbosity(0);
-	se->registerSubsystem(intt_converter);
-	intt_converter->SetOutputFile(o_filename);
+	InttCombinedRawDataDecoer* intt_decoder = new InttCombinedRawDataDecoder();
+	intt_decoder->Verbosity(0);
+	se->registerSubsystem(intt_decoder);
 
 	//output
 	se->run();
-	intt_converter->WriteOutputFile();
 	se->End();
 
 	delete se;
 }
 
-#endif//COMBINED_RAW_DATA_CONVERTER_C
+#endif//COMBINED_RAW_DATA_DECODER_C

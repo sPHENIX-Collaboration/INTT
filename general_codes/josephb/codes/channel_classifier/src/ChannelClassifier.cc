@@ -17,6 +17,28 @@ void ChannelClassifier::Reset()
 	{
 		hits[i] = 0;
 	}
+
+	mode_map.clear();
+	mode_map["cold"] = (struct ModeMap_s)
+	{
+		.s = 0,
+		.avg_func = &ChannelClassifier::ColdAvg,
+	};
+	mode_map["half"] = (struct ModeMap_s)
+	{
+		.s = 1,
+		.avg_func = &ChannelClassifier::HalfAvg,
+	};
+	mode_map["good"] = (struct ModeMap_s)
+	{
+		.s = 2,
+		.avg_func = &ChannelClassifier::GoodAvg,
+	};
+	mode_map["hott"] = (struct ModeMap_s)
+	{
+		.s = 3,
+		.avg_func = &ChannelClassifier::HottAvg,
+	};
 }
 
 Intt::Online_s ChannelClassifier::struct_from_hash(Int_t h)
@@ -206,8 +228,9 @@ int ChannelClassifier::AppendFile(std::string const& i_filename)
 
 int ChannelClassifier::OutputHits(std::string const& o_filename)
 {
-	Long64_t _hits;
+	Double_t _hits;
 	struct Intt::Online_s onl;
+	struct Intt::Offline_s ofl;
 
 	TFile* file = new TFile(o_filename.c_str(), "RECREATE");
 	TTree* tree = new TTree(o_treename.c_str(), o_treename.c_str());
@@ -223,7 +246,9 @@ int ChannelClassifier::OutputHits(std::string const& o_filename)
 	for(int i = 0; i < NUM_CHANNELS; ++i)
 	{
 		onl = struct_from_hash(i);
-		_hits = hits[i];
+		ofl = Intt::ToOffline(onl);
+
+		_hits = hits[i] / (ofl.ladder_z % 2 ? 1.6 : 2.0);
 
 		tree->Fill();
 	}
@@ -248,7 +273,7 @@ int ChannelClassifier::PoissonFit(std::string const& i_filename)
 	TTree* tree = nullptr;
 	TF1* model = nullptr;
 
-	Long64_t _hits;
+	Double_t _hits;
 	Intt::Online_s onl;
 	std::vector<std::string> branches =
 	{
@@ -349,44 +374,56 @@ int ChannelClassifier::PoissonFit(std::string const& i_filename)
 			hist->Fill(_hits);
 		}
 
-		std::size_t s = 0;
-		while(true)
+
+		model = new TF1(Form("model"), ChannelClassifier::SumGauss, min_hits, max_hits,  3 * mode_map.size() + 1);
+
+		model->FixParameter(0, mode_map.size());
+
+		struct Params_s params = (struct Params_s)
 		{
-			if(model)delete model;
+			.avg = avg_hits,
+			.min = min_hits,
+			.max = max_hits,
+		};
+		for(ModeMap_t::const_iterator itr = mode_map.begin(); itr != mode_map.end(); ++itr)
+		{
+			model->SetParameter(3 * itr->second.s + 1, itr->second.avg_func(params));
+			model->SetParLimits(3 * itr->second.s + 1, min_hits, max_hits);
 
-			model = new TF1(Form("model_%d", s), ChannelClassifier::SumGauss, min_hits, max_hits,  3 * s + 4);
-			model->FixParameter(0, s + 1);
+			model->SetParameter(3 * itr->second.s + 2, (Double_t)sig_hits / mode_map.size());
+			model->SetParLimits(3 * itr->second.s + 2, 1, (Double_t)NUM_SIG * sig_hits);
 
-			model->SetParameter(3 * s + 1, avg_hits);
-			model->SetParLimits(3 * s + 1, min_hits, max_hits);
-
-			model->SetParameter(3 * s + 2, sig_hits);
-			model->SetParLimits(3 * s + 2, 1, NUM_SIG * sig_hits);
-
-			model->SetParameter(3 * s + 3, tree->GetEntriesFast() * (max_hits - min_hits) / NUM_BINS);
-
-			hist->Fit(model, "Q");
-
-			break;
+			model->SetParameter(3 * itr->second.s + 3, (Double_t)tree->GetEntriesFast() * (max_hits - min_hits) / NUM_BINS / mode_map.size());
+			model->SetParLimits(3 * itr->second.s + 3, 0, (Double_t)max_hits * (max_hits - min_hits) / NUM_BINS);
 		}
 
-		std::cout << "avg_hits:\t" << avg_hits << "\tfitted:\t" << model->GetParameter(1) << std::endl;
-		std::cout << "sig_hits:\t" << sig_hits << "\tfitted:\t" << model->GetParameter(2) << std::endl;
-		std::cout << "measured:\t" << model->GetParameter(3) << std::endl;
-		std::cout << "computed:\t" << tree->GetEntriesFast() * (max_hits - min_hits) / NUM_BINS << std::endl;
+		hist->Fit(model, "Q");
 
-		std::string o_filename = i_filename;
-		o_filename = o_filename.substr(0, o_filename.find("."));
-		o_filename += ".png";
+		TF1* tmp_gauss = new TF1(Form("tmp_gauss"), ChannelClassifier::SumGauss, min_hits, max_hits, 4);
+		tmp_gauss->FixParameter(0, 1);
 
-		TCanvas* cnvs = new TCanvas("cnvs", "Distribution of Hitrates");
-		cnvs->cd();
-		hist->Draw();
-		model->Draw("same");
-		cnvs->SaveAs(o_filename.c_str());
+		for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n)
+		{
+			tree->GetEntry(n);
 
-		delete hist;
-		delete cnvs;
+			Double_t prob = 0;
+			ModeMap_t::const_iterator mode;
+
+			for(ModeMap_t::const_iterator itr = mode_map.begin(); itr != mode_map.end(); ++itr)
+			{
+				for(int i = 1; i < 4; ++i)tmp_gauss->SetParameter(i, model->GetParameter(3 * itr->second.s + i));
+				Double_t tmp_prob = tmp_gauss->EvalPar(&_hits);
+
+				if(tmp_prob < prob)continue;
+
+				prob = tmp_prob;
+				mode = itr;
+			}
+
+			//here
+		}
+
+		delete model;
 	}
 
 	LABEL:
@@ -400,78 +437,107 @@ int ChannelClassifier::PoissonFit(std::string const& i_filename)
 	return return_val;
 }
 
-//void ChannelClassifier::PoissonFitUnbinned(TTree* tree)
+//RooFit
 //{
-//	Long64_t avg_hits = 0;
+//		Long64_t avg_hits = 0;
+//		Double_t sig_hits = 0;
 //
-//	Long64_t min_hits = INT_MAX;
-//	Long64_t max_hits = 0;
+//		Long64_t min_hits = INT_MAX;
+//		Long64_t max_hits = 0;
 //
-//	for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n)
-//	{
-//		tree->GetEntry(n);
+//		for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n)
+//		{
+//			tree->GetEntry(n);
 //
-//		avg_hits += _hits;
-//		if(_hits < min_hits)min_hits = _hits;
-//		if(_hits > max_hits)max_hits = _hits;
-//	}
-//	avg_hits /= tree->GetEntriesFast();
+//			avg_hits += _hits;
+//			if(_hits < min_hits)min_hits = _hits;
+//			if(_hits > max_hits)max_hits = _hits;
+//		}
+//		avg_hits /= tree->GetEntriesFast();
 //
-//	RooRealVar x("hits", "hits", min_hits, max_hits);
-//	RooArgList lmbd;
-//	RooArgList pssn;
-//	RooArgList cfnt;
+//		for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n)
+//		{
+//			tree->GetEntry(n);
 //
-//	for(int i = 0; i < NUM_POISS; ++i)
-//	{
-//		lmbd.addOwned(*(new RooRealVar(Form("lmbd_%d", i), Form("lmbd_%d", i), 0, (Double_t)max_hits)));
-//		pssn.addOwned(*(new RooPoisson(Form("pssn_%d", i), Form("pssn_%d", i), x, (RooRealVar&)lmbd[i])));
-//		cfnt.addOwned(*(new RooRealVar(Form("cfnt_%d", i), Form("cfnt_%d", i), 0, (Double_t)NUM_CHANNELS)));
-//	}
+//			sig_hits += (_hits - avg_hits) * (_hits - avg_hits);
+//		}
+//		sig_hits /= tree->GetEntriesFast();
+//		sig_hits = sqrt(sig_hits);
 //
-//	((RooRealVar&)lmbd[0]).setVal(avg_hits);
-//	((RooRealVar&)cfnt[0]).setVal(tree->GetEntriesFast());
+//		if(max_hits > avg_hits + NUM_SIG * sig_hits)max_hits = avg_hits + NUM_SIG * sig_hits;
+//		RooRealVar x("hits", "hits", min_hits, max_hits);
+//		RooArgList m;
+//		RooArgList s;
+//		RooArgList g;
+//		RooArgList c;
 //
-//	//((RooRealVar&)lmbd[1]).setVal(1.0);
-//	//((RooRealVar&)cfnt[1]).setVal(0.0);
+//		for(int i = 0; i < NUM_FUNC; ++i)
+//		{
+//			m.addOwned(*(new RooRealVar(Form("m_%d", i), Form("m_%d", i), 0, (Double_t)max_hits)));
+//			s.addOwned(*(new RooRealVar(Form("s_%d", i), Form("s_%d", i), 0, (Double_t)max_hits)));
+//			g.addOwned(*(new RooGaussian(Form("g_%d", i), Form("g_%d", i), x, (RooRealVar&)m[i], (RooRealVar&)s[i])));
+//			c.addOwned(*(new RooRealVar(Form("c_%d", i), Form("c_%d", i), 0, (Double_t)NUM_CHANNELS)));
+//		}
 //
-//	//((RooRealVar&)lmbd[2]).setVal(max_hits);
-//	//((RooRealVar&)cfnt[2]).setVal(0.0);
+//		((RooRealVar&)m[0]).setVal(avg_hits + 23);
+//		((RooRealVar&)s[0]).setVal(sig_hits + 45);
+//		((RooRealVar&)c[0]).setVal(tree->GetEntriesFast());
 //
-//	//for(int i = 0; i < NUM_POISS; ++i)
-//	//{
-//	//	Double_t hitrate = ((max_hits - min_hits) * (i + 0.5) / NUM_POISS + min_hits);// / NUM_CHANNELS;
+//		((RooRealVar&)m[1]).setVal(avg_hits - 23);
+//		((RooRealVar&)s[1]).setVal(sig_hits - 45);
+//		((RooRealVar&)c[1]).setVal(tree->GetEntriesFast());
 //
-//	//	((RooRealVar&)lmbd[i]).setVal(hitrate);
-//	//	((RooRealVar&)cfnt[i]).setVal(1.0 / (Double_t)NUM_POISS);
-//	//}
+//		//((RooRealVar&)lmbd[1]).setVal(1.0);
+//		//((RooRealVar&)cfnt[1]).setVal(0.0);
 //
-//	RooAddPdf* model = new RooAddPdf("model", "model", pssn, cfnt);
-//	RooDataSet* data_set = new RooDataSet("data_set", "data_set", RooArgSet(x), RooFit::Import(*tree));
+//		//((RooRealVar&)lmbd[2]).setVal(max_hits);
+//		//((RooRealVar&)cfnt[2]).setVal(0.0);
 //
-//	//break;
+//		RooAddPdf* model = new RooAddPdf("model", "model", g, c);
+//		RooDataSet* data_set = new RooDataSet("data_set", "data_set", RooArgSet(x), RooFit::Import(*tree));
 //
-//	RooFitResult* result = model->fitTo(*data_set);
+//		//break;
 //
-//	RooPlot* plot = x.frame(RooFit::Title("Distribution of Hitrates"));
+//		RooFitResult* result = model->fitTo(*data_set);
 //
-//	data_set->plotOn
-//	(
-//		plot,
-//		RooFit::MarkerColor(kBlack),
-//		RooFit::MarkerStyle(8),
-//		RooFit::Binning(NUM_BINS, min_hits, max_hits)//,
-//		//RooFit::RefreshNorm(),
-//	);
-//	model->plotOn
-//	(
-//		plot,
-//		RooFit::LineColor(kRed),
-//		RooFit::LineStyle(1),
-//		RooFit::LineWidth(3)//,
-//		//RooFit::Normalization(data_set->sumEntries())
-//	);
+//		TCanvas* cnvs = new TCanvas("cnvs", "Distribution of Hitrates");
+//		cnvs->cd();
+//		RooPlot* plot = x.frame(RooFit::Title("Distribution of Hitrates"));
 //
+//		data_set->plotOn
+//		(
+//			plot,
+//			RooFit::MarkerColor(kBlack),
+//			RooFit::MarkerStyle(8),
+//			RooFit::Binning(NUM_BINS, min_hits, max_hits)//,
+//			//RooFit::RefreshNorm(),
+//		);
+//		model->plotOn
+//		(
+//			plot,
+//			RooFit::LineColor(kRed),
+//			RooFit::LineStyle(1),
+//			RooFit::LineWidth(3)//,
+//			//RooFit::Normalization(data_set->sumEntries())
+//		);
+//		plot->Draw();
+//
+//		std::string o_filename = i_filename;
+//		o_filename = o_filename.substr(0, o_filename.find("."));
+//		o_filename += ".png";
+//		cnvs->SaveAs(o_filename.c_str());
+//		delete cnvs;
+//
+//
+//		std::cout << "avg_hits:\t" << avg_hits << "\tfitted:\t" << ((RooRealVar&)m[0]).getValV() << std::endl;
+//		std::cout << "sig_hits:\t" << sig_hits << "\tfitted:\t" << ((RooRealVar&)s[0]).getValV() << std::endl;
+//		//std::cout << "measured:\t" << model->GetParameter(3) << std::endl;
+//		//std::cout << "computed:\t" << tree->GetEntriesFast() * (max_hits - min_hits) / NUM_BINS << std::endl;
+//}
+
+
+
+
 //	//std::string o_filename = i_filename;
 //	//o_filename = o_filename.substr(0, o_filename.find("."));
 //	//o_filename += ".png";
@@ -481,3 +547,35 @@ int ChannelClassifier::PoissonFit(std::string const& i_filename)
 //	plot->Draw();
 //	//cnvs->SaveAs(o_filename.c_str());
 //}
+
+
+//		if(max_hits > avg_hits + NUM_SIG * sig_hits)max_hits = avg_hits + NUM_SIG * sig_hits;
+//
+//		TH1* hist = new TH1D("hist", "hist", NUM_BINS,  min_hits, max_hits);
+//		for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n)
+//		{
+//			tree->GetEntry(n);
+//
+//			hist->Fill(_hits);
+//		}
+//
+//		std::size_t s = 0;
+//		while(true)
+//		{
+//			if(model)delete model;
+//
+//			model = new TF1(Form("model_%d", s), ChannelClassifier::SumGauss, min_hits, max_hits,  3 * s + 4);
+//			model->FixParameter(0, s + 1);
+//
+//			model->SetParameter(3 * s + 1, avg_hits);
+//			model->SetParLimits(3 * s + 1, min_hits, max_hits);
+//
+//			model->SetParameter(3 * s + 2, sig_hits);
+//			model->SetParLimits(3 * s + 2, 1, NUM_SIG * sig_hits);
+//
+//			model->SetParameter(3 * s + 3, tree->GetEntriesFast() * (max_hits - min_hits) / NUM_BINS);
+//
+//			hist->Fit(model, "Q");
+//
+//			break;
+//		}

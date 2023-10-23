@@ -23,13 +23,13 @@
 #include <TH1D.h>
 #include <TTree.h>
 
-//#include <RooAddPdf.h>
-//#include <RooArgList.h>
-//#include <RooDataSet.h>
-//#include <RooFit.h>
-//#include <RooPoisson.h>
-//#include <RooPlot.h>
-//#include <RooRealVar.h>
+#include <RooAddPdf.h>
+#include <RooArgList.h>
+#include <RooDataSet.h>
+#include <RooFit.h>
+#include <RooGaussian.h>
+#include <RooPlot.h>
+#include <RooRealVar.h>
 
 class ChannelClassifier
 {
@@ -38,8 +38,27 @@ public:
 	~ChannelClassifier();
 
 	Int_t constexpr static NUM_CHANNELS = 56 * 52 * 128;
+	Int_t const static NUM_FUNC = 2;
 	Int_t const static NUM_SIG = 5;
 	Int_t const static NUM_BINS = 100;
+
+	struct Params_s
+	{
+		Long64_t avg = 0;
+		Long64_t min = 0;
+		Long64_t max = 0;
+	};
+	struct ModeMap_s
+	{
+		std::size_t s = 0;
+		Double_t(*avg_func)(Params_s const&) = nullptr;
+	};
+	typedef std::map<std::string, ModeMap_s> ModeMap_t;
+
+	static Double_t ColdAvg(Params_s const& _p){return _p.min;}
+	static Double_t HalfAvg(Params_s const& _p){return _p.avg / 2.0;}
+	static Double_t GoodAvg(Params_s const& _p){return _p.avg;}
+	static Double_t HottAvg(Params_s const& _p){return _p.max;}
 
 	void Reset();
 
@@ -64,6 +83,7 @@ public:
 
 	int AppendFile(std::string const&);
 	int OutputHits(std::string const&);
+
 	int PoissonFit(std::string const&);
 
 protected:
@@ -71,6 +91,7 @@ protected:
 	std::string o_treename = "channel_tree";
 
 	Long64_t* hits;
+	ModeMap_t mode_map;
 };
 
 #endif//CHANNEL_CLASSIFIER_H
