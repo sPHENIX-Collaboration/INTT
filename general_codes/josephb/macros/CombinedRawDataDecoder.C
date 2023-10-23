@@ -64,6 +64,9 @@ void CombinedRawDataDecoder(std::string i_format, std::string o_format, int run_
 	se->registerSubsystem(intt_decoder);
 
 	//output
+	Fun4AllOutputManager* out = new Fun4AllDstOutputManager("DST", o_filename.c_str());
+	se->registerOutputManager(out);
+
 	se->run();
 	se->End();
 
