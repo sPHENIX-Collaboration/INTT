@@ -5,7 +5,7 @@
 
 #include <DisplayOn.C>
 #include <G4Setup_sPHENIX.C>
-#include <G4_Bbc.C>
+#include <G4_Mbd.C>
 #include <G4_CaloTrigger.C>
 #include <G4_Centrality.C>
 #include <G4_DSTReader.C>
@@ -52,7 +52,7 @@ R__LOAD_LIBRARY(libinttread.so)
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
 
 int Fun4All_AnaTutorial_Intt(
-    const int nEvents = 600000, //100, //100000, //20000, // 5000, //5,
+    const int nEvents = 100, //600000, //100, //100000, //20000, // 5000, //5,
     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const string &outputFile = "G4sPHENIX.root",
     const string &embed_input_file = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
@@ -294,7 +294,7 @@ int Fun4All_AnaTutorial_Intt(
   // Enable::BBC = true;
   // Enable::BBC_SUPPORT = true; // save hist in bbc support structure
   // Enable::BBCRECO = Enable::BBC && true
-  Enable::BBCFAKE = true;  // Smeared vtx and t0, use if you don't want real BBC in simulation
+  Enable::MBDFAKE = true;  // Smeared vtx and t0, use if you don't want real BBC in simulation
 
   Enable::PIPE = true;
   Enable::PIPE_ABSORBER = true;
@@ -379,7 +379,8 @@ int Fun4All_AnaTutorial_Intt(
   //Enable::PLUGDOOR = true;
   Enable::PLUGDOOR_ABSORBER = true;
 
-  Enable::GLOBAL_RECO = (Enable::BBCFAKE || Enable::TRACKING_TRACK) && true;
+  //Enable::GLOBAL_RECO = (Enable::BBCFAKE || Enable::TRACKING_TRACK) && true;
+  Enable::GLOBAL_RECO = (Enable::MBDFAKE || Enable::TRACKING_TRACK) && true;
   //Enable::GLOBAL_FASTSIM = true;
 
   //Enable::KFPARTICLE = true;
@@ -459,7 +460,8 @@ int Fun4All_AnaTutorial_Intt(
   // Detector Division
   //------------------
 
-  if ((Enable::BBC && Enable::BBCRECO) || Enable::BBCFAKE) Bbc_Reco();
+//  if ((Enable::BBC && Enable::BBCRECO) || Enable::BBCFAKE) Bbc_Reco();
+  if ((Enable::MBD && Enable::MBDRECO) || Enable::MBDFAKE) Mbd_Reco();
 
 //--  if (Enable::MVTX_CELL) Mvtx_Cells();
 //--  if (Enable::INTT_CELL) Intt_Cells();
