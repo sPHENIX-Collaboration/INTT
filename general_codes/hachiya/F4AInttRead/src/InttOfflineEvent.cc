@@ -10,7 +10,7 @@ ClassImp(InttOfflineEvent)
 
 using namespace std;
 
-static const int NHITS_INIT = 500;
+static const int NHITS_INIT2 = 500;
 
 /////////////////////
 InttOfflineHit::InttOfflineHit() {
@@ -68,7 +68,7 @@ Int_t  InttOfflineHit::Compare(const TObject* obj) const {
 /////////////////////
 
 InttOfflineEvent::InttOfflineEvent(): fNhits(0), fhitArray(NULL) {
-  fhitArray = new TClonesArray("InttOfflineHit", NHITS_INIT);
+  fhitArray = new TClonesArray("InttOfflineHit", NHITS_INIT2);
   cout<<"ctor InttOfflineEvent"<<endl;
 }
 

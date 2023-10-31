@@ -271,7 +271,7 @@ int Fun4All_AnaTutorial_InttSim(
   // Write the DST
   //======================
 
-  //Enable::DSTOUT = true;
+  Enable::DSTOUT = true;
   Enable::DSTOUT_COMPRESS = false;
   DstOut::OutputDir = outdir;
   DstOut::OutputFile = outputFile;
@@ -674,17 +674,17 @@ int Fun4All_AnaTutorial_InttSim(
 //--    Production_CreateOutputDir();
 //--  }
 //--
-//--  if (Enable::DSTOUT)
-//--  {
-//--    string FullOutFile = DstOut::OutputDir + "/" + DstOut::OutputFile;
-//--    Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", FullOutFile);
-//--    if (Enable::DSTOUT_COMPRESS)
-//--    {
-//--      ShowerCompress();
-//--      DstCompress(out);
-//--    }
-//--    se->registerOutputManager(out);
-//--  }
+  if (Enable::DSTOUT)
+  {
+    string FullOutFile = DstOut::OutputDir + "/" + DstOut::OutputFile;
+    Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", FullOutFile);
+    if (Enable::DSTOUT_COMPRESS)
+    {
+      ShowerCompress();
+      DstCompress(out);
+    }
+    se->registerOutputManager(out);
+  }
   //-----------------
   // Event processing
   //-----------------

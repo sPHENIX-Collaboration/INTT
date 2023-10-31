@@ -64,28 +64,33 @@ void InttHit::show(bool explanation_flag){
 Bool_t InttHit::IsEqual(const TObject *obj) const
 {
     const InttHit* objcp = dynamic_cast<const InttHit*>(obj);
+    bool ispid   = (pid    == (objcp->pid));
     bool ismodule= (module == (objcp->module));
     bool ischip  = (chip_id== (objcp->chip_id));
     bool ischan  = (chan_id== (objcp->chan_id));
     bool isadc   = (adc    == (objcp->adc));
 
-    return ismodule&&ischip&&ischan&&isadc;
+    return ispid&&ismodule&&ischip&&ischan&&isadc;
 }
 
 Bool_t InttHit::IsSortable() const { return kTRUE;}
 
 Int_t  InttHit::Compare(const TObject* obj) const {
     const InttHit* objcp = dynamic_cast<const InttHit*>(obj);
-    if(     module < objcp->module) return -1;
-    else if(module > objcp->module) return  1;
+    if(     pid < objcp->pid) return -1;
+    else if(pid > objcp->pid) return  1;
     else {
-      if(     chip_id < objcp->chip_id)  return -1;
-      else if(chip_id > objcp->chip_id)  return  1;
+      if(     module < objcp->module) return -1;
+      else if(module > objcp->module) return  1;
       else {
-        if(     chan_id < objcp->chan_id)  return -1;
-        else if(chan_id > objcp->chan_id)  return  1;
+        if(     chip_id < objcp->chip_id)  return -1;
+        else if(chip_id > objcp->chip_id)  return  1;
+        else {
+          if(     chan_id < objcp->chan_id)  return -1;
+          else if(chan_id > objcp->chan_id)  return  1;
 
-        return 0;
+          return 0;
+        }
       }
     }
 }

@@ -77,7 +77,8 @@ int InitAnalysis(const char* outRootfile)
   mergedInttEvt = new InttEvent();
 
   h_mergedtree = new TTree("tree", "Merged InttEvent");
-  h_mergedtree->Branch("event", "InttEvent", &inttEvt, 8000, 99);
+  //h_mergedtree->Branch("event", "InttEvent", &inttEvt, 8000, 99);
+  h_mergedtree->Branch("event", "InttEvent", &mergedInttEvt, 8000, 99);
   
 
   gDirectory = gDir;
@@ -254,10 +255,13 @@ int RunAnalysis(const char *rootFileList)
     
     Process_event(inttEvt);
     
-    if(ievt>=100000) {
-        cout<<"Max event 100000. quit"<<endl;
-        break;
-    }
+
+    delete inttEvt;
+    inttEvt = NULL;
+    //--if(ievt>=100000) {
+    //--    cout<<"Max event 100000. quit"<<endl;
+    //--    break;
+    //--}
     ievt++;
   }
   

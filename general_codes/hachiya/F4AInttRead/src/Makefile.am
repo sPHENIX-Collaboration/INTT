@@ -13,20 +13,28 @@ AM_CPPFLAGS = \
   -isystem`root-config --incdir`
 
 ROOTDICTS = \
-  InttEvent_Dict.cc
+  InttEvent_Dict.cc \
+  InttOfflineEvent_Dict.cc \
+  InttOfflineCluster_Dict.cc
 
 pcmdir = $(libdir)
 
 nobase_dist_pcm_DATA = \
-  InttEvent_Dict_rdict.pcm
+  InttEvent_Dict_rdict.pcm \
+  InttOfflineEvent_Dict_rdict.pcm \
+  InttOfflineCluster_Dict_rdict.pcm
 
 pkginclude_HEADERS = \
   InttRawData.h \
   InttDummyData.h \
   InttOfflineDummyData.h \
   InttAna.h \
+  InttSaveTree.h \
   InttHotMap.h \
-  InttEvent.h
+  InttCombinedRawDataConverterEB.h \
+  InttEvent.h \
+  InttOfflineEvent.h \
+  InttOfflineCluster.h
 
 libinttread_la_SOURCES = \
   $(ROOTDICTS) \
@@ -34,8 +42,12 @@ libinttread_la_SOURCES = \
   InttDummyData.cc  \
   InttOfflineDummyData.cc  \
   InttAna.cc \
+  InttSaveTree.cc \
   InttHotMap.cc \
-  InttEvent.cc 
+  InttCombinedRawDataConverterEB.cc \
+  InttEvent.cc \
+  InttOfflineEvent.cc \
+  InttOfflineCluster.cc
 
 libinttread_la_LDFLAGS = \
   -L$(libdir) \

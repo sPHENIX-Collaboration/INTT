@@ -52,7 +52,7 @@ R__LOAD_LIBRARY(libinttread.so)
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
 
 int Fun4All_Intt_RawCluster(
-    const int nEvents = 100, //100000, //20000, // 5000, //5,
+    const int nEvents = 3, //100000, //20000, // 5000, //5,
     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const string &outputFile = "G4sPHENIX.root",
     const string &embed_input_file = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
@@ -629,10 +629,6 @@ int Fun4All_Intt_RawCluster(
 //--  se->registerSubsystem(anaTutorial);
 
   InttSaveTree *inttsave = new InttSaveTree("InttSaveTree");
-  //inttAna->setBeamCenter( 0.0, 0.6);
-  //inttAna->setBeamCenter( 0.0, 0.5);
-  //inttAna->setBeamCenter( -0.3, 0.5);
-  //inttsave->setBeamCenter( 0.0, 0.0);
   inttsave->setInttRawData(inttraw);
   se->registerSubsystem(inttsave);
 

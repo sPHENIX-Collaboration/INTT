@@ -123,6 +123,7 @@ int InttRawData::InitRun(PHCompositeNode * topNode)
     cout<<"no tree found"<<endl;
   }
   
+  inttEvt_ = nullptr;
   tree_->SetBranchAddress("event", &inttEvt_);
   ievent_ = 0;
 
@@ -163,7 +164,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 		return Fun4AllReturnCodes::DISCARDEVENT;
 	}
 
-
+        //inFile_->cd();
 	/////////////////////
 	if(ievent_>=tree_->GetEntries()){
 		cout<<"all events are already processed. quit InttRawData"<<endl;
@@ -211,17 +212,19 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 		int chip = rawhit->chip_id - 1;
                 if(chip<0) chip+=26;
 
-		struct Intt::RawData_s rawdata;
+		struct InttNameSpace::RawData_s rawdata;
 		rawdata.felix_server  = rawhit->pid - 3001;
 		rawdata.felix_channel = rawhit->module;
 		rawdata.chip          = chip; //rawhit->chip_id;
 		rawdata.channel       = rawhit->chan_id;
 
+                //--cout<<"rawh : "<<rawhit->pid<<" "<<rawhit->module<<" "<<chip<<" "<<rawhit->chan_id<<endl;
+
 		adc = rawhit->adc;
 		//amp = p->iValue(n, "AMPLITUE");
 		bco = 0; // always 0 until time-in issue fixed; //-- rawhit->bco;
 
-		struct Intt::Offline_s offline = Intt::ToOffline(rawdata);
+		struct InttNameSpace::Offline_s offline = InttNameSpace::ToOffline(rawdata);
                 
                 // this modification no longer valid since the repo-code was updated
                 //--//------------------
@@ -265,8 +268,8 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                 //------------------
 
 
-                cout<<" ch: "<<rawdata.felix_server<<" "<<rawdata.felix_channel<<" "
-                                     <<rawdata.chip<<" "<< rawdata.channel<<endl;
+                //cout<<" ch: "<<rawdata.felix_server<<" "<<rawdata.felix_channel<<" "
+                //                     <<rawdata.chip<<" "<< rawdata.channel<<endl;
 
 		hit = new TrkrHitv2;
 		hit->setAdc(DAC[adc]);

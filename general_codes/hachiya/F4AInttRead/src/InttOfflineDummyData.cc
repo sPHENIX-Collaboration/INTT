@@ -32,7 +32,7 @@
 
 using namespace std;
 
-std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent);
+std::vector<InttNameSpace::Offline_s> setDummyInttEvent(const int ievent);
 
 /**
  * This class demonstrates the construction and use of an analysis module
@@ -157,7 +157,7 @@ int InttOfflineDummyData::process_event(PHCompositeNode *topNode)
 
 
 
-	vector<Intt::Offline_s> vdata = setDummyInttEvent(ievent_);
+	vector<InttNameSpace::Offline_s> vdata = setDummyInttEvent(ievent_);
 
 	int adc = 0;
 	//int amp = 0;
@@ -175,7 +175,7 @@ int InttOfflineDummyData::process_event(PHCompositeNode *topNode)
 		adc = 0;
 		bco = 0; // always 0 until time-in issue fixed; //-- rawhit->bco;
 
-		struct Intt::Offline_s offline = vdata[n];
+		struct InttNameSpace::Offline_s offline = vdata[n];
 
                 //--//------------------
                 //--// change the ladder id by hand
@@ -228,7 +228,7 @@ int InttOfflineDummyData::End(PHCompositeNode * /*topNode*/)
 
 //		hit_set_key = InttDefs::genHitSetKey(offline.layer,  offline.ladder_z, offline.ladder_phi, bco); 
 //		hit_key = InttDefs::genHitKey(offline.strip_y, offline.strip_x);
-void SetOfflineHit(Intt::Offline_s* hit, int layer, int ladder_z, int ladder_phi, int strip_y, int strip_x) 
+void SetOfflineHit(InttNameSpace::Offline_s* hit, int layer, int ladder_z, int ladder_phi, int strip_y, int strip_x) 
 {
   hit->layer      = layer;
   hit->ladder_z   = ladder_z;
@@ -238,13 +238,13 @@ void SetOfflineHit(Intt::Offline_s* hit, int layer, int ladder_z, int ladder_phi
 
 }
 
-std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent)
+std::vector<InttNameSpace::Offline_s> setDummyInttEvent(const int ievent)
 {
-  vector<Intt::Offline_s> vdata;
+  vector<InttNameSpace::Offline_s> vdata;
 
   // ievent:0-7 for felix check
   if(ievent==0){
-	   Intt::Offline_s hit0[10];
+	   InttNameSpace::Offline_s hit0[10];
 	   SetOfflineHit(&hit0[0], 3, 0,  1, 5,  45);
 	   SetOfflineHit(&hit0[1], 3, 0,  2, 0, 111);
 	   SetOfflineHit(&hit0[2], 3, 0,  2, 3, 128);
@@ -261,7 +261,7 @@ std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent)
 	int layer      = (ievent-1)/12;
 	int ladder_phi = (ievent-1)%12;
 
-	Intt::Offline_s hit1;
+	InttNameSpace::Offline_s hit1;
 	SetOfflineHit(&hit1, layer+3, 0, ladder_phi, 0, 0);
 	vdata.push_back(hit1);
 	cout<<"set : "<<ievent<<" : "<<layer<<" "<<ladder_phi<<endl;
@@ -270,7 +270,7 @@ std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent)
 	int layer      = (ievent-25)/16;
 	int ladder_phi = (ievent-25)%16;
 
-	Intt::Offline_s hit1;
+	InttNameSpace::Offline_s hit1;
 	SetOfflineHit(&hit1, layer+5, 0, ladder_phi, 0, 0);
 	vdata.push_back(hit1);
 	cout<<"set : "<<ievent<<" : "<<layer<<" "<<ladder_phi<<endl;
@@ -312,7 +312,7 @@ std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent)
 	}
 	else { cout<<"exceed range"<<endl; }
 
-	Intt::Offline_s hit1;
+	InttNameSpace::Offline_s hit1;
 	SetOfflineHit(&hit1, layer+3, lad_z, lad_phi, sen_z, 0);
 	vdata.push_back(hit1);
 	cout<<"set : "<<ievent<<" : "<<lad_z<<" "<<sen_z<<" "<<lad_phi<<" "<<layer<<endl;
@@ -328,7 +328,7 @@ std::vector<Intt::Offline_s> setDummyInttEvent(const int ievent)
 
         int layer=0, lad_z=0, lad_phi=0, sen_z=0;
 
-	Intt::Offline_s hit1;
+	InttNameSpace::Offline_s hit1;
 	SetOfflineHit(&hit1, layer+3, 2*lad, lad_phi, sen_z, ch);
 	vdata.push_back(hit1);
 	cout<<"set : "<<ievent<<" : "<<lad_z<<" "<<sen_z<<" "<<lad_phi<<" "<<layer<<" "<<ch<<endl;

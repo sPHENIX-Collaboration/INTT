@@ -187,7 +187,7 @@ int InttDummyData::process_event(PHCompositeNode *topNode)
                 cout<<"inputhit : "<<rawhit->pid<<" "<<flush;
                 rawhit->show();
 
-		struct Intt::RawData_s rawdata;
+		struct InttNameSpace::RawData_s rawdata;
 		rawdata.felix_server  = rawhit->pid - 3001;
 		rawdata.felix_channel = rawhit->module;
 		rawdata.chip          = rawhit->chip_id;
@@ -197,7 +197,7 @@ int InttDummyData::process_event(PHCompositeNode *topNode)
 		//amp = p->iValue(n, "AMPLITUE");
 		bco = 0; // always 0 until time-in issue fixed; //-- rawhit->bco;
 
-		struct Intt::Offline_s offline = Intt::ToOffline(rawdata);
+		struct InttNameSpace::Offline_s offline = InttNameSpace::ToOffline(rawdata);
 
                 //--//------------------
                 //--// change the ladder id by hand

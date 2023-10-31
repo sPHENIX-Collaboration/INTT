@@ -203,17 +203,17 @@ int InttCombinedRawDataConverterEB::process_event(PHCompositeNode* topNode)
   //--if(debug)
   //--  cout<<" "<<inttEvt->evtSeq<<" "<<hex<<inttEvt->bco<<" "<<p->getBCO()<<dec<<endl;
 
-  Intt::RawData_s raw;
-  Intt::Online_s onl;
+  InttNameSpace::RawData_s raw;
+  InttNameSpace::Online_s onl;
   for (unsigned int i = 0; i < inttcont->get_nhits(); i++)
   {
     InttRawHit* intthit = inttcont->get_hit(i);
 
-    raw.felix_server  = Intt::FelixFromPacket(intthit->get_packetid());
+    raw.felix_server  = InttNameSpace::FelixFromPacket(intthit->get_packetid());
     raw.felix_channel = intthit->get_fee();
     raw.chip          = intthit->get_chip_id();
     raw.channel       = intthit->get_channel_id();
-    onl = Intt::ToOnline(raw);
+    onl = InttNameSpace::ToOnline(raw);
 
 
     InttHit* hit = inttEvt->addHit();
@@ -268,18 +268,18 @@ int InttCombinedRawDataConverterEB::process_event(PHCompositeNode* topNode)
 
 
 /*
-  Intt::RawData_s raw;
-  Intt::Online_s onl;
+  InttNameSpace::RawData_s raw;
+  InttNameSpace::Online_s onl;
   std::map<std::tuple<int, int, int, int, int>, char> hits;
   for (unsigned int i = 0; i < inttcont->get_nhits(); i++)
   {
     InttRawHit* intthit = inttcont->get_hit(i);
 
-    raw.felix_server = Intt::FelixFromPacket(intthit->get_packetid());
+    raw.felix_server = InttNameSpace::FelixFromPacket(intthit->get_packetid());
     raw.felix_channel = intthit->get_fee();
     raw.chip = intthit->get_chip_id();
     raw.channel = intthit->get_channel_id();
-    onl = Intt::ToOnline(raw);
+    onl = InttNameSpace::ToOnline(raw);
 
     std::tuple<int, int, int, int, int> tpl;
     std::get<0>(tpl) = onl.lyr;
