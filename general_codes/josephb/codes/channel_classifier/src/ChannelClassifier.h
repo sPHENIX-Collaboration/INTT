@@ -23,13 +23,13 @@
 #include <TH1D.h>
 #include <TTree.h>
 
-#include <RooAddPdf.h>
-#include <RooArgList.h>
-#include <RooDataSet.h>
-#include <RooFit.h>
-#include <RooGaussian.h>
-#include <RooPlot.h>
-#include <RooRealVar.h>
+//#include <RooAddPdf.h>
+//#include <RooArgList.h>
+//#include <RooDataSet.h>
+//#include <RooFit.h>
+//#include <RooGaussian.h>
+//#include <RooPlot.h>
+//#include <RooRealVar.h>
 
 class ChannelClassifier
 {
@@ -38,36 +38,44 @@ public:
 	~ChannelClassifier();
 
 	Int_t constexpr static NUM_CHANNELS = 56 * 52 * 128;
-	Int_t const static NUM_FUNC = 2;
+	Int_t const static NUM_GAUSS = 3;
 	Int_t const static NUM_SIG = 5;
 	Int_t const static NUM_BINS = 100;
 
-	struct Params_s
+	struct StatParams_s
 	{
 		Long64_t avg = 0;
+		Double_t sig = 0;
 		Long64_t min = 0;
 		Long64_t max = 0;
+		Double_t rho = 0;
+	};
+	struct InitParams_s
+	{
+		Double_t m = 0;
+		Double_t s = 0;
+		Double_t c = 0;
 	};
 	struct ModeMap_s
 	{
 		std::size_t s = 0;
-		Double_t(*avg_func)(Params_s const&) = nullptr;
+		void(*func)(InitParams_s&, StatParams_s const&) = nullptr;
 	};
 	typedef std::map<std::string, ModeMap_s> ModeMap_t;
 
-	static Double_t ColdAvg(Params_s const& _p){return _p.min;}
-	static Double_t HalfAvg(Params_s const& _p){return _p.avg / 2.0;}
-	static Double_t GoodAvg(Params_s const& _p){return _p.avg;}
-	static Double_t HottAvg(Params_s const& _p){return _p.max;}
+	static void ColdInit(InitParams_s&, StatParams_s const&);
+	static void HalfInit(InitParams_s&, StatParams_s const&);
+	static void GoodInit(InitParams_s&, StatParams_s const&);
+	static void WarmInit(InitParams_s&, StatParams_s const&);
 
 	void Reset();
 
-	Intt::Online_s static struct_from_hash(Int_t);
-	Int_t static hash_from_struct(struct Intt::Online_s const&);
-	Int_t static hash_from_struct(struct Intt::Offline_s const&);
-	Int_t static hash_from_struct(struct Intt::RawData_s const&);
+	InttNameSpace::Online_s static struct_from_hash(Int_t);
+	Int_t static hash_from_struct(struct InttNameSpace::Online_s const&);
+	Int_t static hash_from_struct(struct InttNameSpace::Offline_s const&);
+	Int_t static hash_from_struct(struct InttNameSpace::RawData_s const&);
 
-	void static print(Intt::Online_s const&);
+	void static print(InttNameSpace::Online_s const&);
 
 	Double_t static SumGauss(Double_t* x, Double_t* par)
 	{
