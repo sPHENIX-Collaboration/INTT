@@ -18,7 +18,8 @@ TRGT = $(BIN)main$(EXE)
 
 SRCS = \
 	main \
-	ChannelClassifier
+	ChannelClassifier \
+	ChannelClassifierHelper
 
 OBJS = $(patsubst %, $(BIN)%$(OXX), $(SRCS))
 
