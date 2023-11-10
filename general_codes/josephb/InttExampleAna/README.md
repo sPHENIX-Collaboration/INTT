@@ -18,15 +18,16 @@
 * You should have an install location and an environment variable specifying the path to your install location
 	* I would recommend calling this variable `MYINSTALL` as is the sPHENIX convention
 	* In your `.bash_rc` or `.bash_profile`, whichever is sourced at login, you should have the following lines:
-	* 	`export MYINSTALL=~/path/to/your/install/director`
+	* 	`export MYINSTALL=~/path/to/your/install/directory`
 	* 	`source /opt/sphenix/core/bin/setup_local.sh $MYINSTALL`
+	* You will need to change `~/path/to/your/install/directory` to the actual path
 
 # To Modify this for your own use:
 ## Edit `configure.ac` 
 * You should choose a package name (all lowercase)
-	* Packages created to the same install location overwrite existing packages with the same name
+	* Installed packages will overwrite existing packages with the same name in their install location
 	* If you are not creating an official package, I'd recommend a name-mangling scheme that includes your sPHENIX username
-	* For example, I might call something "pkg\_josephb" or "intt\_josephb"
+	* For example, I might call something "intt\_josephb"
 * Edit only the line in `configure.ac` that is:
 	* `AC_INIT(myana, [1.00])`
 	* You will need to change the `myana` to the name you picked for your package
@@ -51,7 +52,7 @@
 	* For each implementation (`.cc`) file you need, add it under the `libintt_example_ana_la_SOURCES` section
 	* I would recommend adding these in alphabetical order
 * Edit `Makefile.am` to link against the libraries you package nees to compile
-	* Link against the libraries you need under the `libintt_example_ana_LIBADD` section
+	* Link against the libraries you need under the `libintt_example_ana_la_LIBADD` section
 	* Library names are preceeded with the standard linking flag `-l`
 	* The paths to these libraries must also be specified under `AM_LDFLAGS`
 	* Common libraries and linked directories are already specified in the template
@@ -93,6 +94,9 @@
 * The `InttExampleAna.h` and `InttExampleAna.cc` files were produced with a Perl script as
 	* `CreateSubsysRecoModule.pl InttExampleAna`
 	* You can mimmick this command to quickly produce a minimal pair of header (`.h`) and implementation (`.cc`) for a `Fun4All` analysis module
+	* However, it does not comment out unused arguments
+	* 	You will need to comment out the `topNode` pointer until you use it in the function
+	*	Or, use it in a trivial way; in either case you need to edit the files to get them to compile with the `-Wall` flag
 	* It can be more efficient than copying and performing a find and replace on existing files
 * Note that not every code needs to inherit from `SubsysReco` and be specialized for `Fun4All` analysis
 * You can create standalone or helper classes that can be compiled into your package and used in other projects

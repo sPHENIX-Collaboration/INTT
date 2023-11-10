@@ -1,6 +1,9 @@
 # For more information about editing this file see the sPHENIX Wiki entry:
 #   https://wiki.sphenix.bnl.gov/index.php/Autotools#Makefile.am
 
+# Library name:
+#   intt_josephb
+
 AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = \
@@ -8,55 +11,62 @@ AM_CPPFLAGS = \
   -I$(OFFLINE_MAIN)/include  \
   -isystem$(ROOTSYS)/include
 
-# I recommend linking against your own $MYINSTALL location
-# This way, you can have your modified builds if you need to test something
-# NOTE:
-#   You may need to change `MYINSTALL` below
-#   If you exported you install location to a different variable name
-#   Or you can hardcode a path but I'd advise against that
 AM_LDFLAGS = \
   -L$(libdir) \
   -L$(ROOTSYS)/lib \
   -L$(OFFLINE_MAIN)/lib \
   -L$(MYINSTALL)/lib
 
+################################################
+# Name of the library to make
+lib_LTLIBRARIES = \
+  libintt_josephb.la
+
+################################################
 # Libraries you need to link against for compiliation
-# NOTE:
-#   You should link against fun4all and SubsysReco if you want to write a Fun4All module
-#   You must also link against libraries you will need for analysis
-#   e.g. INTT, but most likely also trackbase or other sybsystems for cross-analysis
 libintt_josephb_la_LIBADD = \
   -lffarawobjects \
   -lfun4all \
   -lintt \
   -lSubsysReco
 
-# You need to edit this 
-lib_LTLIBRARIES = \
-  libintt_josephb.la
+################################################
+# ROOT dictionaries
+ROOTDICTS = \
+  InttHitJb_Dict.cc
 
-# You should add header (.h) files here
-pkginclude_HEADERS = \
-  InttExampleAna.h
-
-# You should add implementation (.cc) files here
-libintt_josephb_la_SOURCES = \
-  InttExampleAna.cc
+pcmdir = $(libdir)
+nobase_dist_pcm_DATA = \
+  InttHitJb_Dict_rdict.pcm
 
 ################################################
-# linking tests
+# Source files
+pkginclude_HEADERS = \
+  InttHitJb.h \
+  InttProductionJb.h
+
+libintt_josephb_la_SOURCES = \
+  $(ROOTDICTS) \
+  InttHitJb.cc \
+  InttProductionJb.cc
+
+################################################
+# Linking tests
 
 BUILT_SOURCES = \
   testexternals.cc
 
 noinst_PROGRAMS = \
-  testexternals_intt_josephb
+  testexternals
 
-testexternals_intt_josephb_SOURCES = \
+testexternals_SOURCES = \
   testexternals.cc
 
-testexternals_intt_josephb_LDADD = \
+testexternals_LDADD = \
   libintt_josephb.la
+
+################################################
+# Makefile rules
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@
@@ -65,7 +75,11 @@ testexternals.cc:
 	echo "  return 0;" >> $@
 	echo "}" >> $@
 
-################################################
+%_Dict.cc: %.h %LinkDef.h
+	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $^
+
+#just to get the dependency
+%_Dict_rdict.pcm: %_Dict.cc ;
 
 clean-local:
 	rm -f *Dict* $(BUILT_SOURCES) *.pcm

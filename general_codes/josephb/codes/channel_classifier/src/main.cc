@@ -18,7 +18,7 @@ int main()
 
 	ChannelClassifierHelper c;
 	c.SetNumSig(4);
-	c.SetNumAcceptionTerms(4);
+	c.SetNumAcceptionTerms(2);
 	c.SetNumRejectionTerms(2);
 
 	c.SetVerbose(true);
