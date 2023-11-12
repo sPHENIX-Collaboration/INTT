@@ -17,7 +17,7 @@ SRC = ./src/
 TRGT = $(BIN)main$(EXE)
 
 SRCS = \
-	main \
+	test \
 	ChannelClassifier \
 	ChannelClassifierHelper
 

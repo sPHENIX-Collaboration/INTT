@@ -43,12 +43,12 @@ nobase_dist_pcm_DATA = \
 # Source files
 pkginclude_HEADERS = \
   InttHitJb.h \
-  InttProductionJb.h
+  InttUnpackerJb.h
 
 libintt_josephb_la_SOURCES = \
   $(ROOTDICTS) \
   InttHitJb.cc \
-  InttProductionJb.cc
+  InttUnpackerJb.cc
 
 ################################################
 # Linking tests

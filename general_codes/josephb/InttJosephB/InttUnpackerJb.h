@@ -1,5 +1,5 @@
-#ifndef INTT_PRODUCTION_JB_H
-#define INTT_PRODUCTION_JB_H
+#ifndef INTT_UNPACKER_JB_H
+#define INTT_UNPACKER_JB_H
 
 #include "InttHitJb.h"
 
@@ -14,11 +14,11 @@
 
 class PHCompositeNode;
 
-class InttProductionJb : public SubsysReco
+class InttUnpackerJb : public SubsysReco
 {
 public:
-	InttProductionJb(std::string const& = "InttProductionJb");
-	~InttProductionJb() override;
+	InttUnpackerJb(std::string const& = "InttUnpackerJb");
+	~InttUnpackerJb() override;
 
 	// Called during initialization.
 	// 	Typically this is where you can book histograms, and e.g.
@@ -48,10 +48,20 @@ public:
 	// Reset
 	int Reset(PHCompositeNode*) override;
 
-	void Print(std::string const & = "ALL") const override;
+	void Print(std::string const& = "ALL") const override;
+
+	// Methods unique to this class
+	int SetOutputFile(std::string const&);
 
  private:
-	std::string m_InttRawNodeName = "foo";
+	std::string m_intt_raw_node_name = "INTTRAWHIT";
+
+	std::string m_hits_tree_name = "hits_tree";
+	std::string m_hits_hits_branch_name = "hits";
+
+	std::string m_hitrates_tree_name = "hitrates_tree";
+	std::string m_hitrates_hit_branch_name = "hit";
+	std::string m_hitrates_hitrate_branch_name = "hitrate";
 
 	TFile* m_file = nullptr;
 	TTree* m_tree = nullptr;
@@ -67,4 +77,4 @@ public:
 
 };
 
-#endif//INTT_PRODUCTION_JB_H
+#endif//INTT_UNPACKER_JB_H

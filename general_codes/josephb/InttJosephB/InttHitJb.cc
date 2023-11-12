@@ -1,5 +1,9 @@
 #include "InttHitJb.h"
 
+#include <cstdio>
+
+#include <iostream>
+
 InttHitJb::InttHitJb()
 {
 	// Do nothing
@@ -46,6 +50,12 @@ InttHitJb::print() const
 	printf("\t%7s: 0x%02X\n", "adc", get_adc());
 
 	printf("\n");
+}
+
+void
+InttHitJb::print_size() const
+{
+	std::cout << "size of bitfields: " << sizeof(m_fields) << std::endl;
 }
 
 int

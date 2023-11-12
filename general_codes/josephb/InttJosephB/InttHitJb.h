@@ -10,16 +10,16 @@ class InttHitJb : public TObject
 public:
 	struct BitField_s
 	{
-		uint64_t gtm_bco = 0;
+		uint64_t gtm_bco :	10;	// last 10 bits of 40 bit BCO
 
-		unsigned char flx_bco :	7; // range 0-127
-		unsigned char flx_svr :	3; // range 0-7
-		unsigned char flx_chn :	4; // range 0-13
-		unsigned char chp :	5; // range 0-25
-		unsigned char chn :	7; // range 0-127
-		unsigned char adc :	3; // range 0-8
+		uint8_t flx_bco :	7;	// range 0-127
+		uint8_t flx_svr :	3;	// range 0-7
+		uint8_t flx_chn :	4;	// range 0-13
+		uint8_t chp :		5;	// range 0-25
+		uint8_t chn :		7;	// range 0-127
+		uint8_t adc :		3;	// range 0-8
 		//___________________+___
-		//.....................29 bits (8 bytes)
+		//.....................39 bits	(8 bytes)
 	};
 
 	InttHitJb();
@@ -33,6 +33,7 @@ public:
 
 	// Class member functions
 	void print() const;
+	void print_size() const;
 
 	int get_ladder_z() const;
 	int get_strip_row() const;
