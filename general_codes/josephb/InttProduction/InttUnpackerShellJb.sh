@@ -29,10 +29,20 @@ then
 	exit 0
 fi
 
-export MYINSTALL='/sphenix/u/jbertaux/MYINSTALL'
+# The following subsection is imitated from the sPHENIX Wiki
+# 	https://wiki.sphenix.bnl.gov/index.php/Condor
+
+export USER="$(id -u -n)"
+export LOGNAME=${USER}
+export HOME=/sphenix/u/${LOGNAME}
+export MYINSTALL="/sphenix/u/jbertaux/MYINSTALL"
+
 source /opt/sphenix/core/bin/sphenix_setup.sh -n new
 source /opt/sphenix/core/bin/setup_local.sh $MYINSTALL
 
-root -l "InttUnpackerMacroJb.C(\"$i_format\", \"$o_format\", $1)"
+root -q -b "InttUnpackerMacroJb.C(\"$i_format\", \"$o_format\", $1)"
+
+printf "InttUnpackerMacroJb.sh:"
+printf "\tFinished"
 
 exit 0
