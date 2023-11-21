@@ -82,7 +82,6 @@ void make_dis_diffint()
 	      // make_clusgraph(layer, lad_phi, nhit_offcls);
 	      diff_evt_offline(layer, lad_phi);
 	      
-	      //integraldiffhist->Fill(diffhist->Integral());
 	      
 	      //if(diffhist->Integral() !=0){
 	      if(diffhist->GetMaximum() !=0 || diffhist->GetMinimum() !=0){
@@ -90,7 +89,7 @@ void make_dis_diffint()
 		cout<<ievent<<"  "<<layer<<"  "<<lad_phi<<"   "<<evthist->GetEntries()<<"  "<<offhist->GetEntries()<<endl;
 		counter++;
 		
-		/*
+		
 		for (int chip = 0; chip < chipbin; chip++)
 		    {
 		      for (int chan = 0; chan < chanbin; chan++)
@@ -99,7 +98,7 @@ void make_dis_diffint()
 			  diffhist->Fill(chip,chan);
 			}
 		    }
-		*/
+		
 		  
 		//c->Clear();
 		  gStyle->SetPalette(1);
@@ -110,14 +109,15 @@ void make_dis_diffint()
 		  offhist->Draw("COLZ");
 		  c->cd(3);
 		  diffhist->Draw("COLZ");
-		  /*
+		  
+		  if(outpdf == 1){
 		  c->Modified();
 		  c->Update();
 
 		  cin >> cc;
 		  cout << cc << endl;
-		  */
-		  //return 0;
+		  c->Clear();
+		  }
 		  
 		  if(i==0 && outpdf == 0){
 		    c->Print((pdfname+"(").c_str());
@@ -133,12 +133,11 @@ void make_dis_diffint()
 		  
 	      }
 	      
-	      if(outpdf == 0){
-		 delete offhist;
-		 delete evthist;
-		 //delete cluspoints;
-		 delete diffhist;
-	      }
+	      delete offhist;
+	      delete evthist;
+	      //delete cluspoints;
+	      delete diffhist;
+	      
             }
         }
     }
