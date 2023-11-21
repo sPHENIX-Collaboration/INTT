@@ -1,8 +1,12 @@
 #include "InttEvent.cc"
 #include "InttOfflineEvent.cc"
 #include "InttOfflineCluster.cc"
-#include "InttFelixMap.cc"
-#include "InttMapping.cc"
+//#include "InttFelixMap.cc"
+//#include "InttMapping.cc"
+#include <intt/InttFelixMap.h>
+#include <intt/InttMapping.h>
+
+R__LOAD_LIBRARY(libinttread.so)
 
 TH2S *offhist;
 TH2S *evthist;
@@ -198,16 +202,16 @@ void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt)
     for (int ihit = 0; ihit < nhit_evt; ihit++)
     {
         InttHit *hit = inttEvt->getHit(ihit);
-        Intt::RawData_s raw;
-        Intt::Offline_s ofl;
+        InttNameSpace::RawData_s raw;
+        InttNameSpace::Offline_s ofl;
         int chip;
         int chan;
 
-        raw.felix_server = Intt::FelixFromPacket(hit->pid);
+        raw.felix_server = InttNameSpace::FelixFromPacket(hit->pid);
         raw.felix_channel = hit->module;
         raw.chip = (hit->chip_id + 25) % 26;
         raw.channel = hit->chan_id;
-        ofl = Intt::ToOffline(raw);
+        ofl = InttNameSpace::ToOffline(raw);
 
 
         if (ofl.layer == m_layer && ofl.ladder_phi == m_lad_phi)
