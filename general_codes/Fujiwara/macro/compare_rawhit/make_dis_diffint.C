@@ -1,8 +1,12 @@
 #include "InttEvent.cc"
 #include "InttOfflineEvent.cc"
 #include "InttOfflineCluster.cc"
-#include "InttFelixMap.cc"
-#include "InttMapping.cc"
+//#include "InttFelixMap.cc"
+//#include "InttMapping.cc"
+#include <intt/InttFelixMap.h>
+#include <intt/InttMapping.h>
+
+R__LOAD_LIBRARY(libinttread.so)
 
 TH2S *offhist;
 TH2S *evthist;
@@ -82,7 +86,6 @@ void make_dis_diffint()
 	      // make_clusgraph(layer, lad_phi, nhit_offcls);
 	      diff_evt_offline(layer, lad_phi);
 	      
-	      //integraldiffhist->Fill(diffhist->Integral());
 	      
 	      //if(diffhist->Integral() !=0){
 	      if(diffhist->GetMaximum() !=0 || diffhist->GetMinimum() !=0){
@@ -90,7 +93,7 @@ void make_dis_diffint()
 		cout<<ievent<<"  "<<layer<<"  "<<lad_phi<<"   "<<evthist->GetEntries()<<"  "<<offhist->GetEntries()<<endl;
 		counter++;
 		
-		/*
+		
 		for (int chip = 0; chip < chipbin; chip++)
 		    {
 		      for (int chan = 0; chan < chanbin; chan++)
@@ -99,7 +102,7 @@ void make_dis_diffint()
 			  diffhist->Fill(chip,chan);
 			}
 		    }
-		*/
+		
 		  
 		//c->Clear();
 		  gStyle->SetPalette(1);
@@ -110,14 +113,15 @@ void make_dis_diffint()
 		  offhist->Draw("COLZ");
 		  c->cd(3);
 		  diffhist->Draw("COLZ");
-		  /*
+		  
+		  if(outpdf == 1){
 		  c->Modified();
 		  c->Update();
 
 		  cin >> cc;
 		  cout << cc << endl;
-		  */
-		  //return 0;
+		  c->Clear();
+		  }
 		  
 		  if(i==0 && outpdf == 0){
 		    c->Print((pdfname+"(").c_str());
@@ -133,12 +137,11 @@ void make_dis_diffint()
 		  
 	      }
 	      
-	      if(outpdf == 0){
-		 delete offhist;
-		 delete evthist;
-		 //delete cluspoints;
-		 delete diffhist;
-	      }
+	      delete offhist;
+	      delete evthist;
+	      //delete cluspoints;
+	      delete diffhist;
+	      
             }
         }
     }
@@ -199,16 +202,16 @@ void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt)
     for (int ihit = 0; ihit < nhit_evt; ihit++)
     {
         InttHit *hit = inttEvt->getHit(ihit);
-        Intt::RawData_s raw;
-        Intt::Offline_s ofl;
+        InttNameSpace::RawData_s raw;
+        InttNameSpace::Offline_s ofl;
         int chip;
         int chan;
 
-        raw.felix_server = Intt::FelixFromPacket(hit->pid);
+        raw.felix_server = InttNameSpace::FelixFromPacket(hit->pid);
         raw.felix_channel = hit->module;
         raw.chip = (hit->chip_id + 25) % 26;
         raw.channel = hit->chan_id;
-        ofl = Intt::ToOffline(raw);
+        ofl = InttNameSpace::ToOffline(raw);
 
 
         if (ofl.layer == m_layer && ofl.ladder_phi == m_lad_phi)
