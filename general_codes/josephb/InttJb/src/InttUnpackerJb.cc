@@ -28,7 +28,8 @@ InttUnpackerJb::~InttUnpackerJb()
 {
 	if(m_file)m_file->Close();
 
-	delete m_hits;
+	Clear();
+	delete m_evt;
 	delete m_tree;
 	delete m_file;
 }
@@ -39,6 +40,14 @@ InttUnpackerJb::Init(PHCompositeNode*)// top_node)
 	std::stringstream err_stream;
 	err_stream << "int InttUnpackerJb::Init(PHCompositeNode* top_node)" << std::endl;
 	auto return_code = Fun4AllReturnCodes::EVENT_OK;
+
+	if(Verbosity())
+	{
+		std::cout << std::endl;
+		std::cout << "int InttUnpackerJb::Init(PHCompositeNode* top_node)" << std::endl;
+		std::cout << "\t(called)" << std::endl;
+		std::cout << std::endl;
+	}
 
 	// LABEL:
 	err_stream << std::ends;
@@ -53,8 +62,16 @@ InttUnpackerJb::InitRun(PHCompositeNode*)// top_node)
 	err_stream << "int InttUnpackerJb::InitRun(PHCompositeNode* top_node)" << std::endl;
 	auto return_code = Fun4AllReturnCodes::EVENT_OK;
 
+	if(Verbosity())
+	{
+		std::cout << std::endl;
+		std::cout << "int InttUnpackerJb::InitRun(PHCompositeNode* top_node)" << std::endl;
+		std::cout << "\t(called)" << std::endl;
+		std::cout << std::endl;
+	}
+
 	MapStruct_s tmp;
-	InttHitJb hit;
+	HitVer_t* hit = nullptr;
 
 	if(!m_file)
 	{
@@ -68,36 +85,33 @@ InttUnpackerJb::InitRun(PHCompositeNode*)// top_node)
 
 	m_file->cd();
 
-	delete m_hits;
-	m_hits = new std::vector<InttHitJb>;
+	delete m_evt;
+	m_evt = new EvtVer_t();
 
 	delete m_tree;
 	m_tree = new TTree(m_hits_tree_name.c_str(), m_hits_tree_name.c_str());
-	m_tree->Branch(m_hits_hits_branch_name.c_str(), &m_hits);
+	m_tree->Branch(m_hits_hits_branch_name.c_str(), &m_evt);
 	m_tree->SetDirectory(m_file);
 
-	m_map.clear();
-	for(uint8_t flx_svr = 0; flx_svr < 8; ++flx_svr)
-	{
-		for(uint8_t flx_chn = 0; flx_chn < 14; ++flx_chn)
-		{
-			for(uint8_t chp = 0; chp < 26; ++chp)
-			{
-				for(uint8_t chn = 0; chn < 128; ++chn)
-				{
-					hit.set_flx_svr(flx_svr);
-					hit.set_flx_chn(flx_chn);
-					hit.set_chp(chp);
-					hit.set_chn(chn);
+	Clear();
+	for(uint8_t flx_svr = 0; flx_svr < 8; ++flx_svr) {
+		for(uint8_t flx_chn = 0; flx_chn < 14; ++flx_chn) {
+			for(uint8_t chp = 0; chp < 26; ++chp) {
+				for(uint8_t chn = 0; chn < 128; ++chn) {
+					hit = new HitVer_t();
+
+					hit->set_flx_svr(flx_svr);
+					hit->set_flx_chn(flx_chn);
+					hit->set_chp(chp);
+					hit->set_chn(chn);
 
 					tmp.hit = false;
 					tmp.hits = 0;
-					m_map[hit] = tmp;
+					m_map[(InttHitJb*)hit] = tmp;
 				}
 			}
 		}
 	}
-	
 
 	LABEL:
 	err_stream << std::ends;
@@ -112,9 +126,17 @@ InttUnpackerJb::process_event(PHCompositeNode* top_node)
 	err_stream << "int InttUnpackerJb::process_event(PHCompositeNode* top_node)" << std::endl;
 	auto return_code = Fun4AllReturnCodes::EVENT_OK;
 
+	if(Verbosity())
+	{
+		std::cout << std::endl;
+		std::cout << "int InttUnpackerJb::process_event(PHCompositeNode* top_node)" << std::endl;
+		std::cout << "\t(called)" << std::endl;
+		std::cout << std::endl;
+	}
+
 	InttRawHitContainer* intt_raw_hit_container = nullptr;
 	InttRawHit* intt_raw_hit = nullptr;
-	InttHitJb hit;
+	HitVer_t hit;
 
 	MapType_t::iterator itr = m_map.end();
 	unsigned int i = 0;
@@ -131,15 +153,14 @@ InttUnpackerJb::process_event(PHCompositeNode* top_node)
 		goto LABEL;
 	}
 
-	m_hits->clear();
+	m_evt->clear();
 	for(itr = m_map.begin(); itr != m_map.end(); ++itr)itr->second.hit = false;
-
 	for(i = 0; i < intt_raw_hit_container->get_nhits(); ++i)
 	{
 		intt_raw_hit = intt_raw_hit_container->get_hit(i);
 		if(!intt_raw_hit)continue;
 
-		hit.set_gtm_bco	( intt_raw_hit->get_bco() & 0x3ff);
+		hit.set_gtm_bco	( intt_raw_hit->get_bco() & 0x7f);
 
 		hit.set_flx_bco	( intt_raw_hit->get_FPHX_BCO() );
 		hit.set_flx_svr	( intt_raw_hit->get_packetid() - 3001 );
@@ -149,7 +170,7 @@ InttUnpackerJb::process_event(PHCompositeNode* top_node)
 		hit.set_chn	( intt_raw_hit->get_channel_id() );
 		hit.set_adc	( intt_raw_hit->get_adc() );
 
-		itr = m_map.find(hit);
+		itr = m_map.find((InttHitJb*)&hit);
 		if(itr == m_map.end())
 		{
 			err_stream << PHWHERE << std::endl;
@@ -163,7 +184,9 @@ InttUnpackerJb::process_event(PHCompositeNode* top_node)
 
 		itr->second.hit = true;
 		++(itr->second.hits);
-		m_hits->push_back(hit);
+		++(itr->second.adc[hit.get_adc()]);
+
+		m_evt->push_back(&hit);
 	}
 
 	m_tree->Fill();
@@ -181,6 +204,14 @@ InttUnpackerJb::ResetEvent(PHCompositeNode*)// top_node)
 	err_stream << "int InttUnpackerJb::ResetEvent(PHCompositeNode* top_node)" << std::endl;
 	auto return_code = Fun4AllReturnCodes::EVENT_OK;
 
+	if(Verbosity())
+	{
+		std::cout << std::endl;
+		std::cout << "int InttUnpackerJb::ResetEvent(PHCompositeNode* top_node)" << std::endl;
+		std::cout << "\t(called)" << std::endl;
+		std::cout << std::endl;
+	}
+
 	// LABEL:
 	err_stream << std::ends;
 	if(return_code != Fun4AllReturnCodes::EVENT_OK)std::cerr << err_stream.str();	
@@ -194,37 +225,7 @@ InttUnpackerJb::EndRun(int const)//runnumber)
 	err_stream << "int InttUnpackerJb::EndRun(PHCompositeNode* top_node)" << std::endl;
 	auto return_code = Fun4AllReturnCodes::EVENT_OK;
 
-	TTree* tree = nullptr;
-	InttHitJb hit;
-	Double_t hitrate;
-
-	if(!m_file)
-	{
-		err_stream << "\tMember \"m_file\" uninitialized" << std::endl;
-		return_code = Fun4AllReturnCodes::ABORTRUN;
-
-		goto LABEL;
-	}
-
-	tree = new TTree(m_hitrates_tree_name.c_str(), m_hitrates_tree_name.c_str());
-	tree->Branch(m_hitrates_hit_branch_name.c_str(), &hit);
-	tree->Branch(m_hitrates_hitrate_branch_name.c_str(), &hitrate);
-	tree->SetDirectory(m_file);
-	for(MapType_t::const_iterator itr = m_map.begin(); itr != m_map.end(); ++itr)
-	{
-		hit = itr->first;
-		hitrate = (Double_t)(itr->second.hits) / (Double_t)(m_map.size());
-
-		tree->Fill();
-	}
-
-	m_filie->cd();
-	m_tree->Write();
-	tree->Write();
-	m_file->Write();
-	m_file->Close();
-
-	LABEL:
+	// LABEL:
 	err_stream << std::ends;
 	if(return_code != Fun4AllReturnCodes::EVENT_OK)std::cerr << err_stream.str();	
 	return return_code;
@@ -298,8 +299,86 @@ InttUnpackerJb::SetOutputFile(std::string const& filename)
 		goto LABEL;
 	}
 
+	m_file->cd();
+	if(m_tree)m_tree->SetDirectory(m_file);
+
 	LABEL:
 	err_stream << std::ends;
 	if(return_code != Fun4AllReturnCodes::EVENT_OK)std::cerr << err_stream.str();	
 	return return_code;
+}
+
+int
+InttUnpackerJb::WriteOutputFile()
+{
+	std::stringstream err_stream;
+	err_stream << "int InttUnpackerJb::WriteOutputFile()" << std::endl;
+	auto return_code = Fun4AllReturnCodes::EVENT_OK;
+
+	m_file->cd();
+
+	TTree* hitrates_tree = nullptr;
+	HitVer_t* hit;
+	Double_t hitrate;
+	Double_t adc_dis[8];
+
+	TTree* version_tree = nullptr;
+	TString version;
+
+	if(!m_file)
+	{
+		err_stream << "\tMember \"m_file\" uninitialized" << std::endl;
+		return_code = Fun4AllReturnCodes::ABORTRUN;
+
+		goto LABEL;
+	}
+
+	hit = new HitVer_t();
+	hitrates_tree = new TTree(m_hitrates_tree_name.c_str(), m_hitrates_tree_name.c_str());
+	hitrates_tree->Branch(m_hitrates_hit_branch_name.c_str(), &hit);
+	hitrates_tree->Branch(m_hitrates_hitrate_branch_name.c_str(), &hitrate);
+	hitrates_tree->Branch(m_hitrates_adc_dis_branch_name.c_str(), adc_dis);
+
+	hitrates_tree->SetDirectory(m_file);
+	for(MapType_t::const_iterator itr = m_map.begin(); itr != m_map.end(); ++itr)
+	{
+		hit->copy(itr->first);
+		hitrate = (Double_t)(itr->second.hits) / (Double_t)(m_tree->GetEntriesFast());
+		for(uint8_t i = 0; i < 8; ++i)
+		{
+			adc_dis[i] = (Double_t)(itr->second.adc[i]) / (Double_t)(m_tree->GetEntriesFast());
+		}
+
+		hitrates_tree->Fill();
+	}
+	delete hit;
+
+	m_file->cd();
+	version_tree = new TTree(m_version_tree_name.c_str(), m_version_tree_name.c_str());
+	version_tree->Branch(m_version_version_branch_name.c_str(), &version);
+	version = TString(m_evt->version().c_str());
+	version_tree->Fill();
+
+	m_file->cd();
+	m_tree->Write();
+
+	hitrates_tree->Write();
+	version_tree->Write();
+
+	m_file->Write();
+	m_file->Close();
+
+	LABEL:
+	err_stream << std::ends;
+	if(return_code != Fun4AllReturnCodes::EVENT_OK)std::cerr << err_stream.str();	
+	return return_code;
+}
+
+void
+InttUnpackerJb::Clear()
+{
+	for(auto itm : m_map) {
+		delete itm.first;
+	}
+	m_map.clear();
 }

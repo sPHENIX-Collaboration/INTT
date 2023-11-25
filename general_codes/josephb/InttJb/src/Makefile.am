@@ -2,7 +2,7 @@
 #   https://wiki.sphenix.bnl.gov/index.php/Autotools#Makefile.am
 
 # Library name:
-#   intt_josephb
+#   intt_jb
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -20,11 +20,11 @@ AM_LDFLAGS = \
 ################################################
 # Name of the library to make
 lib_LTLIBRARIES = \
-  libintt_josephb.la
+  libintt_jb.la
 
 ################################################
 # Libraries you need to link against for compiliation
-libintt_josephb_la_LIBADD = \
+libintt_jb_la_LIBADD = \
   -lffarawobjects \
   -lfun4all \
   -lintt \
@@ -33,26 +33,37 @@ libintt_josephb_la_LIBADD = \
 ################################################
 # ROOT dictionaries
 ROOTDICTS = \
-  InttHitJb_Dict.cc
+  InttHitJb_Dict.cc \
+  InttHitJbVer1_Dict.cc \
+  InttEvtJb_Dict.cc \
+  InttEvtJbVer1_Dict.cc
 
 pcmdir = $(libdir)
 nobase_dist_pcm_DATA = \
-  InttHitJb_Dict_rdict.pcm
+  InttHitJb_Dict_rdict.pcm \
+  InttHitJbVer1_Dict_rdict.pcm \
+  InttEvtJb_Dict_rdict.pcm \
+  InttEvtJbVer1_Dict_rdict.pcm
 
 ################################################
 # Source files
 pkginclude_HEADERS = \
   InttHitJb.h \
+  InttHitJbVer1.h \
+  InttEvtJb.h \
+  InttEvtJbVer1.h \
   InttUnpackerJb.h
 
-libintt_josephb_la_SOURCES = \
+libintt_jb_la_SOURCES = \
   $(ROOTDICTS) \
   InttHitJb.cc \
+  InttHitJbVer1.cc \
+  InttEvtJb.cc \
+  InttEvtJbVer1.cc \
   InttUnpackerJb.cc
 
 ################################################
 # Linking tests
-
 BUILT_SOURCES = \
   testexternals.cc
 
@@ -63,11 +74,10 @@ testexternals_SOURCES = \
   testexternals.cc
 
 testexternals_LDADD = \
-  libintt_josephb.la
+  libintt_jb.la
 
 ################################################
 # Makefile rules
-
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@
 	echo "int main()" >> $@
@@ -78,7 +88,6 @@ testexternals.cc:
 %_Dict.cc: %.h %LinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $^
 
-#just to get the dependency
 %_Dict_rdict.pcm: %_Dict.cc ;
 
 clean-local:

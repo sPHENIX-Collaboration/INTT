@@ -40,10 +40,9 @@ export MYINSTALL="/sphenix/u/jbertaux/MYINSTALL"
 source /opt/sphenix/core/bin/sphenix_setup.sh -n new
 source /opt/sphenix/core/bin/setup_local.sh $MYINSTALL
 
-# root -q -b "InttUnpackerMacroJb.C(\"$i_format\", \"$o_format\", $1)"
-root -l "InttUnpackerMacroJb.C(\"$i_format\", \"$o_format\", $1)"
+root -q -b "InttUnpackerMacroJb.C(\"$i_format\", \"$o_format\", $1)"
 
 printf "InttUnpackerMacroJb.sh:"
-printf "\tFinished"
+printf "\tFinished\n"
 
 exit 0

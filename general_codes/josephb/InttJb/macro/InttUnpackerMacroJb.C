@@ -1,5 +1,5 @@
-#ifndef INTT_UNPACKER_JB_C
-#define INTT_UNPACKER_JB_C
+#ifndef INTT_UNPACKER_MACRO_JB_C
+#define INTT_UNPACKER_MACRO_JB_C
 
 #include <fun4all/SubsysReco.h>
 #include <fun4all/Fun4AllServer.h>
@@ -10,7 +10,7 @@
 #include <fun4allraw/Fun4AllEvtInputPoolManager.h>
 #include <fun4allraw/Fun4AllEventOutputManager.h>
 
-#include <intt_josephb/InttUnpackerJb.h>
+#include <intt_jb/InttUnpackerJb.h>
 
 #include <phool/recoConsts.h>
 
@@ -21,7 +21,7 @@
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libffarawmodules.so)
-R__LOAD_LIBRARY(libintt_josephb.so)
+R__LOAD_LIBRARY(libintt_jb.so)
 
 void InttUnpackerMacroJb(std::string i_format, std::string o_format, int run_num)
 {
@@ -79,7 +79,10 @@ void InttUnpackerMacroJb(std::string i_format, std::string o_format, int run_num
 	std::cout << std::endl;
 
 	// Run
-	se->run(2);
+	std::cout << "Running" << std::endl;
+	se->run();
+	intt_unpacker->WriteOutputFile();
+	std::cout << "Finished Running" << std::endl;
 	se->End();
 
 	delete se;
@@ -87,4 +90,4 @@ void InttUnpackerMacroJb(std::string i_format, std::string o_format, int run_num
 	exit(1);
 }
 
-#endif//INTT_UNPACKER_JB_C
+#endif//INTT_UNPACKER_MACRO_JB_C

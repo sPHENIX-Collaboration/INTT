@@ -39,23 +39,17 @@ InttHitJb::print() const
 {
 	printf("InttHitJb\n");
 
-	printf("\t%7s: 0x%010lX\n", "gtm_bco", get_gtm_bco());
+	printf("\t%7s: 0x%010X\n", "gtm_bco", get_gtm_bco());
 
-	printf("\t%7s: 0x%02X\n", "flx_bco", get_flx_bco());
-	printf("\t%7s: 0x%02X\n", "flx_svr", get_flx_svr());
-	printf("\t%7s: 0x%02X\n", "flx_chn", get_flx_chn());
+	printf("\t%7s: %10u\n", "flx_bco", get_flx_bco());
+	printf("\t%7s: %10u\n", "flx_svr", get_flx_svr());
+	printf("\t%7s: %10u\n", "flx_chn", get_flx_chn());
 
-	printf("\t%7s: 0x%02X\n", "chp", get_chp());
-	printf("\t%7s: 0x%02X\n", "chn", get_chn());
-	printf("\t%7s: 0x%02X\n", "adc", get_adc());
+	printf("\t%7s: %10u\n", "chp", get_chp());
+	printf("\t%7s: %10u\n", "chn", get_chn());
+	printf("\t%7s: %10u\n", "adc", get_adc());
 
 	printf("\n");
-}
-
-void
-InttHitJb::print_size() const
-{
-	std::cout << "size of bitfields: " << sizeof(m_fields) << std::endl;
 }
 
 int
@@ -85,8 +79,7 @@ InttHitJb::get_strip_col() const
 bool
 operator==(InttHitJb const& lhs, InttHitJb const& rhs)
 {
-	// Now THIS is how you implement a lexographical compare
-	// 	Ignore timing and adc information when doing comparison
+	// Ignore timing and adc information when doing comparison
 	// 	It is more useful to only compare by hit position
 	// 	(e.g. clone hits compared by position, hitrates compared by position)
 
@@ -106,8 +99,7 @@ operator==(InttHitJb const& lhs, InttHitJb const& rhs)
 bool
 operator<(InttHitJb const& lhs, InttHitJb const& rhs)
 {
-	// Now THIS is how you implement a lexographical compare
-	// 	Ignore timing and adc information when doing comparison
+	// Ignore timing and adc information when doing comparison
 	// 	It is more useful to only compare by hit position
 	// 	(e.g. clone hits compared by position, hitrates compared by position)
 

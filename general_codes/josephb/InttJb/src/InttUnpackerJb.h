@@ -2,6 +2,9 @@
 #define INTT_UNPACKER_JB_H
 
 #include "InttHitJb.h"
+#include "InttHitJbVer1.h"
+#include "InttEvtJb.h"
+#include "InttEvtJbVer1.h"
 
 #include <fun4all/SubsysReco.h>
 
@@ -9,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include <TClonesArray.h>
 #include <TFile.h>
 #include <TTree.h>
 
@@ -52,8 +56,13 @@ public:
 
 	// Methods unique to this class
 	int SetOutputFile(std::string const&);
+	int WriteOutputFile();
+	void Clear();
 
  private:
+	typedef InttEvtJbVer1 EvtVer_t;
+	typedef EvtVer_t::HitVer_t HitVer_t;
+
 	std::string m_intt_raw_node_name = "INTTRAWHIT";
 
 	std::string m_hits_tree_name = "hits_tree";
@@ -62,17 +71,22 @@ public:
 	std::string m_hitrates_tree_name = "hitrates_tree";
 	std::string m_hitrates_hit_branch_name = "hit";
 	std::string m_hitrates_hitrate_branch_name = "hitrate";
+	std::string m_hitrates_adc_dis_branch_name = "adc_dis";
 
+	std::string m_version_tree_name = "version";
+	std::string m_version_version_branch_name = "version";
+
+	EvtVer_t* m_evt = nullptr;
 	TFile* m_file = nullptr;
 	TTree* m_tree = nullptr;
-	std::vector<InttHitJb>* m_hits = nullptr;
 
 	struct MapStruct_s
 	{
-		bool hit;
-		Long64_t hits;
+		bool hit = 0;
+		Long64_t hits = 0;
+		Long64_t adc[8] = {};
 	};
-	typedef std::map<InttHitJb, MapStruct_s> MapType_t;
+	typedef std::map<InttHitJb*, MapStruct_s, InttPosComparatorJb> MapType_t;
 	MapType_t m_map;
 
 };
