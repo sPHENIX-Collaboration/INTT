@@ -1,5 +1,6 @@
 # InttJosephB
-(`README.md` last updated Nov 10 2023)
+(`README.md` last updated Nov 26 2023)
+Git tracks the README updates too, I might get rid of this note
 
 ## Description
 * This is a project for my own development of INTT analysis and calibration tools
@@ -17,7 +18,7 @@ There are other versions due to Takashi and Chris, but I wanted to implement som
 (1) to learn how to write a class that can be written to `TFile`s and `TTree`s, and
 (2) that contains the following advantages and functionality:
 
-* Minimal memory storage
+* ~~Minimal memory storage~~
 	* The hardware position of a hit can be uniquely determined by its:
 		* felix server (`flx_svr`, 0-7)
 		* felix module/channel (`flx_chn`, 0-13)
@@ -25,6 +26,8 @@ There are other versions due to Takashi and Chris, but I wanted to implement som
 		* channel (`chn`, 0-127)
 	* Any hardware parameterization is isomorphic to these fields and other values can be deduced from them
 	* Method to assist in the InttEvtJb streamer to ensure minimal writing of bytes for each version
+	* Turns out ROOT has good compression for standard library containers that have repeated elements
+	* So separately storing vectors instead of a class wrapper is better, since ROOT can store consequitive identical entries (for felix server, felix channel) efficiently
 * Custom comparators for pointers to this class
 	* Allows for sorted maps with ln(n) complexity lookup
 	* Uses dynamic calls, so it will work for all versions
