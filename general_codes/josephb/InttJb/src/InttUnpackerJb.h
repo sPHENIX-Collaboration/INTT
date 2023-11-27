@@ -76,9 +76,9 @@ public:
 	std::string m_version_tree_name = "version";
 	std::string m_version_version_branch_name = "version";
 
-	EvtVer_t* m_evt = nullptr;
 	TFile* m_file = nullptr;
 	TTree* m_tree = nullptr;
+	std::map<std::string, std::vector<uint8_t>*> m_branches;
 
 	struct MapStruct_s
 	{
