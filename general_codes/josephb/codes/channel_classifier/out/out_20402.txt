@@ -1,0 +1,13 @@
+LD_LIBRARY_PATH now /sphenix/u/jbertaux/MYINSTALL/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/binutils/2.37-355ed/x86_64-centos7/lib:.:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.5/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.5/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/lib:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/geant4.10.07.p04/lib64:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/lhapdf-5.9.1/lib:/afs/rhic.bnl.gov/app/insure-7.5.5/lib:/usr/local/lib64:/usr/lib64
+PATH now :/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/binutils/2.37-355ed/x86_64-centos7/bin:.:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.5/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/utils/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/bin:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/geant4.10.07.p04/bin:/afs/rhic.bnl.gov/app/insure-7.5.5/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+(channel_classify.sh) Running local classification executable...
+
+.exe:
+	Done
+
+(channel_classify.sh) ...finished
+
+
+channel_classify.sh:
+	Finished
+
