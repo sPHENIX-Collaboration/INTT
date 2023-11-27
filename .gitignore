@@ -84,7 +84,7 @@ general_codes/josephb/*/Makefile.in
 general_codes/josephb/*/missing
 
 # Subdirectory names that can be ignormed
-general_codes/josephb/*/bld/
-general_codes/josephb/*/job/
-general_codes/josephb/*/out/
-general_codes/josephb/*/err/
+general_codes/josephb/*/bld/*
+general_codes/josephb/*/job/*
+general_codes/josephb/*/out/*
+general_codes/josephb/*/err/*
