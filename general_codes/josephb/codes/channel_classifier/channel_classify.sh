@@ -58,7 +58,7 @@ fi
 # Main execution block
 	printf "(channel_classify.sh) Running local classification executable...\n"
 	printf "\n"
-	${DIR}/bin/main.exe $1 ${O_FILE}
+	${DIR}/bin/write_local.exe $1 ${O_FILE}
 	printf "\n"
 	printf "(channel_classify.sh) ...finished\n"
 	printf "\n"
