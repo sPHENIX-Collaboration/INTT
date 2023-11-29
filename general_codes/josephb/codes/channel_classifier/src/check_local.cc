@@ -11,7 +11,7 @@
 #include <type_traits>
 
 std::string i_format = "/sphenix/user/jbertaux/Data/Debug/beam_intt_appended-%08d-0000.root";
-std::string o_format = "/sphenix/user/jbertaux/Data/Debug/pngs/beam_intt_appended-%08d-0000.png";
+std::string o_format = "/sphenix/user/jbertaux/Data/Debug/hists/beam_intt_appended-%08d-hist.root";
 
 int main(int argc, char** argv) {
 	typedef channel_classifier_ver_1 channel_classifier_t;
@@ -49,11 +49,12 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	std::unique_ptr<channel_classifier_base> c = std::make_unique<channel_classifier_t>();
+	//std::unique_ptr<channel_classifier_base> c = std::make_unique<channel_classifier_t>();
+	channel_classifier_base* c = new channel_classifier_t();
 	if(c->fill(buff))return 1;
 
 	snprintf(buff, sizeof(buff), o_format.c_str(), run_num);
-	if(c->draw(buff))return 1;
+	if(c->write_hist(buff))return 1;
 
 	return 0;
 }

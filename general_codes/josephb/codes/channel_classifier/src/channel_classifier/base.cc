@@ -35,7 +35,7 @@ channel_classifier_base::fit (
 }
 
 int
-channel_classifier_base::draw (
+channel_classifier_base::write_hist (
 	std::string const&
 ) {
 	// do nothing

@@ -39,7 +39,7 @@ public:
 	// Fit an internal member (e.g., a TF1) using the filled data member
 	// The fitted pdf will be used to classify channels by hitrate
 
-	virtual int draw(std::string const&);
+	virtual int write_hist(std::string const&);
 	// Create a TCanvas showing the fitted hitrate distribution
 	//   argument is the name of the file to save the plot to
 

@@ -13,7 +13,7 @@ channel_classifier_ver_1::channel_classifier_ver_1 (
 }
 
 channel_classifier_ver_1::~channel_classifier_ver_1() {
-	// if(m_hist)delete m_hist;
+	if(m_hist)delete m_hist;
 	//   I don't understand why my program segfaults when the destructors tries to call this
 	//   I wish I knew how to check that ROOT deletes it or something
 	//   But there will be only one instance of this class in the main program, so...
@@ -29,9 +29,7 @@ channel_classifier_ver_1::fill (
 		std::cout << "Argument \"filename\" is empty string" << std::endl;
 		return 1;
 	}
-	std::unique_ptr<TFile> file = std::unique_ptr<TFile> (
-		TFile::Open(filename.c_str(), "READ")
-	);
+	TFile* file = TFile::Open(filename.c_str(), "READ");
 	if(!file) {
 		std::cout << "channel_classifier_ver_1::fill" << std::endl;
 		std::cout << "Could not get file:" << std::endl;
@@ -44,9 +42,7 @@ channel_classifier_ver_1::fill (
 		std::cout << "Argument \"treename\" is empty string" << std::endl;
 		return 1;
 	}
-	std::unique_ptr<TTree> tree = std::unique_ptr<TTree> (
-		(TTree*)file->Get(treename.c_str())
-	);
+	TTree* tree = (TTree*)file->Get(treename.c_str());
 	if(!tree) {
 		std::cout << "channel_classifier_ver_1::fill" << std::endl;
 		std::cout << "Could not get tree:" << std::endl;
@@ -127,6 +123,12 @@ channel_classifier_ver_1::fill (
 		min_hitrate,
 		max_hitrate
 	);
+	m_hist->SetDirectory(nullptr);
+
+	std::cout << "channel_classifier_ver_1::fill" << std::endl;
+	std::cout << "\t" << std::hex << m_hist << std::endl;
+	std::cout << "\t" << m_hist->GetName() << std::endl;
+	std::cout << "\t" << m_hist->GetTitle() << std::endl;
 
 	for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n) {
 		tree->GetEntry(n);
@@ -136,6 +138,8 @@ channel_classifier_ver_1::fill (
 		if(hitrate > max_hitrate) hitrate = max_hitrate - 0.5 * (max_hitrate - min_hitrate) / m_num_bins;
 		m_hist->Fill(hitrate);
 	}
+
+	file->Close();
 
 	return 0;
 }
@@ -149,28 +153,38 @@ channel_classifier_ver_1::fit (
 }
 
 int
-channel_classifier_ver_1::draw (
+channel_classifier_ver_1::write_hist (
 	std::string const& filename
 ) {
+	if(!m_hist) {
+		std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
+		std::cout << "\tMember \"m_hist\" is null at call" << std::endl;
+		return 1;
+	}
+
 	if(filename.empty()) {
-		std::cout << "channel_classifier_ver_1::draw" << std::endl;
+		std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
 		std::cout << "\tArgument \"filename\" is empty string" << std::endl;
 		return 1;
 	}
 
-	//std::unique_ptr<TCanvas> cnvs = std::make_unique<TCanvas> (
-	TCanvas* cnvs = new TCanvas (
-		"cnvs",
-		"cnvs"
-	);
-	cnvs->cd();
-	if(!m_hist) {
-		std::cout << "channel_classifier_ver_1::draw" << std::endl;
-		std::cout << "\tMember \"m_hist\" is null at call" << std::endl;
+	TFile* file = TFile::Open(filename.c_str(), "RECREATE");
+	if(!file) {
+		std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
+		std::cout << "\tCould not recreate file" << std::endl;
+		std::cout << "\t" << filename << std::endl;
 		return 1;
 	}
-	m_hist->DrawClone();
-	cnvs->SaveAs(filename.c_str());
+
+	std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
+	std::cout << "\t" << std::hex << m_hist << std::endl;
+	std::cout << "\t" << m_hist->GetName() << std::endl;
+	std::cout << "\t" << m_hist->GetTitle() << std::endl;
+
+	file->cd();
+	m_hist->Write();
+	file->Write();
+	file->Close();
 
 	return 0;
 }

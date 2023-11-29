@@ -33,14 +33,14 @@ public:
 
 	int fill(std::string const&, std::string const&) override;
 	int fit() override;
-	int draw(std::string const&) override;
+	int write_hist(std::string const&) override;
 
 private:
 	int m_num_sig = 5;
 	int m_num_bins = 100;
 
 	//std::unique_ptr<TH1> m_hist;
-	TH1* m_hist = nullptr;
+	TH1D* m_hist = nullptr;
 };
 
 #endif//CHANNEL_CLASSIFIER_VER_1_H
