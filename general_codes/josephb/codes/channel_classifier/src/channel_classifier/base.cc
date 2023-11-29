@@ -13,7 +13,7 @@ channel_classifier_base::adjust_hitrate (
 	Double_t& hitrate,
 	InttNameSpace::RawData_s const& raw
 ) const {
-	hitrate /= raw.chip % 13 < 5 ? 1.6 : 2.0;
+	hitrate /= raw.chip % 13 < 5 ? 2.0 : 1.6;
 }
 
 int
