@@ -7,7 +7,7 @@ CXX = cc
 OXX = o
 EXE = exe
 
-FLGS = $(shell root-config --cflags)
+FLGS = $(shell root-config --cflags) -g
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
 LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)
 
@@ -16,7 +16,10 @@ SRC = ./src/
 
 REQS = \
 	write_local._$(CXX)_$(OXX)_$(EXE)_ \
-	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_
+	check_local._$(CXX)_$(OXX)_$(EXE)_ \
+	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_ \
+	channel_classifier/base._$(HXX)_$(CXX)_$(OXX)_ \
+	channel_classifier/ver_1._$(HXX)_$(CXX)_$(OXX)_
 
 HXX_BASENAMES := $(foreach R,$(REQS),$(if $(findstring _$(HXX)_,$(suffix $R)),$(basename $R)))
 CXX_BASENAMES := $(foreach R,$(REQS),$(if $(findstring _$(CXX)_,$(suffix $R)),$(basename $R)))
@@ -30,10 +33,8 @@ CXXS := $(CXX_BASENAMES:%=$(SRC)%.$(CXX))
 OXXS := $(OXX_BASENAMES:%=$(BIN)%.$(OXX))
 EXES := $(EXE_BASENAMES:%=$(BIN)%.$(EXE))
 
-# .SECONDARY: $(OXXS)
-# all: $(EXES)
-
-$(EXES): $(OXXS)
+.PRECIOUS: $(OXXS)
+all: $(EXES) $(OXXS)
 
 $(OXXS): $(HXXS) $(CXXS)
 
