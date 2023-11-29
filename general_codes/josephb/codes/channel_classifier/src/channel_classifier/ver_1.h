@@ -34,6 +34,7 @@ public:
 	int fill(std::string const&, std::string const&) override;
 	int fit() override;
 	int write_hist(std::string const&) override;
+	int draw(std::string const&) override;
 
 private:
 	int m_num_sig = 5;

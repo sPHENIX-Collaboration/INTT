@@ -40,9 +40,13 @@ public:
 	// The fitted pdf will be used to classify channels by hitrate
 
 	virtual int write_hist(std::string const&);
+	// Write the member histogram to file
+	//   argument is the name of the file to save the plot to
+	//   was used for debugging
+
+	virtual int draw(std::string const&);
 	// Create a TCanvas showing the fitted hitrate distribution
 	//   argument is the name of the file to save the plot to
-
 };
 
 #endif//CHANNEL_CLASSIFIER_BASE_H

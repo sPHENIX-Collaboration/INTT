@@ -125,11 +125,6 @@ channel_classifier_ver_1::fill (
 	);
 	m_hist->SetDirectory(nullptr);
 
-	std::cout << "channel_classifier_ver_1::fill" << std::endl;
-	std::cout << "\t" << std::hex << m_hist << std::endl;
-	std::cout << "\t" << m_hist->GetName() << std::endl;
-	std::cout << "\t" << m_hist->GetTitle() << std::endl;
-
 	for(Long64_t n = 0; n < tree->GetEntriesFast(); ++n) {
 		tree->GetEntry(n);
 		adjust_hitrate(hitrate, raw);
@@ -176,15 +171,38 @@ channel_classifier_ver_1::write_hist (
 		return 1;
 	}
 
-	std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
-	std::cout << "\t" << std::hex << m_hist << std::endl;
-	std::cout << "\t" << m_hist->GetName() << std::endl;
-	std::cout << "\t" << m_hist->GetTitle() << std::endl;
-
 	file->cd();
 	m_hist->Write();
 	file->Write();
 	file->Close();
+
+	return 0;
+}
+
+int
+channel_classifier_ver_1::draw (
+	std::string const& filename
+) {
+	if(!m_hist) {
+		std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
+		std::cout << "\tMember \"m_hist\" is null at call" << std::endl;
+		return 1;
+	}
+
+	if(filename.empty()) {
+		std::cout << "channel_classifier_ver_1::write_hist" << std::endl;
+		std::cout << "\tArgument \"filename\" is empty string" << std::endl;
+		return 1;
+	}
+
+	TCanvas* cnvs = new TCanvas (
+		"cnvs",
+		"cnvs"
+	);
+	cnvs->cd();
+	m_hist->Draw();
+	cnvs->SaveAs(filename.c_str());
+	delete cnvs;
 
 	return 0;
 }

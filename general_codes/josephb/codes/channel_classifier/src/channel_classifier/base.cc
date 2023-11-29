@@ -42,3 +42,12 @@ channel_classifier_base::write_hist (
 
 	return 0;
 }
+
+int
+channel_classifier_base::draw (
+	std::string const&
+) {
+	// do nothing
+
+	return 0;
+}
