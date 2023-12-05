@@ -66,7 +66,7 @@ void make_dis_diffint()
     cout<<"event number   layer  lad_phi  evt_entries  off_entries"<<endl;
 
     //for (int ievent = 0; ievent < tree->GetEntries(); ievent++)
-    for (int ievent = 3; ievent < 100; ievent++)
+    for (int ievent = 0; ievent < 100; ievent++)
     {
         tree->GetEntry(ievent);
 
@@ -168,8 +168,7 @@ void make_offhithist(int m_layer, int m_lad_phi, int nhit_offevt)
         int bco = (ohit->hitsetkey) & 0x3FF;
         int chip = (ohit->hitkey >> 16) & 0xFFFF;
         int chan = (ohit->hitkey) & 0xFFFF;
-	chan = -chan + 255;
-
+	
         if (layer == m_layer && lad_phi == m_lad_phi)
         {
             if (sensor == 0)
@@ -218,7 +217,8 @@ void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt)
         if (ofl.layer == m_layer && ofl.ladder_phi == m_lad_phi)
         {
             chip = ofl.strip_y;
-            chan = ofl.strip_x;
+	    //chan = ofl.strip_x;
+            chan = -ofl.strip_x+255;
 
             if (ofl.ladder_z == 0)
             {
