@@ -11,6 +11,7 @@
 * It's a class. So just like how you use the ROOT::TH2F. For example : 
 ```
 #include "TH2INTT.h"
+TCanvas * c1 = new TCanvas("","",1780,800); #The recommended size of canvas (at least the ratio) to make the barrel like a circle.
 TH2INTT * INTT_effi = new TH2INTT(); #No variable in the parentheses.
 ```
 
