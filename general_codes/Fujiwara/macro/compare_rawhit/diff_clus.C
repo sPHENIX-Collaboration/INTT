@@ -6,14 +6,21 @@
 #include <intt/InttFelixMap.h>
 #include <intt/InttMapping.h>
 
+#include <cmath>
+#include <limits>
+#include <iostream>
+
+using namespace std;
+
 R__LOAD_LIBRARY(libinttread.so)
 
 TH2S *offhist;
 TH2S *evthist;
 TGraph *cluspoints;
+TGraph *evtcluspoints;
 TH2S *diffhist;
 
-TH1F *integraldiffhist = new TH1F("", "", 6, -3, 3);
+TH1F * h1 = new TH1F("", "minimum distance", 6000, -3, 3);
 TCanvas *c = new TCanvas("","");
 
 TText *evnum;
@@ -21,7 +28,10 @@ TText *evnum;
 void make_offhithist(int m_layer, int m_lad_phi, int nhit_offevt);
 void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt);
 void make_clusgraph(int m_layer, int m_lad_phi, int nhit_offcls);
-void diff_evt_offline(int layer, int lad_phi);
+void make_evtclusgraph(int ievent, int m_layer, int m_lad_phi, int nhit_evt);
+void diff_evt_offline(int ievent,int layer, int lad_phi, int nhit_evt);
+
+void cal_dis_mini(); //calculate minimal distance of my cluster and offline cluster 
 
 void scalehisthigh(TH2S *hist);
 
@@ -39,18 +49,28 @@ int chanbin = 256;
 int chanmin = 0;
 int chanmax = 256;
 
+int numcls = 0;
+
 char cc[10];
 
+float chsum = 0;  //channel sum of next to
+float clsize=0;  //nummber of channel next to
+float clusch; //channel of cluster
+
+int ev = 10; //number of event you need to scan if 0 all event scan
+
+vector<int> veccls;
+
 int outpdf = 1; //switching pdf is 0 printed / 1 not printed
-string pdfname = "/sphenix/u/mfujiwara/Workspace/tutorials/comp_hitclus/macro/compare_rawhit/histpict/run20869/diff_run20869_box.pdf";
+string pdfname = "/sphenix/u/mfujiwara/Workspace/tutorials/comp_hitclus/macro/compare_rawhit/histpict/run20869/diff_run20869_myclustering.pdf";
 
 int i=0; //number for make pdf series
 int counter=0; //counter of number of event which match condition
 
 // make 1D hist (evt - offline) intergral
-void make_dis_diffint()
+void diff_clus()
 {
-  //gStyle->SetOptStat(0);
+  gStyle->SetOptStat(0);
     // gROOT->SetStyle("Plain");
     //gStyle->SetPalette(1);
     //const char *fname = "AnaTutorial.root";
@@ -63,10 +83,14 @@ void make_dis_diffint()
     tree->SetBranchAddress("event", &inttEvt);
     tree->SetBranchAddress("offevent", &inttOfflineEvt);
     tree->SetBranchAddress("offcluster", &inttOfflineCls);
-    cout<<"event number   layer  lad_phi  evt_entries  off_entries"<<endl;
+    //cout<<"event number   layer  lad_phi  evt_entries  off_entries"<<endl;
 
-    //for (int ievent = 0; ievent < tree->GetEntries(); ievent++)
-    for (int ievent = 0; ievent < 100; ievent++)
+    if(ev == 0 || ev > tree->GetEntries())
+      {
+	ev = tree->GetEntries();
+      }
+
+    for (int ievent = 0; ievent < ev; ievent++)
     {
         tree->GetEntry(ievent);
 
@@ -77,50 +101,49 @@ void make_dis_diffint()
         for (int layer = 3; layer < 7; layer++)
         {
             int lad_phimax = getlad_phimax(layer);
+
             for (int lad_phi = 0; lad_phi < lad_phimax; lad_phi++)
             {
+	      
+	      if(layer == 4 && lad_phi == 9){
+		continue;
+	      }
+	      
+
 	      make_offhithist(layer, lad_phi, nhit_offevt);
 	      make_evthithist(ievent,layer, lad_phi, nhit_evt);
 	      
-	      //scalehisthigh(evthist);
-	      // make_clusgraph(layer, lad_phi, nhit_offcls);
-	      diff_evt_offline(layer, lad_phi);
-	      
-	      
-	      //if(diffhist->Integral() !=0){
-	      if(diffhist->GetMaximum() !=0 || diffhist->GetMinimum() !=0){
-		//if(layer == 4 && lad_phi ==9){
-		cout<<ievent<<"  "<<layer<<"  "<<lad_phi<<"   "<<evthist->GetEntries()<<"  "<<offhist->GetEntries()<<endl;
-		counter++;
-		
-		
-		for (int chip = 0; chip < chipbin; chip++)
-		    {
-		      for (int chan = 0; chan < chanbin; chan++)
-			{
-			  diffhist->Fill(chip,chan);
-			  diffhist->Fill(chip,chan);
-			}
-		    }
-		
-		  
-		//c->Clear();
+	      make_clusgraph(layer, lad_phi, nhit_offcls);
+	      make_evtclusgraph(ievent, layer, lad_phi, nhit_evt);
+
+	      cal_dis_mini();
+	      //cout<<"my clusters "<<evtcluspoints->GetN() <<"  offline clusters "<< cluspoints->GetN()<<endl;
+
+	      //h1->Fill(evtcluspoints->GetN() - cluspoints->GetN());
+
+	      /*
+	      if(evtcluspoints->GetN() != cluspoints->GetN())
+	      //if(h1->Integral(32,60) != 0)
+		{
+		  //diff_evt_offline(layer, lad_phi);
 		  gStyle->SetPalette(1);
-		  c->Divide(3,1);
+		  c->Divide(2,1);
 		  c->cd(1);
 		  evthist->Draw("COLZ");
+		  evtcluspoints->Draw("P");
+		  
 		  c->cd(2);
 		  offhist->Draw("COLZ");
-		  c->cd(3);
-		  diffhist->Draw("COLZ");
+		  cluspoints->Draw("P");
 		  
-		  if(outpdf == 1){
-		  c->Modified();
-		  c->Update();
-
-		  cin >> cc;
-		  cout << cc << endl;
-		  c->Clear();
+		  if(outpdf==1){
+		    c->Modified();
+		    c->Update();
+		    
+		    cin >> cc;
+		    cout << cc << endl;
+		    c->Clear();
+		    
 		  }
 		  
 		  if(i==0 && outpdf == 0){
@@ -132,24 +155,25 @@ void make_dis_diffint()
 		    c->Print(pdfname.c_str());
 		    c->Clear();
 		    //delete evnum;
-		    }
-		  
-		  
-	      }
-	      
+		  }
+		}
+	      */
 	      delete offhist;
 	      delete evthist;
-	      //delete cluspoints;
+	      delete cluspoints;
 	      delete diffhist;
-	      
-            }
-        }
+	      delete evtcluspoints;
+	    }	   
+	}
     }
-    cout<<"number of event ="<<tree->GetEntries()<<endl;
-    cout<<"number of event mach condition = "<<counter<<endl;
-    //c->Clear();
-    //gStyle->SetOptStat(1);
-    //integraldiffhist->Draw();
+    
+    cout<<"number of event = "<< ev <<endl;
+    cout<<"number of cluster = "<<numcls<<endl;
+    //cout<<"number of event mach condition = "<<counter<<endl;
+
+    gStyle->SetOptStat(1);
+    h1->Draw();
+
     if(outpdf == 0){
       c->Print((pdfname+")").c_str());
     }
@@ -168,7 +192,7 @@ void make_offhithist(int m_layer, int m_lad_phi, int nhit_offevt)
         int bco = (ohit->hitsetkey) & 0x3FF;
         int chip = (ohit->hitkey >> 16) & 0xFFFF;
         int chan = (ohit->hitkey) & 0xFFFF;
-	
+
         if (layer == m_layer && lad_phi == m_lad_phi)
         {
             if (sensor == 0)
@@ -217,8 +241,7 @@ void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt)
         if (ofl.layer == m_layer && ofl.ladder_phi == m_lad_phi)
         {
             chip = ofl.strip_y;
-	    //chan = ofl.strip_x;
-            chan = -ofl.strip_x+255;
+            chan = -ofl.strip_x + 255;
 
             if (ofl.ladder_z == 0)
             {
@@ -249,6 +272,10 @@ void make_evthithist(int ievent,int m_layer, int m_lad_phi, int nhit_evt)
 void make_clusgraph(int m_layer, int m_lad_phi, int nhit_offcls)
 {
   cluspoints = new TGraph();
+  cluspoints->SetMarkerSize(0.7);
+  cluspoints->SetMarkerColor(kBlack);
+  cluspoints->SetMarkerStyle(20);
+
     for (int ihit = 0; ihit < nhit_offcls; ihit++)
     {
         InttOfflineCluster *ocls = inttOfflineCls->getCluster(ihit);
@@ -284,9 +311,8 @@ void make_clusgraph(int m_layer, int m_lad_phi, int nhit_offcls)
             clus_chan = clus_chan + 128.0;
 
             cluspoints->SetPoint(cluspoints->GetN(), clus_chip, clus_chan);
-            cluspoints->SetMarkerSize(0.5);
-            cluspoints->SetMarkerColor(kBlack);
-            cluspoints->SetMarkerStyle(8);
+	    //cout<<"layer "<<layer<<" ladphi "<<lad_phi<<" chip "<<clus_chip<<"  chan "<<clus_chan<<endl;
+	   
         }
 
         /*
@@ -296,6 +322,7 @@ void make_clusgraph(int m_layer, int m_lad_phi, int nhit_offcls)
         }
         */
     }
+    //cout<<endl;
 }
 
 // make 2D hist (evt - offline)
@@ -335,5 +362,76 @@ void scalehisthigh(TH2S *hist)
                 //cout<<"chip "<<chip<<" chan "<<chan<<" evthist bin "<<hist->GetBinContent(chip+1,chan+1)<<endl;
             }
         }
+    }
+}
+
+void make_evtclusgraph(int ievent, int m_layer, int m_lad_phi, int nhit_evt){
+  evtcluspoints = new TGraph();
+  evtcluspoints->SetMarkerSize(0.7);
+  evtcluspoints->SetMarkerColor(kBlack);
+  evtcluspoints->SetMarkerStyle(20);
+
+  if(evthist==nullptr){
+    make_evthithist(ievent,m_layer, m_lad_phi, nhit_evt);
+  }
+  
+  for(int chip=0;chip<chipmax;chip++)
+    {
+      for(int chan=0;chan<chanmax;chan++)
+	{
+	  chipbin = chip+1;
+	  chanbin = chan+1;
+	  if(evthist->GetBinContent(chipbin,chanbin)!=0)
+	    {
+	      //cout<<"chan "<<chan<<endl;
+	      chsum = chsum + chan;
+	      clsize++;
+	    }
+
+	  if((evthist->GetBinContent(chipbin,chanbin)!=0 && evthist->GetBinContent(chipbin,chanbin+1)==0) || (chan == chanmax-1 && chsum !=0))
+	    {
+	      clusch = chsum/clsize;
+	      //cout<<"sum of chan "<<chsum<<" number of chan next to "<<clsize<<endl;	      
+	      evtcluspoints->SetPoint(evtcluspoints->GetN(), chip+0.5, clusch+0.5);
+	      //cout<<"layer "<<m_layer<<" ladphi "<<m_lad_phi<<" chip "<<chip<<"  chan "<<clusch<<endl;
+
+	      chsum = 0;
+	      clsize = 0;
+	    }
+	}
+    }  
+}
+
+void cal_dis_mini()
+{
+  float dis_mini;
+  float offline_x;
+  float offline_y;
+  float evtclus_x;
+  float evtclus_y;
+
+  numcls = numcls + cluspoints->GetN();
+
+  for(int i=0;i<cluspoints->GetN();i++)
+    {
+      //float dis_mini=10;
+      offline_x = cluspoints->GetPointX(i);
+      offline_y = cluspoints->GetPointY(i);
+
+      for(int j=0;j<evtcluspoints->GetN();j++)
+	{
+	  evtclus_x = evtcluspoints->GetPointX(j);
+	  evtclus_y = evtcluspoints->GetPointY(j);
+
+	  if(j == 0||dis_mini>hypot(offline_x-evtclus_x,offline_y-evtclus_y))
+	    {
+	      dis_mini = hypot(offline_x-evtclus_x,offline_y-evtclus_y);
+	    }
+	}
+
+      h1->Fill(dis_mini);
+      if(dis_mini !=0){
+	cout<<dis_mini<<endl;
+      }
     }
 }
