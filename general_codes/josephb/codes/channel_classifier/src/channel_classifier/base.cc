@@ -10,10 +10,10 @@ channel_classifier_base::~channel_classifier_base() {
 
 void
 channel_classifier_base::adjust_hitrate (
-	Double_t& hitrate,
-	InttNameSpace::RawData_s const& raw
+	Double_t&,
+	InttNameSpace::RawData_s const&
 ) const {
-	hitrate /= raw.chip % 13 < 5 ? 2.0 : 1.6;
+	// do nothing
 }
 
 int
@@ -28,6 +28,18 @@ channel_classifier_base::fill (
 
 int
 channel_classifier_base::fit (
+) {
+	// do nothing
+
+	return 0;
+}
+
+int
+channel_classifier_base::classify (
+	std::string const&,
+	std::string const&,
+	std::string const&,
+	std::string const&
 ) {
 	// do nothing
 

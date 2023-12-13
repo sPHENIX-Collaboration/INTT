@@ -17,6 +17,7 @@ SRC = ./src/
 REQS = \
 	write_local._$(CXX)_$(OXX)_$(EXE)_ \
 	check_local._$(CXX)_$(OXX)_$(EXE)_ \
+	compare._$(CXX)_$(OXX)_$(EXE)_ \
 	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/base._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/ver_1._$(HXX)_$(CXX)_$(OXX)_
@@ -36,7 +37,9 @@ EXES := $(EXE_BASENAMES:%=$(BIN)%.$(EXE))
 .PRECIOUS: $(OXXS)
 all: $(EXES) $(OXXS)
 
-$(OXXS): $(HXXS) $(CXXS)
+# $(OXXS): $(HXXS) $(CXXS)
+# This line says each object is dependent on ALL source files
+# Which is undesireable
 
 $(BIN)%.$(EXE): $(BIN)%.$(OXX) $(OXXS)
 	@echo -e "\n"
@@ -46,7 +49,7 @@ $(BIN)%.$(EXE): $(BIN)%.$(OXX) $(OXXS)
 	$(GXX) $(FLGS) $(INCS) -o $@ $^ $(LIBS)
 	@echo -e "\n"
 
-$(BIN)%.$(OXX): $(SRC)%.$(CXX)
+$(BIN)%.$(OXX): $(SRC)%.$(CXX) $(if $(findstring %,$(HXX_BASENAMES)),$(SRC)%.$(HXX))
 	@echo -e "\n"
 	@echo -e "Target: "$@
 	@echo -e "Dependencies: "$^

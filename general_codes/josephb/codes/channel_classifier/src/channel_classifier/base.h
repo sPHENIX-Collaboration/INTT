@@ -25,10 +25,19 @@
 class channel_classifier_base
 {
 public:
+	enum class status : char {
+		good,
+
+		half,
+		cold,
+		dead,
+		hot,
+	};
+
 	channel_classifier_base();
 	virtual ~channel_classifier_base();
 
-	void adjust_hitrate(Double_t&, InttNameSpace::RawData_s const&) const;
+	virtual void adjust_hitrate(Double_t&, InttNameSpace::RawData_s const&) const;
 
 	virtual int fill(std::string const&, std::string const& = "hitrate_tree");
 	// Fill an internal member (e.g., TH1) with the adjusted hitrate
@@ -36,6 +45,10 @@ public:
 	//   2nd argument is the name of the tree to find
 
 	virtual int fit();
+	// Fit an internal member (e.g., a TF1) using the filled data member
+	// The fitted pdf will be used to classify channels by hitrate
+
+	virtual int classify(std::string const&, std::string const&, std::string const& = "hitrate_tree", std::string const& = "status_tree");
 	// Fit an internal member (e.g., a TF1) using the filled data member
 	// The fitted pdf will be used to classify channels by hitrate
 

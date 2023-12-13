@@ -11,15 +11,15 @@
 #include <type_traits>
 
 std::string i_format = "/sphenix/user/jbertaux/Data/Debug/beam_intt_appended-%08d-0000.root";
-std::string o_format = "/sphenix/user/jbertaux/Data/Debug/pngs/beam_intt_appended-%08d-0000.png";
-//std::string o_format = "/sphenix/user/jbertaux/Data/Debug/hists/beam_intt_appended-%08d-hist.root";
+std::string o_png_format = "/sphenix/user/jbertaux/Data/Debug/pngs/beam_intt_appended-%08d-0000.png";
+std::string o_state_format = "/sphenix/user/jbertaux/Data/Debug/beam_intt_classified-%08d.root";
 
 int main(int argc, char** argv) {
 	typedef channel_classifier_ver_1 channel_classifier_t;
 	static_assert(std::is_base_of<channel_classifier_base, channel_classifier_t>());
 
 	if(argc != 2) {
-		std::cout << "Expected one argument" << std::endl;
+		std::cout << "Expected at least one argument" << std::endl;
 		std::cout << "Exiting" << std::endl;
 		return 1;
 	}
@@ -42,20 +42,27 @@ int main(int argc, char** argv) {
 
 	char buff[256];
 	snprintf(buff, sizeof(buff), i_format.c_str(), run_num);
-	if(!std::filesystem::exists(buff)) {
+	std::string i_filename = buff;
+	if(!std::filesystem::exists(i_filename.c_str())) {
 		std::cout << "Input file" << std::endl;
-		std::cout << "\t" << buff << std::endl;
+		std::cout << "\t" << i_filename << std::endl;
 		std::cout << "Does not exist" << std::endl;
 		std::cout << "Exiting" << std::endl;
 		return 1;
 	}
 
-	//std::unique_ptr<channel_classifier_base> c = std::make_unique<channel_classifier_t>();
 	channel_classifier_base* c = new channel_classifier_t();
-	if(c->fill(buff))return 1;
+	if(c->fill(i_filename))return 1;
 
-	snprintf(buff, sizeof(buff), o_format.c_str(), run_num);
-	if(c->draw(buff))return 1;
+	if(c->fit())return 1;
+
+	snprintf(buff, sizeof(buff), o_png_format.c_str(), run_num);
+	std::string o_png_filename = buff;
+	if(c->draw(o_png_filename))return 1;
+
+	snprintf(buff, sizeof(buff), o_state_format.c_str(), run_num);
+	std::string o_state_filename = buff;
+	if(c->classify(i_filename, o_state_filename))return 1;
 
 	return 0;
 }
