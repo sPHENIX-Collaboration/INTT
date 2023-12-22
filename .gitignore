@@ -26,6 +26,8 @@ Thumbs.db
 /vendor/bundle/
 /.bundle/
 
+# for data
+*.evt
 
 # for ROOT files
 *.root
