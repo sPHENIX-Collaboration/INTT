@@ -1,6 +1,6 @@
 #include "InttEvent.h"
 #include "ConvertInttData.h"
-R__LOAD_LIBRARY(libInttEvent.so)
+R__LOAD_LIBRARY( libInttHitBaseDecoder.so )
 
 void runConvertInttData(const char * filename)
 {
