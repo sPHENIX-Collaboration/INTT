@@ -66,9 +66,10 @@ int InttQvector::Init(PHCompositeNode * /*topNode*/)
   tree_->Branch("Qx",&qx);
   tree_->Branch("Qy",&qy);
   tree_->Branch("psi",&psi);
+  
+  psidis = new TH1F("psidis","psi all",120,-3,3);
+  qvecdis = new TH2S("qvecdis","q all",1000,-5,5,1000,-5,5);
 
-  psidis = new TH1F("psidis","psi",120,-3,3);
-  qvecdis = new TH2S("qvecdis","q",600,-10,10,120,-10,10);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -89,7 +90,7 @@ int InttQvector::process_event(PHCompositeNode *topNode)
   qy = qvec[1];
   nclus = qvec[2];
 
-  psi = 0.5*atan(qx/qy);
+  psi = 0.5*atan2(qx,qy);
   tree_->Fill();
   psidis->Fill(psi);
   qvecdis->Fill(qx,qy);
@@ -173,6 +174,7 @@ void InttQvector::cal_q(double qvec[])
   double sumx=0;
   double sumy=0;
   double count=0;
+  double phi;
 
   for (unsigned int inttlayer = 0; inttlayer < m_nInttLayers; inttlayer++)
     {
@@ -185,8 +187,10 @@ void InttQvector::cal_q(double qvec[])
 	      const auto cluskey = clusIter->first;
 	      const auto cluster = clusIter->second;
 	      const auto globalPos = m_tGeometry->getGlobalPosition(cluskey, cluster);
-	      sumx = sumx + globalPos(0);
-	      sumy = sumy + globalPos(1);
+
+	      phi = atan2(globalPos(1),globalPos(0));
+	      sumx = sumx + cos(2*phi);
+	      sumy = sumy + sin(2*phi);
 	      count++;
 	    }
 	}
