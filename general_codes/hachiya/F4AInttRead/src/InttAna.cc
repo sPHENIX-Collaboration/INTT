@@ -79,7 +79,7 @@ int InttAna::Init(PHCompositeNode * /*topNode*/)
   h2_dca2d_len  = new TH2F("h2_dca2d_len", "DCA2D to 0 vs len", 500, -10, 10, 500, -10, 10);
   h_zvtx        = new TH1F("h_zvtx", "Zvertex", 400, -40, 40);
 
-  h_ntp_clus = new TNtuple("ntp_clus", "Cluster Ntuple", "nclus:nclus2:bco_full:evt:size:adc:x:y:z:lay:lad:sen");
+  h_ntp_clus = new TNtuple("ntp_clus", "Cluster Ntuple", "nclus:nclus2:bco_full:evt:size:adc:x:y:z:lay:lad:sen:lx:ly");
   h_ntp_cluspair = new TNtuple("ntp_cluspair", "Cluster Pair Ntuple", "nclus:nclus2:bco_full:evt:ang1:ang2:z1:z2:dca2d:len:unorm:l1:l2:vx:vy:vz");
 
   h_zvtxseed_ = new TH1F("h_zvtxseed", "Zvertex Seed histogram", 200, -50, 50);
@@ -220,6 +220,8 @@ int InttAna::process_event(PHCompositeNode *topNode)
         ntpval[9] = inttlayer;
         ntpval[10] = ladder_phi;
         ntpval[11] = ladder_z;
+        ntpval[12] = cluster->getPosition(0);
+        ntpval[13] = cluster->getPosition(1);
         h_ntp_clus->Fill(ntpval);
         // = new TNtuple("ntp_clus", "Cluster Ntuple", "bco_full:evt:size:adc:x:y:z:lay:lad:sen");
       }

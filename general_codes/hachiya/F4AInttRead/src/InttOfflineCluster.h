@@ -19,13 +19,14 @@ class InttOfflineCluster : public TObject {
     int  clusterid;
 
     float local[2];          //< 2D local position [cm] 2 * 32 64bit  - cumul 1*64
+    float global[3];          //< 2D local position [cm] 2 * 32 64bit  - cumul 1*64
     unsigned short int adc;  //< cluster sum adc 16
     char phisize; // 8bit
     char zsize;   // 8bit
     char overlap; // 8bit 
     char edge;    // 8bit - cumul 2*64
 
-  ClassDef(InttOfflineCluster, 1)
+  ClassDef(InttOfflineCluster, 2)
 
 };
 
@@ -47,7 +48,7 @@ class InttOfflineClusterList : public TObject {
     int   fNhits;
     TClonesArray* fhitArray;
 
-  ClassDef(InttOfflineClusterList, 1)
+  ClassDef(InttOfflineClusterList, 2)
 };
 
 

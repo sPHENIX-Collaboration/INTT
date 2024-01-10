@@ -177,6 +177,17 @@ int InttSaveTree::process_event(PHCompositeNode *topNode)
         cls->overlap   = cluster->getOverlap();
         cls->edge      = cluster->getEdge();
 
+        const auto globalPos = m_tGeometry->getGlobalPosition(cluskey, cluster);
+        cls->global[0]  = globalPos.x();
+        cls->global[1]  = globalPos.y();
+        cls->global[2]  = globalPos.z();
+
+        //cout<<"cluster pos: ";
+        //cout<<globalPos.x()<<" ";
+        //cout<<globalPos.y()<<" ";
+        //cout<<globalPos.z()<<endl;
+
+
       }
     }
   }
