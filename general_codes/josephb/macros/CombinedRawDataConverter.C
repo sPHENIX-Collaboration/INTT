@@ -50,7 +50,7 @@ void CombinedRawDataConverter(std::string i_format, std::string o_format, int ru
 
 		SingleInttInput* sngl = new SingleInttInput("INTT_" + std::to_string(pid_itr->second));
 		sngl->AddFile(i_filename);
-		in->registerStreamingInput(sngl);
+		in->registerStreamingInput(sngl, Fun4AllEvtInputPoolManager::enu_subsystem::INTT);
 	}
 	se->registerInputManager(in);
 
