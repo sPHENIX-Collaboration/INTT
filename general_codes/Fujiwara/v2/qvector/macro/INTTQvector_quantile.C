@@ -2,14 +2,18 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <math.h>
+//#include <../src/InttOfflineCluster.h>
 
 void INTTQvector_quantile()
 {
-  string fname ="InttQvector20869_20231222.root";
+  string fname ="rootfile/InttQvector_adccut.root";
+  const Int_t nq = 20;
 
   TFile *file = TFile::Open(fname.c_str());
     
-  TTree *tree_ = (TTree *)file->Get("tree");
+  TTree *tree_ = (TTree *)file->Get("Qvectortree");
+
+  string pdfname = "pdffile/"+fname.substr(9,18)+to_string(nq)+"quantile.pdf";
  
   double nclus;
   double qx;
@@ -57,7 +61,7 @@ void INTTQvector_quantile()
 	}
     }
 
-  TH1F *nclush = new TH1F("nclus","nclus",nmax/10,0,nmax);
+  TH1F *nclush = new TH1F("nclus","multiplicity",nmax/10,0,nmax);
   TH2S *allqvec = new TH2S("allqvec","all qvector",qxbin,qxmin,qxmax,qybin,qymin,qymax);
   TH1F* allpsi = new TH1F("allpsi","all psi",psibin,psimin,psimax);
   //tree_->Draw("nclus");
@@ -70,7 +74,7 @@ void INTTQvector_quantile()
       allqvec->Fill(qx,qy);
     }
 
-  const Int_t nq = 10;
+  //const Int_t nq = 20;
   
   Double_t xq[nq]; 
   Double_t yq[nq];
@@ -88,13 +92,18 @@ void INTTQvector_quantile()
 
       double rangemin = (double)i/(double)nq*100.0;
       
-      qvector[i] = new TH2S(Form("qvector%d",i),Form("qvector %d-%d",(int)rangemin,(int)(xq[i]*100)),qxbin,qxmin,qxmax,qybin,qymin,qymax);
-      psidis[i] = new TH1F(Form("psi%d",i),Form("psi %d-%d",(int)rangemin,(int)(xq[i]*100)),psibin,psimin,psimax);
-      nclusdis[i] = new TH1F(Form("nclus%d",i),Form("nclus %d-%d",(int)rangemin,(int)(xq[i]*100)),nmax/10,0,nmax);
+      qvector[i] = new TH2S(Form("qvector%d",i),Form("qvector %d-%d",100-(int)(xq[i]*100),100-(int)rangemin),qxbin,qxmin,qxmax,qybin,qymin,qymax);
+      psidis[i] = new TH1F(Form("psi%d",i),Form("psi %d-%d",100-(int)(xq[i]*100),100-(int)rangemin),psibin,psimin,psimax);
+      nclusdis[i] = new TH1F(Form("nclus%d",i),Form("multiplicity %d-%d",100-(int)(xq[i]*100),100-(int)rangemin),nmax/10,0,nmax);
     }
  
   int minrange =0;
-  
+
+  TGraphErrors * qxmulti =new TGraphErrors();
+  qxmulti->SetTitle("mult vs qx;mult(%);qx");
+  TGraphErrors * qymulti =new TGraphErrors();
+  qymulti->SetTitle("mult vs qy;mult(%);qy");
+
   for(int i =0;i<tree_->GetEntries();i++)
     {
       tree_->GetEntry(i);
@@ -120,9 +129,9 @@ void INTTQvector_quantile()
     }
   
   
-  TCanvas *c1[nq+1];
+  TCanvas *c1[nq+2];
   //TCanvas *c2[nq];
-  string pdfname = fname.substr(0,17)+to_string(nq)+"quantile.pdf";
+  //string pdfname = fname.substr(0,17)+to_string(nq)+"quantile.pdf";
   int entries = 0;
 
   for(int i=0;i<nq;i++)
@@ -148,6 +157,23 @@ void INTTQvector_quantile()
   cout <<"entries "<<entries<<endl;
   cout <<"tree entries "<<tree_->GetEntries()<<endl;
 
+  /*
+  for(int i=0;i<nq;i++)
+    {
+      qxmulti->SetPoint(i,i*5,qvector[i]->GetMean(1));
+      qymulti->SetPoint(i,i*5,qvector[i]->GetMean(2));
+    }
+
+
+  c1[nq+1]=new TCanvas(Form("canvas%d",nq+1),"canvas qvec");
+  c1[nq+1]->Divide(2,1);
+  c1[nq+1]->cd(1);
+  qxmulti->Draw();
+  c1[nq+1]->cd(2);
+  qymulti->Draw();
+  c1[nq+1]->Print((pdfname+")").c_str());
+  */
+ 
   c1[nq]=new TCanvas(Form("canvas%d",nq),"canvas all",1800,600);
   c1[nq]->Divide(3,1);
   c1[nq]->cd(1);
@@ -162,5 +188,25 @@ void INTTQvector_quantile()
   c1[nq]->cd(3);
   gPad->SetLogy(1);
   nclush->Draw();
-  c1[nq]->Print((pdfname+")").c_str());
+  c1[nq]->Print(pdfname.c_str());
+
+  for(int i=0;i<nq;i++)
+    {
+      qxmulti->SetPoint(i,100-i*5,qvector[i]->GetMean(1));
+      qxmulti->SetPointError(i,0,qvector[i]->GetStdDev(1));
+      qymulti->SetPoint(i,100-i*5,qvector[i]->GetMean(2));
+      qymulti->SetPointError(i,0,qvector[i]->GetStdDev(2));
+    }
+
+
+  c1[nq+1]=new TCanvas(Form("canvas%d",nq+1),"canvas qvec",1200,600);
+  c1[nq+1]->Divide(2,1);
+  c1[nq+1]->cd(1);
+  qxmulti->SetMarkerStyle(20);
+  qxmulti->Draw("AP");
+  c1[nq+1]->cd(2);
+  qymulti->SetMarkerStyle(20);
+  qymulti->Draw("AP");
+  c1[nq+1]->Print((pdfname+")").c_str());
+  
 }

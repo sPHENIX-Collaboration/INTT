@@ -37,6 +37,7 @@
 #include <g4detectors/PHG4CylinderGeomContainer.h>
 #include <intt/CylinderGeomIntt.h>
 
+#include "InttOfflineCluster.h"
 
 using namespace std;
 
@@ -44,7 +45,8 @@ InttQvector::InttQvector(const std::string &name,const std::string &filename)
   :SubsysReco(name)
   , fname_(filename)
   , anafile_(nullptr)
-  , tree_(nullptr)
+  , tree1(nullptr)
+  , tree2(nullptr)
 {
   cout<<"InttQvector::InttQvector is calling ctor"<<endl;
 }
@@ -60,15 +62,21 @@ int InttQvector::Init(PHCompositeNode * /*topNode*/)
 
   anafile_ = new TFile(fname_.c_str(), "recreate");
   
-  tree_ = new TTree("tree", "Qvector tree");
+  tree1 = new TTree("Qvectortree", "Qvector tree");
+  tree2 = new TTree("InttOfflinetree", "Offline Cluster List");
+  inttOfflineCls_ = new InttOfflineClusterList();
 
-  tree_->Branch("nclus",&nclus);
-  tree_->Branch("Qx",&qx);
-  tree_->Branch("Qy",&qy);
-  tree_->Branch("psi",&psi);
+  tree1->Branch("nclus",&nclus);
+  tree1->Branch("Qx",&qx);
+  tree1->Branch("Qy",&qy);
+  tree1->Branch("psi",&psi);
+
+  tree2->Branch("offcluster", "InttOfflineClusterList", &inttOfflineCls_, 8000, 99);
   
   psidis = new TH1F("psidis","psi all",120,-3,3);
   qvecdis = new TH2S("qvecdis","q all",1000,-5,5,1000,-5,5);
+
+  adcdis = new TH1F("adcdis","adc all",4000,0,20000);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -91,7 +99,8 @@ int InttQvector::process_event(PHCompositeNode *topNode)
   nclus = qvec[2];
 
   psi = 0.5*atan2(qx,qy);
-  tree_->Fill();
+  tree1->Fill();
+  tree2->Fill();
   psidis->Fill(psi);
   qvecdis->Fill(qx,qy);
   //cout <<"nclus = "<<nclus<<endl;
@@ -176,6 +185,8 @@ void InttQvector::cal_q(double qvec[])
   double count=0;
   double phi;
 
+  inttOfflineCls_->clear();
+
   for (unsigned int inttlayer = 0; inttlayer < m_nInttLayers; inttlayer++)
     {
       for (const auto &hitsetkey : m_clusterMap->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3))
@@ -192,13 +203,39 @@ void InttQvector::cal_q(double qvec[])
 	      sumx = sumx + cos(2*phi);
 	      sumy = sumy + sin(2*phi);
 	      count++;
+
+	      {
+		InttOfflineCluster *cls = inttOfflineCls_->addCluster();
+		
+		//const auto cluskey = clusIter->first;
+		//const auto cluster = clusIter->second;
+		int hskey      = (cluskey>>32)&0xFFFFFFFF;
+		int clusterid  = (cluskey    )&0xFFFFFFFF;
+		
+		cls->hitsetkey = hskey;
+		cls->clusterid = clusterid;
+		
+		cls->local[0]  = cluster->getPosition(0);
+		cls->local[1]  = cluster->getPosition(1);
+		cls->adc       = cluster->getAdc();
+		cls->phisize   = cluster->getPhiSize();
+		cls->zsize     = cluster->getZSize();
+		cls->overlap   = cluster->getOverlap();
+		cls->edge      = cluster->getEdge();
+
+		cls->global[0]  = globalPos.x();
+		cls->global[1]  = globalPos.y();
+		cls->global[2]  = globalPos.z();
+		
+		adcdis->Fill(cls->adc);
+	      }
 	    }
 	}
     }
-
+  
   qvec[0] = sumx/count;
   qvec[1] = sumy/count;
   qvec[2] = count;
-
+  
   return;
 }
