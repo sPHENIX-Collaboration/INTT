@@ -2,6 +2,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <math.h>
+#include <TProfile.h>
 //#include <../src/InttOfflineCluster.h>
 
 void INTTQvector_quantile()
@@ -42,7 +43,7 @@ void INTTQvector_quantile()
 
   int qxbin = (qxmax + abs(qxmin))/0.01;
   int qybin = (qymax + abs(qymin))/0.01;
-  int psibin = (qymax + abs(qymin))/0.02;
+  int psibin = (psimax + abs(psimin))/0.02;
   cout<<"qx qy psibin "<<qxbin<<"  "<<qybin<<"  "<<psibin<<endl;
 
   if(qxbin != qybin)
@@ -66,15 +67,34 @@ void INTTQvector_quantile()
   TH1F* allpsi = new TH1F("allpsi","all psi",psibin,psimin,psimax);
   //tree_->Draw("nclus");
 
+  TProfile *qxprof[2];
+  TProfile *qyprof[2];
+ 
+  qxprof[0] = new TProfile("qxmulti","qx vs multiplicity",20,0,100);
+  qyprof[0] = new TProfile("qymulti","qy vs multiplicity",20,0,100);
+
+  qxprof[1] = new TProfile("qxmulti","qx vs multiplicity",nmax/100,0,nmax);
+  qyprof[1] = new TProfile("qymulti","qy vs multiplicity",nmax/100,0,nmax);
+
   for(int i =0;i<tree_->GetEntries();i++)
     {
       tree_->GetEntry(i);
-      nclush->Fill(nclus);
-      allpsi->Fill(psi);
-      allqvec->Fill(qx,qy);
-    }
 
-  //const Int_t nq = 20;
+      	nclush->Fill(nclus);
+	allpsi->Fill(psi);
+	allqvec->Fill(qx,qy);
+	
+	//cout<<"nclus/nmax*100 ="<<nclus/nmax*100<<endl;
+	//cout<<"qx, qy ="<<qx<<"  "<<qy<<endl;
+	 if(isfinite(qx)==true)
+	   {
+	     qxprof[0]->Fill(nclus/nmax*100,qx);
+	     qyprof[0]->Fill(nclus/nmax*100,qy);
+
+	     qxprof[1]->Fill(nclus,qx);
+	     qyprof[1]->Fill(nclus,qy);
+	   }
+    }  
   
   Double_t xq[nq]; 
   Double_t yq[nq];
@@ -98,12 +118,6 @@ void INTTQvector_quantile()
     }
  
   int minrange =0;
-
-  TGraphErrors * qxmulti =new TGraphErrors();
-  qxmulti->SetTitle("mult vs qx;mult(%);qx");
-  TGraphErrors * qymulti =new TGraphErrors();
-  qymulti->SetTitle("mult vs qy;mult(%);qy");
-
   for(int i =0;i<tree_->GetEntries();i++)
     {
       tree_->GetEntry(i);
@@ -129,9 +143,7 @@ void INTTQvector_quantile()
     }
   
   
-  TCanvas *c1[nq+2];
-  //TCanvas *c2[nq];
-  //string pdfname = fname.substr(0,17)+to_string(nq)+"quantile.pdf";
+  TCanvas *c1[nq+3];
   int entries = 0;
 
   for(int i=0;i<nq;i++)
@@ -157,56 +169,32 @@ void INTTQvector_quantile()
   cout <<"entries "<<entries<<endl;
   cout <<"tree entries "<<tree_->GetEntries()<<endl;
 
-  /*
-  for(int i=0;i<nq;i++)
-    {
-      qxmulti->SetPoint(i,i*5,qvector[i]->GetMean(1));
-      qymulti->SetPoint(i,i*5,qvector[i]->GetMean(2));
-    }
-
-
-  c1[nq+1]=new TCanvas(Form("canvas%d",nq+1),"canvas qvec");
-  c1[nq+1]->Divide(2,1);
-  c1[nq+1]->cd(1);
-  qxmulti->Draw();
-  c1[nq+1]->cd(2);
-  qymulti->Draw();
-  c1[nq+1]->Print((pdfname+")").c_str());
-  */
- 
   c1[nq]=new TCanvas(Form("canvas%d",nq),"canvas all",1800,600);
   c1[nq]->Divide(3,1);
   c1[nq]->cd(1);
-  //c1[nq]->DrawFrame(-1,-1,1,1);
-  //qvecdis->SetStats(1);
   allqvec->Draw("COLZ");
-  //qvecdis->Draw("COLZ");
   c1[nq]->cd(2);
-  //c1[nq]->DrawFrame(-1,0,1,25000);
-  //allpsidis->SetStats(1);
   allpsi->Draw();
   c1[nq]->cd(3);
   gPad->SetLogy(1);
   nclush->Draw();
   c1[nq]->Print(pdfname.c_str());
 
-  for(int i=0;i<nq;i++)
-    {
-      qxmulti->SetPoint(i,100-i*5,qvector[i]->GetMean(1));
-      qxmulti->SetPointError(i,0,qvector[i]->GetStdDev(1));
-      qymulti->SetPoint(i,100-i*5,qvector[i]->GetMean(2));
-      qymulti->SetPointError(i,0,qvector[i]->GetStdDev(2));
-    }
-
-
+  
   c1[nq+1]=new TCanvas(Form("canvas%d",nq+1),"canvas qvec",1200,600);
   c1[nq+1]->Divide(2,1);
   c1[nq+1]->cd(1);
-  qxmulti->SetMarkerStyle(20);
-  qxmulti->Draw("AP");
+  qxprof[0]->Draw();
   c1[nq+1]->cd(2);
-  qymulti->SetMarkerStyle(20);
-  qymulti->Draw("AP");
-  c1[nq+1]->Print((pdfname+")").c_str());
+  qyprof[0]->Draw();
+  c1[nq+1]->Print(pdfname.c_str());
+
+  c1[nq+2]=new TCanvas(Form("canvas%d",nq+2),"canvas qvec",1200,600);
+  c1[nq+2]->Divide(2,1);
+  c1[nq+2]->cd(1);
+  qxprof[1]->Draw();
+  c1[nq+2]->cd(2);
+  qyprof[1]->Draw();
+  c1[nq+2]->Print((pdfname+")").c_str());
   
 }
