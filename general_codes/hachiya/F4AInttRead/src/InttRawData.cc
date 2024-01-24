@@ -23,6 +23,7 @@
 /// C++ includes
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -50,6 +51,15 @@ InttRawData::InttRawData(const std::string &name, const std::string &filename)
   , ievent_(0)
 {
   fname_ = filename;
+
+  dacpar_[0]= 15;
+  dacpar_[1]= 30;
+  dacpar_[2]= 60;
+  dacpar_[3]= 90;
+  dacpar_[4]=120;
+  dacpar_[5]=150;
+  dacpar_[6]=180;
+  dacpar_[7]=210;
 }
 
 /**
@@ -137,6 +147,66 @@ int InttRawData::InitRun(PHCompositeNode * topNode)
     cout<<"failed to read hotmap file : "<<hotfilename_.c_str()<<endl;
   }
 
+  // DAC file
+  if(dacfile_.size()>0){
+    cout<<"DAC file : "<<dacfile_.c_str()<<endl;
+    ifstream fin(dacfile_.c_str());
+    for(int i=0; i<8; i++){ fin>>dacpar_[i]; }
+    fin.close();
+  }
+  cout<<"DAC setting"<<endl;
+  for(int i=0; i<8; i++){ cout<<"  DAC"<<i<<" "<<dacpar_[i]<<endl;}
+
+  // BCO file
+  if(bcofile_.size()>0){
+    cout<<"BCO file : "<<bcofile_.c_str()<<endl;
+    ifstream fin(bcofile_.c_str());
+    string sline;
+    
+    while(getline(fin, sline)){
+      //cout<<sline<<endl;
+      istringstream ss(sline);
+      string sbuf;
+      
+      int felix=-1;
+      int idx=0;
+      while(getline(ss, sbuf, ':')){
+        // 1st for felix id
+        if(idx==0){
+          //cout<<idx<<", id "<<sbuf<<endl;
+          felix=stoi(sbuf.c_str());
+          if(felix<0||felix>7) { cout<<"felixid out of range. id="<<felix<<endl; break;}
+        } else {
+          //cout<<idx<<" "<<felix<<", bco "<<sbuf<<endl;
+          istringstream ss2(sbuf);
+          string sbuf2;
+          while(ss2>>sbuf2){
+            //cout<<"   "<<sbuf2<<endl;
+            bcopar_[felix].insert(stoi(sbuf2));
+          }
+        }
+        idx++;
+      }
+    }
+    fin.close();
+  }
+        
+  cout<<"BCO peaks "<<endl;
+  for(int i=0; i<8; i++){
+    cout<<"    felix "<<i<<" : ";
+    for(auto itr=bcopar_[i].begin(); itr!=bcopar_[i].end(); ++itr){
+      cout<<(*itr)<<" ";
+    }
+    cout<<endl;
+  }
+
+  if(isAdc7Removal_){
+    cout<<endl;
+    cout<<"ADC7Removal flag is ON. the hit w/ ADC=7 is to be removed"<<endl;
+    cout<<endl;
+  }
+    
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -202,7 +272,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 	TrkrHit* hit = nullptr;
 
         //static const int DAC[8] = {15, 30, 50, 70, 90, 110, 130, 150};
-        static const int DAC[8] = {15, 30, 60, 90, 120, 150, 180, 210};
+        //static const int DAC[8] = {15, 30, 60, 90, 120, 150, 180, 210};
 
 	int nskip=0;
 	for(int n = 0; n < inttEvt_->getNHits(); ++n)
@@ -265,6 +335,23 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                                         <<rawdata.chip<<" "<< rawdata.channel<<endl;
                    continue;
                 }
+                
+                //------------------
+                // bco background 
+                if(checkBCOBg(rawdata.felix_server, 
+                              rawdata.felix_channel,
+                              rawhit->bco, 
+                              rawhit->bco_full))
+                {
+                   continue;
+                }
+                
+                //------------------
+                // remove adc7 for dacscan 
+                if(isAdc7Removal_&&adc==7)
+                {
+                   continue;
+                }
                 //------------------
 
 
@@ -272,7 +359,8 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                 //                     <<rawdata.chip<<" "<< rawdata.channel<<endl;
 
 		hit = new TrkrHitv2;
-		hit->setAdc(DAC[adc]);
+		//hit->setAdc(DAC[adc]);
+		hit->setAdc(dacpar_[adc]);
 		hit_set_container_itr->second->addHitSpecificKey(hit_key, hit);
 	}
 	cout<<"Nskip of copyhit : "<<nskip<<endl;
@@ -294,5 +382,24 @@ int InttRawData::End(PHCompositeNode * /*topNode*/)
 
 
   return 0;
+}
+
+bool InttRawData::checkBCOBg(int felix, int /*ladder*/, int bco, Long64_t bcofull){
+  int bcodiff = (bcofull&0x7F) - bco;
+  if(bcodiff<0) bcodiff+=128;
+
+  bool debug=false;
+
+  bool ret = (bcopar_[felix].find(bcodiff)==bcopar_[felix].end()); // not found=true;
+  if(debug) {
+    if(ret) {
+      cout<<" bco : "<<felix<<" "/*<<ladder<<" "*/<<bcodiff<<" : "<<hex<<bco<<" "<<bcofull<<dec<<endl;
+    }
+    else {
+      cout<<" bco peak: "<<felix<<" "/*<<ladder<<" "*/<<bcodiff<<" : "<<hex<<bco<<" "<<bcofull<<dec<<endl;
+    }
+  }
+
+  return (bcopar_[felix].find(bcodiff)==bcopar_[felix].end()); // not found=true;
 }
 

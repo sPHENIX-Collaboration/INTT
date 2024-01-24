@@ -21,7 +21,7 @@
 #include <Trkr_RecoInit.C>
 #include <Trkr_Clustering.C>
 #include <Trkr_LaserClustering.C>
-#include <Trkr_Reco.C>
+//#include <Trkr_Reco.C>
 //#include <Trkr_Eval.C>
 #include <Trkr_QA.C>
 
@@ -39,7 +39,7 @@
 
 #include <../src/InttQvector.h>
 
-#include </sphenix/tg/tg01/commissioning/INTT/work/mfuji/v2/F4AInttRead/src/InttRawData.h>
+#include <../src/InttRawData.h>
 
 #include <ffamodules/FlagHandler.h>
 #include <ffamodules/HeadReco.h>
@@ -55,13 +55,13 @@
 
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libffamodules.so)
-R__LOAD_LIBRARY(libinttqvector.so)
+//R__LOAD_LIBRARY(libinttqvector.so)
 R__LOAD_LIBRARY(libinttread.so)
 // For HepMC Hijing
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
 
 int Fun4All_Intt_Qvector(
-			    const int nEvents = 5, //100000, //20000, // 5000, //5,
+			    const int nEvents = 0, //100000, //20000, // 5000, //5,
     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const string &outputFile = "G4sPHENIX.root",
     const string &embed_input_file = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
@@ -560,10 +560,12 @@ int Fun4All_Intt_Qvector(
     }
   if (Enable::MICROMEGAS_CLUSTER) Micromegas_Clustering();
 
+  /*
   if (Enable::TRACKING_TRACK)
   {
     Tracking_Reco();
   }
+  */
 
 //--  if(Enable::TRACKING_DIAGNOSTICS)
 //--    {
@@ -662,11 +664,16 @@ int Fun4All_Intt_Qvector(
   inttsave->setInttRawData(inttraw);
   se->registerSubsystem(inttsave);
   */
-
   
-
-  InttQvector * inttqvector = new InttQvector("InttQvector",("InttQvector"+inputEvent.substr(84,5)+".root").c_str());
-  cout<<"InttQvector"<<inputEvent.substr(70,5)<<".root"<<endl;
+  time_t t = time(nullptr);
+  const tm* localTime = localtime(&t);
+  std::stringstream date;
+  date << localTime->tm_year + 1900;
+  date << setw(2) << setfill('0') << localTime->tm_mon + 1;
+  date << setw(2) << setfill('0') << localTime->tm_mday;
+    
+  InttQvector * inttqvector = new InttQvector("InttQvector",("rootfile/InttQvector"+inputEvent.substr(84,5)+"_"+date.str()+".root").c_str());
+  //cout<<"InttQvector"<<inputEvent.substr(70,5)<<".root"<<endl;
   se->registerSubsystem(inttqvector);
 
 //--  // Writes electrons from conversions to a new track map on the node tree

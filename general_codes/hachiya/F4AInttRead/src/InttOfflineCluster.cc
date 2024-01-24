@@ -16,6 +16,9 @@ void InttOfflineCluster::copy(InttOfflineCluster& hit) {
 
     local[0] = hit.local[0];
     local[1] = hit.local[1];
+    global[0] = hit.global[0];
+    global[1] = hit.global[1];
+    global[2] = hit.global[2];
     adc     = hit.adc;
     phisize = hit.phisize;
     zsize   = hit.zsize;  

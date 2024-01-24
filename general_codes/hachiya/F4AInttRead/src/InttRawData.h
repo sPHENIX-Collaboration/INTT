@@ -3,6 +3,9 @@
 
 #include <fun4all/SubsysReco.h>
 #include <InttHotMap.h>
+#include <TObject.h>
+
+#include <set>
 
 /// Class declarations for use in the analysis module
 class PHCompositeNode;
@@ -39,6 +42,10 @@ class InttRawData : public SubsysReco
 
   void SetHotMapFile(const char* filename) { hotfilename_ = std::string(filename); }
 
+  void SetDACfile(const char* dacfile){ dacfile_ = std::string(dacfile); }
+  void SetBCOfile(const char* bcofile){ bcofile_ = std::string(bcofile); }
+  void SetAdc7RemovalFlag(const bool flag){ isAdc7Removal_ = flag; }
+
   InttEvent* getInttEvent(){ return inttEvt_; }
 
   struct OfflineRawdata{
@@ -61,16 +68,26 @@ class InttRawData : public SubsysReco
     }
   };
 
+  // 
+  bool checkBCOBg(int felix, int ladder, int bco, Long64_t bcofull);
+
   /// The path to the input file. The file must have TTree "tree".
   std::string fname_;
   std::string hotfilename_;
 
   InttHotMap hotmap_;
 
-  TFile* inFile_;
-  TTree* tree_;
-  InttEvent* inttEvt_;
-  int        ievent_;
+  TFile*      inFile_ = nullptr;
+  TTree*      tree_;
+  InttEvent*  inttEvt_;
+  int         ievent_;
+  std::string dacfile_;
+  std::string bcofile_;
+  bool        isAdc7Removal_;
+
+  int           dacpar_[8]; // 8 different thresholds
+  std::set<int> bcopar_[8]; // 8 felix
+
 };
 
 #endif
