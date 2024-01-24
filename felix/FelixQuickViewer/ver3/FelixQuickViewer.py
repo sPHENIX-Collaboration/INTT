@@ -6,7 +6,8 @@ if __name__ == "__main__" :
     app = "root"
     option = "-q -b -l"
     macro = "FelixQuickViewer.cc"
-    file_path = "/sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root"
+    #file_path = "/sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root"
+    file_path = "calib_intt7-00025922-0000.root"
 
     command = app + " " + option + " \'" + macro + "( \"" + file_path + "\" )\'"
     print( command )

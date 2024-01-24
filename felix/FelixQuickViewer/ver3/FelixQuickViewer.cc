@@ -1,15 +1,17 @@
 #define __CINT__ // define it if it's run by root command
-#include "Viewer.hh"
 
+#include "HistMaker.hh"
+#include "Plotter.hh"
 
 //int main( int argc, char* argv[] )
 //int main()
 int FelixQuickViewer( string data )
 {
 
-  Viewer* view = new Viewer( data );
-  view->Print();
-  view->Process();
-  view->SaveHists();
+  HistMaker* hm = new HistMaker( data );
+  hm->Print();
+  hm->Process();
+  hm->SaveHists();
+  
   return 0;
 }
