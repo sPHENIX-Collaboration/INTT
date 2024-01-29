@@ -18,10 +18,17 @@ General macros for the INTT and the ladder classification macros are here.
 * for more details, see https://docs.github.com/en/get-started/getting-started-with-git/about-remote-repositories
 
 ## Working Persons for This Repo
+Active people are written here:
 
 * Genki Nukazuka (RBRC), genki.nukazuka@riken.jp, Aug/2021 - current
-* Cheng-Wei Shi (NTU), https://github.com/ChengWeiShih, Sep/2021 - current
-* Hikaru Imai (Rikkyo Univ.), ???. Nov/2021 - current
+* Cheng-Wei Shi (NCU), https://github.com/ChengWeiShih, Sep/2021 - current
 * Milan Stojanovic (Purdue Univ.) https://github.com/milanchestojanovic, Jan/2022 - current
-* Miu Morita (NWU), https://github.com/miumorita, Oct/2021 - Mar/2022
 * Joseph Bertaux (Purdue University), https://github.com/josephbertaux, June/2023 - current
+* Jaein Hwang (Korea University), Jan/2022 - current
+* Takashi Hachiya (NWU), - current
+* Manami Fujiwara (NWU), Apr/2023 - current
+
+### Past members
+
+* Hikaru Imai (Rikkyo Univ.), ???. Nov/2021 - Mar/2023
+* Miu Morita (NWU), https://github.com/miumorita, Oct/2021 - Mar/2022
