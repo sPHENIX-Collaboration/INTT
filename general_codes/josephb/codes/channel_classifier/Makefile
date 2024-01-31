@@ -9,7 +9,7 @@ EXE = exe
 
 FLGS = $(shell root-config --cflags) -g
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io -lcdbobjects $(shell root-config --glibs)
 
 BIN = ./bin/
 SRC = ./src/
@@ -18,6 +18,8 @@ REQS = \
 	write_local._$(CXX)_$(OXX)_$(EXE)_ \
 	check_local._$(CXX)_$(OXX)_$(EXE)_ \
 	compare._$(CXX)_$(OXX)_$(EXE)_ \
+	compare_jaein._$(CXX)_$(OXX)_$(EXE)_ \
+	write_cdbttree._$(CXX)_$(OXX)_$(EXE)_ \
 	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/base._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/ver_1._$(HXX)_$(CXX)_$(OXX)_
