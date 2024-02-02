@@ -1,12 +1,11 @@
-#include "Viewer.hh"
+#include "ReportMaker.hh"
 
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // Constructor
 //////////////////////////////////////////////////////////////////////
-Viewer::Viewer( string filename_arg ) :
-  filename_( filename_arg )
+ReportMaker::ReportMaker( string filename_arg )
 {
   this->Init();
 }
@@ -15,68 +14,23 @@ Viewer::Viewer( string filename_arg ) :
 //////////////////////////////////////////////////////////////////////
 // Private
 //////////////////////////////////////////////////////////////////////
-void Viewer::Init()
+void ReportMaker::Init()
 {
 
   //--------------------tree----------------------//
-  f1_ = new TFile(filename_.c_str(), "READ" );
+  //  BaseClass::f1_ = new TFile(filename_.c_str(), "READ" );
+  //f1_ = new TFile(filename_.c_str(), "READ" );
 
-  tr1_ = (TTree*)f1_->Get("tree");
-  tr1_->SetBranchAddress	("adc"		,&adc_		);
-  tr1_->SetBranchAddress	("ampl"		,&ampl_		);
-  tr1_->SetBranchAddress	("chip_id"	,&chip_id_	);
-  tr1_->SetBranchAddress	("module"	,&module_	);
-  //  tr1_->SetBranchAddress	("fpga_id"	,&fpga_id_	);
-  tr1_->SetBranchAddress	("chan_id"	,&chan_id_	);
-  //tr1_->SetBranchAddress	("fem_id"	,&fem_id_	);
-  //  tr1_->SetBranchAddress	("bco"	,&bco_		);
-  //  tr1_->SetBranchAddress	("bco_full"	,&bco_full_	);
-  //  tr1_->SetBranchAddress	("event"	,&event_	);
-
-  for(int i=0; i<kLadder_num_; i++)
-    {
-      for(int j=0; j<kChip_num_; j++)
-	{
-	  hist_adc_ch_[i][j] = new TH2D( Form("hist_adc_ch_module%d_chip%d", i, j ),
-					 Form("hist_adc_ch_module%d_chip%d", i, j ),
-					 128, 0, 128,
-					 10, 0, 10 );
-      
-	  hist_ch_[i][j] = new TH1D( Form("hist_ch_module%d_chip%d", i, j ),
-				     Form("hist_ch_module%d_chip%d", i, j ),
-				     128, 0, 128 );
-
-	  hist_adc_[i][j] = new TH1D( Form("hist_adc_module%d_chip%d", i, j ),
-				      Form("hist_adc_module%d_chip%d", i, j ),
-				      8, 0, 8 );
-	}
-    }
-
-  output_basename_ = filename_.substr( 0,  filename_.find_last_of( "." ) );
-  
-  this->InitLadderMap();
-  this->SetStyle();
+  //  output_basename_ = filename_.substr( 0,  filename_.find_last_of( "." ) );
   
 }
 
-void Viewer::InitLadderMap()
-{
-  // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
-  string felix_num = filename_.substr( filename_.find_last_of( "_" ) + 1 + string( "intt" ).size(), 1);
-  
-  cout << "felix num: " << felix_num << endl;
-  
-  //LadderMap
-  ladder_map_path_ = map_dir + "intt" + felix_num + "_map.txt";
-  ladder_map_ = new LadderMap( ladder_map_path_ );
-  ladder_map_->Print();
-  
-}
 
 //////////////////////////////////////////////////////////////////////
 // Public
 //////////////////////////////////////////////////////////////////////
-int Viewer::DoAll()
+/*
+int ReportMaker::DoAll()
 {
   this->Process();
 
@@ -85,7 +39,7 @@ int Viewer::DoAll()
   return 0;
 }
 
-int Viewer::Process()
+int ReportMaker::Process()
 {
 
   //---------------- hist --------------------//
@@ -111,7 +65,7 @@ int Viewer::Process()
   return 0;
 }
 
-int Viewer::Draw()
+int ReportMaker::Draw()
 {
   TPad* chip[kLadder_num_][kChip_num_];
   TCanvas* c[2];
@@ -174,7 +128,7 @@ int Viewer::Draw()
   return 0;
 }
 
-int Viewer::Draw_AdcChannel()
+int ReportMaker::Draw_AdcChannel()
 {
 
   TPad* chip[kLadder_num_][kChip_num_];
@@ -235,7 +189,7 @@ int Viewer::Draw_AdcChannel()
   return 0;
 }
 
-int Viewer::Draw_Channel()
+int ReportMaker::Draw_Channel()
 {
 
   TPad* chip[kLadder_num_][kChip_num_];
@@ -297,9 +251,9 @@ int Viewer::Draw_Channel()
   return 0;
 }
 
-void Viewer::Print()
+void ReportMaker::Print()
 {
-  this->PrintLine( "+", "-", "+", "FelixQuickViewer" );
+  this->PrintLine( "+", "-", "+", "FelixQuickReportMaker" );
   this->PrintLine( "|", " ", "|", "Data:", filename_ );
   this->PrintLine( "|", " ", "|", "Output Root file:", output_basename_ + root_suffix_ );
   this->PrintLine( "|", " ", "|", "Output picture file:", output_basename_ + "_*_" + figure_suffix_ );
@@ -322,7 +276,7 @@ void Viewer::Print()
   print_buffer_.erase( print_buffer_.begin(), print_buffer_.end() );  
 }
 
-void Viewer::SaveHists()
+void ReportMaker::SaveHists()
 {
   string output = output_basename_ + root_suffix_;
   TFile* tf = new TFile( output.c_str(), "RECREATE" );
@@ -342,7 +296,7 @@ void Viewer::SaveHists()
 }
 
 
-void Viewer::SetStyle()
+void ReportMaker::SetStyle()
 {
 
   //gStyle->SetPalette(1);
@@ -356,3 +310,4 @@ void Viewer::SetStyle()
   gStyle->SetPadBorderMode(0);
   gROOT->SetBatch( true ); // change to false to show canvases
 }
+*/

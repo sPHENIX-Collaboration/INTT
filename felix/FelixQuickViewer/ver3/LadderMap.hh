@@ -2,23 +2,24 @@
 
 #include <string>
 #include <fstream>
+#include <sstream>
 
 class LadderConfig
 {
 public:
   int module_;
-  string roc_port_;
-  string ladder_name_;
+  std::string roc_port_;
+  std::string ladder_name_;
 
-  LadderConfig( int module, string port, string name ) :
+  LadderConfig( int module, std::string port, std::string name ) :
     module_( module ),
     roc_port_( port ),
     ladder_name_( name )
   {};
 
   int GetModule(){ return module_; };
-  string GetRocPort(){ return roc_port_; };
-  string GetLadderName(){ return ladder_name_; };
+  std::string GetRocPort(){ return roc_port_; };
+  std::string GetLadderName(){ return ladder_name_; };
 };
 
 class LadderMap
@@ -27,28 +28,28 @@ private:
 
   
 public:
-  vector < LadderConfig* > ladders_;
+  std::vector < LadderConfig* > ladders_;
   
   LadderMap(){};
-  LadderMap( string map )
+  LadderMap( std::string map )
   {
-    ifstream ifs( map.c_str() );
+    std::ifstream ifs( map.c_str() );
     if( ifs.fail() )
       {
-	cerr << map << " is not found" << endl;
+	std::cerr << map << " is not found" << std::endl;
 	return;
       }
 
-    string line;
+    std::string line;
     while( getline( ifs, line ) )
       {
 	if( line[0] == '#' || line[0] == ' ' || line == "" )
 	  continue;
 
-	stringstream ss(line);
+	std::stringstream ss(line);
 	int module;
-	string roc_port, ladder_name;
-	//string stemp;
+	std::string roc_port, ladder_name;
+	//std::string stemp;
 	ss >> module >> roc_port >> ladder_name;
 	
 	ladders_.push_back( new LadderConfig( module, roc_port, ladder_name ) );
@@ -58,13 +59,13 @@ public:
   void Print()
   {
     int width = 3 + (7 + 3 + 2 ) + (9 + 2 + 2) + (7 + 7) + 1;
-    cout << string( width, '-' ) << endl;
+    std::cout << std::string( width, '-' ) << std::endl;
     for( auto& it : ladders_ )
-      cout << " - Module "   << setw(3) << it->GetModule() << ", "
+      std::cout << " - Module "   << std::setw(3) << it->GetModule() << ", "
 	   << "ROC port " << it->GetRocPort() << ", "
 	   << "Ladder "   << it->GetLadderName()
-	   << endl;
-    cout << string( width, '-' ) << endl;
+	   << std::endl;
+    std::cout << std::string( width, '-' ) << std::endl;
   };
 
 };

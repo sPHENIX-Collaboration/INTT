@@ -4,8 +4,12 @@
 #include <iomanip>
 
 #include <string>
+#include <TROOT.h>
 #include <TFile.h>
 #include <TStyle.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TTree.h>
 
 #include "LadderMap.hh"
 
@@ -21,8 +25,9 @@ protected:
   // constant variables
   const int kChip_num_ = 26;
   const int kLadder_num_ = 14; //
-  const string map_dir = "/direct/sphenix+tg+tg01/commissioning/INTT/map_ladder/";
-  
+  //const string map_dir = "/direct/sphenix+tg+tg01/commissioning/INTT/map_ladder/";
+  const string map_dir = "/Users/genki/map_ladder/";
+
   // input
   string filename_; // The path to the data file
   string ladder_map_path_;
@@ -36,12 +41,17 @@ protected:
   // variables for misc
   int width_ = 100;
 
+  TFile* f1_;
+
   vector < string > print_buffer_;
+  TH2D* hist_adc_ch_[14][26];
+  TH1D* hist_adc_[14][26];
+  TH1D* hist_ch_[14][26];
 
   /////////////////////////////////////
   // protected member functions      //
   /////////////////////////////////////
-  virtual void Init(){};
+  virtual void Init();
   void InitLadderMap();
   
   template < class... T >
@@ -63,10 +73,14 @@ public:
 
   // constructors
   BaseClass(){};
-  BaseClass( string filename_arg ){ filename_ = filename_arg;};
+  //BaseClass( string filename_arg ){ filename_ = filename_arg;};
+  BaseClass( string filename_arg );
 
   // destructor
-  ~BaseClass(){};
+  ~BaseClass()
+  {
+    f1_->Close();
+  };
   
   /////////////////////////////////////
   // Get methods                     //
@@ -79,11 +93,12 @@ public:
   string GetOutput() const { return output_basename_ + root_suffix_; }; // ROOT file
   string GetOutputBasename() const { return output_basename_;};
 
+  //virtual bool ReadHistograms();
   virtual void Print();
   virtual void SetStyle();  
     
 };
 
-#ifdef __CINT__
+#ifndef CLING
 #include "BaseClass.cc"
 #endif

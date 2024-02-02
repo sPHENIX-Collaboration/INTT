@@ -18,47 +18,72 @@ Viewer::Viewer( string filename_arg ) :
 void Viewer::Init()
 {
 
+  //  this->BaseClass::Init();
   //--------------------tree----------------------//
   f1_ = new TFile(filename_.c_str(), "READ" );
-
-  tr1_ = (TTree*)f1_->Get("tree");
-  tr1_->SetBranchAddress	("adc"		,&adc_		);
-  tr1_->SetBranchAddress	("ampl"		,&ampl_		);
-  tr1_->SetBranchAddress	("chip_id"	,&chip_id_	);
-  tr1_->SetBranchAddress	("module"	,&module_	);
-  //  tr1_->SetBranchAddress	("fpga_id"	,&fpga_id_	);
-  tr1_->SetBranchAddress	("chan_id"	,&chan_id_	);
-  //tr1_->SetBranchAddress	("fem_id"	,&fem_id_	);
-  //  tr1_->SetBranchAddress	("bco"	,&bco_		);
-  //  tr1_->SetBranchAddress	("bco_full"	,&bco_full_	);
-  //  tr1_->SetBranchAddress	("event"	,&event_	);
+  //f1_->ls();
 
   for(int i=0; i<kLadder_num_; i++)
     {
+      string name_module = "module" + to_string( i ) + "_";
+      
       for(int j=0; j<kChip_num_; j++)
 	{
-	  hist_adc_ch_[i][j] = new TH2D( Form("hist_adc_ch_module%d_chip%d", i, j ),
-					 Form("hist_adc_ch_module%d_chip%d", i, j ),
-					 128, 0, 128,
-					 10, 0, 10 );
+	  string name_chip = "chip" + to_string( j ) ;
+	  
+	  // hist_adc_ch_[i][j] = new TH2D( Form("hist_adc_ch_module%d_chip%d", i, j ),
+	  // 				 Form("hist_adc_ch_module%d_chip%d", i, j ),
+	  // 				 128, 0, 128,
+	  // 				 10, 0, 10 );
       
-	  hist_ch_[i][j] = new TH1D( Form("hist_ch_module%d_chip%d", i, j ),
-				     Form("hist_ch_module%d_chip%d", i, j ),
-				     128, 0, 128 );
+	  // hist_ch_[i][j] = new TH1D( Form("hist_ch_module%d_chip%d", i, j ),
+	  // 			     Form("hist_ch_module%d_chip%d", i, j ),
+	  // 			     128, 0, 128 );
 
-	  hist_adc_[i][j] = new TH1D( Form("hist_adc_module%d_chip%d", i, j ),
-				      Form("hist_adc_module%d_chip%d", i, j ),
-				      8, 0, 8 );
+	  // hist_adc_[i][j] = new TH1D( Form("hist_adc_module%d_chip%d", i, j ),
+	  // 			      Form("hist_adc_module%d_chip%d", i, j ),
+	  // 			      8, 0, 8 );
+
+	  
+	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
+	  hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
+	  
+	  string name_hist_ch = "hist_ch_" + name_module + name_chip;
+	  hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+
+	  string name_hist_adc = "hist_adc_" + name_module + name_chip;
+	  hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
+
 	}
     }
 
-  output_basename_ = filename_.substr( 0,  filename_.find_last_of( "." ) );
   
-  this->InitLadderMap();
+  string canvas_name[2];
+  canvas_name[0] = "ADC vs channel_id ";
+  canvas_name[1] = "entry vs channel_id ";
+
+  // for(int k=0;k<2;k++)
+  //   {
+  //     c_[k] = new TCanvas(Form("c[%d]",k),canvas_name[k].c_str(),2560,1600);
+  //     c_[k]->Divide(2,7);
+      
+  //   }
+
+  // //cout<<"canvasOK"<<endl;
+  
+  // c_[0]->cd();
+  // c_[0]->Divide(2,7);
+
+  c_adc_ch_ = new TCanvas( "ADC_vs_CH", canvas_name[0].c_str() ,2560,1600);
+  c_ch_     = new TCanvas( "CH", canvas_name[1].c_str(),2560,1600);
+  c_adc_    = new TCanvas( "ADC", "ADC distribution",2560,1600);
+
+  //this->InitLadderMap();
   this->SetStyle();
   
 }
 
+/*
 void Viewer::InitLadderMap()
 {
   // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
@@ -72,41 +97,26 @@ void Viewer::InitLadderMap()
   ladder_map_->Print();
   
 }
+*/
 
 //////////////////////////////////////////////////////////////////////
 // Public
 //////////////////////////////////////////////////////////////////////
 int Viewer::DoAll()
 {
-  this->Process();
+  //this->Process();
 
   this->Draw();
+  
+  c_adc_ch_->Update();
+  c_ch_->Update();
+  c_adc_->Update();
 
   return 0;
 }
 
 int Viewer::Process()
 {
-
-  //---------------- hist --------------------//
-  int nEntries1 = ( tr1_->GetEntries() );
-  
-  for(int n=0; n<nEntries1; n++)
-    {
-      tr1_->GetEntry( n );
-      for(int i=0; i<kLadder_num_; i++)
-	{
-	  for(int j=0; j<kChip_num_; j++)
-	    {
-	      if( ampl_<70 && chan_id_<127 && chip_id_<27 && chip_id_==j+1 && module_==i )
-		{
-		  hist_adc_ch_[i][j]->Fill( chan_id_, adc_ );
-		  hist_ch_[i][j]->Fill( chan_id_ );
-		  hist_adc_[i][j]->Fill( adc_ );
-		}
-	    }
-	}
-    }
   
   return 0;
 }
@@ -114,20 +124,6 @@ int Viewer::Process()
 int Viewer::Draw()
 {
   TPad* chip[kLadder_num_][kChip_num_];
-  TCanvas* c[2];
-  string canvas_name[2];
-  canvas_name[0] = "ADC vs channel_id ";
-  canvas_name[1] = "entry vs channel_id ";
-
-  for(int k=0;k<2;k++)
-    {
-      c[k] = new TCanvas(Form("c[%d]",k),canvas_name[k].c_str(),2560,1600);
-    }
-
-  //cout<<"canvasOK"<<endl;
-  
-  c[0]->cd();
-  c[0]->Divide(2,7);
 
   //-------------- Ladder name ----------------//
   
@@ -153,11 +149,16 @@ int Viewer::Draw()
 	}
     }
 
-  for( int k=0; k<2; k++ )
+
+  vector < TCanvas* > canvases;
+  canvases.push_back( c_adc_ch_ );
+  canvases.push_back( c_ch_ );
+  canvases.push_back( c_adc_ );
+  for( int k=0; k<canvases.size(); k++ )
     {
       for(int i=0; i<kLadder_num_; i++ )
 	{
-	  c[k]->cd();
+	  canvases[k]->cd();
 	  //int p;
 	  //p=fmod(k,3);
 	  L_posi[i]->SetTextSize(0.02);
@@ -167,6 +168,7 @@ int Viewer::Draw()
 	  L_posi[i]->Draw();
 	}
   }
+
   
   this->Draw_AdcChannel();
   this->Draw_Channel();
@@ -178,8 +180,9 @@ int Viewer::Draw_AdcChannel()
 {
 
   TPad* chip[kLadder_num_][kChip_num_];
-  TCanvas* c = new TCanvas( "canvas", "ADC vs channel_id ", 2560, 1600 );  
+  auto c = c_adc_ch_;
   c->Divide(2,7);
+  //  gPad->cd( 
   
   for(int i=0;i<kLadder_num_;i++)
     {
@@ -239,7 +242,7 @@ int Viewer::Draw_Channel()
 {
 
   TPad* chip[kLadder_num_][kChip_num_];
-  TCanvas* c =new TCanvas("canvas", "entry vs channel_id ", 2560, 1600);
+  TCanvas* c = c_ch_;
   
   //------------------- entry vs channel ------------//
 
@@ -257,14 +260,27 @@ int Viewer::Draw_Channel()
       
       for(int j=0;j<kChip_num_;j++)
 	{
-	  if(j<kChip_num_/2)
+	  if(j<kChip_num_/2) // from chip 0 - 13, lower side of the plot
 	    {
+	      //
+	      //   +------------+----- yup
+	      //   |            |  |
+	      //   |            |  |
+	      //   |            |  0.5
+	      //   |            |  |
+	      //   |            |  |
+	      //   +------------+----- ylow
+	      //   |<--0.0075-->|
+	      //   xlow         xup
+	      
 	      chip[i][j] = new TPad( Form("chip[%d]",j),
 				     Form("chip%d",j+1),
-				     1-(0.075*(j+1)), 0.0,
-				     1-(0.075*j), 0.5 );
+				     1 - ( 0.075*(j+1) ), // xlow
+				     0.0,                 // ylow
+				     1 - ( 0.075*j ),     // xup
+				     0.5 );               // yup
 	    }
-	  else
+	  else // from chip 14 - 26, upper side of the plot
 	    {
 	      chip[i][j] = new TPad( Form("chip[%d]",j),
 				     Form("chip%d",j+1),
@@ -282,8 +298,10 @@ int Viewer::Draw_Channel()
 	  //hist_ch_[i][j]->SetMaximum(600);
 	  hist_ch_[i][j]->Draw();
 	  //      gPad->SetLogy();
-	  //hist_ch_[i][j]->GetYaxis()->SetRangeUser(0,600);
-      c->cd(i+1);
+	  //	  hist_ch_[i][j]->GetYaxis()->SetRangeUser(0,600);
+	  hist_ch_[i][j]->GetYaxis()->SetLabelOffset(0);
+	  
+	  c->cd(i+1);
 	}
     }
   
@@ -348,7 +366,8 @@ void Viewer::SetStyle()
   //gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
+  gStyle->SetOptTitle( 0 );
+  
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasColor(0);
   gStyle->SetCanvasBorderMode(0);

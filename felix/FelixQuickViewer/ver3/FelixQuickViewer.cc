@@ -1,17 +1,56 @@
-#define __CINT__ // define it if it's run by root command
+#include <cstring>
+#include <iostream>
 
+//#include "TApplication.h"
+
+#include "BaseClass.hh"
 #include "HistMaker.hh"
-#include "Plotter.hh"
+#include "Viewer.hh"
+//#include "Plotter.hh"
 
-//int main( int argc, char* argv[] )
-//int main()
-int FelixQuickViewer( string data )
+#ifndef CLING
+int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root" )
 {
+  int argc = 2;
+  char* argv[data.size()];
+  
+  
+#else
 
+int main( int argc, char* argv[] )
+{  
+  std::string data = argv[1];
+  
+#endif
+  
+  std::cout << argc << std::endl;
+  if( argc <= 1 )
+    {
+      std::cerr << "No data path is given." << std::endl;
+      std::cerr << "Usage: " << argv[0] << " [data path]" << std::endl;
+      return 0;
+    }
+  
+  
+  std::cout << data << std::endl;
+  std::cout << "Making HistMaker" << std::endl;
+
+  //TApplication app( "app", &argc, argv );
+
+  //BaseClass* bs = new BaseClass( data );
   HistMaker* hm = new HistMaker( data );
-  hm->Print();
-  hm->Process();
-  hm->SaveHists();
+  //hm->Init();
+  // hm->Print();
+  // hm->Process();
+  // hm->SaveHists();
+
+  Viewer* vw = new Viewer( hm->GetOutput() );
+  vw->Draw();
+  
+  //  TRootBrowser* imp = (TRootBrowser*)a->GetBrowserImp();
+  //  imp->Connect( imp, "Refresh()", "TApplication", &app, "Terminate()" );
+  //  imp->Connect( imp, "CloseWindow()", "TApplication", &app, "Terminate()" );
+  //  app.Run();
   
   return 0;
 }

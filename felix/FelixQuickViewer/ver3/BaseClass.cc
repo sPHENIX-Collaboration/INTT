@@ -5,6 +5,23 @@ using namespace std;
 ////////////////////////////////
 // protected members          //
 ////////////////////////////////
+
+BaseClass::BaseClass( string filename_arg )
+{
+  filename_ = filename_arg;
+  Init();
+
+}
+
+void BaseClass::Init()
+{
+  cout << "BaseClass::filename_: " << filename_ << endl;
+  //--------------------tree----------------------//
+  //  TH1D* aaa = new TH1D( "aaaa", "title", 128, 0., 128 );
+  f1_ = new TFile(filename_.c_str(), "READ" );
+  //  TH1D* aaaa = new TH1D( "aaaav", "title", 128, 0., 128 );
+}
+
 void BaseClass::InitLadderMap()
 {
   // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
@@ -47,6 +64,33 @@ void BaseClass::Print()
   print_buffer_.erase( print_buffer_.begin(), print_buffer_.end() );  
 }
 
+/*
+bool BaseClass::ReadHistograms()
+{
+  for(int i=0; i<kLadder_num_; i++)
+    {
+      string name_module = "module" + to_string( i ) + "_";
+      
+      for(int j=0; j<kChip_num_; j++)
+	{
+	  string name_chip = "chip" + to_string( j ) ;
+	  	  
+	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
+	  hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
+
+	  string name_hist_ch = "hist_ch_" + name_module + name_chip;
+	  hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+
+	  string name_hist_adc = "hist_adc_" + name_module + name_chip;
+	  hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
+
+	}
+    }
+
+  return true;
+}
+*/
+
 void BaseClass::SetStyle()
 {
     
@@ -61,4 +105,3 @@ void BaseClass::SetStyle()
   gStyle->SetPadBorderMode(0);
   gROOT->SetBatch( true ); // change to false to show canvases
 };
-
