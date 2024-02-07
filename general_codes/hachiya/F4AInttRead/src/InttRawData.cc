@@ -258,7 +258,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 	   data[9].set(6, 2,  7, 0, 4, 217, 0);
 	   */
 
-        cout<<"InttEvent: "<<inttEvt_->evtSeq<<" "<<inttEvt_->bco<<" "<<hex<<inttEvt_->bco<<dec<<endl;
+        cout<<"InttEvent: "<<inttEvt_->evtSeq<<" "<<inttEvt_->bco<<" "<<hex<<inttEvt_->bco<<dec<<" "<<inttEvt_->getNHits()<<endl;
 
 
 
@@ -274,7 +274,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
         //static const int DAC[8] = {15, 30, 50, 70, 90, 110, 130, 150};
         //static const int DAC[8] = {15, 30, 60, 90, 120, 150, 180, 210};
 
-	int nskip=0;
+	int nskip=0, nbad=0, nbco=0, nadc7=0;
 	for(int n = 0; n < inttEvt_->getNHits(); ++n)
 	{
 		InttHit* rawhit = inttEvt_->getHit(n);
@@ -331,8 +331,9 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                                  rawdata.chip+1, 
                                  rawdata.channel))
                 {
-                   cout<<" hotchanel : "<<rawdata.felix_server<<" "<<rawdata.felix_channel<<" "
-                                        <<rawdata.chip<<" "<< rawdata.channel<<endl;
+                   //cout<<" hotchanel : "<<rawdata.felix_server<<" "<<rawdata.felix_channel<<" "
+                   //                     <<rawdata.chip<<" "<< rawdata.channel<<endl;
+                   nbad++;
                    continue;
                 }
                 
@@ -343,6 +344,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                               rawhit->bco, 
                               rawhit->bco_full))
                 {
+                   nbco++;
                    continue;
                 }
                 
@@ -350,6 +352,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                 // remove adc7 for dacscan 
                 if(isAdc7Removal_&&adc==7)
                 {
+                   nadc7++;
                    continue;
                 }
                 //------------------
@@ -363,7 +366,7 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 		hit->setAdc(dacpar_[adc]);
 		hit_set_container_itr->second->addHitSpecificKey(hit_key, hit);
 	}
-	cout<<"Nskip of copyhit : "<<nskip<<endl;
+	cout<<"Nskip of copyhit : "<<nskip<<" "<<nbad<<" "<<nbco<<" "<<nadc7<<endl;
 
 
 	return Fun4AllReturnCodes::EVENT_OK;
@@ -390,7 +393,8 @@ bool InttRawData::checkBCOBg(int felix, int /*ladder*/, int bco, Long64_t bcoful
 
   bool debug=false;
 
-  bool ret = (bcopar_[felix].find(bcodiff)==bcopar_[felix].end()); // not found=true;
+  bool ret = (  bcopar_[felix].size()>0
+              &&bcopar_[felix].find(bcodiff)!=bcopar_[felix].end()); // not found=true;
   if(debug) {
     if(ret) {
       cout<<" bco : "<<felix<<" "/*<<ladder<<" "*/<<bcodiff<<" : "<<hex<<bco<<" "<<bcofull<<dec<<endl;
@@ -400,6 +404,6 @@ bool InttRawData::checkBCOBg(int felix, int /*ladder*/, int bco, Long64_t bcoful
     }
   }
 
-  return (bcopar_[felix].find(bcodiff)==bcopar_[felix].end()); // not found=true;
+  return ret;
 }
 
