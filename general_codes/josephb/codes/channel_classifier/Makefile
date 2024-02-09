@@ -20,6 +20,7 @@ REQS = \
 	compare._$(CXX)_$(OXX)_$(EXE)_ \
 	compare_jaein._$(CXX)_$(OXX)_$(EXE)_ \
 	write_cdbttree._$(CXX)_$(OXX)_$(EXE)_ \
+	cheng_wei._$(CXX)_$(OXX)_$(EXE)_ \
 	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/base._$(HXX)_$(CXX)_$(OXX)_ \
 	channel_classifier/ver_1._$(HXX)_$(CXX)_$(OXX)_
