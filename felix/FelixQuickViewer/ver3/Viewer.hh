@@ -55,7 +55,8 @@ private:
   // output
   string output_basename_;
   string root_suffix_ = "_hist.root"; // suffix of the output ROOT file which contains histgram objects
-  string figure_suffix_ = ".pdf";
+  //string figure_suffix_ = ".pdf";
+  string figure_suffix_ = ".png";
 
   // variables for misc
   int width_ = 100;

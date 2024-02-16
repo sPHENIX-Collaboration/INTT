@@ -46,14 +46,35 @@ void Viewer::Init()
 
 	  
 	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
-	  hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
+	  try
+	    {
+	      hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      //hist_adc_ch_[i][j] = new TH2D("", "", 1, 0, 1, 1, 0, 1);
+	      hist_adc_ch_[i][j] = new TH2D();
+	    }
 	  
 	  string name_hist_ch = "hist_ch_" + name_module + name_chip;
-	  hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+	  try
+	    {
+	      hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_ch_[i][j] = new TH1D();
+	    }
 
 	  string name_hist_adc = "hist_adc_" + name_module + name_chip;
-	  hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
-
+	  try
+	    {
+	      hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_adc_[i][j] = new TH1D();
+	    }
 	}
     }
 
@@ -330,7 +351,7 @@ int Viewer::Draw_Channel()
   //c->Print(Form("test_pdf/%s%s-%s_entryvschan.pdf",date,year,time));
   //cout<<Form("canvas[%d]_OK",k);
   string output_entry_vs_chan = filename_.substr( 0, filename_.find_last_of( "." ) )
-    + "_entryvschan" + figure_suffix_;;
+    + "_entryvschan" + figure_suffix_;
   c->Print( output_entry_vs_chan.c_str() );
   
   return 0;
@@ -487,7 +508,7 @@ int Viewer::Draw_Pedestal()
     }
 
   string output_pedestal = filename_.substr( 0, filename_.find_last_of( "." ) )
-    + "_pedestal" + figure_suffix_;;
+    + "_pedestal" + figure_suffix_;
   c->Print( output_pedestal.c_str() );
   return 0;
 }

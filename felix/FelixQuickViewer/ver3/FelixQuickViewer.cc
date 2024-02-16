@@ -39,7 +39,7 @@ int main( int argc, char* argv[] )
 
   //BaseClass* bs = new BaseClass( data );
   HistMaker* hm = new HistMaker( data );
-  hm->Init();
+  //hm->Init();
   hm->Print();
   hm->Process();
   hm->SaveHists();

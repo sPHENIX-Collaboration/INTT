@@ -64,10 +64,7 @@ void HistMaker::Init()
 				      Form("hist_adc_module%d_chip%d;ADC;Entries", i, j ),
 				      8, 0, 8 );
 	  hist_adc_[i][j]->SetFillColorAlpha( kAzure + 1, 0.3 );
-	  break;
-
 	}
-      break;
     }
   return ;
   
