@@ -9,9 +9,9 @@
 //#include "Plotter.hh"
 
 #ifndef CLING
-int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root" )
+int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root", string run_type = "calibration" )
 {
-  int argc = 2;
+  int argc = 3;
   char* argv[data.size()];
   
   
@@ -45,6 +45,7 @@ int main( int argc, char* argv[] )
   // hm->SaveHists();
 
   Viewer* vw = new Viewer( hm->GetOutput() );
+  vw->SetRunType( run_type );
   vw->Draw();
   
   //  TRootBrowser* imp = (TRootBrowser*)a->GetBrowserImp();

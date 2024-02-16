@@ -49,9 +49,14 @@ class Information() :
         self.plot_mode = args.plot
         self.homepage_mode = args.homepage
         self.calib_summary_mode = args.calib_summary
-
-        # Processes for plot mode
+        self.run_type = args.run_type
+            
+        
+        #############################################################################
+        # Processes for plot mode                                                   #
+        #############################################################################
         self.plot_file = args.file
+        # If no file is given...
         if self.plot_mode is True and self.plot_file is None :
             self.printer.AddLine( "==== WARNING ====" )
             self.printer.AddLine( "No file is given for plot mode." )
@@ -70,7 +75,17 @@ class Information() :
             self.printer.Print( color="Red" )
             self.printer.Clear()
 
-        # Processes for homepage mode
+        if self.run_type is None :
+            self.run_type = os.path.basename( self.plot_file ).split( '_' )[0]
+            if self.run_type == "intt" :
+                print( "Run type cannot be detected from the file name." \
+                       "Please use --run-type flag to give it." \
+                       "junk is used..." )
+                self.run_type = "junk"
+            
+        #############################################################################
+        # Processes for homepage mode                                               #
+        #############################################################################
         if args.run is not None:
             self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
         else:
@@ -115,6 +130,7 @@ class Information() :
         # Flags for the mode selection
         self.printer.AddSeparator()
         self.printer.AddLine( "Mode"               , color=header_color )
+        self.printer.AddLine( "Run type:          ", self.run_type )
         self.printer.AddLine( "Plot mode:         ", self.plot_mode )
         self.printer.AddLine( "Homepage mode:     ", self.homepage_mode )
         self.printer.AddLine( "Calib summary mode:", self.calib_summary_mode )

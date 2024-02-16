@@ -19,9 +19,21 @@ if __name__ == "__main__" :
                                      )
 
     ####################################################
+    # List of flags                                    #
+    ####################################################
+    # --dry-run
+    # --year
+    # --plot
+    # --file
+    # --exe-type [macro, exe]
+    # --homepage
+    # --run
+    # --calib-summary
+    # --run-type [beam, cosmic, calib, pedestal]
+    
+    ####################################################
     # Mandatory parameter                              #
     ####################################################
-    
     ####################################################
     # General flags                                    #
     ####################################################
@@ -29,11 +41,19 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          default=False,
                          help="A flag for testing the processes. It's better to use it before launching processes." )
-    
+
+    year_list = [2023, 2024, 2025 ]
     parser.add_argument( "--year", type=int,
+                         choices=year_list,
                          default=datetime.date.today().year,
                          help="The year of the datat." )
-    
+
+    run_type_list = [ None, "beam", "cosmics", "calib", "calibration", "pedestal", "junk" ]
+    parser.add_argument( "--run-type", type=str,
+                         choices=run_type_list,
+                         default=None,
+                         help="Choose the run type." )
+
     ####################################################
     # For plot mode                                    #
     ####################################################
@@ -84,24 +104,34 @@ if __name__ == "__main__" :
         if info.plot_exe_type == "macro" : 
             app = "root"
             option = "-q -b -l"
+            #option = " "
             macro = "FelixQuickViewer.cc"
             #file_path = "/sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root"
             #file_path = "calib_intt7-00025922-0000.root"
-            file_path = "calib_intt0-12345678-0000.root"
+            # file_path = "calib_intt0-12345678-0000.root"
 
-            command = app + " " + option + " \'" + macro + "( \"" + file_path + "\" )\'"
+            command = app + " " + option + " \'" + macro \
+                + "( " \
+                + "\"" + info.plot_file + "\", " \
+                + "\"" + info.run_type + "\"" \
+                + ")\'"
             print( command )
-            sp.run( command, shell=True )
+
+            if info.is_dry_run is False : 
+                sp.run( command, shell=True )
+                
         elif info.plot.exe_type == "exe" : 
             app = "./FelixQuickViewer.exe"
             option = ""
-            #file_path = "/sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root"
-            #file_path = "calib_intt7-00025922-0000.root"
-            file_path = "calib_intt0-12345678-0000.root"
 
-            command = app + " " + option + " " + file_path + ""
+            command = app + " " + option + " " + info.plot_file + ""
             print( command )
-            sp.run( command, shell=True )
+            if info.is_dry_run is False : 
+                sp.run( command, shell=True )
+        # end of if info.plot_exe_type == "macro" :
+        
+        if info.is_dry_run is True:
+            print( "Dry mode. Nothing is done" )
 
     if info.homepage_mode is True :
         hp = Homepage.Homepage( info )

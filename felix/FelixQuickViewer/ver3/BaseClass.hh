@@ -23,13 +23,14 @@ protected:
   /////////////////////////////////////
 
   // constant variables
-  const int kChip_num_ = 26;
-  const int kLadder_num_ = 14; //
+  static const int kChip_num_ = 26;
+  static const int kLadder_num_ = 14; //
   //const string map_dir = "/direct/sphenix+tg+tg01/commissioning/INTT/map_ladder/";
   const string map_dir = "/Users/genki/map_ladder/";
 
   // input
   string filename_; // The path to the data file
+  string run_type_ = "calib";
   string ladder_map_path_;
   LadderMap* ladder_map_;
   
@@ -93,6 +94,8 @@ public:
   string GetOutput() const { return output_basename_ + root_suffix_; }; // ROOT file
   string GetOutputBasename() const { return output_basename_;};
 
+  void SetRunType( string arg ){ run_type_ = arg;};
+  
   //virtual bool ReadHistograms();
   virtual void Print();
   virtual void SetStyle();  

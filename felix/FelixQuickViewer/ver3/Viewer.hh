@@ -45,8 +45,6 @@ private:
   }
 
   // constant variables
-  const int kChip_num_ = 26;
-  const int kLadder_num_ = 14; //
   const string map_dir = "/sphenix/tg/tg01/commissioning/INTT/map_ladder/";
   
   // input
@@ -68,19 +66,22 @@ private:
   //TFile* f1_;
   //  TTree* tr1_;
 
-  TH2D* hist_adc_ch_[14][26];
-  TH1D* hist_adc_[14][26];
-  TH1D* hist_ch_[14][26];
+  TH2D* hist_adc_ch_[kLadder_num_][kChip_num_];
+  TH1D* hist_adc_[kLadder_num_][kChip_num_];
+  TH1D* hist_ch_[kLadder_num_][kChip_num_];
 
   TCanvas* c_ch_;
   TCanvas* c_adc_;
   TCanvas* c_adc_ch_;
+  TCanvas* c_pedestal_;
+
+  unsigned int GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank );
   
 public:
 
   // constructors
   Viewer(){};
-  Viewer( string filename_arg );
+  Viewer( string filename_arg);
 
   // destructor
   ~Viewer(){};
@@ -89,7 +90,8 @@ public:
   int Draw();
   int Draw_AdcChannel();
   int Draw_Channel();
-
+  int Draw_Pedestal();
+  
   TCanvas* GetCanvasCh(){ return (TCanvas*)(c_ch_->Clone()); }
   
   void Print();

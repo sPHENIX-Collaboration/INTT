@@ -7,4 +7,10 @@
 # --homepage: Homepage mode. The PNG plots are found by using a single [run].
 # --calib_summary:
 dir="/sphenix/tg/tg01/commissioning/INTT/work/genki/repos/INTT/felix/FelixQuickViewer/ver3/"
+
+if [ `whoami` == "genki" ]
+then
+    dir="./"
+fi
+
 python3 ${dir}FelixQuickViewer.py $@
