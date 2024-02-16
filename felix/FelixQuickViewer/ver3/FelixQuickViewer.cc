@@ -39,10 +39,10 @@ int main( int argc, char* argv[] )
 
   //BaseClass* bs = new BaseClass( data );
   HistMaker* hm = new HistMaker( data );
-  //hm->Init();
-  // hm->Print();
-  // hm->Process();
-  // hm->SaveHists();
+  hm->Init();
+  hm->Print();
+  hm->Process();
+  hm->SaveHists();
 
   Viewer* vw = new Viewer( hm->GetOutput() );
   vw->SetRunType( run_type );
