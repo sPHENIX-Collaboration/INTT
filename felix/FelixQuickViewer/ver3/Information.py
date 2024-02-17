@@ -49,48 +49,37 @@ class Information() :
         self.plot_mode = args.plot
         self.homepage_mode = args.homepage
         self.calib_summary_mode = args.calib_summary
-        self.run_type = args.run_type
-            
-        
+                    
         #############################################################################
         # Processes for plot mode                                                   #
         #############################################################################
         self.plot_file = args.file
-        # If no file is given...
-        if self.plot_mode is True and self.plot_file is None :
-            self.printer.AddLine( "==== WARNING ====" )
-            self.printer.AddLine( "No file is given for plot mode." )
-            self.printer.AddLine( "Plot mode is turned OFF" )
-            self.plot_mode = False
-            self.printer.Print( color="Red" )
-            self.printer.Clear()
-
+        self.plot_skip_hist_generation = args.plot_skip_hist_generation
+        
         self.plot_exe_type = args.exe_type
-            
-        if self.plot_file is not None and os.path.exists( self.plot_file ) is False:
-            self.printer.AddLine( "==== WARNING ====" )
-            self.printer.AddLine( self.plot_file, "is not found." )
-            self.printer.AddLine( "Plot mode is turned OFF" )
-            self.plot_mode = False
-            self.printer.Print( color="Red" )
-            self.printer.Clear()
 
-        if self.run_type is None :
-            self.run_type = os.path.basename( self.plot_file ).split( '_' )[0]
-            if self.run_type == "intt" :
-                print( "Run type cannot be detected from the file name." \
-                       "Please use --run-type flag to give it." \
-                       "junk is used..." )
-                self.run_type = "junk"
             
         #############################################################################
-        # Processes for homepage mode                                               #
+        # Processes for data                                                        #
         #############################################################################
+        self.run_type = args.run_type
+        self.felix_server = args.felix_server
+        
         if args.run is not None:
             self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
         else:
             self.run = None
-            
+
+        if args.chunk is not None:
+            self.chunk        = str(args.chunk).zfill( 4 ) # fill all 8-digit length with 0 if given number is not 8-digit
+        else:
+            self.chunk = None
+
+        #############################################################################
+        # Some more processes...                                                    #
+        #############################################################################
+        self.InitFlags()
+        
         self.homepage_plots = []
         self.GetHomepagePlots()
         
@@ -109,6 +98,67 @@ class Information() :
         #if args.only is True :
         #    print( "Only ..." , flush=True )
 
+    def InitFlags( self ) :
+        if self.plot_file is not None :
+            ############################################################
+            # A data file name is assumed to be                        #
+            # [run_type]_[felix_server]-[run_number]-[chunk].root      #
+            #                                                          #
+            #   [run_type]:                                            #
+            #   [felix_server]: intt[num], where [num] is from 0 to 7  #
+            #   [run_number]: 8-digit integer                          #
+            #   [chunk]: 4-digit integer                               #
+            ############################################################
+            
+            # If given file cannot be found...
+            if os.path.exists( self.plot_file ) is False:
+                self.printer.AddLine( "==== WARNING ====" )
+                self.printer.AddLine( self.plot_file, "is not found." )
+                self.printer.AddLine( "Plot mode is turned OFF" )
+                self.plot_mode = False
+                self.printer.Print( color="Red" )
+                self.printer.Clear()
+
+            # for run type
+            if self.run_type is None :
+                self.run_type = os.path.basename( self.plot_file ).split( '_' )[0]
+                if self.run_type == "intt" :
+                    print( "Run type cannot be detected from the file name." \
+                           "Please use --run-type flag to give it." \
+                           "junk is used..." )
+                    self.run_type = "junk"
+
+            # for felix server
+            if self.felix_server is None :
+                self.felix_server = os.path.basename( self.plot_file ).split( '-' )[0].split( '_' )[1]
+                
+            # for run
+            if self.run is None :
+                self.run = os.path.basename( self.plot_file ).split( '-' )[1]
+
+            # for chunk
+            if self.chunk is None :
+                self.chunk = os.path.basename( self.plot_file ).split( '-' )[2]
+
+        else : # in the case no plot_file is given, let's guess from run number
+            if self.run is None or self.felix_server is None or self.run_type is None or self.chunk is None:
+                print( "No information about file to be used is given.\n" \
+                       "Please user\n" \
+                       "  --file or\n" \
+                       "  --run , --run_type , --felix-server ,and --chunk.",
+                       file=sys.stderr )
+
+            self.plot_file = self.run_type + "_" + self.felix_server + "-" + self.run + "-" + self.chunk + ".root"
+
+        # If no file is given...
+        if self.plot_mode is True and self.plot_file is None :
+            self.printer.AddLine( "==== WARNING ====" )
+            self.printer.AddLine( "No file is given for plot mode." )
+            self.printer.AddLine( "Plot mode is turned OFF" )
+            self.plot_mode = False
+            self.printer.Print( color="Red" )
+            self.printer.Clear()
+        
     def GetHomepagePlots( self ) :
         # For example:
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_adc.png
@@ -135,17 +185,24 @@ class Information() :
         self.printer.AddLine( "Homepage mode:     ", self.homepage_mode )
         self.printer.AddLine( "Calib summary mode:", self.calib_summary_mode )
 
+        self.printer.AddSeparator()
+        self.printer.AddLine( "Data"               , color=header_color )        
+        self.printer.AddLine( "File:              ", self.plot_file )
+        self.printer.AddLine( "Run type:          ", self.run_type )
+        self.printer.AddLine( "FELIX:             ", self.felix_server )
+        self.printer.AddLine( "Run:               ", self.run )
+        self.printer.AddLine( "Chunk:             ", self.chunk )
+
         if self.plot_mode is True :
             self.printer.AddSeparator()
             self.printer.AddLine( "Parameters for plot mode", color=header_color )
-            self.printer.AddLine( "Execution type:    ", self.plot_exe_type )
-            self.printer.AddLine( "File:              ", self.plot_file )
+            self.printer.AddLine( "Execution type:      ", self.plot_exe_type )
+            self.printer.AddLine( "Skip hist generation:", self.plot_skip_hist_generation )
             print( os.path.exists( self.plot_file ) )
             
         if self.homepage_mode is True :
             self.printer.AddSeparator()
             self.printer.AddLine( "Parameters for homepage mode", color=header_color )
-            self.printer.AddLine( "Run:               ", self.run )
 
             if len( self.homepage_plots) > 0 : 
                 self.printer.AddLine( "Directory:         ", self.homepage_plots[0].parent )

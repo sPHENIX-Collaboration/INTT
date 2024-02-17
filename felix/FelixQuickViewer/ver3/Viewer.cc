@@ -30,21 +30,8 @@ void Viewer::Init()
       for(int j=0; j<kChip_num_; j++)
 	{
 	  string name_chip = "chip" + to_string( j ) ;
-	  
-	  // hist_adc_ch_[i][j] = new TH2D( Form("hist_adc_ch_module%d_chip%d", i, j ),
-	  // 				 Form("hist_adc_ch_module%d_chip%d", i, j ),
-	  // 				 128, 0, 128,
-	  // 				 10, 0, 10 );
-      
-	  // hist_ch_[i][j] = new TH1D( Form("hist_ch_module%d_chip%d", i, j ),
-	  // 			     Form("hist_ch_module%d_chip%d", i, j ),
-	  // 			     128, 0, 128 );
 
-	  // hist_adc_[i][j] = new TH1D( Form("hist_adc_module%d_chip%d", i, j ),
-	  // 			      Form("hist_adc_module%d_chip%d", i, j ),
-	  // 			      8, 0, 8 );
-
-	  
+	  // just in case
 	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
 	  try
 	    {
@@ -135,10 +122,35 @@ unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], in
 	}
     }
 
+  int return_value = 0 ;
   if( rank == 1 )
-    return *max_element( values.begin(), values.end() );
-  
-  return 1.0;
+    {
+      return_value = *max_element( values.begin(), values.end() );
+    }
+  else
+    {
+
+      assert( rank < values.size() );
+      sort( values.rbegin(), values.rend()  );
+      
+      // for( int i=0; i<rank; i++ )
+      //   cout << i << "\t" << values[i] << endl;     
+      return_value = values[ rank ];
+    }
+
+
+  return return_value;
+}
+
+unsigned int Viewer::GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top = 10  )
+{
+  assert( 0 <= remove_top && remove_top <= 100 );
+  int number = 0 ;
+  for( int i=0; i<kLadder_num_; i++ )
+      for( int j=0; j<kChip_num_; j++ )
+	number += hists[i][j]->GetNbinsX();
+
+  return this->GetMaxBinContent( hists, number * remove_top / 100 );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -187,7 +199,6 @@ int Viewer::Draw()
 	}
     }
 
-
   vector < TCanvas* > canvases;
   canvases.push_back( c_adc_ch_ );
   canvases.push_back( c_ch_ );
@@ -206,15 +217,24 @@ int Viewer::Draw()
 	  L_posi[i]->Draw();
 	}
   }
-
   
-  this->Draw_AdcChannel();
-  this->Draw_Channel();
-
   cout << "Run type: " << run_type_ << endl;
-  if( run_type_ == "pedestal" )
-    this->Draw_Pedestal();
-   
+  if( run_type_ != "junk" )
+    {
+
+      this->Draw_Channel();
+      this->Draw_AdcChannel();
+      
+      if( run_type_ == "calibration" )
+	{
+	  this->Draw_Calibration();
+	}
+      else if( run_type_ == "pedestal" )
+	{
+	  this->Draw_Pedestal();
+	}
+    }
+  
   return 0;
 }
 
@@ -357,6 +377,11 @@ int Viewer::Draw_Channel()
   return 0;
 }
 
+int Viewer::Draw_Calibration()
+{
+  return 0;
+}
+
 int Viewer::Draw_Pedestal()
 {
 
@@ -427,8 +452,8 @@ int Viewer::Draw_Pedestal()
   int counter = 0;
   x_low = kMargin_left;
   y_low = kMargin_bottom;
-  auto y_max = GetMaxBinContent( hist_ch_ );
-  cout << "max bin: " << y_max << endl;
+  auto y_max = GetMaxBinContentRatio( hist_ch_, 0.5 ); // Bins on the top 0.5% are ignored
+  //cout << "max bin: " << y_max << endl;
   
   for( int i=0; i<kLadder_num_; i++ ) // in y direction
     {

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 #include <TTree.h>
 #include <TPad.h>
@@ -77,6 +78,7 @@ private:
   TCanvas* c_pedestal_;
 
   unsigned int GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank );
+  unsigned int GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top ); // Bins at top x% are ignored
   
 public:
 
@@ -92,6 +94,7 @@ public:
   int Draw_AdcChannel();
   int Draw_Channel();
   int Draw_Pedestal();
+  int Draw_Calibration();
   
   TCanvas* GetCanvasCh(){ return (TCanvas*)(c_ch_->Clone()); }
   

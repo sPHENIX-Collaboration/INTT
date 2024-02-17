@@ -9,7 +9,7 @@
 //#include "Plotter.hh"
 
 #ifndef CLING
-int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root", string run_type = "calibration" )
+int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root", string run_type = "calibration", bool skip_hist_generation = false )
 {
   int argc = 3;
   char* argv[data.size()];
@@ -37,12 +37,14 @@ int main( int argc, char* argv[] )
 
   //TApplication app( "app", &argc, argv );
 
-  //BaseClass* bs = new BaseClass( data );
   HistMaker* hm = new HistMaker( data );
-  //hm->Init();
-  hm->Print();
-  hm->Process();
-  hm->SaveHists();
+  if( skip_hist_generation == false )
+    {
+      //hm->Init();
+      hm->Print();
+      hm->Process();
+      hm->SaveHists();
+    }
 
   Viewer* vw = new Viewer( hm->GetOutput() );
   vw->SetRunType( run_type );

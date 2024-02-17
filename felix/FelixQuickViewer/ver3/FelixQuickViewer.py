@@ -54,6 +54,24 @@ if __name__ == "__main__" :
                          default=None,
                          help="Choose the run type." )
 
+    felix_list = [ "intt" + str(num) for num in range(0, 8) ] # ["intt0", "intt1", ..., "intt7"]
+    felix_list.append( None ) 
+    parser.add_argument( "--felix-server", type=str,
+                         choices=felix_list,
+                         default=felix_list[-1],
+                         help="The run number to be processed. It doesn't need to be 8 digit." )
+
+    parser.add_argument( "--run", type=str,
+                         help="The run number to be processed. It doesn't need to be 8 digit." )
+
+    parser.add_argument( "--chunk", type=str,
+                         default="0000",
+                         help="The chunk number to be processed. It doesn't need to be 4 digit." )
+
+    parser.add_argument( "--file", type=str,
+                         default=None,
+                         help="File path to be used to make plots. " )
+
     ####################################################
     # For plot mode                                    #
     ####################################################
@@ -62,9 +80,10 @@ if __name__ == "__main__" :
                          default=False,
                          help="Use to generate plots from a single ROOT file.\n" )
 
-    parser.add_argument( "--file", type=str,
-                         default=None,
-                         help="File path to be used to make plots. " )
+    parser.add_argument( "--plot-skip-hist-generation",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Histogram generation, which is necessary to update histograms, is skipped.\n" )
 
     exe_list = [ "macro", "exe" ]
     parser.add_argument( "--exe-type", type=str,
@@ -80,9 +99,6 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          default=False,
                          help="Use to generate homepage for a run.\n" )
-
-    parser.add_argument( "--run", type=str,
-                         help="The run number to be processed. It doesn't need to be 8 digit." )
 
     
     ####################################################
@@ -113,7 +129,8 @@ if __name__ == "__main__" :
             command = app + " " + option + " \'" + macro \
                 + "( " \
                 + "\"" + info.plot_file + "\", " \
-                + "\"" + info.run_type + "\"" \
+                + "\"" + info.run_type + "\"," \
+                + str( int(info.plot_skip_hist_generation) ) \
                 + ")\'"
             print( command )
 
