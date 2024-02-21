@@ -41,9 +41,9 @@ int main()
 	Eigen::Affine3d ladder_to_global;
 	Eigen::Affine3d sensor_to_global;
 
-	Intt::Offline_s ofl;
-	Intt::RawData_s raw;
-	Intt::Online_s onl;
+	InttNameSpace::Offline_s ofl;
+	InttNameSpace::RawData_s raw;
+	InttNameSpace::Online_s onl;
 
 	Int_t k;
 	ROOT::Math::Transform3D t;
@@ -61,6 +61,9 @@ int main()
 	tree->SetDirectory(file);
 	tree->Branch("hitsetkey", &k);
 	tree->Branch("transform", &t);
+	tree->Branch("layer", &(ofl.layer));
+	tree->Branch("ladder_phi", &(ofl.ladder_phi));
+	tree->Branch("ladder_z", &(ofl.ladder_z));
 	tree->Branch("server", &(raw.felix_server));
 	tree->Branch("module", &(raw.felix_channel));
 	tree->Branch("sensor_type", &sensor_type);
@@ -95,8 +98,8 @@ int main()
 		ofl.ladder_phi = 0;
 
 		LADDER_PHI_INC:
-		onl = Intt::ToOnline(ofl);
-		raw = Intt::ToRawData(ofl);
+		onl = InttNameSpace::ToOnline(ofl);
+		raw = InttNameSpace::ToRawData(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
 
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
