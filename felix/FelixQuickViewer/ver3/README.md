@@ -17,6 +17,11 @@ FelixQuickViewer --plot --file {file_path}
 You need to give the path to a ROOT file, which must contain a hit-base TTree named "tree".
 Run type is taken from the file name in this case.
 
+For example,
+```
+FelixQuickViewer --plot --file beam_intt7-00020869-0000.root
+```
+
 #### Case 2
 ```
 FelixQuickViewer --plot --run-type {run_type} --felix-server {server} --run {run_number} --chunk {chunk_number}
@@ -26,8 +31,37 @@ Here,
 * {server}: The FELIX server used to take this data. Accepted strings are: intt0, intt1, ..., intt7.
 * {run_number}: The run to be processed. It doesn't need to be 8 digit.
 * {chunk_number}: The last 4 digit of the data file.
-are necessary. Those parameters makes a file name {run_type}_{server}-{run_number}-{chunk_number}.evt.
+are necessary. Those parameters makes a file name {run_type}_{server}-{run_number}-{chunk_number}.root.
 If needed, you can add a path to the directory with `--data-dir {data_dir}` option.
+
+For example,
+```
+FelixQuickViewer --plot --run-type beam --felix-server intt7 --run 20869 --chunk 0000
+```
+
+### Homepage
+
+#### Run page
+If you execute the following
+```
+FelixQuickViewer --homapage-run --run {run_number}
+```
+png files of the run are copied to the web page.
+
+#### Title page
+Just execute
+```
+FelixQuickViewer --homapage-title
+```
+The index.html in `https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/{year}` is updated.
+{year} is taken the timing when you execute it is taken. If you want to change it by yourself, use `--year {year}`.
+
+### To do everything
+You can just add all options mentioned above. For example,
+```
+FelixQuickViewer --plot --homepage --file {file_path}
+```
+or [the parameters](#Case 2) instead of `--file`.
 
 ## Help
 ```
