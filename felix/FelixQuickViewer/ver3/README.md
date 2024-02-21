@@ -1,15 +1,28 @@
 # FelixQuickViewer ver3
 
-## Features/Dirrefence from ver2
+## Features/Difference from ver2
 * Plots are optimized depending on the run type.
 * Intermediate ROOT files, which contain histograms to be plotted, are generated so that you don't need to take time to just make plots again.
 * Plots can be uploaded to [the INTT homepage](https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/). Go to Commissioing plots -> each year to check the plots.
 
 ## Tutorials
 
+### Dependencies
+* ROOT (ver6)
+* Python3 (ver?)
+
 ### Installation
+You need to be in the SDCC machine for the homepage feature.
+Making plots may work in your local environment.
+1. Download this Git repository: `git clone https://github.com/sPHENIX-Collaboration/INTT.git`
+2. Move to here: `cd felix/FelixQuickViewer/ver3`
+3. Execute the file (it's a shell script): `FelixQuickViewer`
+4. If it works, that's all.
 
 ### Making plots
+For example, junk-intt0-12345678-1234_hist.root is generated from junk-intt0-12345678-1234.root. The directory of the new file is the same as the hit-base ROOT file.
+Some png files (junk-intt0-12345678-1234_hist_*.png) are generated in the same directory.
+
 #### Case 1
 ```
 FelixQuickViewer --plot --file {file_path}
