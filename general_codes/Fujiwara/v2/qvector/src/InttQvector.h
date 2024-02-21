@@ -20,6 +20,8 @@ class TH1F;
 class TH2S;
 class TCanvas;
 
+class InttOfflineClusterList;
+
 class InttQvector : public SubsysReco
 {
  public :
@@ -58,8 +60,10 @@ class InttQvector : public SubsysReco
 
   std::string fname_;
   TFile* anafile_;
-  TTree* tree_; 
+  TTree* tree1; 
+  TTree* tree2;
   TH1F* psidis;
+  TH1F* adcdis;
   TH2S* qvecdis;
 
   TCanvas*c1;
@@ -69,6 +73,7 @@ class InttQvector : public SubsysReco
   double psi;
   double nclus;
 
+  InttOfflineClusterList* inttOfflineCls_;
 };
 
 #endif

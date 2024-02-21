@@ -23,12 +23,18 @@ class Person :
         return self.family_name_ < other.family_name_
 
     # Printing name in RIKEN APR format
-    def PrintName( self, end="" ) :
+    def PrintName( self, end="", is_last=False ) :
         print( "\\Name{" + self.first_name_ + "~", end="" )
         if self.middle_name_ != "" :
             print( self.middle_name_ +  "~", end="" )
 
-        print( self.family_name_ + "},", end=end )
+        print( self.family_name_ + "}", end="" )
+        # Trick not to write "," for only the last person
+        if is_last is False :
+            print( ",", end="" )
+
+        print( "", end=end )
+            
 
     # Printing institution list in RIKEN APR format
     def PrintInstitutions( self ) :
@@ -183,7 +189,7 @@ class People:
                 print( "\tand" )
 
             print( "\t", end="" )
-            person.PrintName( end="")
+            person.PrintName( end="", is_last=(i+1==len(self.sorted_persons_) ) )
             person.PrintInstitutions()
 
         print( "}\n" ) # closure
