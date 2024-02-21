@@ -28,10 +28,15 @@ R__LOAD_LIBRARY(libintthitmap.so)
 
 void Fun4All_Intt_HitMap(int nevents = 100,
                               std::string i_file = "/sphenix/user/ChengWei/INTT/INTT_commissioning/ZeroField/20869/beam_inttall-00020869-0000_event_base_ana.root",
-                              std::string bco_file = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/BCOFinder/Felix/rootfile/ladder_20869_3BCO.root",
+                              std::string bco_file = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/rootfile/2023/ladder_20888_3BCO.root",
                               std::string o_file = "hitmap_test_20869.root",
                               bool bcoflag = true
                               )
+                              //nevents : # of event used to make hitmap
+                              //i_file : merged root file. The file should include event_based TTree structure
+                              //bco_file : input BCO file to apply the BCO cut BEFORE making HitMap
+                              //o_file : output(hitmap) file
+                              //bcoflag : flag to turn ON/OFF BCO cut // true : ON / false : OFF
 {
         Fun4AllServer *se = Fun4AllServer::instance();
         // se->Verbosity(5);
@@ -88,4 +93,4 @@ void Fun4All_Intt_HitMap(int nevents = 100,
         delete se;
 }
 
-#endif // FUN4ALL_INTT_RECO_C
+#endif // FUN4ALL_INTT_HITMAP.C

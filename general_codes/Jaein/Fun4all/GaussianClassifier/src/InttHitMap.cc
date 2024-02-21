@@ -211,10 +211,13 @@ bool InttHitMap::isBCOPeak(int felix,int ladder, int bco, Long64_t bcofull)
   {
     bco_diff = bco_diff + 128;
   }
-  
+  //Main part for BCO cut.
+  //Load the BCO histogram and apply the BCO cut 
+  //Default : Hits belongs to [peak-1,peak+1] (3BCO) region will survice after BCO cut
+  //To change the BCO region, h2_bco_cut_[felix] needs to be modified
   if(h2_bco_cut_[felix]->GetBinContent(ladder+1,bco_diff+1)!=0) 
   {
-    return true;
+    return true; 
   }
   return false;
 }
