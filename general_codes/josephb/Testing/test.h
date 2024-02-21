@@ -11,9 +11,10 @@ class test : public PHObject {
 public:
 	typedef std::set<foo::bar, foo::bar_comparator> set_t;
 
-	test();
-	test(test const&);
-	~test() override;
+	test() {}
+	~test() override {}
+
+	// test(test const&);
 
 	void insert(foo::bar const&);
 	bool contains(foo::bar const&) const;

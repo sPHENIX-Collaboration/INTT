@@ -3,7 +3,7 @@
 
 #include <TObject.h>
 
-class foo : TObject {
+class foo : public TObject {
 public:
 	struct bar {
 		int a = 0;

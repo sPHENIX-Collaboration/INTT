@@ -1,7 +1,7 @@
 #ifdef __CINT__
 
-#pragma link C++ class foo + ;
-#pragma link C++ struct foo::bar + ;
-#pragma link C++ struct foo::bar_comparator + ;
+#pragma link C++ class foo+;
+#pragma link C++ class foo::bar+;
+#pragma link C++ class foo::bar_comparator+;
 
-#endif /* __CINT___ */
+#endif /* __CINT__ */

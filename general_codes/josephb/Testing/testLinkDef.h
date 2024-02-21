@@ -1,5 +1,5 @@
 #ifdef __CINT__
 
-#pragma link C++ class test + ;
+#pragma link C++ class test+;
 
-#endif /* __CINT___ */
+#endif /* __CINT__ */

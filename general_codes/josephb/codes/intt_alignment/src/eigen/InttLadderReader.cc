@@ -148,7 +148,7 @@ Eigen::Affine3d InttLadderReader::GetTransformFromCorners(Corners_t const& corne
 	//(e.g., ladder to world)
 }
 
-Eigen::Affine3d InttLadderReader::GetLadderTransform(Intt::Online_s const& s)
+Eigen::Affine3d InttLadderReader::GetLadderTransform(InttNameSpace::Online_s const& s)
 {
 	char buff[256];
 	snprintf(buff, sizeof(buff), "B%dL%03d", s.lyr / 2, 100 * (s.lyr % 2) + s.ldr);
@@ -157,7 +157,7 @@ Eigen::Affine3d InttLadderReader::GetLadderTransform(Intt::Online_s const& s)
 
 	if(marks.find(name) == marks.end())
 	{
-		printf("AlignTransform InttLadderReader::GetLadderTransform(Intt::Online_s const& s)\n");
+		printf("AlignTransform InttLadderReader::GetLadderTransform(InttNameSpace::Online_s const& s)\n");
 		printf("\tError in source code; map key was generated incorrectly\n");
 
 		return Eigen::Affine3d::Identity();
