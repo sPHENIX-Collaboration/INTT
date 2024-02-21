@@ -5,6 +5,30 @@
 * Intermediate ROOT files, which contain histograms to be plotted, are generated so that you don't need to take time to just make plots again.
 * Plots can be uploaded to [the INTT homepage](https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/). Go to Commissioing plots -> each year to check the plots.
 
+## Tutorials
+
+### Installation
+
+### Making plots
+#### Case 1
+```
+FelixQuickViewer --plot --file {file_path}
+```
+You need to give the path to a ROOT file, which must contain a hit-base TTree named "tree".
+Run type is taken from the file name in this case.
+
+#### Case 2
+```
+FelixQuickViewer --plot --run-type {run_type} --felix-server {server} --run {run_number} --chunk {chunk_number}
+```
+Here,
+* {run_type}: The run type. Followings are accepted: beam, cosmics, calib, calibration, pedestal, junk
+* {server}: The FELIX server used to take this data. Accepted strings are: intt0, intt1, ..., intt7.
+* {run_number}: The run to be processed. It doesn't need to be 8 digit.
+* {chunk_number}: The last 4 digit of the data file.
+are necessary. Those parameters makes a file name {run_type}_{server}-{run_number}-{chunk_number}.evt.
+If needed, you can add a path to the directory with `--data-dir {data_dir}` option.
+
 ## Help
 ```
 [nukazuka@sphnx03 00:08:29 ~] $ FelixQuickViewer -h
