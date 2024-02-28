@@ -9,4 +9,6 @@ make
 
 
 Note : sigmacut : 30 = 3.0sigma cut used ; 35 = 3.5 sigmacut used
+Default input file path : /sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/rootfile/2023/
+default output file path : /sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/CDB/2023/
 
