@@ -39,7 +39,7 @@ int MakeCPP()
 
 	fprintf(cpp_f, "#include \"InttSurveyMap.h\"\n");
 	fprintf(cpp_f, "\n");
-	fprintf(cpp_f, "Eigen::Affine3d InttSurvey::GetTransform(struct Intt::Offline_s const& ofl)\n");
+	fprintf(cpp_f, "Eigen::Affine3d InttSurvey::GetTransform(struct InttNameSpace::Offline_s const& ofl)\n");
 	fprintf(cpp_f, "{\n");
 	fprintf(cpp_f, "\tEigen::Affine3d t;\n");
 	fprintf(cpp_f, "\n");
@@ -58,8 +58,8 @@ int MakeCPP()
 	Eigen::Affine3d ladder_to_global;
 	Eigen::Affine3d sensor_to_global;
 
-	Intt::Offline_s ofl;
-	Intt::Online_s onl;
+	InttNameSpace::Offline_s ofl;
+	InttNameSpace::Online_s onl;
 
 	goto LOOP;
 	while(true)
@@ -97,7 +97,7 @@ int MakeCPP()
 		fprintf(cpp_f, "\t\t\tcase %2d:\n", ofl.ladder_phi);
 		fprintf(cpp_f, "\t\t\tswitch (ofl.ladder_z) {\n");
 
-		onl = Intt::ToOnline(ofl);
+		onl = InttNameSpace::ToOnline(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
@@ -144,7 +144,7 @@ int MakeHPP()
 	fprintf(hpp_f, "\n");
 	fprintf(hpp_f, "namespace InttSurvey\n");
 	fprintf(hpp_f, "{\n");
-	fprintf(hpp_f, "\tEigen::Affine3d GetTransform(struct Intt::Offline_s const&);\n");
+	fprintf(hpp_f, "\tEigen::Affine3d GetTransform(struct InttNameSpace::Offline_s const&);\n");
 	fprintf(hpp_f, "}\n");
 	fprintf(hpp_f, "\n");
 	fprintf(hpp_f, "#endif//INTT_SURVEY_MAP_H\n");
