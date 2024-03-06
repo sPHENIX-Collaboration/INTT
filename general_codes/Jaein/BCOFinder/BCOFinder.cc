@@ -1,6 +1,11 @@
 #include "InttEvent.h"
 #include "InttEvent.cc"
 #include "TH1D.h"
+#include "TH2D.h"
+#include <cdbobjects/CDBTTree.h>
+
+R__LOAD_LIBRARY(libcdbobjects.so)
+
 void bcofull_bco_lad_all(int rnumber, int fnumber);
 void bcofull_bco_merged(int rnumber);
 
@@ -12,11 +17,13 @@ TH2D *h2_bco_ladder_cut[8]; // histogram after BCO cut
 // to ensure that we don't miss the hit due to sperated to 2BCK             //
 //////////////////////////////////////////////////////////////////////////////
 
+
 int n_event = 10000;
 bool ADC0cut = false;
 //Flag for ADC0 cut
 
 std::string outputFilePath = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/rootfile/2023/";
+std::string cdboutputFilePath = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/cdb/2023/";
 //std::string outputFilePath = "./";
 // Used for merged files
 std::string merged_inputFile;
@@ -29,7 +36,7 @@ void BCOFinder(int i = 20867, bool isMerged = true, bool ADC0cut_ = false)
 {
   ADC0cut = ADC0cut_;
   gROOT->SetBatch(kTRUE);
-  std::string outputfilename = outputFilePath + "ladder_" + to_string(i) + "_3BCOcut.root";
+  std::string outputfilename = outputFilePath + "ladder_" + to_string(i) + ".root";
   merged_inputFile = merged_inputFilePath+"beam_inttall-000"+to_string(i)+"-0000_event_base_ana.root";
   TFile *sf = new TFile(outputfilename.c_str(), "RECREATE");
   for (int j = 0; j < 8; j++)
@@ -37,6 +44,7 @@ void BCOFinder(int i = 20867, bool isMerged = true, bool ADC0cut_ = false)
     h2_bco_ladder[j] = new TH2D(Form("h2_bco_felix_%d", j), Form("h2_bco_felix_%d", j), 14, 0, 14, 128, 0, 128);
     h2_bco_ladder_cut[j] = new TH2D(Form("h2_bco_felix_cut%d", j), Form("h2_bco_felix_cut%d", j), 14, 0, 14, 128, 0, 128);
   }
+  TH2D* hist = new TH2D("hist","test hist",100,0,1,100,0,1);
   if (!isMerged)
   {
     for (int j = 0; j < 8; j++)
@@ -57,6 +65,34 @@ void BCOFinder(int i = 20867, bool isMerged = true, bool ADC0cut_ = false)
       h2_bco_ladder_cut[j]->Write();
     }
   }
+
+///////////////////////////////////////////////////////////
+//              Creating CDBTTree                        //
+///////////////////////////////////////////////////////////
+  std::string cdboutputfilename = cdboutputFilePath + "cdb_bco_" + to_string(i) + ".root";
+  CDBTTree* cdbttree = new CDBTTree(cdboutputfilename); 
+  int size=0;
+  for(int felix_server=0;felix_server<8;felix_server++)
+  {
+    for(int felix_channel=0;felix_channel<14;felix_channel++)
+    {
+      for(int bco_diff = 0;bco_diff<128;bco_diff++)
+      {
+        if(h2_bco_ladder_cut[felix_server]->GetBinContent(felix_channel+1,bco_diff+1)>0)
+        {
+          cdbttree->SetIntValue(size,"felix_server",felix_server); 
+          cdbttree->SetIntValue(size,"felix_channel",felix_channel); 
+          cdbttree->SetIntValue(size,"bco_diff",bco_diff);
+          size++; 
+        }
+      }
+    }
+  }
+  cdbttree->SetSingleIntValue("size",size);
+  cdbttree->Commit();
+  cdbttree->CommitSingle();
+  cdbttree->WriteCDBTTree();
+  delete cdbttree;
   sf->Close();
 }
 void bcofull_bco_merged(int runnumber)
