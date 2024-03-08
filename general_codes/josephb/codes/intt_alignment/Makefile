@@ -9,18 +9,20 @@ EXE = .exe
 
 FLGS = $(shell root-config --cflags)
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include -I`root-config --incdir` 
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io $(shell root-config --glibs)
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt -ltrack_io -lphool -lcdbobjects $(shell root-config --glibs)
 
 BIN = ./bin/
 SRC = ./src/
 
-TRGT = $(BIN)main$(EXE)
+TRGT = $(BIN)make_cdbttree$(EXE)
+# TRGT = $(BIN)main$(EXE)
 
 OBJS = \
-	$(BIN)main$(OXX) \
 	$(BIN)eigen/InttSensorReader$(OXX) \
 	$(BIN)eigen/InttLadderReader$(OXX) \
-	$(BIN)eigen/Debug$(OXX)
+	$(BIN)eigen/Debug$(OXX) \
+	$(BIN)make_cdbttree$(OXX)
+	# $(BIN)main$(OXX)
 
 $(TRGT): $(OBJS)
 	@echo -e "\n"$@

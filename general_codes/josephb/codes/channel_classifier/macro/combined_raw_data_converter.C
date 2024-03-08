@@ -9,8 +9,9 @@
 #include <fun4all/Fun4AllInputManager.h>
 #include <fun4all/Fun4AllOutputManager.h>
 
-#include <fun4allraw/SingleInttInput.h>
-#include <fun4allraw/Fun4AllEvtInputPoolManager.h>
+#include <fun4allraw/SingleGl1PoolInput.h>
+#include <fun4allraw/SingleInttPoolInput.h>
+#include <fun4allraw/Fun4AllStreamingInputManager.h>
 #include <fun4allraw/Fun4AllEventOutputManager.h>
 
 #include <phool/recoConsts.h>
@@ -24,7 +25,11 @@ R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libffarawmodules.so)
 R__LOAD_LIBRARY(libintt.so)
 
-void combined_raw_data_converter(std::string i_format, std::string o_format, int run_num)
+void combined_raw_data_converter(
+	std::string g_format,
+	std::string i_format,
+	std::string o_format,
+	int run_num)
 {
 	std::cout << "combined_raw_data_converter:" << std::endl;
 	std::cout << "\trunning..." << std::endl;
@@ -33,7 +38,34 @@ void combined_raw_data_converter(std::string i_format, std::string o_format, int
 	se->Verbosity(0);
 
 	//input
-	Fun4AllEvtInputPoolManager* in = new Fun4AllEvtInputPoolManager("Comb");
+	Fun4AllStreamingInputManager* in = new Fun4AllStreamingInputManager("Comb");
+
+	int flag = 0;
+
+	while(true)
+	{
+		std::string i_filename = Form(g_format.c_str(), run_num);
+		if(!std::filesystem::exists(i_filename.c_str()))
+		{
+			std::cout << "Could not get file:" << std::endl;
+			std::cout << "\t" << i_filename << std::endl;
+			std::cout << "\t(Skipping)" << std::endl;
+			std::cout << std::endl;
+
+			flag = 1;
+			break;
+		}
+
+		std::cout << "Using .evt file (GL1):" << std::endl;
+		std::cout << "\t" << i_filename << std::endl;
+		std::cout << std::endl;
+		SingleGl1PoolInput* sngl = new SingleGl1PoolInput("GL1_0");
+		sngl->AddFile(i_filename);
+		in->registerStreamingInput(sngl, Fun4AllStreamingInputManager::enu_subsystem::GL1);
+
+		break;
+	}
+
 	for(std::map<int, int>::const_iterator pid_itr = InttNameSpace::Packet_Id.begin(); pid_itr != InttNameSpace::Packet_Id.end(); ++pid_itr)
 	{
 		std::string i_filename = Form(i_format.c_str(), pid_itr->second, run_num);
@@ -44,6 +76,7 @@ void combined_raw_data_converter(std::string i_format, std::string o_format, int
 			std::cout << "\t(Skipping)" << std::endl;
 			std::cout << std::endl;
 
+			flag = 1;
 			continue;
 		}
 
@@ -51,11 +84,19 @@ void combined_raw_data_converter(std::string i_format, std::string o_format, int
 		std::cout << "\t" << i_filename << std::endl;
 		std::cout << std::endl;
 
-		SingleInttInput* sngl = new SingleInttInput("INTT_" + std::to_string(pid_itr->second));
+		SingleInttPoolInput* sngl = new SingleInttPoolInput("INTT_" + std::to_string(pid_itr->second));
 		sngl->AddFile(i_filename);
-		in->registerStreamingInput(sngl, Fun4AllEvtInputPoolManager::enu_subsystem::INTT);
+		in->registerStreamingInput(sngl, Fun4AllStreamingInputManager::enu_subsystem::INTT);
 	}
 	se->registerInputManager(in);
+
+	if(flag)
+	{
+		std::cout << "Could not get all input files" << std::endl;
+		std::cout << "Exiting" << std::endl;
+
+		return 1;
+	}
 
 	std::string o_filename = Form(o_format.c_str(), run_num);
 	std::cout << "Will write to output file:" << std::endl;
@@ -68,7 +109,7 @@ void combined_raw_data_converter(std::string i_format, std::string o_format, int
 	intt_converter->SetOutputFile(o_filename);
 
 	//output
-	se->run();
+	se->run(10000);
 	intt_converter->WriteOutputFile();
 	se->End();
 

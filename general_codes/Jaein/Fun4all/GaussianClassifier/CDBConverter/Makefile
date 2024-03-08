@@ -15,15 +15,7 @@ BIN = ./bin/
 SRC = ./src/
 
 REQS = \
-	write_local._$(CXX)_$(OXX)_$(EXE)_ \
-	check_local._$(CXX)_$(OXX)_$(EXE)_ \
-	compare._$(CXX)_$(OXX)_$(EXE)_ \
-	compare_jaein._$(CXX)_$(OXX)_$(EXE)_ \
-	write_cdbttree._$(CXX)_$(OXX)_$(EXE)_ \
-	cheng_wei._$(CXX)_$(OXX)_$(EXE)_ \
-	channel_classifier_helper._$(HXX)_$(CXX)_$(OXX)_ \
-	channel_classifier/base._$(HXX)_$(CXX)_$(OXX)_ \
-	channel_classifier/ver_1._$(HXX)_$(CXX)_$(OXX)_
+	cdbconverter._$(CXX)_$(OXX)_$(EXE)_ 
 
 HXX_BASENAMES := $(foreach R,$(REQS),$(if $(findstring _$(HXX)_,$(suffix $R)),$(basename $R)))
 CXX_BASENAMES := $(foreach R,$(REQS),$(if $(findstring _$(CXX)_,$(suffix $R)),$(basename $R)))
