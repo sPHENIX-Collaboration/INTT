@@ -48,43 +48,53 @@ private:
   // constant variables
   const string map_dir = "/sphenix/tg/tg01/commissioning/INTT/map_ladder/";
   
-  // input
-  string filename_; // The path to the data file
-  string ladder_map_path_;
-  LadderMap* ladder_map_;
-  
   // output
   string output_basename_;
   string root_suffix_ = "_hist.root"; // suffix of the output ROOT file which contains histgram objects
   //string figure_suffix_ = ".pdf";
   string figure_suffix_ = ".png";
 
+  // for drawings
+  double margin_left	= 0.1;
+  double margin_right	= 0.01;
+  double margin_top	= 0.075;
+  double margin_bottom	= 0.05;
+  double pad_width = 0.1;
+  double pad_height = 0.1;
+  int color_ = kBlack;
+  
   // variables for misc
   int width_ = 100;
 
   vector < string > print_buffer_;
   
-  // ROOT objects
-  //TFile* f1_;
-  //  TTree* tr1_;
-
-  TH2D* hist_adc_ch_[kLadder_num_][kChip_num_];
-  TH1D* hist_adc_[kLadder_num_][kChip_num_];
-  TH1D* hist_ch_[kLadder_num_][kChip_num_];
-
   TCanvas* c_ch_;
   TCanvas* c_adc_;
   TCanvas* c_adc_ch_;
-  TCanvas* c_pedestal_;
 
-  unsigned int GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank );
-  unsigned int GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top ); // Bins at top x% are ignored
+  unsigned int GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
+  unsigned int GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_); // Bins at top x% are ignored
+  string GetOutputPath( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_, string keyword="default" );
+
+  void DivideCanvas( TCanvas* c, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
+  
+  void WriteLabelFelix( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
+  void WriteLabelRoc( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
+  void WriteLabelLadder( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
+  void WriteLabelChip( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
+  void WriteLabelXaxis( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_, string label_low="0", string label_high="127" );
+  void WriteLabelYmax( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_, int y_max=0 );
+
+  void CanvasPreparation( TCanvas* c,
+			 int x_min, int x_max, int y_min, int y_max,
+			 int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_,
+			 string hist_name = "");
   
 public:
 
   // constructors
   Viewer(){};
-  Viewer( string filename_arg);
+  Viewer( string filename_arg, int year = 9997 );
 
   // destructor
   ~Viewer(){};
@@ -93,16 +103,17 @@ public:
   int Draw();
   int Draw_AdcChannel();
   int Draw_Channel();
-  int Draw_Pedestal();
-  int Draw_Calibration();
+  int Draw_HitDist( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
+  int Draw_AmplAdc( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
+  int Draw_ChAmpl( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   
   TCanvas* GetCanvasCh(){ return (TCanvas*)(c_ch_->Clone()); }
   
-  void Print();
+  void Print() override;
   int Process();
   void SaveHists();
   
-  void SetStyle();
+  void SetStyle() override;
 
 };
 

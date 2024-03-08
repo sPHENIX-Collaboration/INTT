@@ -10,6 +10,18 @@
 ### Dependencies
 * ROOT (ver6)
 * Python3 (ver?)
+    * gspread (accessing Google spreadsheet)
+
+#### Confliction of library version for gspread
+gspread library of Python is used to access Google spreadsheet. Unfortunately, rucio library, which is originally developped for ATLAS(?), is installed in the SDCC environment and requires google-auth v2.6.0, just installing gspread like
+```
+pip3 install --user gspread
+```
+makes confliction. You can specify the version of google-auth to resolve the probrem:
+```
+pip3 install --user google-auth==2.6.0 gspread
+```
+
 
 ### Installation
 You need to be in the SDCC machine for the homepage feature.

@@ -6,34 +6,65 @@ using namespace std;
 // protected members          //
 ////////////////////////////////
 
-BaseClass::BaseClass( string filename_arg )
+BaseClass::BaseClass( string filename_arg, int year ) :
+  filename_( filename_arg ),
+  year_( year )
 {
-  filename_ = filename_arg;
   Init();
-
 }
 
 void BaseClass::Init()
 {
-  cout << "BaseClass::filename_: " << filename_ << endl;
+  /////////////////////////////////////////////////////
+  // Processes for/related to intput                 //
+  /////////////////////////////////////////////////////
+  // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
+  // file name extraction
+  string stemp	= filename_.substr( filename_.find_last_of( "/" ) + 1, filename_.size() ); // get only the file name
+  felix_num_	= stemp.substr( stemp.find_last_of( "_" ) + string( "intt" ).size() + 1, 1);
+  intt_server_	= "intt" + felix_num_;
+  run_type_	= stemp.substr( 0, stemp.find_first_of( "_" ) );
+  
+  // cout << "BaseClass::Init" << endl;
+  // cout << "stemp = " << stemp << endl;
+  // cout << "felix_num = " << felix_num_ << endl;
+  // cout << "intt server = " << intt_server_ << endl;
+  // cout << "run type = " << run_type_ << endl;
+
+  /////////////////////////////////////////////////////
+  // Processes for/related to output                 //
+  /////////////////////////////////////////////////////
+  output_basename_ = filename_.substr( 0,  filename_.find_last_of( "." ) );
+  output_hist_root_ = output_basename_ + root_suffix_;
+  
   //--------------------tree----------------------//
   //  TH1D* aaa = new TH1D( "aaaa", "title", 128, 0., 128 );
   f1_ = new TFile(filename_.c_str(), "READ" );
   //  TH1D* aaaa = new TH1D( "aaaav", "title", 128, 0., 128 );
+
+  this->InitLadderMap();
 }
 
 void BaseClass::InitLadderMap()
 {
-  // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
-  string felix_num = filename_.substr( filename_.find_last_of( "_" ) + 1 + string( "intt" ).size(), 1);
-    
-  cout << "felix num: " << felix_num << endl;
-    
+  
   //LadderMap
-  ladder_map_path_ = map_dir + "intt" + felix_num + "_map.txt";
+  ladder_map_path_ = filename_.substr( 0, filename_.size() - string( "-0000.root").size() ) + "_map.txt";
+  if( year_ == 2023 )
+    {
+      ladder_map_path_ = kMap_dir_SDCC_ + to_string( year_ ) + "/" + intt_server_ + "_map.txt";
+    }
+
+  
+  cout << ladder_map_path_ << endl;
   ladder_map_ = new LadderMap( ladder_map_path_ );
-  ladder_map_->Print();
-    
+  //  ladder_map_->Print();    
+}
+
+string BaseClass::GetCanvasName()
+{
+  canvas_counter++;
+  return string( "canvas" + to_string(canvas_counter) );
 }
 
 ////////////////////////////////
@@ -64,9 +95,9 @@ void BaseClass::Print()
   print_buffer_.erase( print_buffer_.begin(), print_buffer_.end() );  
 }
 
-/*
 bool BaseClass::ReadHistograms()
 {
+  
   for(int i=0; i<kLadder_num_; i++)
     {
       string name_module = "module" + to_string( i ) + "_";
@@ -74,22 +105,64 @@ bool BaseClass::ReadHistograms()
       for(int j=0; j<kChip_num_; j++)
 	{
 	  string name_chip = "chip" + to_string( j ) ;
-	  	  
-	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
-	  hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
 
+	  // just in case
+	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
+	  try
+	    {
+	      hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_adc_ch_[i][j] = new TH2D();
+	    }
+	  
+	  // just in case
+	  string name_hist_ampl_adc = "hist_ampl_adc_" + name_module + name_chip;
+	  try
+	    {
+	      hist_ampl_adc_[i][j] = (TH2D*)f1_->Get( name_hist_ampl_adc.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_ampl_adc_[i][j] = new TH2D();
+	    }
+
+	  // just in case
+	  string name_hist_ch_ampl = "hist_ch_ampl_" + name_module + name_chip;
+	  try
+	    {
+	      hist_ch_ampl_[i][j] = (TH2D*)f1_->Get( name_hist_ch_ampl.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_ch_ampl_[i][j] = new TH2D();
+	    }
+	  
 	  string name_hist_ch = "hist_ch_" + name_module + name_chip;
-	  hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+	  try
+	    {
+	      hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_ch_[i][j] = new TH1D();
+	    }
 
 	  string name_hist_adc = "hist_adc_" + name_module + name_chip;
-	  hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
-
+	  try
+	    {
+	      hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_adc_[i][j] = new TH1D();
+	    }
 	}
     }
 
   return true;
 }
-*/
 
 void BaseClass::SetStyle()
 {
@@ -104,4 +177,12 @@ void BaseClass::SetStyle()
   gStyle->SetPadColor(0);
   gStyle->SetPadBorderMode(0);
   gROOT->SetBatch( true ); // change to false to show canvases
+
+
+  gROOT->SetStyle("Modern") ;
+  gStyle->SetPalette(kBird, 0, 1 );
+  gStyle->SetGridColor( kGray );
+  gStyle->SetGridStyle( 3 );
+  gStyle->SetEndErrorSize(0) ;
+  
 };

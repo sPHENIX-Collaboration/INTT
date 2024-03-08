@@ -48,6 +48,10 @@ if __name__ == "__main__" :
                          default=datetime.date.today().year,
                          help="The year of the datat." )
 
+    parser.add_argument( "--data-dir", type=str,
+                         default="",
+                         help="Choose the directory path for the data." )
+
     run_type_list = [ None, "beam", "cosmics", "calib", "calibration", "pedestal", "junk" ]
     parser.add_argument( "--run-type", type=str,
                          choices=run_type_list,
@@ -98,8 +102,22 @@ if __name__ == "__main__" :
     parser.add_argument( "--homepage",
                          action=argparse.BooleanOptionalAction,
                          default=False,
-                         help="Use to generate homepage for a run.\n" )
+                         help="Use to generate homepage for both the run and title pages.\n" )
 
+    parser.add_argument( "--homepage-run",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Use to generate homepage for the run page.\n" )
+
+    parser.add_argument( "--homepage-run-clean",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Files in the run directory are deleted if exists.\n" )
+
+    parser.add_argument( "--homepage-title",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Use to generate homepage for the title page\n" )
     
     ####################################################
     # For calib summary mode                           #
@@ -121,16 +139,18 @@ if __name__ == "__main__" :
             app = "root"
             option = "-q -b -l"
             #option = " "
-            macro = "FelixQuickViewer.cc"
+            #macro = "FelixQuickViewer.cc"
+            macro = "/sphenix/tg/tg01/commissioning/INTT/work/genki/repos/INTT/felix/FelixQuickViewer/ver3/FelixQuickViewer.cc"
             #file_path = "/sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root"
             #file_path = "calib_intt7-00025922-0000.root"
             # file_path = "calib_intt0-12345678-0000.root"
 
             command = app + " " + option + " \'" + macro \
                 + "( " \
-                + "\"" + info.plot_file + "\", " \
+                + "\"" + str(info.plot_file) + "\", " \
                 + "\"" + info.run_type + "\"," \
-                + str( int(info.plot_skip_hist_generation) ) \
+                + str( int(info.plot_skip_hist_generation) ) + ", " \
+                + str( info.year ) \
                 + ")\'"
             print( command )
 
@@ -151,5 +171,15 @@ if __name__ == "__main__" :
             print( "Dry mode. Nothing is done" )
 
     if info.homepage_mode is True :
+        info.GetHomepagePlots()
         hp = Homepage.Homepage( info )
+
+        if info.homepage_run_mode is True :
+            info.PrintHomepagePlots()
+            print( "Run homepage generation!" )
+            hp.ProcessRunPage()
+
+        if info.homepage_title_mode is True :
+            print( "Year page generation!" )
+            hp.ProcessYearPage()
         

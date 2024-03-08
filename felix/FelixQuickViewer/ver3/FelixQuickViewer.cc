@@ -9,7 +9,7 @@
 //#include "Plotter.hh"
 
 #ifndef CLING
-int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root", string run_type = "calibration", bool skip_hist_generation = false )
+int FelixQuickViewer( string data = "calib_intt0-12345678-0000.root", string run_type = "calibration", bool skip_hist_generation = false, int year=2024 )
 {
   int argc = 3;
   char* argv[data.size()];
@@ -23,30 +23,26 @@ int main( int argc, char* argv[] )
   
 #endif
   
-  std::cout << argc << std::endl;
   if( argc <= 1 )
     {
       std::cerr << "No data path is given." << std::endl;
       std::cerr << "Usage: " << argv[0] << " [data path]" << std::endl;
       return 0;
-    }
-  
-  
-  std::cout << data << std::endl;
-  std::cout << "Making HistMaker" << std::endl;
+    }  
 
   //TApplication app( "app", &argc, argv );
 
-  HistMaker* hm = new HistMaker( data );
+  HistMaker* hm = new HistMaker( data, year );
+
   if( skip_hist_generation == false )
     {
-      //hm->Init();
       hm->Print();
       hm->Process();
       hm->SaveHists();
     }
 
-  Viewer* vw = new Viewer( hm->GetOutput() );
+  //  Viewer* vw = new Viewer( hm->GetOutput() );
+  Viewer* vw = new Viewer( data, year );
   vw->SetRunType( run_type );
   vw->Draw();
   

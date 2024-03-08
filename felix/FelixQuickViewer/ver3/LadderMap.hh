@@ -25,18 +25,17 @@ public:
 class LadderMap
 {
 private:
-
   
 public:
   std::vector < LadderConfig* > ladders_;
-  
+  std::string map_;
   LadderMap(){};
-  LadderMap( std::string map )
+  LadderMap( std::string map ) : map_(map) 
   {
-    std::ifstream ifs( map.c_str() );
+    std::ifstream ifs( map_.c_str() );
     if( ifs.fail() )
       {
-	std::cerr << map << " is not found" << std::endl;
+	std::cerr << map_ << " is not found" << std::endl;
 	return;
       }
 
@@ -56,6 +55,21 @@ public:
       }
   }
 
+  LadderConfig* GetLadderConfig( int felix_ch )
+  {
+    for( auto& config : ladders_ )
+      {
+	if( config->module_ == felix_ch )
+	  return config;
+      }
+
+    cerr << "LadderConfig* GetLadderConfig( int felix_ch = " << felix_ch << " )" << endl;
+    cerr << "felix ch (module) " << felix_ch << " is not found in the ladder map " << map_ << endl;
+    cerr << "Dummy config is returned." << endl;
+
+    return new LadderConfig( -1, "XX", "Dummy!!!" );
+  };
+  
   void Print()
   {
     int width = 3 + (7 + 3 + 2 ) + (9 + 2 + 2) + (7 + 7) + 1;

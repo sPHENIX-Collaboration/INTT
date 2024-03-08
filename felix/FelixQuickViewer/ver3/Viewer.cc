@@ -5,8 +5,9 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////
 // Constructor
 //////////////////////////////////////////////////////////////////////
-Viewer::Viewer( string filename_arg ) :
-  filename_( filename_arg )
+Viewer::Viewer( string filename_arg, int year ) :
+  BaseClass( filename_arg, year )
+  //  filename_( filename_arg )
 {
   this->Init();
 }
@@ -18,53 +19,13 @@ Viewer::Viewer( string filename_arg ) :
 void Viewer::Init()
 {
 
-  //  this->BaseClass::Init();
+  this->BaseClass::Init();
   //--------------------tree----------------------//
-  f1_ = new TFile(filename_.c_str(), "READ" );
+  f1_->Close();
+  f1_ = new TFile(output_hist_root_.c_str(), "READ" );
   //f1_->ls();
 
-  for(int i=0; i<kLadder_num_; i++)
-    {
-      string name_module = "module" + to_string( i ) + "_";
-      
-      for(int j=0; j<kChip_num_; j++)
-	{
-	  string name_chip = "chip" + to_string( j ) ;
-
-	  // just in case
-	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
-	  try
-	    {
-	      hist_adc_ch_[i][j] = (TH2D*)f1_->Get( name_hist_adc_ch.c_str() );
-	    }
-	  catch( const std::runtime_error& error )
-	    {
-	      //hist_adc_ch_[i][j] = new TH2D("", "", 1, 0, 1, 1, 0, 1);
-	      hist_adc_ch_[i][j] = new TH2D();
-	    }
-	  
-	  string name_hist_ch = "hist_ch_" + name_module + name_chip;
-	  try
-	    {
-	      hist_ch_[i][j] = (TH1D*)f1_->Get( name_hist_ch.c_str() );
-	    }
-	  catch( const std::runtime_error& error )
-	    {
-	      hist_ch_[i][j] = new TH1D();
-	    }
-
-	  string name_hist_adc = "hist_adc_" + name_module + name_chip;
-	  try
-	    {
-	      hist_adc_[i][j] = (TH1D*)f1_->Get( name_hist_adc.c_str() );
-	    }
-	  catch( const std::runtime_error& error )
-	    {
-	      hist_adc_[i][j] = new TH1D();
-	    }
-	}
-    }
-
+  this->BaseClass::ReadHistograms();
   
   string canvas_name[2];
   canvas_name[0] = "ADC vs channel_id ";
@@ -77,15 +38,13 @@ void Viewer::Init()
       
   //   }
 
-  // //cout<<"canvasOK"<<endl;
-  
   // c_[0]->cd();
   // c_[0]->Divide(2,7);
 
   c_adc_ch_ = new TCanvas( "ADC_vs_CH", canvas_name[0].c_str() ,2560,1600);
   c_ch_     = new TCanvas( "CH", canvas_name[1].c_str(),2560,1600);
   c_adc_    = new TCanvas( "ADC", "ADC distribution",2560,1600);
-  c_pedestal_ = new TCanvas( "Pedestal", "Pedestal", 2560, 1600 );
+  //c_pedestal_ = new TCanvas( "Pedestal", "Pedestal", 2560, 1600 );
   
   //this->InitLadderMap();
   this->SetStyle();
@@ -108,17 +67,22 @@ void Viewer::InitLadderMap()
 }
 */
 
-unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank = 1 )
+unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank = 1, int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
   assert( r > 0 );
   
   vector < unsigned int > values;
-  for( int i=0; i<kLadder_num_; i++ ) // in y direction
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
     {
-      for( int j=0; j<kChip_num_; j++ ) // in x direction
+      for( int j=chip_min; j<chip_max; j++ ) // in x direction
 	{
 	  for( int k=1; k<hists[i][j]->GetNbinsX()+1; k++ )
-	    values.push_back( hists[i][j]->GetBinContent( k ) );
+	    {
+	      values.push_back( hists[i][j]->GetBinContent( k ) );
+	      // cout << i << "\t" << j << "\t" << k << "\t"
+	      // 	   << hists[i][j]->GetBinContent( k ) << endl;
+		
+	    }
 	}
     }
 
@@ -133,16 +97,17 @@ unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], in
       assert( rank < values.size() );
       sort( values.rbegin(), values.rend()  );
       
-      // for( int i=0; i<rank; i++ )
-      //   cout << i << "\t" << values[i] << endl;     
+      for( int i=0; i<rank; i++ )
+	cout << i << "\t" << values[i] << endl;
+      
       return_value = values[ rank ];
     }
 
-
+  //return_value = *max_element( values.begin(), values.end() );
   return return_value;
 }
 
-unsigned int Viewer::GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top = 10  )
+unsigned int Viewer::GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top = 10, int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
   assert( 0 <= remove_top && remove_top <= 100 );
   int number = 0 ;
@@ -150,7 +115,282 @@ unsigned int Viewer::GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_
       for( int j=0; j<kChip_num_; j++ )
 	number += hists[i][j]->GetNbinsX();
 
-  return this->GetMaxBinContent( hists, number * remove_top / 100 );
+  return this->GetMaxBinContent( hists, number * remove_top / 100,  ladder_min, ladder_max, chip_min, chip_max );
+}
+
+void Viewer::DivideCanvas( TCanvas* c, int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+
+  int dladder = ladder_max - ladder_min;
+  int dchip = chip_max - chip_min;
+
+  pad_width  = ( 1.0 - margin_left - margin_right ) / dchip;
+  pad_height = (1.0 - margin_top - margin_bottom ) / dladder;
+  ////////////////////////////////////////////////////////////////////////
+  // Making pads                                                        //
+  ////////////////////////////////////////////////////////////////////////
+  TPad* pads[dladder][dchip];
+  // +--------------------------------------------------------------------------------------------+
+  // |Felix ch13 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch12 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch11 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch10 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch09 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch08 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch07 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch06 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch05 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch04 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch03 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch02 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch01 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // |Felix ch00 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
+  // +--------------------------------------------------------------------------------------------+
+
+  double x_low = margin_left;
+  double y_low = margin_bottom;
+  // Pad generation
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+      string ladder = "Ladder" + to_string( i );
+      double y_high = y_low + pad_height;
+
+      for( int j=chip_min; j<chip_max; j++ ) // in x direction
+	{
+	  string chip_str = "Chip" + to_string( j + 1);
+	  x_low = margin_left + j * pad_width;
+	  double x_high = x_low + pad_width;
+	  
+	  string pad_name = ladder + "_" + chip_str;
+	  TPad* pad = new TPad( pad_name.c_str(), pad_name.c_str(),
+				 x_low, y_low, x_high, y_high  );
+	  pad->SetLeftMargin(0);
+	  pad->SetRightMargin(0);
+	  pad->SetBottomMargin(0);
+	  //pad->SetBottomMargin( 0.2 );
+	  pad->SetTopMargin(0);
+
+	  c->cd( 0 );
+	  pad->Draw();
+	  pads[ i - ladder_min ][ j - chip_min ] = pad;
+
+	}
+      y_low = y_high;
+      
+    }
+
+  int counter = 0;
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    for( int j=chip_min; j<chip_max; j++ ) // in x direction
+      pads[ i - ladder_min ][ j - chip_min ]->SetNumber( ++counter );
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+// functions for label                                                   //
+///////////////////////////////////////////////////////////////////////////
+void Viewer::WriteLabelFelix( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  tex->SetTextSize( 0.03 );
+
+  // INTT server label: intt0
+  tex->DrawLatexNDC( margin_left * 0.1, 1.0 - margin_top  / 3, intt_server_.c_str() );
+}
+
+void Viewer::WriteLabelRoc( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+  
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  
+  string comment = "";
+  tex->SetTextSize( 0.02 );
+  
+  double x_roc_label = margin_left * 0.1;
+  double y_roc_label = 1.0 - margin_top * 0.8; // - pad_height / 10;
+  if( ladder_min == 0 && ladder_max == kLadder_num_ / 2 )
+    {
+      comment = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) )
+	+ ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+    }
+  else if( ladder_min == kLadder_num_ / 2 && ladder_max == kLadder_num_ )
+    {      
+      comment = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) + 1 )
+	+ ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+      //tex->DrawLatexNDC( margin_left * 0.1, 1.0 - margin_top - pad_height / 10, comment.c_str() );     
+    }
+  tex->DrawLatexNDC( x_roc_label, y_roc_label, comment.c_str() );
+}
+
+void Viewer::WriteLabelLadder( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ )
+{
+
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+      string ladder = "FELIX CH" + to_string( i );
+      double y_low = margin_bottom + pad_height * (i-ladder_min);
+      double y_high = y_low + pad_height;
+      tex->SetTextSize( 0.0175 );
+
+      // Ladder Name, ROC port
+      auto config = ladder_map_->GetLadderConfig( i );
+      //cout << config->module_ << "\t" << config->roc_port_ << "\t" << config->ladder_name_ << endl;
+      // FELIX CH
+      tex->DrawLatexNDC( margin_left / 10 , y_high - pad_height * 0.1, // (2 * y_low + y_high)/3,
+			 ladder.c_str() );
+
+      tex->SetTextSize( 0.015 );
+      // Ladder Name
+      tex->DrawLatexNDC( margin_left / 10 , y_high - pad_height * 0.33, // (2 * y_low + y_high)/3,
+			 config->ladder_name_.c_str() );
+      // ROC port
+      tex->DrawLatexNDC( margin_left / 10 , y_high - pad_height * 0.56, // (2 * y_low + y_high)/3,
+       			 ("ROC port " + config->roc_port_).c_str() );
+      
+    }
+
+}
+
+void Viewer::WriteLabelChip( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ )
+{
+  
+  int dladder = ladder_max - ladder_min;
+  int dchip = chip_max - chip_min;
+  
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  
+  for( int j=chip_min; j<chip_max; j++ ) // in x direction
+    {
+      string chip_str = "Chip" + to_string( j + 1 );
+      double x_low = margin_left + j * pad_width;
+      double x_high = x_low + pad_width;
+      
+      // Chip number
+      tex->SetTextSize( 0.02 );
+      if( j== chip_min )
+	{
+	  tex->DrawLatexNDC( x_low, margin_bottom / 10, chip_str.c_str() ); // bottom, 1st
+	  tex->DrawLatexNDC( x_low, margin_bottom + pad_height * dladder + margin_top * 0.1,
+			     chip_str.c_str() ); // top, 1st
+	}
+      else
+	{
+	  tex->DrawLatexNDC( (5.5 * x_low + 4.5 * x_high)/10, margin_bottom / 10, to_string(j + 1 ).c_str() ); // bottom, 2nd-
+	  tex->DrawLatexNDC( (5.5 * x_low + 4.5 * x_high)/10, margin_bottom + pad_height * dladder + margin_top * 0.1,
+			     to_string(j + 1 ).c_str() ); // top, 2nd-
+	}
+      
+    }
+}
+
+void Viewer::WriteLabelXaxis( int ladder_min, int ladder_max, int chip_min, int chip_max, string label_low, string label_high )
+{
+
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  
+  for( int j=chip_min; j<chip_max; j++ ) // in x direction
+    {
+      double x_low = margin_left + (j-chip_min) * pad_width;
+      double x_high = x_low + pad_width;
+
+      // Channel numbers
+      tex->SetTextSize( 0.015 );
+      tex->DrawLatexNDC( x_low + pad_width * 0.05,   0.75 * margin_bottom , label_low.c_str() );
+      tex->DrawLatexNDC( x_high - pad_width * label_high.size() * 0.15, // 0.45
+			 0.75 * margin_bottom , label_high.c_str() );
+      
+    }  
+
+}
+
+void Viewer::WriteLabelYmax( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_, int y_max )
+{
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  tex->SetTextSize( 0.0125 );
+  
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+      double y_high = margin_bottom + pad_height * (i - ladder_min + 1);
+
+      // minimum label of y-axis
+      int y_max_order = to_string(y_max).size();
+      tex->DrawLatexNDC( (9 - 0.35 * y_max_order) * margin_left / 10 , // (9 - 0.525 * y_max_order) * margin_left / 10 ,
+			 y_high - 0.5 * pad_height / 10,
+			 to_string(y_max).c_str() );
+
+    }
+}
+
+void Viewer::CanvasPreparation( TCanvas* c,
+				  //TH1* hists[kLadder_num_][kChip_num_],
+				  int x_min, int x_max, int y_min, int y_max,
+				  int ladder_min, int ladder_max, int chip_min, int chip_max,
+				  string hist_name )
+{
+
+  ////////////////////////////////////////////////////////////////////////
+  // Making pads                                                        //
+  ////////////////////////////////////////////////////////////////////////
+  this->DivideCanvas( c, ladder_min, ladder_max, chip_min, chip_max );
+
+  ////////////////////////////////////////////////////////////////////////
+  // Label                                                              //
+  ////////////////////////////////////////////////////////////////////////
+  this->WriteLabelLadder( ladder_min, ladder_max, chip_min, chip_max );
+  this->WriteLabelChip( ladder_min, ladder_max, chip_min, chip_max );
+  this->WriteLabelXaxis( ladder_min, ladder_max, chip_min, chip_max, to_string(x_min), to_string(x_max) );
+  this->WriteLabelYmax( ladder_min, ladder_max, chip_min, chip_max, y_max );
+
+  ////////////////////////////////////////////////////////////////////////
+  // Additional items                                                   //
+  ////////////////////////////////////////////////////////////////////////
+  this->WriteLabelFelix( ladder_min, ladder_max, chip_min, chip_max );
+  this->WriteLabelRoc( ladder_min, ladder_max, chip_min, chip_max );
+    
+  return;
+}
+
+string Viewer::GetOutputPath(int ladder_min, int ladder_max, int chip_min, int chip_max, string keyword )
+{
+  string output = filename_.substr( 0, filename_.find_last_of( "." ) ) + "_" + keyword;
+  string ladder = "";
+  if( ladder_min == 0 && ladder_max == kLadder_num_ / 2 )
+    {
+      ladder = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) )
+	+ ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+    }
+  else if( ladder_min == kLadder_num_ / 2 && ladder_max == kLadder_num_ )
+    {
+      ladder = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) + 1 )
+	+ ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+    }
+  else if( ladder_min != 0 && ladder_max != kLadder_num_ )
+    {
+      ladder = "ladder" + to_string( ladder_min ) + "-" + to_string( ladder_max );
+    }
+
+  string chip = "";
+  if( chip_min != 0 && chip_max == kChip_num_ )
+    {
+      chip = "chip"  + to_string( chip_min ) + "-" + to_string( chip_max );
+    }
+  
+  if( ladder != "" )
+    output += "_" + ladder;
+  if( chip != "" )
+    output += "_" + chip;
+  if( figure_suffix_ != "" )
+    output += figure_suffix_;
+  
+  return output;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -203,6 +443,7 @@ int Viewer::Draw()
   canvases.push_back( c_adc_ch_ );
   canvases.push_back( c_ch_ );
   canvases.push_back( c_adc_ );
+  
   for( int k=0; k<canvases.size(); k++ )
     {
       for(int i=0; i<kLadder_num_; i++ )
@@ -217,22 +458,51 @@ int Viewer::Draw()
 	  L_posi[i]->Draw();
 	}
   }
-  
-  cout << "Run type: " << run_type_ << endl;
+
   if( run_type_ != "junk" )
     {
-
-      this->Draw_Channel();
-      this->Draw_AdcChannel();
       
-      if( run_type_ == "calibration" )
+      if( run_type_ == "calibration" || run_type_ == "calib" ) 
 	{
-	  this->Draw_Calibration();
+	  this->Draw_AmplAdc();
+	  this->Draw_AmplAdc( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+	  this->Draw_AmplAdc(kLadder_num_/2, kLadder_num_); // 
+	  this->Draw_ChAmpl();
+	  this->Draw_ChAmpl(0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+	  this->Draw_ChAmpl(kLadder_num_/2, kLadder_num_); // 
+	  this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+	  this->Draw_HitDist( kLadder_num_/2, kLadder_num_); // 
+	  this->Draw_HitDist();
+	  
 	}
       else if( run_type_ == "pedestal" )
 	{
-	  this->Draw_Pedestal();
+	  //this->Draw_Channel();
+	  //this->Draw_AdcChannel();
+	  this->Draw_HitDist();
+	  this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+	  this->Draw_HitDist( kLadder_num_/2, kLadder_num_); // 
 	}
+      else if( run_type_ == "cosmics" )
+	{
+	  this->Draw_HitDist();
+	}
+      else if( run_type_ == "beam" )
+	{
+	  this->Draw_Channel();
+	  this->Draw_AdcChannel();
+	  this->Draw_HitDist();
+	}
+    }
+  else // for junk data
+    {
+      this->Draw_Channel();
+      this->Draw_AdcChannel();
+
+      //this->Draw_HitDist();
+      this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+      this->Draw_HitDist( kLadder_num_/2, kLadder_num_); //
+      
     }
   
   return 0;
@@ -377,164 +647,144 @@ int Viewer::Draw_Channel()
   return 0;
 }
 
-int Viewer::Draw_Calibration()
+int Viewer::Draw_AmplAdc( int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
-  return 0;
-}
-
-int Viewer::Draw_Pedestal()
-{
-
-  TCanvas* c = c_pedestal_;
-  c->cd( 0 );
-
-  ////////////////////////////////////////////////////////////////////////
-  // Making pads                                                        //
-  ////////////////////////////////////////////////////////////////////////
-  TPad* pads[kLadder_num_][kChip_num_];
-  // +--------------------------------------------------------------------------------------------+
-  // |Felix ch13 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch12 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch11 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch10 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch09 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch08 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch07 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch06 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch05 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch04 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch03 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch02 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch01 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // |Felix ch00 |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|
-  // +--------------------------------------------------------------------------------------------+
-
-  const double kMargin_left	= 0.075;
-  const double kMargin_right	= 0.01;
-  const double kMargin_top	= 0.01;
-  const double kMargin_bottom	= 0.05;
-  const double kPad_width	= ( 1.0 - kMargin_left - kMargin_right ) / kChip_num_;
-  const double kPad_height	= (1.0 - kMargin_top - kMargin_bottom ) / kLadder_num_;
-
-  double x_low = kMargin_left;
-  double y_low = kMargin_bottom;
-  for( int i=0; i<kLadder_num_; i++ ) // in y direction
-    {
-      string ladder = "Ladder" + to_string( i );
-      double y_high = y_low + kPad_height;
-
-      for( int j=0; j<kChip_num_; j++ ) // in x direction
-	{
-	  string chip_str = "Chip" + to_string( j );
-	  x_low = kMargin_left + j * kPad_width;
-	  double x_high = x_low + kPad_width;
-	  
-	  string pad_name = ladder + "_" + chip_str;
-	  TPad* pad = new TPad( pad_name.c_str(), pad_name.c_str(),
-				 x_low, y_low, x_high, y_high  );
-	  pad->SetLeftMargin(0);
-	  pad->SetRightMargin(0);
-	  pad->SetBottomMargin(0);
-	  //pad->SetBottomMargin( 0.2 );
-	  pad->SetTopMargin(0);
-
-	  c->cd( 0 );
-	  pad->Draw();
-	  pads[i][j] = pad;
-
-	}
-      y_low = y_high;
-    }
-
-  ////////////////////////////////////////////////////////////////////////
-  // Label                                                              //
-  ////////////////////////////////////////////////////////////////////////
-  int counter = 0;
-  x_low = kMargin_left;
-  y_low = kMargin_bottom;
-  auto y_max = GetMaxBinContentRatio( hist_ch_, 0.5 ); // Bins on the top 0.5% are ignored
-  //cout << "max bin: " << y_max << endl;
-  
-  for( int i=0; i<kLadder_num_; i++ ) // in y direction
-    {
-      c->cd( 0 );
-      string ladder = "Ladder" + to_string( i );
-      double y_high = y_low + kPad_height;
-      TLatex* tex = new TLatex();
-      tex->SetTextSize( 0.02 );
-      tex->DrawLatexNDC( kMargin_left / 10 , (2 * y_low + y_high)/3, ladder.c_str() );
-
-      // minimum label of y-axis
-      tex->SetTextSize( 0.015 );
-      tex->DrawLatexNDC( 9 * kMargin_left / 10 , y_low, "0" );
-      // maximum label of y-axis
-      int y_max_order = to_string(y_max).size();
-      tex->DrawLatexNDC( (9 - 0.525 * y_max_order) * kMargin_left / 10 ,
-			 y_high - 1.5 * kPad_height / 10,
-			 to_string(y_max).c_str() );
-
-      for( int j=0; j<kChip_num_; j++ ) // in x direction
-	{
-	  string chip_str = "Chip" + to_string( j );
-	  x_low = kMargin_left + j * kPad_width;
-	  double x_high = x_low + kPad_width;
-	  
-	  pads[i][j]->SetNumber( ++counter );
-	  //cout << i << "\t" << j << "\t" << counter << endl;
-	  if( i == 0 )
-	    {
-	      c->cd( 0 );
-	      
-	      // Chip number
-	      tex->SetTextSize( 0.02 );
-	      if( j== 0 )
-		tex->DrawLatexNDC( x_low, kMargin_bottom / 10, chip_str.c_str() );
-	      else
-		tex->DrawLatexNDC( (x_low + x_high)/2, kMargin_bottom / 10, to_string(j).c_str() );
-
-	      // Channel numbers
-	      tex->SetTextSize( 0.015 );
-	      tex->DrawLatexNDC( x_low + kPad_width * 0.05, 0.75 * kMargin_bottom , "0" );
-	      tex->DrawLatexNDC( x_high - kPad_width * 0.45 , 0.75 * kMargin_bottom , "127" );
-	      
-	    }
-	}
-      y_low = y_high;
-
-    }
-
-  //  return 0;
+  //  TCanvas* c = c_pedestal_;
+  TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
+  //auto y_max = this->CanvasPreparation( c, hist_ampl_adc_, ladder_min, ladder_max, chip_min, chip_max );
+  this->CanvasPreparation( c,
+			   0, 64, 0, 8,
+			   ladder_min, ladder_max, chip_min, chip_max,
+			   hist_ampl_adc_[0][0]->GetName() );
   
   ////////////////////////////////////////////////////////////////////////
   // Draw!                                                              //
   ////////////////////////////////////////////////////////////////////////  
-  for( int i=0; i<kLadder_num_; i++ ) // in y direction
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
     {
       string ladder = "Ladder" + to_string( i );
 
-      for( int j=0; j<kChip_num_; j++ ) // in x direction
+      for( int j=chip_min; j<chip_max; j++ ) // in x direction
 	{
 	  string chip_str = "Chip" + to_string( j + 1 );
 
-	  c->cd( i * kChip_num_ + j + 1);
+	  c->cd( (i-ladder_min) * kChip_num_ + (j-chip_min) + 1);
 	  string hist_name = ladder + "_" + chip_str;
 
-	  hist_ch_[i][j]->Draw();
-	  hist_ch_[i][j]->GetYaxis()->SetRangeUser( 0, y_max );
-	  // for debugging
-	  // TH1D* a = new TH1D( hist_name.c_str(), "t;x;y;z", 200, -5, 5 );
-	  // TRandom3* aaa = new TRandom3( 0 );
-	  // for( int k=0; k<i * kChip_num_ * 10+ j*10; k++ )
-	  //   a->Fill( aaa->Gaus( 0, 1 ) );	  
-	  // a->Draw( "" );
-	  // a->GetYaxis()->SetRangeUser( 0, y_max );
-	  // cout << a->GetEntries() << endl;
+	  hist_ampl_adc_[i][j]->Draw( "colz" );
+	  this->SetStyle();
+	  
 	}
     }
 
-  string output_pedestal = filename_.substr( 0, filename_.find_last_of( "." ) )
-    + "_pedestal" + figure_suffix_;
-  c->Print( output_pedestal.c_str() );
+  string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "adc_ampl" );
+  c->Print( output.c_str() );
+  cout << output << endl << endl;
+
+  return 0;
+}
+
+int Viewer::Draw_ChAmpl( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+  TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
+
+  auto margin_right_temp = margin_right;
+  margin_right = 0.05;
+  this->CanvasPreparation( c,
+			   0, 127, 0, 64,
+			   ladder_min, ladder_max, chip_min, chip_max,
+			   hist_ch_ampl_[0][0]->GetName() );
+  
+  ////////////////////////////////////////////////////////////////////////
+  // Draw!                                                              //
+  ////////////////////////////////////////////////////////////////////////  
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+      string ladder = "Ladder" + to_string( i );
+
+      for( int j=chip_min; j<chip_max; j++ ) // in x direction
+	{
+	  string chip_str = "Chip" + to_string( j + 1 );
+
+	  c->cd( (i-ladder_min) * kChip_num_ + (j-chip_min) + 1);
+	  string hist_name = ladder + "_" + chip_str;
+
+	  this->SetStyle();
+	  gStyle->SetPalette( kRainBow );
+	  hist_ch_ampl_[i][j]->Draw( "colz" );
+	  hist_ch_ampl_[i][j]->GetZaxis()->SetRangeUser( 0, 20 );
+	  
+	}
+    }
+
+  c->cd( 0 );
+  gPad->Update();
+  hist_ch_ampl_[0][0]->GetZaxis()->SetTickSize( 0.0 );
+  TPaletteAxis* pa = new TPaletteAxis(1.0 - margin_right * 0.9,
+				      margin_bottom,
+				      1.0 - margin_right * 0.7,
+				      1.0 - margin_top,
+				      hist_ch_ampl_[0][0]);
+  pa->Draw();
+  gPad->Update();
+  
+  string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "ch_ampl" );
+  c->Print( output.c_str() );
+  cout << output << endl << endl;
+
+  margin_right = margin_right_temp;
+  
+  return 0;
+}
+
+int Viewer::Draw_HitDist( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+
+  //  TCanvas* c = c_pedestal_;
+  TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
+
+  auto y_max = GetMaxBinContentRatio( hist_ch_, 0.01, ladder_min, ladder_max, chip_min, chip_max ); // Bins on the top 1% are ignored
+
+  if( run_type_ == "calib" || run_type_ == "calibration" )
+    y_max = 500;
+  else if( y_max < 0.9 )
+    y_max = 1;
+  
+  this->CanvasPreparation( c,
+			   0, 127, 0.9, y_max,
+			   ladder_min, ladder_max, chip_min, chip_max,
+			   hist_ch_[0][0]->GetName() );
+
+  ////////////////////////////////////////////////////////////////////////
+  // Draw!                                                              //
+  ////////////////////////////////////////////////////////////////////////  
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+      string ladder = "Ladder" + to_string( i );
+
+      for( int j=chip_min; j<chip_max; j++ ) // in x direction
+	{
+	  string chip_str = "Chip" + to_string( j + 1 );
+
+	  //c->cd( i * kChip_num_ + j + 1);
+	  c->cd( (i-ladder_min) * kChip_num_ + (j-chip_min) + 1);
+	  string hist_name = ladder + "_" + chip_str;
+
+	  hist_ch_[i][j]->SetLineColor( kAzure );
+	  hist_ch_[i][j]->Draw();
+	  hist_ch_[i][j]->GetYaxis()->SetRangeUser( 0.9, y_max );
+
+	  if( !(run_type_ == "calib" || run_type_ == "calibration" ) )
+	    gPad->SetLogy( true );
+	  
+	  this->SetStyle();
+	}
+    }
+
+  string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "hit_dist" );
+  c->Print( output.c_str() );
+  cout << output << endl << endl;
+  
   return 0;
 }
 
@@ -585,16 +835,25 @@ void Viewer::SaveHists()
 
 void Viewer::SetStyle()
 {
-
-  //gStyle->SetPalette(1);
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle( 0 );
+  this->BaseClass::SetStyle();
   
-  gStyle->SetFrameBorderMode(0);
-  gStyle->SetCanvasColor(0);
-  gStyle->SetCanvasBorderMode(0);
-  gStyle->SetPadColor(0);
-  gStyle->SetPadBorderMode(0);
-  gROOT->SetBatch( true ); // change to false to show canvases
+  // //gStyle->SetPalette(1);
+  // gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  // gStyle->SetOptTitle( 0 );
+  
+  // gStyle->SetFrameBorderMode(0);
+  // gStyle->SetCanvasColor(0);
+  // gStyle->SetCanvasBorderMode(0);
+  // gStyle->SetPadColor(0);
+  // gStyle->SetPadBorderMode(0);
+  // gROOT->SetBatch( true ); // change to false to show canvases
+  // gROOT->SetStyle("Modern") ;
+  gPad->SetGridx( true );
+  gPad->SetGridy( true );
+  gPad->SetTicks( true, true );
+  //  gStyle->SetPalette(55, 0, 1 );
+  gStyle->SetGridColor( kGray );
+  gStyle->SetGridStyle( 3 );
+  gStyle->SetEndErrorSize(0) ;
 }

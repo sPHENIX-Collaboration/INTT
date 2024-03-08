@@ -28,68 +28,93 @@ class Homepage() :
         else:
             self.RUN_DIR = pathlib.Path( self.YEAR_DIR )
 
-        self.run_types = [ "calib", "calibration", "pedestal",
+        self.run_types = [ "calib",  "pedestal", #"calibration",
                            "cosmics", "beam", "junk"
                           ]
         self.run_directories = sorted( list(self.YEAR_DIR.glob( '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/' ) ) ) # because ChatGPT said so...
         
-        self.Process()
-
     def Process( self ) :
-
         if self.info.run is not None:
             self.ProcessRunPage()
+            time.sleep( 1 )
             
-        #self.ProcessYearPage()
-        self.ProcessYearPageBetter()
+        self.ProcessYearPage()
 
-    def ProcessYearPageBetter( self ) : # WIP
+    def ProcessYearPage( self ) : # WIP
+        # Update the list of runs
+        self.run_directories = sorted( list(self.YEAR_DIR.glob( '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/' ) ) ) # because ChatGPT said so...
         index_template = self.YEAR_DIR / "index_template.html"
+        print( "base file:", index_template )
         year_page = self.YEAR_DIR / "index.html"
         shutil.copy( index_template, year_page )
-
-
+        
+        print( "\n\n\n", year_page )
+        
         with open( str(year_page), mode='a' ) as file :
 
             file.write( "<div id=\"col\" style=\"column-count:" + str(len(self.run_types)) + ";\">\n" )
             for run_type in self.run_types :
-                print( run_type )
                 file.write( "  <h3>" + run_type + "</h3>\n" )
                 file.write( "  <p>\n" )
                 file.write( "    <ul>\n" )
                 counter = 0
                 for run_dir in self.run_directories :
                     files = list( run_dir.glob( run_type + '*' ) )
+                    if self.info.year == 2023 :
+                        if run_type == "junk" or run_type == "pedestal" :
+                            files = list( run_dir.glob( 'intt*' ) )
+                            
                     #if self.info.year == 2023 or self.info.year == 2024 and (run_type == "pedestal" or run_type == "junk" ) :
                     #if (self.info.year == 2023 and (run_type == "pedestal" or run_type == "junk" ) ) or \
                     #   self.info.year == 2024 and (run_type == "pedestal" or run_type == "junk" ) and False:
                     #    files = list( run_dir.glob( "intt_intt" + '*' ) )
-                        
+
                     if len(files) == 0 :
                         continue
 
+                    # Showing operated FELIX servers. I assume that at least 1 FELIX was operated.
+                    contents_felixes = " (intt"                    
+                    for felix in range(0, 8 ) :
+                        files = list( run_dir.glob( '*intt' + str(felix) + '*' ) )
+                        if len(files) != 0 :
+                            contents_felixes += str(felix) + ", "
+
+                    # end of for felix in range(0, 8 )
+                    contents_felixes = contents_felixes[0:-2] + ")" # -2 means removing the last ","
+                    # Shrink text size if many FELIX servers were operated. 2 step modification!
+                    if len( contents_felixes ) > (7 + 10) :
+                        contents_felixes = "<font size=\"-2\">" + contents_felixes + "</font>"
+                    elif len( contents_felixes ) > (7 + 6 ) :
+                        contents_felixes = "<font size=\"-1\">" + contents_felixes + "</font>"
+                        
                     counter += 1
                     contents = \
-                        "      <li>" + "<a href=\"./" + run_dir.name + "/index.html\">" + run_dir.name + "</a></li>\n"
+                        "      <li>" + "<a href=\"./" + run_dir.name + "/index.html\">" + run_dir.name + "</a>"  + contents_felixes + "</li>\n"
+
                     file.write( contents )
 
                 for num in range( 0, self.GetMaxDirNum() - counter ) :
-                    file.write( "      <li></li>\n" )
+                    file.write( "      <li style=\"color:white;\"></li>\n" )
                     
                 file.write( "    </ul>\n" )
                 file.write( "  </p>\n" )
             file.write( "</div>\n" )
+
+        print( "  --->", year_page, "generated." )
         
     def ProcessRunPage( self ) :
         # Make directory for the run if it's not found
         if self.RUN_DIR.exists() is False : 
             self.RUN_DIR.mkdir()
 
+        elif self.info.homepage_run_clean is True :
+            shutil.rmtree( self.RUN_DIR )
+            os.mkdir( self.RUN_DIR )
+        
         # Copy the template of index.html
         index_template = self.COMMISSIONING_DIR / "index_template.html"
         self.index_html = self.RUN_DIR / "index.html"
         shutil.copy( index_template, self.index_html )
-        print( self.index_html )
 
         # Write header
         with open( str(self.index_html), mode='a' ) as file :
@@ -117,15 +142,20 @@ class Homepage() :
             #file.write( "</body>\n" )
             #file.write( "</html>\n" )
             file.write( contents )
+            
+        print( "  --->", self.index_html, "generated." )
 
     def WriteFelixSection( self, felix ) :
         with open( str(self.index_html), mode='a' ) as file :
             server = "intt" + str(felix)
-            file.write( "<h2>" + server + "</h2>\n" )
 
             counter = 0
+            contents = ""
+            # loop over all plots
             for plot in self.info.homepage_plots :
                 #print( plot, server, server in str(plot) )
+
+                # if this plot is from this server, add it to the contents
                 if server in str(plot) :
                     counter += 1
                     image = plot.name
@@ -139,24 +169,32 @@ class Homepage() :
                         plot_title = "ADC distribution"
                     elif plot_type == "amplvsadc" : 
                         plot_tile = "ADC vs Ampl"
+                    elif plot_type == "hit" : 
+                        plot_title = "Hist distributions"
                     else:
+                        print( "unknown plot type:", plot_type )
                         plot_title = "Unknown type"
 
                     caption = run_type + "<br> " + plot_title + "<br> chunk " + chunk
 
                     shutil.copy( plot, self.RUN_DIR / image )
-                    contents = \
+                    contents += \
                         "    <figure>\n" \
                         "      <a href=\"" + image + "\" data-lightbox=\"images\" data-title=\"" + image + "\">\n" \
                         "        <img " + "src=\"" + image + "\" " + "alt=\"" + image + "\"\>\n" \
                         "      </a>\n" \
-                        "      <figcaption>" + caption + "</figcaption>\n" \
+                        "      <a href=\"" + image + "\" download=\"" + image + "\">\n" \
+                        "        <figcaption>" + caption + "</figcaption>\n" \
+                        "      </a>\n" \
                         "    </figure>\n"
 
-                    file.write( contents )
+            # after loop over all plots, all contents are in the variable. It the contents is not nohting, write it down
+            if counter != 0 :
+                file.write( "<h2>" + server + "</h2>\n" )
+                file.write( contents )
+                contents = ""
 
-            if counter == 0 :
-                file.write( "No data found<br>\n\n" )
+                #file.write( "No data found<br>\n\n" )
 
     def GetMaxDirNum( self ) :
         """

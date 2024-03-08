@@ -80,6 +80,9 @@ class Printer() :
                sep='', flush=True )
         
     def Print( self, color="" ) :
+        if len(self.lines) == 0 :
+            return None
+        
         if color != "" :
             print( Printer.color_starter + Printer.color_dict[ color ], end="" )
             
@@ -114,4 +117,4 @@ class Printer() :
         self.PrintOuterLine()
         if color != "" :
             print( Printer.color_closure, end="" )
-        
+

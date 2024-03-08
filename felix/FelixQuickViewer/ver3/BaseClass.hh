@@ -25,27 +25,35 @@ protected:
   // constant variables
   static const int kChip_num_ = 26;
   static const int kLadder_num_ = 14; //
-  //const string map_dir = "/direct/sphenix+tg+tg01/commissioning/INTT/map_ladder/";
-  const string map_dir = "/Users/genki/map_ladder/";
+  const string kMap_dir_SDCC_ = "/sphenix/tg/tg01/commissioning/INTT/map_ladder/";
+  string map_dir_;
+  //const string map_dir_ = "/Users/genki/map_ladder/";
 
   // input
-  string filename_; // The path to the data file
+  string filename_ = ""; // The path to the data file
+  string felix_num_ = "9";
+  string intt_server_ = "intt9";
   string run_type_ = "calib";
   string ladder_map_path_;
   LadderMap* ladder_map_;
+  int year_ = 9999;
   
   // output
   string output_basename_;
+  string output_hist_root_;
   string root_suffix_ = "_hist.root"; // suffix of the output ROOT file which contains histgram objects
   string figure_suffix_ = ".png";
 
   // variables for misc
   int width_ = 100;
-
+  int canvas_counter = 0;
+  
   TFile* f1_;
 
   vector < string > print_buffer_;
   TH2D* hist_adc_ch_[14][26];
+  TH2D* hist_ampl_adc_[14][26];
+  TH2D* hist_ch_ampl_[14][26];
   TH1D* hist_adc_[14][26];
   TH1D* hist_ch_[14][26];
 
@@ -54,6 +62,9 @@ protected:
   /////////////////////////////////////
   virtual void Init();
   void InitLadderMap();
+
+  string GetCanvasName();
+  string GetCanvasTitle(){ return GetCanvasName(); };
   
   template < class... T >
   void PrintLine( string header, string separator, string footer, T... contents )
@@ -75,7 +86,7 @@ public:
   // constructors
   BaseClass(){};
   //BaseClass( string filename_arg ){ filename_ = filename_arg;};
-  BaseClass( string filename_arg );
+  BaseClass( string filename_arg, int year = 2024 );
 
   // destructor
   ~BaseClass()
@@ -93,10 +104,11 @@ public:
   // output parameters
   string GetOutput() const { return output_basename_ + root_suffix_; }; // ROOT file
   string GetOutputBasename() const { return output_basename_;};
+  string GetInttServer(){ return intt_server_;};
 
   void SetRunType( string arg ){ run_type_ = arg;};
   
-  //virtual bool ReadHistograms();
+  bool ReadHistograms();
   virtual void Print();
   virtual void SetStyle();  
     

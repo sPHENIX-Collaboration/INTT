@@ -34,19 +34,15 @@ private:
   int event_;
 
   // ROOT objects
-  // TFile* f1_;
   TTree* tr1_;
 
-  // TH2D* hist_adc_ch_[14][26];
-  // TH1D* hist_adc_[14][26];
-  // TH1D* hist_ch_[14][26];
   void Init() override;
   
 public:
 
   // constructors
   HistMaker(){};
-  HistMaker( string filename_arg );
+  HistMaker( string filename_arg, int year = 9998 );
 
   // destructor
   ~HistMaker(){};

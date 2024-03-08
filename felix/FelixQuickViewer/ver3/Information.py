@@ -47,7 +47,12 @@ class Information() :
         #############################################################################
         # Mode flags
         self.plot_mode = args.plot
-        self.homepage_mode = args.homepage
+
+        self.homepage_run_mode = args.homepage_run or args.homepage
+        self.homepage_run_clean = args.homepage_run_clean
+        self.homepage_title_mode = args.homepage_title or args.homepage
+        self.homepage_mode = self.homepage_run_mode or self.homepage_title_mode
+        
         self.calib_summary_mode = args.calib_summary
                     
         #############################################################################
@@ -62,6 +67,7 @@ class Information() :
         #############################################################################
         # Processes for data                                                        #
         #############################################################################
+        self.data_dir = pathlib.Path( args.data_dir )
         self.run_type = args.run_type
         self.felix_server = args.felix_server
         
@@ -140,15 +146,17 @@ class Information() :
             if self.chunk is None :
                 self.chunk = os.path.basename( self.plot_file ).split( '-' )[2]
 
-        else : # in the case no plot_file is given, let's guess from run number
-            if self.run is None or self.felix_server is None or self.run_type is None or self.chunk is None:
+        else : # in the case no plot_file is given, let's guess from run number            
+            if (self.run is None or self.felix_server is None or self.run_type is None or self.chunk is None) and self.plot_mode is True:
                 print( "No information about file to be used is given.\n" \
                        "Please user\n" \
                        "  --file or\n" \
                        "  --run , --run_type , --felix-server ,and --chunk.",
                        file=sys.stderr )
 
-            self.plot_file = self.run_type + "_" + self.felix_server + "-" + self.run + "-" + self.chunk + ".root"
+            elif self.plot_mode is True:
+                self.plot_file = self.data_dir / pathlib.Path( self.run_type + "_" + self.felix_server + "-" + self.run + "-" + self.chunk + ".root" )
+
 
         # If no file is given...
         if self.plot_mode is True and self.plot_file is None :
@@ -164,7 +172,6 @@ class Information() :
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_adc.png
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_entryvschan.png
         self.homepage_plots = sorted( list(self.ROOT_FILE_DIR.glob( "*" + str(self.run) + "*.png" ) ) )
-
         
     def PrintLine( self ) :
         print( '+' + '-'*50 + '+' , flush=True )
@@ -183,6 +190,10 @@ class Information() :
         self.printer.AddLine( "Run type:          ", self.run_type )
         self.printer.AddLine( "Plot mode:         ", self.plot_mode )
         self.printer.AddLine( "Homepage mode:     ", self.homepage_mode )
+        if self.homepage_mode:
+            self.printer.AddLine( "   + Run page:     ", self.homepage_run_mode )
+            self.printer.AddLine( "   + Title page:   ", self.homepage_title_mode )
+            
         self.printer.AddLine( "Calib summary mode:", self.calib_summary_mode )
 
         self.printer.AddSeparator()
@@ -206,9 +217,8 @@ class Information() :
 
             if len( self.homepage_plots) > 0 : 
                 self.printer.AddLine( "Directory:         ", self.homepage_plots[0].parent )
-                for image in self.homepage_plots :
-                    self.printer.AddLine( "    -", str(image.name) )
-            
+                self.PrintHomepagePlots()
+                
         if self.calib_summary_mode is True :
             self.printer.AddSeparator()
             self.printer.AddLine( "Parameters for calib summary mode", color=header_color )
@@ -258,8 +268,13 @@ class Information() :
         self.printer.AddLine( "    New list:", self.evt_list )
         self.printer.AddLine( "    Old list:", self.evt_list_previous )
         """
-        self.printer.Print()
+        self.printer.Clear()
 
+    def PrintHomepagePlots( self ) :
+        for image in self.homepage_plots :
+            self.printer.AddLine( "    -", str(image.name) )
+            
+        self.printer.Print()
 
     def GetFilePrefix( self, run_type ) :
         """
