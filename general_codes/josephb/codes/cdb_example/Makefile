@@ -2,29 +2,35 @@
 
 GXX = g++
 
-CXX = .cc
-HXX = .h
-OXX = .o
+CXX = cc
+HXX = h
+OXX = o
 
-EXE = .exe
+EXE = exe
 
 ###---Make edits below---###
 
 FLGS = $(shell root-config --cflags)
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt -lphool -lphparameter $(shell root-config --glibs)
+LIBS = -L$(OFFLINE_MAIN)/lib -lcdbobjects -lffamodules $(shell root-config --glibs)
 
-TRGT = example$(EXE)
-OBJS = example$(OXX)
+TRGS = \
+	main.$(EXE)
+
+OBJS = \
+	main.$(OXX)
 
 ###---Make edits above---###
 
-$(TRGT): $(OBJS)
+.PRECIOUS: $(OBJS)
+all: $(TRGS) $(OBJS)
+
+%.$(EXE): %.$(OXX)
 	$(GXX) $(FLGS) $(INCS) -o $@ $^ $(LIBS)
 
-%$(OXX): %$(CXX)
+%.$(OXX): %.$(CXX)
 	$(GXX) $(FLGS) $(INCS) -c $< -o $@ $(LIBS)
 
 .PHONY: clean
 clean:
-	rm $(TRGT) $(OBJS)
+	rm $(TRGS) $(OBJS)

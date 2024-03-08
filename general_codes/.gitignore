@@ -29,3 +29,63 @@ Thumbs.db
 
 # for ROOT files
 *.root
+
+
+## but some ROOT files are necessary
+!/Testbeam_G4_code/session7_solution/beam_parameter/*.root
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# manually added files
+general_codes/genki/evt_list.txt
+general_codes/genki/evt_list_previous.txt
+
+## josephb's ignore rules
+# Files generated when you build and install a package
+general_codes/josephb/*/aclocal.m4
+general_codes/josephb/*/autom4te.cache
+general_codes/josephb/*/config.guess
+general_codes/josephb/*/config.sub
+general_codes/josephb/*/configure
+general_codes/josephb/*/depcomp
+general_codes/josephb/*/install-sh
+general_codes/josephb/*/ltmain.sh
+general_codes/josephb/*/Makefile.in
+general_codes/josephb/*/missing
+
+# Subdirectory names that can be ignormed
+general_codes/josephb/*/bld/*
+general_codes/josephb/*/job/*
+general_codes/josephb/*/out/*
+general_codes/josephb/*/err/*

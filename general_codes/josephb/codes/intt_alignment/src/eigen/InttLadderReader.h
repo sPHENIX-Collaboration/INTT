@@ -28,7 +28,7 @@ public:
 	void ReadFile(std::string const&);
 
 	Eigen::Affine3d GetTransformFromCorners(Corners_t const&);
-	Eigen::Affine3d GetLadderTransform(Intt::Online_s const&);
+	Eigen::Affine3d GetLadderTransform(InttNameSpace::Online_s const&);
 };
 
 #endif//INTT_LADDER_READER_H

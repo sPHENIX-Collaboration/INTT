@@ -21,7 +21,7 @@ Double_t R_MRGN = 0.1;
 void SetStyle();
 void RoundTrip();
 
-typedef Double_t(*FillFunc_t)(struct Intt::Online_s const&);
+typedef Double_t(*FillFunc_t)(struct InttNameSpace::Online_s const&);
 
 struct Params_s
 {
@@ -33,15 +33,15 @@ void MakeLadderHist(struct Params_s const&);
 
 void MakeBarrelHist();
 
-Double_t GetChp(struct Intt::Online_s const& s){return s.chp;}
-Double_t GetChn(struct Intt::Online_s const& s){return s.chn;}
-Double_t GetStripX(struct Intt::Online_s const& s){return Intt::ToOffline(s).strip_x;}
-Double_t GetStripY(struct Intt::Online_s const& s){return Intt::ToOffline(s).strip_y;}
-Double_t GetLadderZ(struct Intt::Online_s const& s){return Intt::ToOffline(s).ladder_z;}
+Double_t GetChp(struct InttNameSpace::Online_s const& s){return s.chp;}
+Double_t GetChn(struct InttNameSpace::Online_s const& s){return s.chn;}
+Double_t GetStripX(struct InttNameSpace::Online_s const& s){return InttNameSpace::ToOffline(s).strip_x;}
+Double_t GetStripY(struct InttNameSpace::Online_s const& s){return InttNameSpace::ToOffline(s).strip_y;}
+Double_t GetLadderZ(struct InttNameSpace::Online_s const& s){return InttNameSpace::ToOffline(s).ladder_z;}
 
 
-void InttToBin(struct Intt::Online_s const&, int&, int&);
-void BinToIntt(struct Intt::Online_s&, int, int);
+void InttToBin(struct InttNameSpace::Online_s const&, int&, int&);
+void BinToIntt(struct InttNameSpace::Online_s&, int, int);
 
 
 
@@ -58,10 +58,10 @@ void ConventionCheck()
 		(struct Params_s){.name = "offline_ladder_z", .description = "Offline Ladder Z", .func = &GetLadderZ},
 	};
 
-	for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
-	//MakeBarrelHist();
+	// for(std::vector<struct Params_s>::const_iterator itr = v.begin(); itr != v.end(); ++itr)MakeLadderHist(*itr);
+	MakeBarrelHist();
 	
-	//RoundTrip();
+	RoundTrip();
 
 	//gSystem->Exit(0);
 	//exit(0);
@@ -110,7 +110,7 @@ void MakeLadderHist(struct Params_s const& params)
 	int bin = 0;
 	int bin_x = 0;
 	int bin_y = 0;
-	Intt::Online_s s;
+	InttNameSpace::Online_s s;
 	s.lyr = 0;
 	s.ldr = 0;
 	s.arm = 0;
@@ -354,8 +354,8 @@ void MakeBarrelHist()
 		y_label->SetTextAlign(22);
 		y_label->Draw();
 	}
-	struct Intt::Online_s onl;
-	struct Intt::Offline_s ofl = (struct Intt::Offline_s)
+	struct InttNameSpace::Online_s onl;
+	struct InttNameSpace::Offline_s ofl = (struct InttNameSpace::Offline_s)
 	{
 		.layer = 3,
 		.ladder_phi = 0,
@@ -366,7 +366,7 @@ void MakeBarrelHist()
 
 	while(true)
 	{
-		onl = Intt::ToOnline(ofl);
+		onl = InttNameSpace::ToOnline(ofl);
 		d_theta = two_pi / (ofl.layer < 5 ? 12 : 16);
 		theta =  d_theta * (ofl.ladder_phi + (ofl.layer % 2) * 0.5);
 
@@ -412,17 +412,17 @@ void MakeBarrelHist()
 
 void RoundTrip()
 {
-	struct Intt::Offline_s ofl;
-	struct Intt::Online_s onl = (struct Intt::Online_s){.lyr = 0, .ldr = 0, .arm = 0, .chp = 0, .chn = 0};
+	struct InttNameSpace::Offline_s ofl;
+	struct InttNameSpace::Online_s onl = (struct InttNameSpace::Online_s){.lyr = 0, .ldr = 0, .arm = 0, .chp = 0, .chn = 0};
 
-	struct Intt::Online_s tmp;
+	struct InttNameSpace::Online_s tmp;
 
 	bool b = true;
 
 	while(true)
 	{
-		ofl = Intt::ToOffline(onl);
-		tmp = Intt::ToOnline(ofl);
+		ofl = InttNameSpace::ToOffline(onl);
+		tmp = InttNameSpace::ToOnline(ofl);
 
 		if(tmp != onl)
 		{
@@ -478,7 +478,7 @@ void RoundTrip()
 	if(b)std::cout << "Works" << std::endl;
 }
 
-void InttToBin(struct Intt::Online_s const& s, int& bin_x, int& bin_y)
+void InttToBin(struct InttNameSpace::Online_s const& s, int& bin_x, int& bin_y)
 {
 	bin_x = s.arm ? 25 - s.chp % 13 : s.chp % 13;
 	bin_y = (s.arm == s.chp / 13) ? 255 - s.chn : s.chn;
@@ -487,7 +487,7 @@ void InttToBin(struct Intt::Online_s const& s, int& bin_x, int& bin_y)
 	++bin_y;
 }
 
-void BinToIntt(struct Intt::Online_s& s, int bin_x, int bin_y)
+void BinToIntt(struct InttNameSpace::Online_s& s, int bin_x, int bin_y)
 {
 	--bin_x;
 	--bin_y;
