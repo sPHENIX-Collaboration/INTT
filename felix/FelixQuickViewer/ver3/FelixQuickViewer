@@ -1,3 +1,16 @@
 #!/bin/bash
 
-python3 FelixQuickViewer.py
+#
+# FelixQuickViewer [options] [files/run]
+# --plot :    Plot mode. Histograms are produced with [file], which should be a single input ROOT file, and saved 
+#             and saved into another ROOT file, then plots are made in png format and stored to the same directory.
+# --homepage: Homepage mode. The PNG plots are found by using a single [run].
+# --calib_summary:
+dir="/sphenix/tg/tg01/commissioning/INTT/work/genki/repos/INTT/felix/FelixQuickViewer/ver3/"
+
+if [ `whoami` == "genki" ]
+then
+    dir="./"
+fi
+
+python3 ${dir}FelixQuickViewer.py $@

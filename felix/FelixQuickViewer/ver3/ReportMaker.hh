@@ -2,109 +2,45 @@
 
 #include <iostream>
 #include <iomanip>
-
-#include <TTree.h>
-#include <TPad.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <iostream>
-#include <TCut.h>
-#include <TCanvas.h>
-#include <TLegend.h>
-#include <TLatex.h>
-#include <TAttText.h>
 #include <string>
+
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TH3D.h>
 #include <TFile.h>
 #include <TStyle.h>
 
-#include "LadderMap.hh"
+#include "BaseClass.hh"
 
 using namespace std;
 
-class Viewer
+class ReportMaker : public BaseClass
 {
 private:
-  void Init();
-  void InitLadderMap();
+  void Init() override;
 
-  template < class... T >
-  void PrintLine( string header, string separator, string footer, T... contents )
-  {
-    stringstream ss;
-    ss << header << separator;
-
-    if( initializer_list<string>{contents... }.size() > 0  )
-      ss << " " ;
-    
-    for( auto& it : initializer_list<string>{contents... } )
-      ss << it << " " << separator;
-
-    print_buffer_.push_back( ss.str() );
-  }
-
-  // constant variables
-  const int kChip_num_ = 26;
-  const int kLadder_num_ = 14; //
-  const string map_dir = "/direct/sphenix+tg+tg01/commissioning/INTT/map_ladder/";
-  
-  // input
-  string filename_; // The path to the data file
-  string ladder_map_path_;
-  LadderMap* ladder_map_;
-  
   // output
   string output_basename_;
   string root_suffix_ = "_hist.root"; // suffix of the output ROOT file which contains histgram objects
   string figure_suffix_ = ".png";
 
-  // variables to contain values from TTree
-  int adc_;
-  int ampl_;
-  int chip_id_;
-  int fpga_id_;
-  int module_;
-  int chan_id_;
-  int fem_id_;
-  int bco_;
-  int bco_full_;
-  int event_;
-
-  // variables for misc
-  int width_ = 100;
-
-  vector < string > print_buffer_;
-  
-  // ROOT objects
-  TFile* f1_;
-  TTree* tr1_;
-
-  TH2D* hist_adc_ch_[14][26];
-  TH1D* hist_adc_[14][26];
-  TH1D* hist_ch_[14][26];
-  
 public:
 
   // constructors
-  Viewer(){};
-  Viewer( string filename_arg );
+  ReportMaker(){};
+  ReportMaker( string filename_arg );
 
   // destructor
-  ~Viewer(){};
+  ~ReportMaker(){};
 
   int DoAll();
-  int Draw();
-  int Draw_AdcChannel();
-  int Draw_Channel();
 
-  void Print();
+  //void Print();
   int Process();
   void SaveHists();
   
-  void SetStyle();
-
 };
 
-#ifdef __CINT__
-#include "Viewer.cc"
+#ifdef CLING
+#include "ReportMaker.cc"
 #endif
