@@ -41,7 +41,7 @@ void onl_raw_test() {
 		old_onl.chp = new_onl.chp;
 		old_onl.chn = new_onl.chn;
 
-		if(ifm->Convert(new_onl, new_raw)) {
+		if(ifm->Convert(new_raw, new_onl)) {
 			printf("\tbad Convert\n");
 			print(new_onl);
 			break;
@@ -80,7 +80,7 @@ void onl_raw_test() {
 		old_raw.chip = new_raw.chp;
 		old_raw.channel = new_raw.chn;
 
-		if(ifm->Convert(new_raw, new_onl)) {
+		if(ifm->Convert(new_onl, new_raw)) {
 			printf("\tbad Convert\n");
 			print(new_raw);
 			break;
