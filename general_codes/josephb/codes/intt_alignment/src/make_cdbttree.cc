@@ -15,6 +15,8 @@
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
+const float GEANT_SHIFT = 0.2282; // mm
+const float ENDCAP_SHIFT = 2.395; // mm
 
 std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
 std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
@@ -69,7 +71,9 @@ int main() {
 		LADDER_PHI_INC:
 		onl = InttNameSpace::ToOnline(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
-		//shift the position by 3.32mm radially inward
+	
+		// This transform treats the ladder's origin as the center of its face
+		// GEANT require the ladder's origin at the center of its volume
 		if(true) {
 			Eigen::Vector3d y_axis (
 				ladder_to_global.matrix()(0, 1),
@@ -78,7 +82,9 @@ int main() {
 			);
 			y_axis /= y_axis.norm();
 			for(int i = 0; i < 3; ++i) {
-				ladder_to_global.matrix()(i, 3) += y_axis(i) * 3.32;
+				// y-axis points radially inward
+				// so -= is a radially outward shift
+				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
 			}
 		}
 		ofl.ladder_z = InttMap::Wildcard;
@@ -89,6 +95,24 @@ int main() {
 			.rel_eigen_trans = &identity,
 			.n = &size
 		});
+		// The sensor transforms still assume, however, that the ladder's origin is the center of its face
+		// Furthermore, there is an additional shift due to endcap hole thickness
+		//     (Opposite sides were surveyed, for sensor and post-installation)
+		// Undo previous shift and also shift by endcap thickness
+		if(true) {
+			Eigen::Vector3d y_axis (
+				ladder_to_global.matrix()(0, 1),
+				ladder_to_global.matrix()(1, 1),
+				ladder_to_global.matrix()(2, 1)
+			);
+			y_axis /= y_axis.norm();
+			for(int i = 0; i < 3; ++i) {
+				// y-axis points radially inward
+				// so += is a radially inward shift
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * GEANT_SHIFT;
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
+			}
+		}
 
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
