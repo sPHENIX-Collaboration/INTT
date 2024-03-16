@@ -83,8 +83,8 @@ int main() {
 			y_axis /= y_axis.norm();
 			for(int i = 0; i < 3; ++i) {
 				// y-axis points radially inward
-				// so -= is a radially outward shift
-				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
+				// so += is a radially inward shift
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * GEANT_SHIFT;
 			}
 		}
 		ofl.ladder_z = InttMap::Wildcard;
@@ -109,7 +109,7 @@ int main() {
 			for(int i = 0; i < 3; ++i) {
 				// y-axis points radially inward
 				// so += is a radially inward shift
-				ladder_to_global.matrix()(i, 3) += y_axis(i) * GEANT_SHIFT;
+				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
 				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
 			}
 		}
