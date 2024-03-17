@@ -106,7 +106,20 @@ bool BaseClass::ReadHistograms()
 	{
 	  string name_chip = "chip" + to_string( j ) ;
 
-	  // just in case
+	  ///////////////////////////////////////////
+	  // under test
+	  ///////////////////////////////////////////
+	  string name_hist_ch_adc_ampl = "hist_ch_adc_ampl_" + name_module + name_chip;
+	  try
+	    {
+	      hist_ch_adc_ampl_[i][j] = (TH3D*)f1_->Get( name_hist_ch_adc_ampl.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_ch_adc_ampl_[i][j] = new TH3D();
+	    }
+
+	  ///////////////////////////////////////////
 	  string name_hist_adc_ch = "hist_adc_ch_" + name_module + name_chip;
 	  try
 	    {
@@ -158,6 +171,18 @@ bool BaseClass::ReadHistograms()
 	    {
 	      hist_adc_[i][j] = new TH1D();
 	    }
+
+	  string name_hist_bco_diff = "hist_bco_diff_" + name_module + name_chip;
+	  try
+	    {
+	      hist_bco_diff_[i][j] = (TH1D*)f1_->Get( name_hist_bco_diff.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_bco_diff_[i][j] = new TH1D();
+	    }
+
+
 	}
     }
 
