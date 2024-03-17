@@ -72,6 +72,7 @@ private:
   TCanvas* c_adc_;
   TCanvas* c_adc_ch_;
 
+  unsigned int GetMaxBinContent1D( TH1D* hists[kLadder_num_], int rank, int ladder_min=0, int ladder_max=kLadder_num_ );
   unsigned int GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   unsigned int GetMaxBinContentRatio( TH1D* hists[kLadder_num_][kChip_num_], double remove_top, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_); // Bins at top x% are ignored
   string GetOutputPath( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_, string keyword="default" );
@@ -106,6 +107,7 @@ public:
   int Draw_HitDist( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   int Draw_AmplAdc( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   int Draw_ChAmpl( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
+  int Draw_BcoDiff( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   
   TCanvas* GetCanvasCh(){ return (TCanvas*)(c_ch_->Clone()); }
   

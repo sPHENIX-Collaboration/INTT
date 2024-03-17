@@ -31,14 +31,26 @@ void HistMaker::Init()
   //  tr1_->SetBranchAddress	("fpga_id"	,&fpga_id_	);
   tr1_->SetBranchAddress	("chan_id"	,&chan_id_	);
   //tr1_->SetBranchAddress	("fem_id"	,&fem_id_	);
-  //  tr1_->SetBranchAddress	("bco"	,&bco_		);
-  //  tr1_->SetBranchAddress	("bco_full"	,&bco_full_	);
+  tr1_->SetBranchAddress	("bco"	,&bco_		);
+  tr1_->SetBranchAddress	("bco_full"	,&bco_full_	);
   //  tr1_->SetBranchAddress	("event"	,&event_	);
 
   for(int i=0; i<kLadder_num_; i++)
     {
       for(int j=0; j<kChip_num_; j++)
 	{
+	  ////////////////////////////////////////////////////////
+	  // under test
+	  ////////////////////////////////////////////////////////
+	  hist_ch_adc_ampl_[i][j] = new TH3D( Form("hist_ch_adc_ampl_module%d_chip%d", i, j ),
+					      Form("hist_ch_adc_ampl_module%d_chip%d;Channel;ADC;Amplitude", i, j ),
+					      129, -1, 128,
+					      10, 0, 10,
+					      64, 0, 64
+					      );
+	  hist_ch_adc_ampl_[i][j]->SetFillColorAlpha( kAzure + 1, 0.3 );
+	  
+	  ////////////////////////////////////////////////////////
 	  hist_adc_ch_[i][j] = new TH2D( Form("hist_adc_ch_module%d_chip%d", i, j ),
 					 Form("hist_adc_ch_module%d_chip%d;Channel;ADC", i, j ),
 					 129, -1, 128,
@@ -66,6 +78,14 @@ void HistMaker::Init()
 				      Form("hist_adc_module%d_chip%d;ADC;Entries", i, j ),
 				      8, 0, 8 );
 	  hist_adc_[i][j]->SetFillColorAlpha( kAzure + 1, 0.3 );
+
+	  
+	  hist_bco_diff_[i][j] = new TH1D( Form("hist_bco_diff_module%d_chip%d", i, j ),
+				      Form("hist_bco_diff_module%d_chip%d;BCO full&0x7f - FPHX BCO;Entries", i, j ),
+					   128, 0, 128 );
+	  
+	  hist_bco_diff_[i][j]->SetLineColor( kLadder_colors[i] );
+	  hist_bco_diff_[i][j]->SetFillColorAlpha( hist_bco_diff_[i][j]->GetLineColor(), 0.15 );
 	}
     }
   
@@ -97,17 +117,35 @@ int HistMaker::Process()
 	{
 	  for(int j=0; j<kChip_num_; j++)
 	    {
+	      // all condition checks are needed otherwise the process takes time more (somehow)
 	      if( ampl_<70 && chan_id_<127 && chip_id_<27 && chip_id_==j+1 && module_==i )
 		{
-		  hist_adc_ch_[i][j]->Fill( chan_id_, adc_ );
-		  hist_ampl_adc_[i][j]->Fill( ampl_, adc_ );
-		  hist_ch_ampl_[i][j]->Fill( chan_id_, ampl_ );
-		  hist_ch_[i][j]->Fill( chan_id_ );
-		  hist_adc_[i][j]->Fill( adc_ );
+		  hist_ch_adc_ampl_[i][j]->Fill( chan_id_, adc_, ampl_ );
+		  
+		  auto diff = bco_full_&0x7f - bco_;
+		  if( diff < 0 )
+		    diff += 128;
+		  hist_bco_diff_[i][j]->Fill( diff );
+
 		}
 	    }
 	}
     }
+
+  // Make 2D and 1D hisgotramgs from 3D histograms. It's slightly faster.
+  for(int i=0; i<kLadder_num_; i++)
+    {
+      
+      for(int j=0; j<kChip_num_; j++)
+	{
+	  //hist_adc_ch_[i][j]
+	  hist_ampl_adc_[i][j] = hist_ch_adc_ampl_[i][j]->Project3DProfile( "zy" );
+	  hist_ch_ampl_[i][j] = hist_ch_adc_ampl_[i][j]->Project3DProfile( "xz" );
+	  hist_ch_[i][j]  =  hist_ch_adc_ampl_[i][j]->ProjectionX( hist_ch_[i][j]->GetName() );
+	  hist_adc_[i][j] = hist_ch_adc_ampl_[i][j]->ProjectionY( hist_adc_[i][j]->GetName() );	  
+	}      
+    }
+
   
   return 0;
 }
@@ -121,11 +159,13 @@ void HistMaker::SaveHists()
     {
       for( int j=0; j<kChip_num_; j++ )
 	{
+	  tf->WriteTObject( hist_ch_adc_ampl_[i][j], hist_ch_adc_ampl_[i][j]->GetName() );
 	  tf->WriteTObject( hist_adc_ch_[i][j], hist_adc_ch_[i][j]->GetName() );
 	  tf->WriteTObject( hist_adc_[i][j], hist_adc_[i][j]->GetName() );
 	  tf->WriteTObject( hist_ch_[i][j], hist_ch_[i][j]->GetName() );
 	  tf->WriteTObject( hist_ampl_adc_[i][j], hist_ampl_adc_[i][j]->GetName() );
 	  tf->WriteTObject( hist_ch_ampl_[i][j], hist_ch_ampl_[i][j]->GetName() );
+	  tf->WriteTObject( hist_bco_diff_[i][j], hist_bco_diff_[i][j]->GetName() );
 	}
     }
 

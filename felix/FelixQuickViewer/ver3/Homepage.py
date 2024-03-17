@@ -19,6 +19,7 @@ class Homepage() :
     def __init__( self, args ) :
         self.info = args
 
+        self.HOMEPAGE_ADDRESS = "https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/"
         self.HOMEPAGE_ROOT_DIR = pathlib.Path( "/sphenix/WWW/subsystem/intt" )
         self.COMMISSIONING_DIR = pathlib.Path( self.HOMEPAGE_ROOT_DIR / "commissioning_plots" )
         self.YEAR_DIR = pathlib.Path( self.COMMISSIONING_DIR / str(self.info.year) )
@@ -120,6 +121,14 @@ class Homepage() :
         with open( str(self.index_html), mode='a' ) as file :
             file.write( "<h1>" + "Run " + str( int(self.info.run) ) + "</h1>\n" )
 
+            year_page = self.HOMEPAGE_ADDRESS + "/commissioning_plots/" + str( self.info.year ) + "/index.html"
+            file.write( "<a href=\"" + year_page + "\">" \
+                        + "Go back to " + str(self.info.year) + " run list"\
+                        + "</a>" )
+
+        # for table of contents
+        self.WriteToc()
+            
         for felix in range(0, 8 ):
             self.WriteFelixSection( felix )
             
@@ -145,6 +154,30 @@ class Homepage() :
             
         print( "  --->", self.index_html, "generated." )
 
+    def WriteToc( self ) :
+        with open( str(self.index_html), mode='a' ) as file :
+            felix_list = []
+            for felix in range(0, 8 ) :
+                server = "intt" + str(felix)
+                # check whether at least one plot from this server is in the plot list 
+                flag = True in [ server in str(val) for val in self.info.homepage_plots ]
+
+                # store the FELIX server used in this run
+                if flag : 
+                    felix_list.append( server )
+
+            # if the number of the servers in use is not so many, no toc is needed
+            if len( felix_list ) < 3 :
+                return None
+
+            # Write toc!
+            file.write( "<ul>\n" )
+            for server in felix_list :
+                file.write( "    <li><a href=\"#" + server + "\">" + server + "</a></li>\n" )
+
+            file.write( "</ul>\n\n" )
+                    
+        
     def WriteFelixSection( self, felix ) :
         with open( str(self.index_html), mode='a' ) as file :
             server = "intt" + str(felix)
@@ -190,7 +223,7 @@ class Homepage() :
 
             # after loop over all plots, all contents are in the variable. It the contents is not nohting, write it down
             if counter != 0 :
-                file.write( "<h2>" + server + "</h2>\n" )
+                file.write( "<h2 id=\"" + server+ "\">" + server + "</h2>\n" )
                 file.write( contents )
                 contents = ""
 
