@@ -3,6 +3,10 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include <cdbobjects/CDBTTree.h>
+#include <filesystem>
+#include <iostream>
+#include <iomanip> // setw, setfill
+
 
 R__LOAD_LIBRARY(libcdbobjects.so)
 
@@ -17,27 +21,42 @@ TH2D *h2_bco_ladder_cut[8]; // histogram after BCO cut
 // to ensure that we don't miss the hit due to sperated to 2BCK             //
 //////////////////////////////////////////////////////////////////////////////
 
-
+//number of events used to scan BCO distribution
 int n_event = 10000;
-bool ADC0cut = false;
 //Flag for ADC0 cut
+bool ADC0cut = false;
+std::string runtype = "beam";
 
 std::string outputFilePath = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/rootfile/2023/";
-std::string cdboutputFilePath = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/cdb/2023/";
+std::string cdboutputFilePath = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/CDB/2023/";
 //std::string outputFilePath = "./";
 // Used for merged files
 std::string merged_inputFile;
 //std::string merged_inputFilePath = "/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/InttEventSync/beam_inttall-00020867-0000_event_base_ana.root";
+
+//Merged root file path 
 std::string merged_inputFilePath = "/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/InttEventSync/";
 // Used for unmerged files intt0 ~ intt7
 std::string inputFilePath = "/sphenix/tg/tg01/commissioning/INTT/data/root_files/2023/";
 
-void BCOFinder(int i = 20867, bool isMerged = true, bool ADC0cut_ = false)
+std::string IntToPaddedString(int value, int width) {
+    std::ostringstream oss;
+    oss << std::setw(width) << std::setfill('0') << value;
+    return oss.str();
+}
+
+
+void BCOFinder(int i = 20867, bool isMerged = true,std::string runtype_ = "beam", bool ADC0cut_ = false)
 {
   ADC0cut = ADC0cut_;
   gROOT->SetBatch(kTRUE);
+  runtype = runtype_;
   std::string outputfilename = outputFilePath + "ladder_" + to_string(i) + ".root";
-  merged_inputFile = merged_inputFilePath+"beam_inttall-000"+to_string(i)+"-0000_event_base_ana.root";
+  merged_inputFile = merged_inputFilePath+runtype+"_inttall-"+IntToPaddedString(i,8)+"-0000_event_base_ana.root";
+
+ ///////////////////////////////////////////////////////////
+ //              Saving histogram                         //
+ /////////////////////////////////////////////////////////// 
   TFile *sf = new TFile(outputfilename.c_str(), "RECREATE");
   for (int j = 0; j < 8; j++)
   {
@@ -66,10 +85,25 @@ void BCOFinder(int i = 20867, bool isMerged = true, bool ADC0cut_ = false)
     }
   }
 
+
+
+
 ///////////////////////////////////////////////////////////
 //              Creating CDBTTree                        //
 ///////////////////////////////////////////////////////////
   std::string cdboutputfilename = cdboutputFilePath + "cdb_bco_" + to_string(i) + ".root";
+//  std::string cdboutputfilename =  "cdb_bco_" + to_string(i) + ".root";
+ 
+  if (std::filesystem::exists(cdboutputfilename.c_str()))
+	{
+		std::cout << "Input file" << std::endl;
+		std::cout << "\t" << cdboutputfilename << std::endl;
+		std::cout << "Does already exist" << std::endl;
+    std::cout <<"Skip CDBTTree writing" <<std::endl;
+    sf->Close();
+    return;
+  }
+
   CDBTTree* cdbttree = new CDBTTree(cdboutputfilename); 
   int size=0;
   for(int felix_server=0;felix_server<8;felix_server++)
@@ -190,13 +224,8 @@ void bcofull_bco_lad_all(int rnumber, int fnumber)
   const int felixnumber = fnumber;
   const int runnumber = rnumber;
   TFile *f;
-  std::string inputfile_beam = inputFilePath + "beam_intt"+to_string(fnumber)+"-000"+to_string(rnumber)+"-0000_event_base.root";
-  std::string inputfile_cosmics = inputFilePath + "cosmics_intt"+to_string(fnumber)+"-000"+to_string(rnumber)+"-0000_event_base.root";
-  f = TFile::Open(inputfile_beam.c_str());
-  if (!f)
-  {
-    f = TFile::Open(inputfile_cosmics.c_str());
-  }
+  std::string inputfile = inputFilePath + runtype +"_intt"+to_string(fnumber)+"-000"+to_string(rnumber)+"-0000_event_base.root";
+  f = TFile::Open(inputfile.c_str());
   if (!f)
   {
     std::cout<<"ROOT file are not found! Skip this Felix server! " <<fnumber<<" Run number : "<<rnumber<<std::endl;
