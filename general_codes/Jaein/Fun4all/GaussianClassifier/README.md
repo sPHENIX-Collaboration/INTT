@@ -8,11 +8,11 @@
 - Compile through autogen.sh method as usual.
 - cd macro
 - root -l -b -q "Fun4All_Intt_HitMap.C(int nevents = 100, std::string i_file, std::string bco_file, std::string o_file, bool bcoflag)
-                              //nevents : # of event used to make hitmap
-                              //i_file : merged root file. The file should include event_based TTree
-                              //bco_file : input BCO file to apply the BCO cut BEFORE making HitMap
-                              //o_file : output(hitmap) file
-                              //bcoflag : flag to turn ON/OFF BCO cut // true : ON / false : OFF
+              nevents : # of event used to make hitmap
+              i_file : merged root file. The file should include event_based TTree
+              bco_file : input BCO file to apply the BCO cut BEFORE making HitMap
+              o_file : output(hitmap) file
+              bcoflag : flag to turn ON/OFF BCO cut // true : ON / false : OFF
 For example, root -l -b -q "Fun4All_Intt_HitMap.C(100,"your_input_file_with_full_path","your_BCO_file_with_full_path", true)"
 Or, you can specify your arguments inside the code directly.
 
