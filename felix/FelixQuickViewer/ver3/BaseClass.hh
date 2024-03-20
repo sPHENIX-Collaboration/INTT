@@ -47,15 +47,25 @@ protected:
   // variables for misc
   int width_ = 100;
   int canvas_counter = 0;
+  const int kLadder_colors[14]
+  = {
+    kBlack,      kRed,         kOrange + 1, kGreen + 2,
+    kTeal + 2,   kCyan + 2,    kAzure + 1,  kBlue + 2,
+    kViolet + 1, kMagenta + 1, kPink + 1,   kGray + 1,
+    kYellow + 2, kViolet + 5
+  };
   
   TFile* f1_;
 
   vector < string > print_buffer_;
+  TH3D* hist_ch_adc_ampl_[14][26]; // putting parameters into higher-dimension histograms is slightly faster
   TH2D* hist_adc_ch_[14][26];
   TH2D* hist_ampl_adc_[14][26];
   TH2D* hist_ch_ampl_[14][26];
   TH1D* hist_adc_[14][26];
   TH1D* hist_ch_[14][26];
+
+  TH1D* hist_bco_diff_[14][26];
 
   /////////////////////////////////////
   // protected member functions      //

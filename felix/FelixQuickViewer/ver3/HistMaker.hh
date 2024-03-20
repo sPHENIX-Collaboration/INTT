@@ -30,7 +30,7 @@ private:
   int chan_id_;
   int fem_id_;
   int bco_;
-  int bco_full_;
+  Long64_t bco_full_;
   int event_;
 
   // ROOT objects
