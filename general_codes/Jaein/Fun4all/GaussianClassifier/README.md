@@ -21,14 +21,10 @@ Or, you can specify your arguments inside the code directly.
 # How to run 2) Gaussian Fitting/Classficiation
 
 - Open InttChannelClassifier.cc
-- Check file paths inside the code
-  std::string map_input_path   : hitmap file path (You may need to change the hitmap file name as well.)
-  std::string root_output_path : ROOT file output path
-  std::string csv_output_path  : CSV file output path
+- Check file paths inside the code  
+  std::string map_input_path   : hitmap file path (You may need to change the hitmap file name as well.)  
+  std::string root_output_path : ROOT file output path  
+  std::string csv_output_path  : CSV file output path  
 - root -l -b -q 'InttChannelClassifier.cc({runnumber})'
 - Check your root output file
   
-# Note 
-- sigmacut : 30 = 3.0sigma cut used ; 35 = 3.5 sigmacut used
-- Default input file path : /sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/rootfile/2023/
-- Default output file path : /sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/CDB/2023/
