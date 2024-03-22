@@ -15,12 +15,9 @@
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
-const float GEANT_SHIFT = 0.2282; // mm
-const float ENDCAP_SHIFT = 2.395; // mm
-
 std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
 std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
-std::string cdbttree_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_survey_cdbttree.root";
+std::string cdbttree_path_format = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_survey_cdbttree%s.root";
 
 struct write_entry_s {
 	CDBTTree* cdbttree = nullptr;
@@ -31,7 +28,38 @@ struct write_entry_s {
 };
 void write_entry(write_entry_s const&);
 
-int main() {
+int main (
+	int argc,
+	char* argv[]
+) {
+	// float GEANT_SHIFT = 0.2282; // mm
+	float TOTAL_SHIFT = 0.0; // mm
+	float ENDCAP_SHIFT = 2.395; // mm
+
+	char buff[256];
+	std::string cdbttree_path;
+
+	if(argc < 2) {
+		snprintf(buff, sizeof(buff), cdbttree_path_format.c_str(), "");
+		cdbttree_path = buff;
+	} else {
+		try {
+			TOTAL_SHIFT = std::stof(argv[1]);
+		} catch (const std::exception& e) {
+			std::cout << "make_cdbttree: usage\n"
+			          << "\targs[1] could not be cast as float\n"
+					  << "\t" << e.what() << std::endl;
+			return 1;
+		}
+		snprintf(buff, sizeof(buff), "_%+08.4fmm", TOTAL_SHIFT);
+		std::string s = buff;
+		for(std::size_t pos; (pos = s.find("+")) != std::string::npos;)s.replace(pos, 1, "p");
+		for(std::size_t pos; (pos = s.find("-")) != std::string::npos;)s.replace(pos, 1, "m");
+		for(std::size_t pos; (pos = s.find(".")) != std::string::npos;)s.replace(pos, 1, "_");
+		snprintf(buff, sizeof(buff), cdbttree_path_format.c_str(), s.c_str());
+		cdbttree_path = buff;
+	}
+
 	InttLadderReader ilr;
 	ilr.SetMarksDefault();
 	ilr.ReadFile(ladder_path + "EAST_INTT.txt");
@@ -40,7 +68,6 @@ int main() {
 	InttSensorReader isr;
 	isr.SetMarksDefault();
 
-	char buff[256];
 	Eigen::Affine3d sensor_to_ladder;
 	Eigen::Affine3d ladder_to_global;
 	Eigen::Affine3d sensor_to_global;
@@ -84,7 +111,7 @@ int main() {
 			for(int i = 0; i < 3; ++i) {
 				// y-axis points radially inward
 				// so += is a radially inward shift
-				ladder_to_global.matrix()(i, 3) += y_axis(i) * GEANT_SHIFT;
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * TOTAL_SHIFT;
 			}
 		}
 		ofl.ladder_z = InttMap::Wildcard;
@@ -99,7 +126,7 @@ int main() {
 		// Furthermore, there is an additional shift due to endcap hole thickness
 		//     (Opposite sides were surveyed, for sensor and post-installation)
 		// Undo previous shift and also shift by endcap thickness
-		if(true) {
+		if(false) {
 			Eigen::Vector3d y_axis (
 				ladder_to_global.matrix()(0, 1),
 				ladder_to_global.matrix()(1, 1),
@@ -109,7 +136,7 @@ int main() {
 			for(int i = 0; i < 3; ++i) {
 				// y-axis points radially inward
 				// so += is a radially inward shift
-				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
+				// ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
 				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
 			}
 		}
@@ -141,11 +168,11 @@ int main() {
 void write_entry (
 	write_entry_s const& args
 ) {
-	args.cdbttree->SetIntValue(*args.n,	"layer",	args.ofl->layer);
-	args.cdbttree->SetIntValue(*args.n,	"ladder_phi",	args.ofl->ladder_phi);
-	args.cdbttree->SetIntValue(*args.n,	"ladder_z",	args.ofl->ladder_z);
-	args.cdbttree->SetIntValue(*args.n,	"strip_phi",	InttMap::Wildcard);
-	args.cdbttree->SetIntValue(*args.n,	"strip_z",	InttMap::Wildcard);
+	args.cdbttree->SetIntValue(*args.n,	"layer",        args.ofl->layer);
+	args.cdbttree->SetIntValue(*args.n,	"ladder_phi",   args.ofl->ladder_phi);
+	args.cdbttree->SetIntValue(*args.n,	"ladder_z",     args.ofl->ladder_z);
+	args.cdbttree->SetIntValue(*args.n,	"strip_phi",    InttMap::Wildcard);
+	args.cdbttree->SetIntValue(*args.n,	"strip_z",      InttMap::Wildcard);
 
 	char buff[32];
 	for(int i = 0; i < 16; ++i) {

@@ -20,6 +20,9 @@
 
 bool verbose = false;
 
+const float ENDCAP_SHIFT = 2.395; // mm
+const float GEANT_SHIFT = 0.2282; // mm
+
 std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
 std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
 
@@ -102,6 +105,23 @@ int main()
 		raw = InttNameSpace::ToRawData(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
 
+		// survey finds the center of ladder face
+		// preferable to use center of ladder volume; shift radially outward
+		if(0 < GEANT_SHIFT) {
+			Eigen::Vector3d y_axis (
+				ladder_to_global.matrix()(0, 1),
+				ladder_to_global.matrix()(1, 1),
+				ladder_to_global.matrix()(2, 1)
+			);
+			y_axis /= y_axis.norm();
+			for(int i = 0; i < 3; ++i)
+			{
+				// y-axis points radially inward
+				// -= for a radially outward shift (GEANT_SHIFT is positive if valid)
+				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
+			}
+		}
+
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
 		ofl.ladder_z = 0;
@@ -111,13 +131,20 @@ int main()
 		sensor_to_ladder = isr.GetSensorTransform(ofl.ladder_z);
 		sensor_to_global = ladder_to_global * sensor_to_ladder;
 
-		//shift the position by 3.32mm radially inward
-		{
-			Eigen::Vector3d y_axis(sensor_to_global.matrix()(0, 1), sensor_to_global.matrix()(1, 1), sensor_to_global.matrix()(2, 1));
+		// ladder endcaps are surveyed at different sides for sensor and post-installation
+		// need to shift by thickness of endcap holes
+		if(0 < ENDCAP_SHIFT) {
+			Eigen::Vector3d y_axis (
+				ladder_to_global.matrix()(0, 1),
+				ladder_to_global.matrix()(1, 1),
+				ladder_to_global.matrix()(2, 1)
+			);
 			y_axis /= y_axis.norm();
 			for(int i = 0; i < 3; ++i)
 			{
-				sensor_to_global.matrix()(i, 3) += y_axis(i) * 3.32;
+				// y-axis points radially inward
+				// += for a radially inward shift (ENDCAP_SHIFT is positive if valid)
+				sensor_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
 			}
 		}
 
