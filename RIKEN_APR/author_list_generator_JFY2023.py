@@ -95,7 +95,7 @@ class People:
             "JAEA": "Advanced Science Research Center, Japan Atomic Energy Agency",
             "BNL": "Physics Department, Brookhaven National Laboratory",
             "RIKEN": "RIKEN Nishina Center",
-            "TIRI": "Tokyo Metropolitan Industrial Technology Research Institute"
+            "TIRI": "Information Systems Technology Division, Tokyo Metropolitan Industrial Technology Research Institute"
         }
         self.sorted_affiliations_ = []
         
