@@ -69,6 +69,10 @@ int InttBCOMap::LoadFromCDBTTree(CDBTTree &cdbttree)
 bool InttBCOMap::IsBad(const int &felix_server, const int &felix_channel, Long64_t const &bco_full, const int &bco)
 {
   int bco_diff = (bco_full & 0x7F) - bco;
+  if (bco_diff < 0)
+  {
+    bco_diff += 128;
+  }
   //////////////////////////////////////////////////////////////////////////////
   // Hits belongs to [peak+1,peak-1] (3BCO region) will survive after BCO cut //
   //////////////////////////////////////////////////////////////////////////////
