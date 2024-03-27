@@ -78,10 +78,10 @@ bool InttBCOMap::IsBad(const int &felix_server, const int &felix_channel, Long64
   //////////////////////////////////////////////////////////////////////////////
   int bco_peak = m_bco[felix_server][felix_channel];
   int bco_minus = bco_peak - 1;
-  if (bco_minus == -1)
+  if (bco_minus == -1) //bco range 0~127 0-1 should correspond to 127
     bco_minus = 127;
   int bco_plus = bco_peak + 1;
-  if (bco_plus == 128) 
+  if (bco_plus == 128) //bco range 0~127 ; 127+1 should correspond to 0
     bco_plus = 0;
 
   if (bco_diff == bco_peak || bco_diff == bco_minus || bco_diff == bco_plus)
@@ -98,3 +98,20 @@ bool InttBCOMap::IsBad(InttNameSpace::Offline_s const & off, Long64_t const& bco
 {
   return IsBad(InttNameSpace::ToRawData(off),bco_full,bco);
 }
+//For debugging
+// bool InttBCOMap::isBCOPeakTest(int felix_server, int felix_channel, int testvalue)
+// {
+//   int bco_diff = testvalue;
+//   int bco_peak = m_bco[felix_server][felix_channel];
+//   int bco_minus = bco_peak - 1;
+//   if (bco_minus == -1)
+//     bco_minus = 127;
+//   int bco_plus = bco_peak + 1;
+//   if (bco_plus == 128)
+//     bco_plus = 0;
+
+//   if (bco_diff == bco_peak || bco_diff == bco_minus || bco_diff == bco_plus)
+//     return true;
+//   else
+//     return false;
+// }

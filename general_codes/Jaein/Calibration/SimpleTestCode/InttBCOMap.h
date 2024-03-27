@@ -14,6 +14,7 @@ public:
   virtual ~InttBCOMap() {}
 
   virtual int LoadFromCDB(std::string const &calibname); 
+//  /sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/CDB/2023/cdb_bco_20869.root
   virtual int LoadFromFile(std::string const &filename); 
 
   virtual bool IsBad(int const &felix_server,
@@ -24,6 +25,8 @@ public:
   virtual bool IsBad(InttNameSpace::RawData_s const &rawdata, Long64_t const &bco_full, const int &bco);
   virtual bool IsBad(InttNameSpace::Offline_s const &offline, Long64_t const &bco_full, const int &bco);
 
+//For debugging
+//  bool isBCOPeakTest(int felix_server_, int felix_channel_, int testvalue); 
 
 protected:
   int LoadFromCDBTTree(CDBTTree &cdbttree); 
