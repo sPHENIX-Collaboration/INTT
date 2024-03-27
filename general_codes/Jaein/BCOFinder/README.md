@@ -2,7 +2,7 @@
 
 A macros for the BCO distribution and making CDBTTree including BCO peak value.
 
-## General Introductions
+## General Introduction
 
 ### How To Run
 
