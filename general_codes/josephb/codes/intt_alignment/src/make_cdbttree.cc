@@ -15,10 +15,9 @@
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
-
 std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
 std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
-std::string cdbttree_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_survey_cdbttree.root";
+std::string cdbttree_path_format = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_survey_cdbttree%s.root";
 
 struct write_entry_s {
 	CDBTTree* cdbttree = nullptr;
@@ -29,7 +28,38 @@ struct write_entry_s {
 };
 void write_entry(write_entry_s const&);
 
-int main() {
+int main (
+	int argc,
+	char* argv[]
+) {
+	// float GEANT_SHIFT = 0.2282; // mm
+	float TOTAL_SHIFT = 0.0; // mm
+	float ENDCAP_SHIFT = 2.395; // mm
+
+	char buff[256];
+	std::string cdbttree_path;
+
+	if(argc < 2) {
+		snprintf(buff, sizeof(buff), cdbttree_path_format.c_str(), "");
+		cdbttree_path = buff;
+	} else {
+		try {
+			TOTAL_SHIFT = std::stof(argv[1]);
+		} catch (const std::exception& e) {
+			std::cout << "make_cdbttree: usage\n"
+			          << "\targs[1] could not be cast as float\n"
+					  << "\t" << e.what() << std::endl;
+			return 1;
+		}
+		snprintf(buff, sizeof(buff), "_%+08.4fmm", TOTAL_SHIFT);
+		std::string s = buff;
+		for(std::size_t pos; (pos = s.find("+")) != std::string::npos;)s.replace(pos, 1, "p");
+		for(std::size_t pos; (pos = s.find("-")) != std::string::npos;)s.replace(pos, 1, "m");
+		for(std::size_t pos; (pos = s.find(".")) != std::string::npos;)s.replace(pos, 1, "_");
+		snprintf(buff, sizeof(buff), cdbttree_path_format.c_str(), s.c_str());
+		cdbttree_path = buff;
+	}
+
 	InttLadderReader ilr;
 	ilr.SetMarksDefault();
 	ilr.ReadFile(ladder_path + "EAST_INTT.txt");
@@ -38,7 +68,6 @@ int main() {
 	InttSensorReader isr;
 	isr.SetMarksDefault();
 
-	char buff[256];
 	Eigen::Affine3d sensor_to_ladder;
 	Eigen::Affine3d ladder_to_global;
 	Eigen::Affine3d sensor_to_global;
@@ -69,7 +98,9 @@ int main() {
 		LADDER_PHI_INC:
 		onl = InttNameSpace::ToOnline(ofl);
 		ladder_to_global = ilr.GetLadderTransform(onl);
-		//shift the position by 3.32mm radially inward
+	
+		// This transform treats the ladder's origin as the center of its face
+		// GEANT require the ladder's origin at the center of its volume
 		if(true) {
 			Eigen::Vector3d y_axis (
 				ladder_to_global.matrix()(0, 1),
@@ -78,7 +109,9 @@ int main() {
 			);
 			y_axis /= y_axis.norm();
 			for(int i = 0; i < 3; ++i) {
-				ladder_to_global.matrix()(i, 3) += y_axis(i) * 3.32;
+				// y-axis points radially inward
+				// so += is a radially inward shift
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * TOTAL_SHIFT;
 			}
 		}
 		ofl.ladder_z = InttMap::Wildcard;
@@ -89,6 +122,24 @@ int main() {
 			.rel_eigen_trans = &identity,
 			.n = &size
 		});
+		// The sensor transforms still assume, however, that the ladder's origin is the center of its face
+		// Furthermore, there is an additional shift due to endcap hole thickness
+		//     (Opposite sides were surveyed, for sensor and post-installation)
+		// Undo previous shift and also shift by endcap thickness
+		if(false) {
+			Eigen::Vector3d y_axis (
+				ladder_to_global.matrix()(0, 1),
+				ladder_to_global.matrix()(1, 1),
+				ladder_to_global.matrix()(2, 1)
+			);
+			y_axis /= y_axis.norm();
+			for(int i = 0; i < 3; ++i) {
+				// y-axis points radially inward
+				// so += is a radially inward shift
+				// ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
+			}
+		}
 
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
@@ -117,11 +168,11 @@ int main() {
 void write_entry (
 	write_entry_s const& args
 ) {
-	args.cdbttree->SetIntValue(*args.n,	"layer",	args.ofl->layer);
-	args.cdbttree->SetIntValue(*args.n,	"ladder_phi",	args.ofl->ladder_phi);
-	args.cdbttree->SetIntValue(*args.n,	"ladder_z",	args.ofl->ladder_z);
-	args.cdbttree->SetIntValue(*args.n,	"strip_phi",	InttMap::Wildcard);
-	args.cdbttree->SetIntValue(*args.n,	"strip_z",	InttMap::Wildcard);
+	args.cdbttree->SetIntValue(*args.n,	"layer",        args.ofl->layer);
+	args.cdbttree->SetIntValue(*args.n,	"ladder_phi",   args.ofl->ladder_phi);
+	args.cdbttree->SetIntValue(*args.n,	"ladder_z",     args.ofl->ladder_z);
+	args.cdbttree->SetIntValue(*args.n,	"strip_phi",    InttMap::Wildcard);
+	args.cdbttree->SetIntValue(*args.n,	"strip_z",      InttMap::Wildcard);
 
 	char buff[32];
 	for(int i = 0; i < 16; ++i) {
