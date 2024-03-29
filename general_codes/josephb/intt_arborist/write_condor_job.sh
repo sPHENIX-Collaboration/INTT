@@ -1,12 +1,12 @@
 #!/bin/bash
 
-export USR="$(id -u -n)"
-export PWD=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+USR="$(id -u -n)"
+PWD=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # The location of this shell script
 
-export EXE="/direct/sphenix+u/jbertaux/sphnx_software/INTT/general_codes/josephb/intt_arborist/intt_arborist_shell.sh"
-export DIR="${PWD}"
-export MEM="4096MB"
+EXE="/direct/sphenix+u/jbertaux/sphnx_software/INTT/general_codes/josephb/intt_arborist/intt_arborist_shell.sh"
+DIR="${PWD}"
+MEM="4096MB"
 
 show_help() {
 	printf "\n"
@@ -27,12 +27,14 @@ if [[ ! -d ${DIR}/job ]]; then mkdir -p ${DIR}/job; fi
 if [[ ! -d ${DIR}/out ]]; then mkdir -p ${DIR}/out; fi
 if [[ ! -d ${DIR}/err ]]; then mkdir -p ${DIR}/err; fi
 
+# underscore-deliminated list of command line args
 PRV=${IFS}
 IFS="_"
 ARGS="$*"
 IFS=${PRV}
-export FILE="${DIR}/job/$(basename ${EXE} .sh)_${ARGS}.job"
 
+# used in naming the job file
+FILE="${DIR}/job/$(basename ${EXE} .sh)_${ARGS}.job"
 printf "" > ${FILE} 
 
 printf "Universe        = vanilla\n"                                    >> ${FILE}
@@ -51,7 +53,7 @@ printf "\n"                                                             >> ${FIL
 printf "Queue\n"                                                        >> ${FILE}
 printf "\n"                                                             >> ${FILE}
 
-# echo "submitting job file ${FILE}"
-# condor_submit ${FILE}
+echo "submitting job file ${FILE}"
+condor_submit ${FILE}
 
 exit 0

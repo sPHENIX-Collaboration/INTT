@@ -85,7 +85,7 @@ intt_arborist_macro (
 	se->registerSubsystem(intt_arborist);
 
 	// Run
-	se->run(3);
+	se->run();
 	se->End();
 
 	delete intt_arborist;
