@@ -19,7 +19,7 @@ class TH2D;
 class InttBCOFinder : public SubsysReco
 {
   public:
-  InttBCOFinder(const std::string &name = "InttBCOFinder", const std::string &fname = "inputfile.root",const std::string &fname2 = "outputfile.root",int nevent = 10000);
+  InttBCOFinder(const std::string &name = "InttBCOFinder", const std::string &fname = "inputfile.root",const std::string &fname2 = "outputfile.root",const std::string &fname3 = "cdbfile.root",int nevent = 10000);
 
   virtual ~InttBCOFinder();
 
@@ -39,6 +39,7 @@ class InttBCOFinder : public SubsysReco
   TFile *inFile_ = nullptr;
   TFile *outFile_ = nullptr;
   TTree *tree_ = nullptr;
+  CDBTTree *cdbttree_ = nullptr;
   int nevents_;
   int ievent_;
   std::vector<short> *bco_ = nullptr;
@@ -53,6 +54,7 @@ class InttBCOFinder : public SubsysReco
 
   std::string fname_;
   std::string outfname_;
+  std::string cdbname_;
   TH2D *h2_bco_ladder_[8];     // histogram for BCO alignment check half ladder by half ladder
   TH2D *h2_bco_ladder_cut_[8]; // histogram after BCO cuto
 

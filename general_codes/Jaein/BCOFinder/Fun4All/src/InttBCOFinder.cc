@@ -1,5 +1,6 @@
 #include "InttBCOFinder.h"
 
+#include <cdbobjects/CDBTTree.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHCompositeNode.h>
@@ -13,11 +14,14 @@
 #include "TTree.h"
 #include "TH2D.h"
 
-InttBCOFinder::InttBCOFinder(const std::string &name, const std::string &filename, const std::string &filename2, int nevents)
+R__LOAD_LIBRARY(libcdbobjects.so)
+
+InttBCOFinder::InttBCOFinder(const std::string &name, const std::string &filename, const std::string &filename2,const std::string &filename3, int nevents)
     : SubsysReco(name), inFile_(nullptr), outFile_(nullptr), tree_(nullptr), ievent_(0)
 {
   fname_ = filename;
   outfname_ = filename2;
+  cdbname_ = filename3;
   nevents_ = nevents;
 }
 
@@ -40,7 +44,7 @@ int InttBCOFinder::Init(PHCompositeNode * /*topNode*/)
     h2_bco_ladder_[j] = new TH2D(Form("h2_bco_felix_%d", j), Form("h2_bco_felix_%d", j), 14, 0, 14, 128, 0, 128);
     h2_bco_ladder_cut_[j] = new TH2D(Form("h2_bco_felix_cut%d", j), Form("h2_bco_felix_cut%d", j), 14, 0, 14, 128, 0, 128);
   }
-
+  cdbttree_ = new CDBTTree(cdbname_);
   return 0;
 }
 
@@ -147,7 +151,34 @@ int InttBCOFinder::process_event(PHCompositeNode * /*topNode*/)
 int InttBCOFinder::End(PHCompositeNode * /*topNode*/)
 {
   FindBCOPeak();
-//  if (Verbosity() > 1)
+  if (Verbosity() > 1)
+  {
+    std::cout << "Creating CDBTTree..." << std::endl;
+  }
+  int size = 0;
+  for (int felix_server = 0; felix_server < 8; felix_server++)
+  {
+    for (int felix_channel = 0; felix_channel < 14; felix_channel++)
+    {
+      for (int bco_diff = 0; bco_diff < 128; bco_diff++)
+      {
+        if (h2_bco_ladder_cut_[felix_server]->GetBinContent(felix_channel + 1, bco_diff + 1) > 0)
+        {
+          cdbttree_->SetIntValue(size, "felix_server", felix_server);
+          cdbttree_->SetIntValue(size, "felix_channel", felix_channel);
+          cdbttree_->SetIntValue(size, "bco_diff", bco_diff);
+          size++;
+        }
+      }
+    }
+  }
+  cdbttree_->SetSingleIntValue("size",size);
+  cdbttree_->Commit();
+  cdbttree_->CommitSingle();
+  cdbttree_->WriteCDBTTree();
+  delete cdbttree_; 
+  
+  if (Verbosity() > 1)
   {
     std::cout << "Processing InttBCOFinder done" << std::endl;
   }

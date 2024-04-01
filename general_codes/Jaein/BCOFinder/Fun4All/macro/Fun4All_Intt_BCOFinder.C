@@ -30,6 +30,7 @@ void Fun4All_Intt_BCOFinder(int nevents = 10000,
                               std::string i_file = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/DataProduction/combined-00020869.root",
                         //      std::string bco_file = "/sphenix/tg/tg01/commissioning/INTT/QA/bco_bcofull_difference/rootfile/2023/ladder_20888_3BCO.root",
                               std::string o_file = "bco_20869_test_fun4all.root",
+                              std::string bco_file = "cdb_bco_20869_test_fun4all.root",
                               bool adcflag = false
                               )
                               //nevents : # of event used to make hitmap
@@ -72,6 +73,7 @@ void Fun4All_Intt_BCOFinder(int nevents = 10000,
         InttBCOFinder *inttbcofinder = new InttBCOFinder("inttbcofinder",
                                                 i_file.c_str(),
                                                 o_file.c_str(),
+                                                bco_file.c_str(),
                                                 nevents);
         inttbcofinder->ADCCut(adcflag);
 //        intthitmap->SetBCOfile(bco_file.c_str());
