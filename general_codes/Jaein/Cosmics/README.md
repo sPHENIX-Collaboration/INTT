@@ -14,7 +14,7 @@ A macros for the CosmicsFinder for INTT under fun4all framework.
    - All macros are exsisted here.
    - User can be able to create CDB hot channel and cluster DST file after hot channel masking.
 
-### How To Run
+# How To Run
 ## Macro directory
 Please check the inside of code for each step, especially path and name of input/output file
 
