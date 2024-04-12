@@ -239,10 +239,7 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
           chip_id_ = j;
           chan_ = chan;
           flag_ = 0;
-          // if (felix_ > 3) // Masking all north side
-          // {
-          //     flag_ = 8;
-          // }
+
           if (ch_entry > hotchannelcut)
           {
             flag_ = 8;
@@ -258,6 +255,21 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
             ++size;
             h2_HotMap[felix][i]->SetBinContent(chan+1,j+1,ch_entry);
           }
+          // Masking all north side
+            /*
+          else if (felix_ > 3) 
+           {
+             flag_ = 8;
+             cdbttree->SetIntValue(size, "felix_server", felix);
+             cdbttree->SetIntValue(size, "felix_channel", module_);
+             cdbttree->SetIntValue(size, "chip", chip_id_);
+             cdbttree->SetIntValue(size, "channel", chan_);
+             cdbttree->SetIntValue(size, "flag", flag_);
+             ++size;
+           h2_HotMap[felix][i]->SetBinContent(chan+1,j+1,ch_entry);
+           }
+          */
+          // For debugging purpose
           // else if (h2_AllMap[felix][i]->GetEntries() > 1000)
           // {
           //   flag_ = 8;
