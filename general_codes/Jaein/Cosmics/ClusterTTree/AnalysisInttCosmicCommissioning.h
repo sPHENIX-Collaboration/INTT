@@ -43,7 +43,7 @@ private:
 
   // variables
   int run_num_ = 0;
-  string data_;
+  string data_ = "";
   string output_path_ = "./";
   string output_name_ = "output.root";
   string output_pdf_ = "";
@@ -74,9 +74,6 @@ private:
   double chi2_yz_;
   double ndf_yz_;
   double chi2ndf_yz_;
-
-
-
 
   // nodes
   InttEventInfo* node_intteventheader_map_;
@@ -137,7 +134,7 @@ public:
   //////////////////////////////////////////////////////////////////
   // other functions ///////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
-  void SetData( string path );
-  void SetOutputPath( string path ){ output_path_ = path;};
+  void SetData( string path = "" );
+  void SetOutputPath( string path );
 
 };

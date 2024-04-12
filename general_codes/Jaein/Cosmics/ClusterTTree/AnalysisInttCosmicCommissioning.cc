@@ -7,8 +7,6 @@ AnalysisInttCosmicCommissioning::AnalysisInttCosmicCommissioning(const std::stri
 {
   output_name_= output_name;
   c_ = new TCanvas( "name", "title", 800, 800 );
-  c_->Print( "xy_plane.pdf[" );
-  c_->Print( "yz_plane.pdf[" );
 }
 
 
@@ -249,19 +247,18 @@ AnalysisInttCosmicCommissioning::GetClusters()
 
 int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
 {
-  std::string outFilename = output_path_+output_name_;
+  std::string outFilename = output_name_;
 
   outFile_ = new TFile(outFilename.c_str(),"RECREATE");
-  n_cluster_ =0; 
-  slope_xy_ =0; 
-  constant_xy_ =0;
-  slope_yz_ =0; 
-  constant_yz_ =0;
-  cluster_size_.clear(); 
+  n_cluster_ =   slope_xy_ =   constant_xy_
+    = slope_yz_ =  constant_yz_ = 0;
+    
+    cluster_size_.clear(); 
   posX_.clear();
   posY_.clear();
   posZ_.clear();
   posZ_.clear();
+  
   outTree_ = new TTree("cluster_tree","cluster_tree");
   outTree_ -> Branch("n_cluster",&n_cluster_);
   outTree_ -> Branch("event",&misc_counter_); // misc_counter_ = event number
@@ -289,6 +286,11 @@ int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
 int AnalysisInttCosmicCommissioning::InitRun(PHCompositeNode *topNode)
 {
 
+  
+  c_->Print( "xy_plane.pdf[" );
+  c_->Print( "yz_plane.pdf[" );
+  c_->Print( (output_pdf_+"[").c_str() );
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -467,6 +469,7 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     delete fitFunc;
     delete fitFunc_2;
   }
+
   // initialize branches
   posX_.clear();
   posY_.clear();
@@ -478,7 +481,7 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   constant_xy_ = -99999;
   slope_yz_ = -99999;
   constant_yz_ = -99999;
-  std::cout << "HELLO" << std::endl;
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -491,21 +494,25 @@ int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
 
 int AnalysisInttCosmicCommissioning::EndRun(const int runnumber)
 {
-  cout << "int AnalysisInttCosmicCommissioning::EndRun(const int runnumber)" << endl;
+  c_->Print( (output_pdf_+"]").c_str() );
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 
 int AnalysisInttCosmicCommissioning::End(PHCompositeNode *topNode)
 {
+
   c_->DrawFrame(-11,-11,11,11);
   c_->Update();
   c_->Print( "xy_plane.pdf]" );
   c_->Update();
   c_->Print( "yz_plane.pdf]" );
+  
   outFile_->cd();
   outTree_->Write();
   outFile_->Close();
+  
   delete outFile_;
   delete outTree_;
   
@@ -543,16 +550,46 @@ double AnalysisInttCosmicCommissioning::GetDistance( const Acts::Vector3 a, cons
 void AnalysisInttCosmicCommissioning::SetData(const std::string path )
 {
   // File name assumption: test_DST_cosmics_intt_00026975.root
-  // -> [additional_tag]_DST_[run type]_intt_[run number].root
-  
-  data_ = path; // the path to the DST data
+  // obsolete: -> [additional_tag]_DST_[run type]_intt_[run number].root
+  // -> DST_[run type]_intt_[run number]_no_hot_clusterized.root
+  // For example: /sphenix/tg/tg01/commissioning/INTT/data/dst_files/2024/DST_cosmics_intt_00038984_no_hot_clusterized.root
 
+  if( path != "" ) // If nothing is give, something in data_ is used anyway. It's useful for updating the output path.
+    data_ = path; // the path to the DST data
+
+  if( data_ == "" )
+    {
+      cerr << "void AnalysisInttCosmicCommissioning::SetData(const std::string path )" << endl;
+      cerr << "No file is set. Something wrong." << endl;
+      return;
+    }
+  
   ////////////////////////////////////////////////////////////////////////////////
   // information /////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
-  string run_num_str = data_.substr( data_.find_last_of( "_" ), data_.size() );
-  run_num_str = run_num_str.substr( 1, run_num_str.size() - string( ".root" ).size() );
+  // string run_num_str = data_.substr( data_.find_last_of( "_" ), data_.size() );
+  // run_num_str = run_num_str.substr( run_num_str.find_last_of( "intt" ), run_num_str.size() );
+  //run_num_str = run_num_str.substr( 1, run_num_str.size() - string( ".root" ).size() );
+
+  string run_num_str = data_.substr( data_.find_last_of( "/" ), data_.size() ); // removing path
   cout << run_num_str << endl;
+  
+  // /DST_cosmics_intt_00038984_no_hot_clusterized.root -> cosmics_intt_00038984_no_hot_clusterized.root
+  run_num_str = run_num_str.substr( run_num_str.find_first_of( "_" )+1, run_num_str.size() );
+  cout << run_num_str << endl;
+
+  // cosmics_intt_00038984_no_hot_clusterized.root -> intt_00038984_no_hot_clusterized.root
+  run_num_str = run_num_str.substr( run_num_str.find_first_of( "_" )+1, run_num_str.size() );
+  cout << run_num_str << endl;
+
+  // intt_00038984_no_hot_clusterized.root -> 00038984_no_hot_clusterized.root
+  run_num_str = run_num_str.substr( run_num_str.find_first_of( "_" )+1, run_num_str.size() );
+  cout << run_num_str << endl;
+
+  // 00038984_no_hot_clusterized.root -> 00038984
+  run_num_str = run_num_str.substr( 0, run_num_str.find_first_of( "_" ) );
+  cout << run_num_str << endl;
+  
   run_num_ = stoi( run_num_str );
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -565,7 +602,6 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
   string data_basename = data_.substr( slash_position, data_.size() ); // including the prefix (.root)
   data_basename = data_basename.substr( 0, data_basename.size() - 5 ); // the prefix (.root) is removed.
 
-  cout << "data basename: " << data_basename << endl;
   output_pdf_ = output_path_ ;
   if( output_path_[ output_path_.size() -1 ] != '/' )
     {
@@ -577,64 +613,8 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
   cout << "PDF output: " << output_pdf_ << endl;
 }
 
-//
-// This is a template for a Fun4All SubsysReco module with all methods from the
-// $OFFLINE_MAIN/include/fun4all/SubsysReco.h baseclass
-// You do not have to implement all of them, you can just remove unused methods
-// here and in AnalysisInttCosmicCommissioning.h.
-//
-// AnalysisInttCosmicCommissioning(const std::string &name = "AnalysisInttCosmicCommissioning")
-// everything is keyed to AnalysisInttCosmicCommissioning, duplicate names do work but it makes
-// e.g. finding culprits in logs difficult or getting a pointer to the module
-// from the command line
-//
-// AnalysisInttCosmicCommissioning::~AnalysisInttCosmicCommissioning()
-// this is called when the Fun4AllServer is deleted at the end of running. Be
-// mindful what you delete - you do loose ownership of object you put on the node tree
-//
-// int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
-// This method is called when the module is registered with the Fun4AllServer. You
-// can create historgrams here or put objects on the node tree but be aware that
-// modules which haven't been registered yet did not put antyhing on the node tree
-//
-// int AnalysisInttCosmicCommissioning::InitRun(PHCompositeNode *topNode)
-// This method is called when the first event is read (or generated). At
-// this point the run number is known (which is mainly interesting for raw data
-// processing). Also all objects are on the node tree in case your module's action
-// depends on what else is around. Last chance to put nodes under the DST Node
-// We mix events during readback if branches are added after the first event
-//
-// int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
-// called for every event. Return codes trigger actions, you find them in
-// $OFFLINE_MAIN/include/fun4all/Fun4AllReturnCodes.h
-//   everything is good:
-//     return Fun4AllReturnCodes::EVENT_OK
-//   abort event reconstruction, clear everything and process next event:
-//     return Fun4AllReturnCodes::ABORT_EVENT; 
-//   proceed but do not save this event in output (needs output manager setting):
-//     return Fun4AllReturnCodes::DISCARD_EVENT; 
-//   abort processing:
-//     return Fun4AllReturnCodes::ABORT_RUN
-// all other integers will lead to an error and abort of processing
-//
-// int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
-// If you have internal data structures (arrays, stl containers) which needs clearing
-// after each event, this is the place to do that. The nodes under the DST node are cleared
-// by the framework
-//
-// int AnalysisInttCosmicCommissioning::EndRun(const int runnumber)
-// This method is called at the end of a run when an event from a new run is
-// encountered. Useful when analyzing multiple runs (raw data). Also called at
-// the end of processing (before the End() method)
-//
-// int AnalysisInttCosmicCommissioning::End(PHCompositeNode *topNode)
-// This is called at the end of processing. It needs to be called by the macro
-// by Fun4AllServer::End(), so do not forget this in your macro
-//
-// int AnalysisInttCosmicCommissioning::Reset(PHCompositeNode *topNode)
-// not really used - it is called before the dtor is called
-//
-// void AnalysisInttCosmicCommissioning::Print(const std::string &what) const
-// Called from the command line - useful to print information when you need it
-//
-
+void AnalysisInttCosmicCommissioning::SetOutputPath( string path )
+{
+  output_path_ = path;
+  this->SetData( "" ); // updating the output path
+};
