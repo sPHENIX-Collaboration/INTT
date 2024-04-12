@@ -270,10 +270,12 @@ int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
   outTree_ -> Branch("adc",&adc_);
   outTree_ -> Branch("cluster_size",&cluster_size_);
   outTree_ -> Branch("slope_xy",&slope_xy_);
+  outTree_ -> Branch("constant_xy",&constant_xy_);
   outTree_ -> Branch("chi2_xy",&chi2_xy_);
   outTree_ -> Branch("ndf_xy",&ndf_xy_);
   outTree_ -> Branch("chi2ndf_xy",&chi2ndf_xy_);
-  outTree_ -> Branch("constant_xy",&constant_xy_);
+  outTree_ -> Branch("average_dist_xy",&average_dist_xy_);
+  outTree_ -> Branch("average_dist_yz",&average_dist_yz_);
   outTree_ -> Branch("slope_yz",&slope_yz_);
   outTree_ -> Branch("constant_yz",&constant_yz_);
   outTree_ -> Branch("chi2_yz",&chi2_yz_);
@@ -434,7 +436,7 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     g_2->AddPoint(cluster->getPosition(1), cluster->getPosition(2)); // X-axis(TGraph) = Z direction(Real); Y-axis(TGraph) = radius(Real)
     i++; 
   }
-  if(g->GetN()==4) //Condition to draw pdf and outTree_->Fill()
+  if(g->GetN()>=4 && g->GetN()<=8) //Condition to draw pdf and outTree_->Fill()
   {
     /////////////////////////////// XY plane ////////////////////////////
     g->SetTitle(Form("Event : %d", misc_counter_));
@@ -443,7 +445,6 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     g->Draw("P");
     TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]*x", -11, 11); // y=ax+b
     g->Fit(fitFunc,"RQ");
-    fitFunc->Draw("same");
     c_->Update();
     c_->Print("xy_plane.pdf");
     slope_xy_ = fitFunc->GetParameter(1);
@@ -451,6 +452,16 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     chi2_xy_ = fitFunc->GetChisquare(); 
     ndf_xy_ = fitFunc->GetNDF(); 
     chi2ndf_xy_ = chi2_xy_/ndf_xy_; 
+    ///////////////////// Calculate the average distance ///////////////////
+    double sumDistance = 0.0;
+    for(int i=0;i<g->GetN();++i)
+    {
+      double x,y;
+      g->GetPoint(i,x,y);
+      double distance = TMath::Abs((slope_xy_*x-y+constant_xy_)) / TMath::Sqrt(1+slope_xy_*slope_xy_);
+      sumDistance += distance;
+    }
+    average_dist_xy_ = sumDistance / g->GetN();
   ////////////////////////////////// YZ plane ////////////////////////////// 
     c_->DrawFrame(-11, -25, 11, 25);
     g_2->Draw("P");
@@ -461,7 +472,17 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     slope_yz_ = fitFunc_2->GetParameter(1);
     constant_yz_ = fitFunc_2->GetParameter(0);
     chi2_yz_ = fitFunc_2->GetChisquare(); 
-    ndf_yz_ = fitFunc_2->GetNDF(); 
+    ndf_yz_ = fitFunc_2->GetNDF();
+    sumDistance = 0.0;
+    for (int i = 0; i < g->GetN(); ++i)
+    {
+      double x, y;
+      g->GetPoint(i, x, y);
+      double distance = TMath::Abs((slope_yz_ * x - y + constant_yz_)) / TMath::Sqrt(1 + slope_yz_ * slope_yz_);
+      sumDistance += distance;
+    }
+    average_dist_yz_ = sumDistance / g->GetN();
+
     chi2ndf_yz_ = chi2_yz_/ndf_yz_; 
     outTree_->Fill();
 
@@ -479,6 +500,8 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   n_cluster_ = 0;
   slope_xy_ = -99999;
   constant_xy_ = -99999;
+  average_dist_xy_ = -99999;
+  average_dist_yz_ = -99999;
   slope_yz_ = -99999;
   constant_yz_ = -99999;
 
