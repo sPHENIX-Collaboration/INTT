@@ -29,7 +29,6 @@ string GetRunType( int run_num = 26975 )
 
     }
 
-
   return "NotFound";
 }
 
@@ -40,7 +39,6 @@ string GetRunType( int run_num = 26975 )
 string GetFilePath( int run, string run_type, int intt_server )
 {
   assert( 0<=intt_server && intt_server <= 7 );
-    
   
   stringstream ss_rtn;
   ss_rtn << kIntt_evt_dir << run_type << "/"
@@ -48,8 +46,6 @@ string GetFilePath( int run, string run_type, int intt_server )
 
   return ss_rtn.str();
 }
-
-
 
 int functions()
 {
