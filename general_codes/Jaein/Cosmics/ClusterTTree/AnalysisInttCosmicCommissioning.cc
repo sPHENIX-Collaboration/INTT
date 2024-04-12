@@ -443,7 +443,6 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     g->Draw("P");
     TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]*x", -11, 11); // y=ax+b
     g->Fit(fitFunc,"RQ");
-    fitFunc->Draw("same");
     c_->Update();
     c_->Print("xy_plane.pdf");
     slope_xy_ = fitFunc->GetParameter(1);
