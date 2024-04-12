@@ -69,11 +69,13 @@ private:
   double chi2_xy_;
   double ndf_xy_;
   double chi2ndf_xy_;
+  double average_dist_xy_;
   double slope_yz_;
   double constant_yz_;
   double chi2_yz_;
   double ndf_yz_;
   double chi2ndf_yz_;
+  double average_dist_yz_;
 
 
 
