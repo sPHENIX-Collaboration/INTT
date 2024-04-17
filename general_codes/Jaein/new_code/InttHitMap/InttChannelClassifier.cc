@@ -400,23 +400,6 @@ double SingleGaussianFit(TH1D *hist, double &mean1, double &sigma1)
   chi2ndf = chi2 / ndf;
   int labbel = -1;
   int flag = -1;
-  // if(FirstGaussian->Eval(mean1)<100) DoMultifit = true;
-  if (sigma1 < 0.0001)
-    DoMultifit = true;
-  if (chi2ndf > 100)
-    DoMultifit = true;
-  // DoMultifit = true;
-  if (mean1 < 0)
-    DoMultifit = true;
-  if (sigma1 > 0.002)
-    DoMultifit = true;
-  sigma0 = sigma1;
-  mean0 = mean1;
-  // DoMultifit = true;
-  if (FirstGaussian->Eval(hist->GetMean()) < 50)
-    DoMultifit = true;
-  if (mean1 * 1.3 < hist->GetMean())
-    DoMultifit = true;
   double _mean[7] = {0};
   double _constant[7] = {0};
   double _chi2[7] = {0};
