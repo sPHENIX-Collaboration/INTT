@@ -38,6 +38,7 @@ bool Writecsv = false;
 /////////////
 //File Path//
 /////////////
+//std::string map_input_path =  "/sphenix/tg/tg01/commissioning/INTT/QA/hitmap/2024/";
 std::string map_input_path =  "./";
 std::string root_output_path = "./";
 std::string cdb_output_path = "./";
@@ -89,7 +90,7 @@ std::vector<Half_Chip> half_chips = // Chip number 0~25
         {7, 1, 1},
 };
 
-void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
+void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
 {
   gStyle->SetOptFit();
   ////////////////////////////////////////
@@ -107,7 +108,8 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
   ///////////////////////////////////////////////////
 
   TH1D* h1_hist_MPV = new TH1D("hist_MPV","hist_MPV",200, 1, 201);
-
+  TH1D* h1_hist_MPV_ladder = new TH1D("NumberOfFiredChannels_ladder","NumberOfFiredChannels_ladder",350, 1, 3501);
+  int NumberOfFiredChan[8][14]={0};
   ///////////////////////////////////////////////////
   // Create Histogram for Hot and Dead channel map //
   ///////////////////////////////////////////////////
@@ -193,19 +195,25 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
       {
         for (int chan = 0; chan < 128; chan++)
         {
-          if (j < 5 || (j > 12 && j < 18)) // Condition for type B
+          int NumberOfEntry = h2_AllMap[felix][i]->GetBinContent(chan+1,j+1);
+          if(NumberOfEntry!=0)
           {
-            h1_hist_fit_B[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-            h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-          }
-          else
-          {
-            h1_hist_fit_A[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-            h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+            NumberOfFiredChan[felix][i]++;
+            if (j < 5 || (j > 12 && j < 18)) // Condition for type B
+            {
+              h1_hist_fit_B[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+              h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+            }
+            else
+            {
+              h1_hist_fit_A[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+              h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+            }
           }
         }
       }
       double mean, sigma;
+      h1_hist_MPV_ladder->Fill(NumberOfFiredChan[felix][i]);
       canA[felix]->cd(i + 1);
       std::cout << "CHENCK !! Felix : " << felix << " module : " << i << std::endl;
     }
@@ -213,8 +221,11 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
 
   sfile->cd();
   h1_hist_MPV->Write();
-  int hotchannelcut = h1_hist_MPV->GetXaxis()->GetBinCenter(h1_hist_MPV->GetMaximumBin()) * 4;
+  h1_hist_MPV_ladder->Write();
+  int hotchannelcut = h1_hist_MPV->GetXaxis()->GetBinCenter(h1_hist_MPV->GetMaximumBin()) * 2;
+  double hotladdercut = h1_hist_MPV_ladder->GetMean()*5;
   std::cout << "hot channel cut : " << hotchannelcut << std::endl;
+  std::cout << "hot ladder cut : " << hotladdercut << std::endl;
   CDBTTree *cdbttree = new CDBTTree(cdbttree_name);
   int size = 0;
   TDirectory *dir[8];
@@ -224,11 +235,17 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
     dir[felix]->cd();
     for (int i = 0; i < 14; i++)
     {
+      if(NumberOfFiredChan[felix][i]>hotladdercut)
+       {
+        std::cout<<"HERE IS HOT LADDER"<<std::endl;
+        std::cout<< felix<<" "<< i<<std::endl;
+       }
     //  cout << "HELLO moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
     //  cout << "HELLO moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
       for (int j = 0; j < 26; j++)
       {
     //    cout << "Felix : " << felix << " moudle : " << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
+       
         for (int chan = 0; chan < 128; chan++)
         {
           // double entry = h1_chip[i][j]->GetBinContent(chan + 1);
@@ -239,8 +256,12 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
           chip_id_ = j;
           chan_ = chan;
           flag_ = 0;
-
-          if (ch_entry > hotchannelcut)
+          // if (felix_ > 3) // Masking all north side
+          // {
+          //     flag_ = 8;
+          // }
+          if (ch_entry > hotchannelcut || NumberOfFiredChan[felix][i]>hotladdercut)
+          //if (ch_entry > hotchannelcut)
           {
             flag_ = 8;
             // std::cout<<felix_<<std::endl;
@@ -255,36 +276,6 @@ void InttChannelClassifier_cosmics(int runnumber = 38554) //runnumber
             ++size;
             h2_HotMap[felix][i]->SetBinContent(chan+1,j+1,ch_entry);
           }
-          // Masking all north side
-            /*
-          else if (felix_ > 3) 
-           {
-             flag_ = 8;
-             cdbttree->SetIntValue(size, "felix_server", felix);
-             cdbttree->SetIntValue(size, "felix_channel", module_);
-             cdbttree->SetIntValue(size, "chip", chip_id_);
-             cdbttree->SetIntValue(size, "channel", chan_);
-             cdbttree->SetIntValue(size, "flag", flag_);
-             ++size;
-           h2_HotMap[felix][i]->SetBinContent(chan+1,j+1,ch_entry);
-           }
-          */
-          // For debugging purpose
-          // else if (h2_AllMap[felix][i]->GetEntries() > 1000)
-          // {
-          //   flag_ = 8;
-          //   // std::cout<<felix_<<std::endl;
-          //   // std::cout<<module_<<std::endl;
-          //   // std::cout<<chip_id_<<std::endl;
-          //   // std::cout<<chan_<<std::endl;
-          //   cdbttree->SetIntValue(size, "felix_server", felix);
-          //   cdbttree->SetIntValue(size, "felix_channel", module_);
-          //   cdbttree->SetIntValue(size, "chip", chip_id_);
-          //   cdbttree->SetIntValue(size, "channel", chan_);
-          //   cdbttree->SetIntValue(size, "flag", flag_);
-          //   ++size;
-          //   h2_HotMap[felix][i]->SetBinContent(chan + 1, j + 1, ch_entry);
-          // }
           // else if ( (felix==1 && module_ == 10) || (felix==1 && module_<3) )
           // {
           //   flag_ = 8;
