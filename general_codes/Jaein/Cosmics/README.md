@@ -26,6 +26,10 @@ Please check the inside of code for each step, especially path and name of input
  - Do classification to peak up hot channel, will give you cdb_{runnumber}.root and InttHotDeadMap_{runnumber}_30.root
    - root -l -b -q 'InttChannelClassifier_cosmics.cc(int run_num)'
 
+2-2(New) Execute Fun4All_Intt_BCOFinder.C
+ - Find the BCO peak Felix channel by Felix channel and will give you cdb_bco_{runnumber}.root
+ - You may want to mask the hot channel first since the number of cosmics is relatively lower than noise hit. So, it requires the hotdeadmap created through step 1~2.
+
 3. Check cdb_output_path inside Fun4All_Intt_Combiner_run_base.C and execute it.
 - Make DST file which includes TRKR_HITSET after hotchannel masking.
    - root -l -b -q 'Fun4All_Intt_Combiner_run_base.C(int run_num, int nEvents, is_debug=true)'
