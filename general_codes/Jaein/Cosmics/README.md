@@ -10,7 +10,9 @@ A macros for the CosmicsFinder for INTT under fun4all framework.
 2. ClusterTTree
    - Main analysis module to find cosmics track / to save ClusterTTree after fitting is performed.
    - This module should be linked before working on macro directory.
-3. macro
+3. CosmicsBCOFinder
+
+4. macro
    - All macros are exsisted here.
    - User can be able to create CDB hot channel and cluster DST file after hot channel masking.
 
