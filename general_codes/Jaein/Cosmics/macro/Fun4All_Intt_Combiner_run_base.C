@@ -41,11 +41,12 @@ void ShowHelp()
 std::string cdb_output_path = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/";
 
 //void Fun4All_Intt_Combiner_run_base(int nEvents = 10, int run_oum = 26975 )
-void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, bool is_debug = true )
+void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, bool is_bco_cut_on = true, bool is_debug = true )
 {
   if( is_debug == true )
     ShowHelp();
   std::string cdbttree_name = cdb_output_path + "cdb_" + to_string(run_num) + ".root";
+  std::string cdbttree_name_bco = cdb_output_path + "cdb_bco_" + to_string(run_num) + ".root";
 
   ////////////////////////////////////////////////////////////////////////
   // flags
@@ -53,13 +54,11 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, b
   bool is_trkr_hit_on = false;
   bool is_trkr_cluster_on = false;
   bool is_raw_hit_on = false;
-
   if( is_debug == false )
     is_trkr_hit_on = is_trkr_cluster_on = is_raw_hit_on = true;
   
   is_trkr_hit_on = is_trkr_cluster_on = is_raw_hit_on = true;
   is_raw_hit_on = false;
-  
   ////////////////////////////////////////////////////////////////////////
   // Config for input/output files
   ////////////////////////////////////////////////////////////////////////
@@ -105,12 +104,14 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, b
   }
   se->registerInputManager(in);
 
-  if( is_trkr_hit_on )
+  if (is_trkr_hit_on)
   {
     InttCombinedRawDataDecoder *myDecoder = new InttCombinedRawDataDecoder("myUnpacker");
     myDecoder->runInttStandalone(true);
     myDecoder->writeInttEventHeader(true);
     myDecoder->LoadHotChannelMapLocal(cdbttree_name);
+    if (is_bco_cut_on)
+      myDecoder->SetCalibBCO(cdbttree_name_bco, InttCombinedRawDataDecoder::FILE);
     se->registerSubsystem(myDecoder);
   }
 

@@ -57,10 +57,10 @@ R__LOAD_LIBRARY( libAnalysisInttCosmicCommissioning.so )
 //R__LOAD_LIBRARY( libQaInttCosmicCommissioning.so )
 
 int Fun4All_CosmicAnalysis(
-		     int nEvents = 10000, //5,
+		     int nEvents = 100000, //5,
 		     //const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/DST_creation/new_DST_cosmics_intt_00035692.root", 
-		     const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/test_clustering_DST_cosmics_intt_00038554_10000events.root", 
-		     const string &outputFile = "cluster_result_00038554_4point_only.root",
+		     const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/test_clustering_DST_cosmics_intt_00039367_10000events.root", 
+		     const string &outputFile = "cluster_result_00039367.root",
 		     const int skip = 0
 		     )
 {
@@ -175,7 +175,7 @@ int Fun4All_CosmicAnalysis(
 
   AnalysisInttCosmicCommissioning* intt_cosmic = new AnalysisInttCosmicCommissioning("AnalysisInttCosmicCommissioning",outputFile);
 
-  intt_cosmic->SetData( inputFile );
+//  intt_cosmic->SetData( inputFile );
   se->registerSubsystem( intt_cosmic );
 
 //  QaInttCosmicCommissioning* qicc = new QaInttCosmicCommissioning();

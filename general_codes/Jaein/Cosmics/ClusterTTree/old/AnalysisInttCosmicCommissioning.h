@@ -12,9 +12,6 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
-#include "TH1F.h"
-#include "TEllipse.h"
-#include "Math/Vector3D.h"
 
 #include <fun4all/SubsysReco.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -45,8 +42,8 @@ class AnalysisInttCosmicCommissioning : public SubsysReco
 private:
 
   // variables
-  //int run_num_ = 0;
-  //  string data_ = "";
+  int run_num_ = 0;
+  string data_;
   string output_path_ = "./";
   string output_name_ = "output.root";
   string output_pdf_ = "";
@@ -55,35 +52,18 @@ private:
   // objects
   TCanvas* c_;
   TFile* outFile_;
-  TTree* outTree_;
-  
+  TTree* outTree_; 
   // Branches for TTree
   int n_cluster_;
   uint64_t bco_;
   std::vector<double> posX_;
   std::vector<double> posY_;
   std::vector<double> posZ_;
-  std::vector < ROOT::Math::XYZVector > positions_;
-  
   std::vector<double> radius_;
   std::vector<int> cluster_size_; 
   std::vector<int> adc_;
 
-  // coordinate numbers: (x,y), (z,y), (z,x) (z,r)
-  vector < pair < int, int > > vcoordinates_;
-  
-  // TGraphs
-  TGraph* graphs_[4]; // 0: xy, 1: zy, 2: zx 3: zr
-  
-  // TF1
-  TF1* lines_[4];
-  
-  //TF1 Parameters
-  double slopes_[4];
-  double constants_[4];
-  double chi2ndfs_[4];
-  double average_distances_[4];
-  
+  //TF1 Parameters 
   double slope_xy_;
   double constant_xy_;
   double chi2_xy_;
@@ -96,30 +76,23 @@ private:
   double ndf_yz_;
   double chi2ndf_yz_;
   double average_dist_yz_;
-  
-  // bool to check whether both top ladders and bottom ladders are fired.
-  bool IsYFired_[2];
-  // misc
-  const double kLayer_radii[4] = {7.1888, 7.800, 9.680, 10.330 };
+
+
+
+
   // nodes
-  InttEventInfo*          node_intteventheader_map_;
-  InttRawHitContainer*    node_inttrawhit_map_;
+  InttEventInfo* node_intteventheader_map_;
+  InttRawHitContainer* node_inttrawhit_map_;
   TrkrClusterContainerv4* node_cluster_map_;
-  ActsGeometry*           node_acts_;
+  ActsGeometry* node_acts_;
 
   // private functions
-  void DrawIntt( double xmax, double ymax );
-  int Fit();
-
-  vector < pair < TrkrCluster*, const Acts::Vector3 > > GetClusters();
+  int GetNodes(PHCompositeNode *topNode);
   double GetDistance( const Acts::Vector3 a, const Acts::Vector3 b, bool use_x=true, bool user_y=true, bool use_z=true); // general function
   double GetDistanceXY( const Acts::Vector3 a, const Acts::Vector3 b ){ return GetDistance( a, b, true, true, false); }; // distance in X-Y place
-  int GetNodes(PHCompositeNode *topNode);
+
+  vector < pair < TrkrCluster*, const Acts::Vector3 > > GetClusters();
   
-  std::string Int2Coordinate( int num );
-  int MakeGraphs( vector < pair < TrkrCluster*, const Acts::Vector3 > >& cluster_pos_pairs );
-  int ProcessEventRawHit();
-    
 public:
 
   AnalysisInttCosmicCommissioning(const std::string &name = "AnalysisInttCosmicCommissioning",const std::string &output_name = "output.root");
@@ -166,9 +139,7 @@ public:
   //////////////////////////////////////////////////////////////////
   // other functions ///////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
-  std::string GetOutput(){ return output_name_;};
-  std::string GetOutputPdf(){ return output_pdf_;};
-  // void SetData( string path = "" );
-  // void SetOutputPath( string path );
+  void SetData( string path );
+  void SetOutputPath( string path ){ output_path_ = path;};
 
 };
