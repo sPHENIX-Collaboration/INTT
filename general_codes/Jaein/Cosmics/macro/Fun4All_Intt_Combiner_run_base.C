@@ -54,7 +54,6 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, 
   bool is_trkr_hit_on = false;
   bool is_trkr_cluster_on = false;
   bool is_raw_hit_on = false;
-  bool is_bco_cut_on = false;
   if( is_debug == false )
     is_trkr_hit_on = is_trkr_cluster_on = is_raw_hit_on = true;
   
