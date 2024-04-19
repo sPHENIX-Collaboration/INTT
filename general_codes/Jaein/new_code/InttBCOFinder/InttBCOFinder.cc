@@ -33,6 +33,11 @@ InttBCOFinder::InttBCOFinder(const std::string &name, const std::string &filenam
 // Destructor
 InttBCOFinder::~InttBCOFinder()
 {
+  for(int i=0;i<8;i++)
+  {
+    delete h2_bco_ladder_[i];
+    delete h2_bco_ladder_cut_[i];
+  }
 }
 /**
  * Initialize the module and prepare looping over events
@@ -84,10 +89,7 @@ int InttBCOFinder::process_event(PHCompositeNode * topNode)
     return Fun4AllReturnCodes::EVENT_OK;
    // return Fun4AllReturnCodes::ABORTRUN;
   }
-  if (ievent_ % 100 == 0 )
-  {
-    std::cout << "ievent/nevents : [" << ievent_ << "/" << nevents_ << "]" << std::endl;
-  }
+ 
   InttRawHitContainer *inttcont = findNode::getClass<InttRawHitContainer>(topNode, m_InttRawNodeName);
   if (!inttcont)
   {
@@ -105,8 +107,6 @@ int InttBCOFinder::process_event(PHCompositeNode * topNode)
     //if (!intthit)
     //  continue;
     uint64_t bco_full = intthit->get_bco();
-    if (i == 0)
-      std::cout << bco_full << std::endl;
     int bco = intthit->get_FPHX_BCO();
     int felixnumber = intthit->get_packetid() - 3001;
     int felixchannel = intthit->get_fee();
@@ -131,7 +131,7 @@ int InttBCOFinder::End(PHCompositeNode * /*topNode*/)
     int size = 0;
     if (Verbosity() > 1)
     {
-      std::cout << "Creating CDBTTree..." << std::endl;
+      std::cout << "InttBCOFinder::Creating CDBTTree..." << std::endl;
     }
     for (int felix_server = 0; felix_server < 8; felix_server++)
     {
@@ -160,10 +160,15 @@ int InttBCOFinder::End(PHCompositeNode * /*topNode*/)
 
   if (Verbosity() > 1)
   {
-    std::cout << "Processing InttBCOFinder done" << std::endl;
+    std::cout << "InttBCOFinder::Processing InttBCOFinder done" << std::endl;
   }
   if (WriteQAFile_)
   {
+    if (Verbosity() > 1)
+    {
+      std::cout << "InttBCOFinder::Writing histograms of BCO distribution" << std::endl;
+      std::cout << "InttBCOFinder::File path : "<<outfname_ << std::endl;
+    }
     outFile_ = new TFile(outfname_.c_str(), "RECREATE");
     if (outFile_ != nullptr)
     {

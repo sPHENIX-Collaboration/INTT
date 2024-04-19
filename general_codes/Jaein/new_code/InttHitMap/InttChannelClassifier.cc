@@ -2,12 +2,17 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include <cdbobjects/CDBTTree.h>
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TDirectory.h"
 #include "TCanvas.h"
 #include "TH1D.h"
 #include "TH2D.h"
+
+R__LOAD_LIBRARY(libcdbobjects.so)
 
 using namespace std;
 //////////////
@@ -16,8 +21,6 @@ using namespace std;
 double SingleGaussianFit(TH1D *hist, double &mean1, double &sigma1); 
 //Function to do fitting return value : value for HotChannel cut
 
-void GetFirstFilledBinCenter(TH1D *hist, double &a, double &b);      
-//Function to find bin center not used for now.                                                                    
 
 /////////////////////
 //Global parameters//
@@ -26,22 +29,26 @@ int chip = 26;
 int mod = 14;
 double sig_cut = 3.0;
 bool Writecsv = false;
+bool debug = false;
 //chip : # of chips on each half ladder(defalt : 26)
 //mod : # of moudles for each felix server(default : 14)
-//sig_cut : sigma cut for hot/cold channel determination default : 4.0
+//sig_cut : sigma cut for hot/cold channel determination default : 3.0
 //Writecsv : flag to write csv file (default : false )
-
+// debug : used to turn ON/OFF cout
 /////////////
 //File Path//
 /////////////
-//std::string map_input_path =  "/sphenix/tg/tg01/commissioning/INTT/work/jaein/jaein_gitrepos_working/INTT/general_codes/Jaein/Fun4all/GaussianClassifier/HitMapFile/";
+//std::string map_input_path =  "/sphenix/tg/tg01/commissioning/INTT/QA/hitmap/2024/";
+//std::string cdb_output_path = "/sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/CDB/2024/";
+//std::string root_output_path ="/sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/rootfile/2024/";
+//std::string csv_output_path = "/sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/csv_file/2024/";
 std::string map_input_path =  "./";
-//std::string root_output_path = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/jaein_gitrepos_working/INTT/general_codes/Jaein/Fun4all/GaussianClassifier/HotMaploader/new/rootfile/";
-//std::string csv_output_path = "/sphenix/tg/tg01/commissioning/INTT/QA/hotdeadmap/csv_file/2023/";
+std::string cdb_output_path = "./";
 std::string root_output_path = "./";
 std::string csv_output_path = "./";
-//map_input_path : location of the HitMap file created by Fun4All_Intt_HitMap.C
-//root_output_path : output file path
+//map_input_path : location of the HitMap file created by InttHitMap.cc/h
+//cdb_output_path : cdb output file path 
+//root_output_path : output file path for QA
 //csv_output_path : csv output file path (used for Grafana online monitoring)
 
 
@@ -96,6 +103,7 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
   ////////////////////////////////////////
   int in_sig = 10*sig_cut;
   std::string rootfilename = map_input_path + "hitmap_run" + to_string(runnumber) + ".root";
+  std::string cdbttree_name = cdb_output_path + "cdb_inttbadchanmap_"+to_string(runnumber)+".root";
   TFile *file = nullptr;
   file = TFile::Open(rootfilename.c_str(), "READ");
 
@@ -133,7 +141,7 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
   double par_sigmaB[8][14] = {0.}; // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
   /////////////////////////////////////////////////
   // Create TFile and TTree to save information  //
-  // TTree is mainly used to convert to CDBTTree //
+  // These are used to check fitting result      //
   /////////////////////////////////////////////////
   std::string csvfilename = csv_output_path + "NumOfHot.csv";
   std::ofstream csvFile(csvfilename, std::ios::app);
@@ -145,7 +153,6 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
     return;
   }
   std::string outputfile = root_output_path + "InttHotDeadMap_test_"+to_string(runnumber)+"_"+to_string(in_sig)+".root";
-  //TFile *sfile = new TFile(Form("./rootfile/InttHotDeadMap_%d_%d.root", runnumber, in_sig), "RECREATE");
   TFile *sfile = new TFile(outputfile.c_str(), "RECREATE");
   TTree *st = new TTree("tree", "tree");
   double ch_entry, mean_gaus, sigma_gaus = 0.;
@@ -197,7 +204,6 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
       }
       double mean, sigma;
       canA[felix]->cd(i + 1);
-      std::cout << "CHENCK !! Felix : " << felix << " module : " << i << std::endl;
       HotChannelCut_A_Fit[felix][i] = SingleGaussianFit(h1_hist_fit_A[felix][i], mean, sigma);
       ColdChannelCut_A_Fit[felix][i] = mean - sig_cut * sigma;
       if (mean_first == 0)
@@ -232,6 +238,8 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
     }
   }
 
+  CDBTTree *cdbttree = new CDBTTree(cdbttree_name);
+  int size = 0;
   sfile->cd();
   TDirectory *dir[8];
   for (int felix = 0; felix < 8; felix++)
@@ -240,11 +248,15 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
     dir[felix]->cd();
     for (int i = 0; i < 14; i++)
     {
-      cout << "moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
-      cout << "moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
+      if(debug)
+      {
+        cout << "moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
+        cout << "moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
+      }
       for (int j = 0; j < 26; j++)
       {
-        cout << "Felix : " << felix << " moudle : " << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
+        if (debug)
+          cout << "Felix : " << felix << " moudle : " << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
         for (int chan = 0; chan < 128; chan++)
         {
           // double entry = h1_chip[i][j]->GetBinContent(chan + 1);
@@ -335,6 +347,18 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
               }
             }
           }
+          ////////////////////////////////////////////////////////////////
+          //           Fill CDBTTree if channel is not good             //
+          ////////////////////////////////////////////////////////////////
+          if(flag_!=0)
+          {
+            cdbttree->SetIntValue(size, "felix_server", felix);
+            cdbttree->SetIntValue(size, "felix_channel", module_);
+            cdbttree->SetIntValue(size, "chip", chip_id_);
+            cdbttree->SetIntValue(size, "channel", chan_);
+            cdbttree->SetIntValue(size, "flag", flag_);
+            ++size;
+          }
           st->Fill();
         }
       }
@@ -351,13 +375,17 @@ void InttChannelClassifier(int runnumber = 20869) //runnumber
     canB[felix]->Write();
   }
 
+  cdbttree->SetSingleIntValue("size", size);
+  cdbttree->Commit();
+  cdbttree->CommitSingle();
+  cdbttree->WriteCDBTTree();
   st->Write();
-
   // Add content to the end of the file
   if(Writecsv) csvFile << runnumber << "," << NumOfHot << "\n";
 
   // Close the file
   csvFile.close();
+
 
   sfile->Close();
   file->Close();
@@ -391,7 +419,7 @@ double SingleGaussianFit(TH1D *hist, double &mean1, double &sigma1)
   double par[9];
   double sigma_max = 1e-3;
   double sigma_min = 1e-4;
-  bool DoMultifit = true;
+  bool DoMultifit = true; // By default, try to do fitting with several Gaussian
   hist->Fit(FirstGaussian, "RQ");
   mean1 = FirstGaussian->GetParameter(1);
   chi2 = FirstGaussian->GetChisquare();
@@ -509,17 +537,4 @@ double SingleGaussianFit(TH1D *hist, double &mean1, double &sigma1)
   double cutvalue = mean1 + fabs(sigma1) * sig_cut;
   return cutvalue; //return value : hot channel cut for this ladders
 }
-void GetFirstFilledBinCenter(TH1D *hist, double &a, double &b)
-{
-  int numBins = hist->GetNbinsX();
-  b = (hist->GetMean());
-  for (int bin = 1; bin <= numBins; bin++)
-  {
-    if (hist->GetBinContent(bin) > 0)
-    {
-      double xValue = hist->GetXaxis()->GetBinCenter(bin);
-      a = xValue;
-      return;
-    }
-  }
-}
+
