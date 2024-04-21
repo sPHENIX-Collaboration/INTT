@@ -13,8 +13,8 @@ const unsigned int kCh_num = 128;
 //////////////////////////////////////////////////////////////////////////////////////////
 const string kIntt_evt_dir = "/sphenix/lustre01/sphnxpro/commissioning/INTT/";  
 
-const unsigned int kRun_type_num = 5;
-const string kRun_types[ kRun_type_num ] = { "cosmics", "beam", "calib", "junk", "intt" };
+const unsigned int kRun_type_num = 6;
+const string kRun_types[ kRun_type_num ] = { "cosmics", "beam", "calib", "pedestal", "junk", "intt" };
 
 const unsigned int kYear = 2024;
 const string kIntt_data_dir	= "/sphenix/tg/tg01/commissioning/INTT/data/";
