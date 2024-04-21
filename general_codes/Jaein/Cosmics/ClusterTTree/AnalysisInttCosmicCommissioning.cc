@@ -2,11 +2,10 @@
 
 using namespace std;
 
-AnalysisInttCosmicCommissioning::AnalysisInttCosmicCommissioning(const std::string &name,const std::string &output_name):
- SubsysReco(name)
+AnalysisInttCosmicCommissioning::AnalysisInttCosmicCommissioning(const std::string &name, const std::string &output_name) : SubsysReco(name)
 {
-  output_name_= output_name;
-  c_ = new TCanvas( "name", "title", 800, 800 );
+  output_name_ = output_name;
+  c_ = new TCanvas("name", "title", 800, 800);
 
   //
   // +-------------+
@@ -14,31 +13,28 @@ AnalysisInttCosmicCommissioning::AnalysisInttCosmicCommissioning(const std::stri
   // +-------------+
   // |      |  zx  |
   // +-------------+
-  
-  c_->Divide( 2, 2 );
-  
-  vcoordinates_.push_back( pair< int, int >( 0, 1 ) ); // x vs y
-  vcoordinates_.push_back( pair< int, int >( 2, 1 ) ); // z vs y
-  vcoordinates_.push_back( pair< int, int >( 2, 0 ) ); // z vs x
 
-  for( unsigned int i=0; i<vcoordinates_.size(); i++ )
-    {
-      string name = "line_"
-	+ Int2Coordinate(  vcoordinates_[i].first  )
-	+ Int2Coordinate(  vcoordinates_[i].second  );
+  c_->Divide(2, 2);
 
-      // Setting range of the fitting function 
-      // 2 means z, so 25 is enough. Others can be x or y, so 11 is enough.
-      double xmax = (vcoordinates_[i].first==2 ? 25 : 11 );
-      lines_[i] = new TF1( name.c_str(), "pol1", -xmax, xmax );
+  vcoordinates_.push_back(pair<int, int>(0, 1)); // x vs y
+  vcoordinates_.push_back(pair<int, int>(2, 1)); // z vs y
+  vcoordinates_.push_back(pair<int, int>(2, 0)); // z vs x
+  vcoordinates_.push_back(pair<int, int>(2, 3)); // z vs r
 
-    }
-  
+  for (unsigned int i = 0; i < vcoordinates_.size(); i++)
+  {
+    string name = "line_" + Int2Coordinate(vcoordinates_[i].first) + Int2Coordinate(vcoordinates_[i].second);
+
+    // Setting range of the fitting function
+    // 2 means z, so 25 is enough. Others can be x or y, so 11 is enough.
+    double xmax = (vcoordinates_[i].first == 2 ? 25 : 11);
+    lines_[i] = new TF1(name.c_str(), "pol1", -xmax, xmax);
+  }
+
 }
 
 AnalysisInttCosmicCommissioning::~AnalysisInttCosmicCommissioning()
 {
-
 }
 
 
@@ -46,6 +42,8 @@ AnalysisInttCosmicCommissioning::~AnalysisInttCosmicCommissioning()
 //////////////////////////////////////////////////////////////////////////////
 // private ///////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
+/*
+  <<<<<<< HEAD
 void AnalysisInttCosmicCommissioning::DrawIntt( double xmax, double ymax )
 {
   
@@ -174,6 +172,131 @@ double AnalysisInttCosmicCommissioning::GetDistance( const Acts::Vector3 a, cons
     num += a.z() * b.z();
       
   return sqrt( num );
+  */
+
+void AnalysisInttCosmicCommissioning::DrawIntt(double xmax, double ymax)
+{
+
+  if (xmax - ymax < 1e-4) // cross-section mode
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      auto circle = new TEllipse(0.0, 0.0, kLayer_radii[i]);
+      circle->SetLineColorAlpha(kGray, 0.5);
+      circle->SetLineWidth(2);
+      circle->SetFillStyle(0);
+      circle->Draw("same");
+    }
+  }
+}
+
+int AnalysisInttCosmicCommissioning::Fit()
+{
+
+  for (unsigned int i = 0; i < vcoordinates_.size(); i++)
+  {
+    // if (graphs_[i]->GetN() < 4 || graphs_[i]->GetN() > 8) // Condition to draw pdf and outTree_->Fill()
+    //   return 0; // Not used. Event selection should be done in process_event.
+
+    graphs_[i]->Fit(lines_[i], "RQN");
+    constants_[i] = lines_[i]->GetParameter(0);
+    slopes_[i] = lines_[i]->GetParameter(1);
+    chi2ndfs_[i] = lines_[i]->GetChisquare() / lines_[i]->GetNDF();
+
+    ///////////////////// Calculate the average distance ///////////////////
+    double sumDistance = 0.0;
+    for (int i = 0; i < graphs_[i]->GetN(); ++i)
+    {
+      double x, y;
+      graphs_[i]->GetPoint(i, x, y);
+      double distance = TMath::Abs((slopes_[i] * x - y + constants_[i])) / TMath::Sqrt(1 + slopes_[i] * slopes_[i]);
+      sumDistance += distance;
+    }
+    average_distances_[i] = sumDistance / graphs_[i]->GetN();
+
+    graphs_[i]->SetTitle(Form("Event : %d", misc_counter_));
+    int x_axis_num = vcoordinates_[i].first;
+    int y_axis_num = vcoordinates_[i].second;
+    double xmax = x_axis_num == 2 ? 25 : 11; // 2 means z, so 25 is enough. Others can be x or y, so 11 is enough.
+    double ymax = y_axis_num == 2 ? 25 : 11;
+
+    c_->cd(i + 1);
+    if (i == 2)
+      c_->cd(4);
+    if (i == 3)
+      c_->cd(3);
+
+    string frame_title = Int2Coordinate(x_axis_num) + " vs " + Int2Coordinate(y_axis_num) +" Event : "+std::to_string(misc_counter_) +";" // pad title
+                         + Int2Coordinate(x_axis_num) + " (cm);"                                // x-axis title
+                         + Int2Coordinate(y_axis_num) + " (cm)";                                // y-axis title
+    auto frame = gPad->DrawFrame(-xmax, -ymax, xmax, ymax, frame_title.c_str());
+    frame->GetXaxis()->CenterTitle();
+    frame->GetYaxis()->CenterTitle();
+    gPad->SetGrid(true, true);
+    DrawIntt(xmax, ymax);
+
+    c_->SetTitle(Form("Event : %d", misc_counter_));
+    graphs_[i]->Draw("P");
+    lines_[i]->Draw( "same" );
+    c_->Update();
+  }
+
+  c_->Print(output_pdf_.c_str());
+  n_cluster_ = posX_.size();
+  outTree_->Fill();
+
+  return 0;
+}
+
+vector<pair<TrkrCluster *, const Acts::Vector3>>
+AnalysisInttCosmicCommissioning::GetClusters()
+{
+  vector<pair<TrkrCluster *, const Acts::Vector3>> values;
+
+  for (unsigned int inttlayer = 0; inttlayer < 4; inttlayer++)
+  {
+
+    // loop over all hits
+    for (const auto &hitsetkey : node_cluster_map_->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3))
+    {
+
+      // type: std::pair<ConstIterator, ConstIterator> ConstRange
+      // here, MMap_::const_iterator ConstIterator;
+      auto range = node_cluster_map_->getClusters(hitsetkey);
+
+      // loop over iterators of this cluster
+      for (auto clusIter = range.first; clusIter != range.second; ++clusIter)
+      {
+        const auto cluskey = clusIter->first;
+        const auto cluster = clusIter->second;
+        const auto globalPos = node_acts_->getGlobalPosition(cluskey, cluster);
+
+        cluster->setPosition(0, globalPos.x());
+        cluster->setPosition(1, globalPos.y());
+        cluster->setPosition(2, globalPos.z());
+
+        pair<TrkrCluster *, const Acts::Vector3> val(cluster, globalPos);
+        values.push_back(val);
+      }
+    }
+  }
+
+  return values;
+}
+
+double AnalysisInttCosmicCommissioning::GetDistance(const Acts::Vector3 a, const Acts::Vector3 b, bool use_x, bool use_y, bool use_z)
+{
+  double num = 0.0;
+  if (use_x)
+    num += a.x() * b.x();
+
+  if (use_y)
+    num += a.y() * b.y();
+
+  if (use_z)
+    num += a.z() * b.z();
+
+  return sqrt(num);
 }
 
 int AnalysisInttCosmicCommissioning::GetNodes(PHCompositeNode *topNode)
@@ -195,8 +318,8 @@ int AnalysisInttCosmicCommissioning::GetNodes(PHCompositeNode *topNode)
   /////////////////////////////////////////////////////////////////////////
 
   //  List of Nodes in Fun4AllServer:
-  //Node Tree under TopNode TOP
-  //TOP (PHCompositeNode)/
+  // Node Tree under TopNode TOP
+  // TOP (PHCompositeNode)/
   //   DST (PHCompositeNode)/
   //      PHHepMCGenEventMap (IO,PHHepMCGenEventMap)
   //      PHG4INEVENT (PHDataNode)
@@ -313,103 +436,111 @@ int AnalysisInttCosmicCommissioning::GetNodes(PHCompositeNode *topNode)
   // INTT event header
   string node_name_intteventheader = "INTTEVENTHEADER";
   node_intteventheader_map_ =
-    findNode::getClass<InttEventInfo>(topNode, node_name_intteventheader );
+      findNode::getClass<InttEventInfo>(topNode, node_name_intteventheader);
 
-  if(!node_intteventheader_map_)
-    {
-      cerr << PHWHERE << node_name_intteventheader << " node is missing." << endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
+  if (!node_intteventheader_map_)
+  {
+    cerr << PHWHERE << node_name_intteventheader << " node is missing." << endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
 
   /////////////////////////////////////////////////////////////////////////
   // INTT raw hit
   string node_name_inttrawhit = "INTTRAWHIT";
   node_inttrawhit_map_ =
-    findNode::getClass<InttRawHitContainer>(topNode, node_name_inttrawhit );
+      findNode::getClass<InttRawHitContainer>(topNode, node_name_inttrawhit);
 
-  if(!node_inttrawhit_map_)
-    {
-      cerr << PHWHERE << node_name_inttrawhit << " node is missing." << endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-
+  if (!node_inttrawhit_map_)
+  {
+    cerr << PHWHERE << node_name_inttrawhit << " node is missing." << endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
 
   /////////////////////////////////////////////////////////////////////////
   // TrkrCluster
   // TRKR_CLUSTER node: Information of TrkrCluster
   string node_name_trkr_cluster = "TRKR_CLUSTER";
   node_cluster_map_ =
-    findNode::getClass<TrkrClusterContainerv4>(topNode, node_name_trkr_cluster);
+      findNode::getClass<TrkrClusterContainerv4>(topNode, node_name_trkr_cluster);
 
-  if(!node_cluster_map_ )
-    {
-      std::cerr << PHWHERE << node_name_trkr_cluster << " node is missing." << std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
+  if (!node_cluster_map_)
+  {
+    std::cerr << PHWHERE << node_name_trkr_cluster << " node is missing." << std::endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
 
   // ActsGeometry node: for the global coordinate
   string node_name_acts = "ActsGeometry";
   node_acts_ = findNode::getClass<ActsGeometry>(topNode, node_name_acts);
-  if( !node_acts_ )
-    {
-      std::cout << PHWHERE << node_name_acts << " node is missging." << std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-
+  if (!node_acts_)
+  {
+    std::cout << PHWHERE << node_name_acts << " node is missging." << std::endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
 
   return 0;
 }
 
-std::string  AnalysisInttCosmicCommissioning::Int2Coordinate( int num )
+std::string AnalysisInttCosmicCommissioning::Int2Coordinate(int num)
 {
-  if( num == 0 )
+  if (num == 0)
     return "x";
-  else if( num == 1 )
+  else if (num == 1)
     return "y";
-  else if( num == 2 )
+  else if (num == 2)
     return "z";
+  else if (num == 3)
+    return "r";
 
-  return "unkown_coordinate_num" + to_string( num );
+  return "unkown_coordinate_num" + to_string(num);
 }
 
-
-int AnalysisInttCosmicCommissioning::MakeGraphs( vector < pair < TrkrCluster*, const Acts::Vector3 > >& cluster_pos_pairs )
+int AnalysisInttCosmicCommissioning::MakeGraphs(vector<pair<TrkrCluster *, const Acts::Vector3>> &cluster_pos_pairs)
 {
   // init
-  for( unsigned int i=0; i<vcoordinates_.size(); i++ )
-    {
-      graphs_[i] = new TGraph();
-      graphs_[i]->SetMarkerStyle( 20 );
-      graphs_[i]->SetMarkerColor( kAzure + 1 );
-    }
-
-  for (auto &val : cluster_pos_pairs )
+  for (unsigned int i = 0; i < vcoordinates_.size(); i++)
   {
-    
+    graphs_[i] = new TGraph();
+    graphs_[i]->SetMarkerStyle(20);
+    graphs_[i]->SetMarkerColor(kAzure + 1);
+  }
+
+  for (auto &val : cluster_pos_pairs)
+  {
+
     auto cluster = val.first;
-    ROOT::Math::XYZVector vec( cluster->getPosition(0), cluster->getPosition(1), cluster->getPosition(2) );
-    positions_.push_back( vec );    
-    posX_.push_back( cluster->getPosition(0) );
-    posY_.push_back( cluster->getPosition(1) );
-    posZ_.push_back( cluster->getPosition(2) );
-    
+    ROOT::Math::XYZVector vec(cluster->getPosition(0), cluster->getPosition(1), cluster->getPosition(2));
+    positions_.push_back(vec);
+    posX_.push_back(cluster->getPosition(0));
+    posY_.push_back(cluster->getPosition(1));
+    posZ_.push_back(cluster->getPosition(2));
+    if (cluster->getPosition(1) > 0)
+      IsYFired_[0] = true; // cluster y>0
+    else
+      IsYFired_[1] = true; //cluster y<=0
     double rad = 0.0; // distance of the cluster point from the origin of the coodinate
     // loop over 3 graphs
-    for( unsigned int i=0; i<vcoordinates_.size(); i++ )
+    for (unsigned int i = 0; i < vcoordinates_.size(); i++)
+    {
+      if (vcoordinates_[i].first == 3 || vcoordinates_[i].second == 3) //If the coordinate is r
+        continue;
+      if (i < 2)
       {
-	rad += cluster->getPosition( i ) * cluster->getPosition( i ); // add a squared distance in i-th coordinate
-	graphs_[i]->AddPoint( cluster->getPosition( vcoordinates_[i].first),   // x, z, z
-			      cluster->getPosition( vcoordinates_[i].second) ); // y, y, x
-	
+        //radius in xy plane
+        rad += cluster->getPosition(i) * cluster->getPosition(i); // add a squared distance in i-th coordinate
       }
+      graphs_[i]->AddPoint(cluster->getPosition(vcoordinates_[i].first),   // x, z, z
+                           cluster->getPosition(vcoordinates_[i].second)); // y, y, x
+    }
 
     // Apply  squart. Sign depends on the sign of y coordinate.
-    rad = sqrt( rad ) * ( posY_[posY_.size()-1] <0 ? -1 : 1) ;
+    rad = sqrt(rad) * (posY_[posY_.size() - 1] < 0 ? -1 : 1);
+    //graph for rz plane
+    graphs_[3]->AddPoint(cluster->getPosition(2),rad);
 
-    radius_.push_back( rad );
-    adc_.push_back( cluster->getAdc() );
-    cluster_size_.push_back( cluster->getSize() );
-    
+    radius_.push_back(rad);
+    adc_.push_back(cluster->getAdc());
+    cluster_size_.push_back(cluster->getSize());
   }
 
   return 0;
@@ -418,29 +549,27 @@ int AnalysisInttCosmicCommissioning::MakeGraphs( vector < pair < TrkrCluster*, c
 int AnalysisInttCosmicCommissioning::ProcessEventRawHit()
 {
   auto raw_hit_num = node_inttrawhit_map_->get_nhits();
-  //cout << "#INTT RAW HIT:" << raw_hit_num << endl;
-  
+  cout << "#INTT RAW HIT:" << raw_hit_num << endl;
   for (unsigned int i = 0; i < raw_hit_num; i++)
+  {
+    auto hit = node_inttrawhit_map_->get_hit(i);
+    if (i == 0)
+      bco_ = hit->get_bco();
+    if (false)
     {
-      auto hit = node_inttrawhit_map_->get_hit(i);
-      if (i == 0)
-	bco_ = hit->get_bco();
-      
-      if (false)
-	{
-	  cout << setw(5) << i << " "
-	       << setw(4) << hit->get_packetid() << " "   // Packet ID
-	       << setw(2) << hit->get_fee() << " "        // FELIX CH (module)
-	       << setw(2) << hit->get_chip_id() << " "    // chip_id
-	       << setw(3) << hit->get_channel_id() << " " // chan_id
-	       << setw(1) << hit->get_adc() << " "        // adc
-	       << setw(3) << hit->get_FPHX_BCO() << " "   // bco
-	       << setw(12) << hit->get_bco() << " "       // bco_full
-	       << setw(3) << (hit->get_bco() & 0x7F) - hit->get_FPHX_BCO() << " "
-	       << endl;
-	}
+      cout << setw(5) << i << " "
+           << setw(4) << hit->get_packetid() << " "   // Packet ID
+           << setw(2) << hit->get_fee() << " "        // FELIX CH (module)
+           << setw(2) << hit->get_chip_id() << " "    // chip_id
+           << setw(3) << hit->get_channel_id() << " " // chan_id
+           << setw(1) << hit->get_adc() << " "        // adc
+           << setw(3) << hit->get_FPHX_BCO() << " "   // bco
+           << setw(12) << hit->get_bco() << " "       // bco_full
+           << setw(3) << (hit->get_bco() & 0x7F) - hit->get_FPHX_BCO() << " "
+           << endl;
     }
-  
+  }
+
   // cout << "#" << node_name_inttrawhit << " " << node_inttrawhit_map_->get_nhits() << "\t"
   //      << "#" << node_name_trkr_cluster << " " << node_cluster_map_->size()
   //      << endl;
@@ -456,60 +585,61 @@ int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
 {
   std::string outFilename = output_name_;
 
-  outFile_ = new TFile(outFilename.c_str(),"RECREATE");
+  outFile_ = new TFile(outFilename.c_str(), "RECREATE");
 
-  auto slash_position = output_name_.find_last_of( "/" );
-  if( slash_position == string::npos )
+  auto slash_position = output_name_.find_last_of("/");
+  if (slash_position == string::npos)
     slash_position = 0;
 
-  string output_basename = output_name_.substr( slash_position, output_name_.size() ); // including the prefix (.root)
+  string output_basename = output_name_.substr(slash_position, output_name_.size()); // including the prefix (.root)
+  output_pdf_ = output_basename.substr(0, output_basename.size() - 5) + ".pdf";
+  /*
+      string output_basename = output_name_.substr( slash_position, output_name_.size() ); // including the prefix (.root)
   output_pdf_ = output_name_.substr( 0, output_name_.find_last_of( "/" ) )  + "/../plots/"
     + output_basename.substr( 0, output_basename.size()-5 ) + ".pdf";
   
-  outTree_ = new TTree("cluster_tree","cluster_tree");
+  */
+  
+  outTree_ = new TTree("cluster_tree", "cluster_tree");
 
   // event information
-  outTree_ -> Branch("n_cluster",&n_cluster_);
-  outTree_ -> Branch("event",&misc_counter_); // misc_counter_ = event number
-  outTree_ -> Branch("bco",&bco_); // misc_counter_ = event number
+  outTree_->Branch("n_cluster", &n_cluster_);
+  outTree_->Branch("event", &misc_counter_); // misc_counter_ = event number
+  outTree_->Branch("bco", &bco_);            // misc_counter_ = event number
 
   // cluster information
-  outTree_ -> Branch("posX",&posX_);
-  outTree_ -> Branch("posY",&posY_);
-  outTree_ -> Branch("posZ",&posZ_);
-  outTree_ -> Branch( "pos", &positions_ );
-  //   std::vector < ROOT::Math::XYZVector > positions_;
-  
-  outTree_ -> Branch("radius",&radius_);
-  outTree_ -> Branch("adc",&adc_);
-  outTree_ -> Branch("cluster_size",&cluster_size_);
+  outTree_->Branch("posX", &posX_);
+  outTree_->Branch("posY", &posY_);
+  outTree_->Branch("posZ", &posZ_);
+
+  outTree_->Branch("radius", &radius_);
+  outTree_->Branch("adc", &adc_);
+  outTree_->Branch("cluster_size", &cluster_size_);
 
   // fitted line information
-  for( unsigned int i=0; i<vcoordinates_.size(); i++ )
-    {
-      string coordinate_name = Int2Coordinate( vcoordinates_[i].first  )
-	+ Int2Coordinate( vcoordinates_[i].second );
+  for (unsigned int i = 0; i < vcoordinates_.size(); i++)
+  {
+    string coordinate_name = Int2Coordinate(vcoordinates_[i].first) + Int2Coordinate(vcoordinates_[i].second);
 
-      string line_name = "line_" + coordinate_name;
-      outTree_ -> Branch ( line_name.c_str(), &lines_[i] );
+    string line_name = "line_" + coordinate_name;
+    outTree_->Branch(line_name.c_str(), &lines_[i]);
 
-      string slope_name = "slope_" + coordinate_name;
-      outTree_ -> Branch( slope_name.c_str() ,&slopes_[i] );
-      
-      string constant_name = "constant_" + coordinate_name;
-      outTree_ -> Branch( constant_name.c_str() ,&constants_[i] );
-      
-      string chi2ndf_name = "chi2ndf_" + coordinate_name;
-      outTree_ -> Branch( chi2ndf_name.c_str() ,&chi2ndfs_[i] );
+    string slope_name = "slope_" + coordinate_name;
+    outTree_->Branch(slope_name.c_str(), &slopes_[i]);
 
-      string average_dist_name = "average_dist_" + coordinate_name;
-      outTree_ -> Branch( average_dist_name.c_str() ,&average_distances_[i] );
-      
-    }
+    string constant_name = "constant_" + coordinate_name;
+    outTree_->Branch(constant_name.c_str(), &constants_[i]);
+
+    string chi2ndf_name = "chi2ndf_" + coordinate_name;
+    outTree_->Branch(chi2ndf_name.c_str(), &chi2ndfs_[i]);
+
+    string average_dist_name = "average_dist_" + coordinate_name;
+    outTree_->Branch(average_dist_name.c_str(), &average_distances_[i]);
+  }
+>>>>>>> 038eaa21d20835cad7724c8b31c200b9f64a5022
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
-
 
 int AnalysisInttCosmicCommissioning::InitRun(PHCompositeNode *topNode)
 {
@@ -522,13 +652,13 @@ int AnalysisInttCosmicCommissioning::InitRun(PHCompositeNode *topNode)
 
 int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
 {
-
   auto status = this->GetNodes(topNode);
   if (status == Fun4AllReturnCodes::ABORTEVENT)
     return Fun4AllReturnCodes::ABORTEVENT;
 
   cout << "Event: " << misc_counter_ << "\t"
        << setprecision(15) << setw(17) << node_intteventheader_map_->get_bco_full();
+  
   misc_counter_++;
   bco_ = node_intteventheader_map_->get_bco_full();
   
@@ -539,10 +669,10 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
          << "bco full: " << setw(16) << node_intteventheader_map_->get_bco_full()
          << endl;
   }
-
-  if( false )
+  bco_ = node_intteventheader_map_->get_bco_full();
+  if (false)
     this->ProcessEventRawHit();
-  
+
   auto cluster_pos_pair = this->GetClusters(); // vector < pair < TrkrCluster*, const Acts::vector3 > >
   if (cluster_pos_pair.size() != 0)
   {
@@ -558,6 +688,10 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   //  if (cluster_pos_pair.size() > 10 || cluster_pos_pair.size() < 3)
   //    return Fun4AllReturnCodes::EVENT_OK;
   
+  //    return Fun4AllReturnCodes::EVENT_OK;
+    if (cluster_pos_pair.size() > 5 || cluster_pos_pair.size() < 4)
+      return Fun4AllReturnCodes::EVENT_OK;
+
   vector<double> distances;
   for (int i = 0; i < int(cluster_pos_pair.size()); i++)
   {
@@ -572,21 +706,23 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     }
   }
 
-  this->MakeGraphs( cluster_pos_pair );
-  //if (*max_element(distances.begin(), distances.end()) < 8)
-  //  return Fun4AllReturnCodes::EVENT_OK;
-
+  this->MakeGraphs(cluster_pos_pair);
+  // if (*max_element(distances.begin(), distances.end()) < 8)
+  //   return Fun4AllReturnCodes::EVENT_OK;
+  if (!(IsYFired_[0] && IsYFired_[1]))
+    return Fun4AllReturnCodes::EVENT_OK;
+  
   this->Fit();
   /*
   TGraph *g = new TGraph(); //For xy plane
   g->SetMarkerStyle(20);
   g->SetMarkerColor(kBlue);
-  
+
   TGraph *g_2 = new TGraph(); // for rz plane
   g_2->SetMarkerStyle(20);
   g_2->SetMarkerColor(kBlue);
-  
-  
+
+
   if(g->GetN()>=4 && g->GetN()<=8) //Condition to draw pdf and outTree_->Fill()
   {
     /////////////////////////////// XY plane ////////////////////////////
@@ -602,10 +738,10 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
 
     slope_xy_ = fitFunc->GetParameter(1);
     constant_xy_ = fitFunc->GetParameter(0);
-    chi2_xy_ = fitFunc->GetChisquare(); 
-    ndf_xy_ = fitFunc->GetNDF(); 
+    chi2_xy_ = fitFunc->GetChisquare();
+    ndf_xy_ = fitFunc->GetNDF();
     chi2ndf_xy_ = chi2_xy_/ndf_xy_;
-    
+
     ///////////////////// Calculate the average distance ///////////////////
     double sumDistance = 0.0;
     for(int i=0;i<g->GetN();++i)
@@ -616,19 +752,19 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
       sumDistance += distance;
     }
     average_dist_xy_ = sumDistance / g->GetN();
-    
-    ////////////////////////////////// YZ plane ////////////////////////////// 
+
+    ////////////////////////////////// YZ plane //////////////////////////////
     c_->DrawFrame(-11, -25, 11, 25);
     g_2->Draw("P");
-    
-    TF1 *fitFunc_2 = new TF1("fitFunc_2", "[0] + [1]*x", -11, 11); 
+
+    TF1 *fitFunc_2 = new TF1("fitFunc_2", "[0] + [1]*x", -11, 11);
     g_2->Fit(fitFunc_2,"RQ");
-    c_->Update(); 
+    c_->Update();
     c_->Print("yz_plane.pdf");
     
     slope_yz_ = fitFunc_2->GetParameter(1);
     constant_yz_ = fitFunc_2->GetParameter(0);
-    chi2_yz_ = fitFunc_2->GetChisquare(); 
+    chi2_yz_ = fitFunc_2->GetChisquare();
     ndf_yz_ = fitFunc_2->GetNDF();
     sumDistance = 0.0;
 
@@ -653,7 +789,6 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   }
   */
 
-  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -676,7 +811,7 @@ int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
   posX_.clear();
   posY_.clear();
   posZ_.clear();
-  positions_.clear();  
+
   adc_.clear();
   cluster_size_.clear();
   n_cluster_ = 0;
@@ -687,17 +822,22 @@ int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
   slope_yz_ = -99999;
   constant_yz_ = -99999;
 
+  //initialize bool
+  IsYFired_[0] = false;
+  IsYFired_[1] = false;
+  
+  //Event counter
+  misc_counter_++;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-
 int AnalysisInttCosmicCommissioning::EndRun(const int runnumber)
 {
+
   c_->Print( (output_pdf_+"]").c_str() );
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
-
 
 int AnalysisInttCosmicCommissioning::End(PHCompositeNode *topNode)
 {
@@ -715,13 +855,11 @@ int AnalysisInttCosmicCommissioning::End(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-
 int AnalysisInttCosmicCommissioning::Reset(PHCompositeNode *topNode)
 {
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
-
 
 void AnalysisInttCosmicCommissioning::Print(const std::string &what) const
 {
@@ -745,6 +883,16 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
       cerr << "No file is set. Something wrong." << endl;
       return;
     }
+
+  if( path != "" ) // If nothing is give, something in data_ is used anyway. It's useful for updating the output path.
+    data_ = path; // the path to the DST data
+
+  if( data_ == "" )
+    {
+      cerr << "void AnalysisInttCosmicCommissioning::SetData(const std::string path )" << endl;
+      cerr << "No file is set. Something wrong." << endl;
+      return;
+    }
   
   ////////////////////////////////////////////////////////////////////////////////
   // information /////////////////////////////////////////////////////////////////
@@ -754,7 +902,7 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
   //run_num_str = run_num_str.substr( 1, run_num_str.size() - string( ".root" ).size() );
 
   string run_num_str = data_.substr( data_.find_last_of( "/" ), data_.size() ); // removing path
-  
+
   // /DST_cosmics_intt_00038984_no_hot_clusterized.root -> cosmics_intt_00038984_no_hot_clusterized.root
   run_num_str = run_num_str.substr( run_num_str.find_first_of( "_" )+1, run_num_str.size() );
 
@@ -766,7 +914,7 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
 
   // 00038984_no_hot_clusterized.root -> 00038984
   run_num_str = run_num_str.substr( 0, run_num_str.find_first_of( "_" ) );
-  
+
   run_num_ = stoi( run_num_str );
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -786,7 +934,7 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
     }
 
   output_pdf_ += data_basename + ".pdf";
-  
+
   cout << "PDF output: " << output_pdf_ << endl;
 }
 
