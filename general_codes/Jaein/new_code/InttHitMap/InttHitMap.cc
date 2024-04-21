@@ -30,6 +30,13 @@ InttHitMap::InttHitMap(const std::string &name, const std::string &filename, int
 // Destructor
 InttHitMap::~InttHitMap()
 {
+  for (int i = 0; i < 8; i++)
+  {
+    for (int j = 0; j < 14; j++)
+    {
+      delete h2_AllMap_[i][j];
+    }
+  }
 }
 
 /**
@@ -174,7 +181,7 @@ int InttHitMap::SetFeeMapFile(const char *feemapfile)
   feemapname_ = feemapfile;
   if (fee_map.LoadFromFile(feemapname_))
   {
-    std::cerr << "failed to load fee map" << std::endl;
+    std::cerr << "InttHitMap::failed to load fee map" << std::endl;
     return 1;
   }
   return 0;
@@ -182,16 +189,16 @@ int InttHitMap::SetFeeMapFile(const char *feemapfile)
 
 int InttHitMap::SetBCOFile(const char* bcofile)
 {
-  if(!isBCOcutON_)
+  if(!isBCOcutON_ && Verbosity() > 5 )
   {
-    std::cout<<"BCO cut option is OFF. isBCOcutON_ == false)"<<std::endl;
+    std::cout<<"InttHitMap::BCO cut option is OFF. isBCOcutON_ == false)"<<std::endl;
     return 0;
   }
   bcofname_ = std::string(bcofile);
   inBCOFile_ = TFile::Open(bcofname_.c_str());
   if(inBCOFile_ == nullptr)
   {
-    std::cout<<"BCO file is not sucessfully loaded."<<std::endl;
+    std::cout<<"InttHitMap::BCO file is not sucessfully loaded."<<std::endl;
     return 0;
   }
  
@@ -243,11 +250,5 @@ bool InttHitMap::FillHitMap(int in_felix, int in_module, int in_barrel, int in_c
     }
     h2_AllMap_[in_felix][in_module]->Fill(in_chan, in_chip, 1. / (norm_factor));
   }
-  return true;
-}
-
-bool InttHitMap::DoClassification()
-{
-  //////////////////////NOTE this function has to be updated/////////
   return true;
 }

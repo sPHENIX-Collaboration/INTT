@@ -41,7 +41,6 @@ class InttHitMap : public SubsysReco
   int SetFeeMapFile(const char* feemapfile);
   InttFeeMapv1 fee_map;
   bool FillHitMap(int felix, int moudle, int barrel, int chip, int chan);
-  bool DoClassification(); // not used
 
   ///////////////////////////////////
 
