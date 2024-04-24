@@ -41,6 +41,7 @@ int InttCosmicsHotMap::Init(PHCompositeNode * /*topNode*/)
   {
     std::cout << "Beginning Init in InttCosmicsHotMap" << std::endl;
   }
+  
   outFile_ = new TFile(outfname_.c_str(), "RECREATE");
   for (int i = 0; i < 8; i++)
   {
