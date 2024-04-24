@@ -10,6 +10,11 @@ bool IsFileExist( const std::string& name )
   return (stat(name.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode));
 }
 
+string GetRunNum8digits( int run_num )
+{
+  return string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num );
+}
+
 string GetRunType( int run_num = 26975 )
 {
   for( int i=0; i<kRun_type_num; i++ )
