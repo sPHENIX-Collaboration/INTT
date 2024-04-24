@@ -1,108 +1,43 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <cdbobjects/CDBTTree.h>
+#include "InttChannelClassifier_cosmics.hh"
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TDirectory.h"
-#include "TCanvas.h"
-#include "TH1D.h"
-#include "TH2D.h"
-
-R__LOAD_LIBRARY(libcdbobjects.so)
-
-using namespace std;
-//////////////
-// Funtions //
-//////////////
-double SingleGaussianFit(TH1D *hist, double &mean1, double &sigma1); 
-//Function to do fitting return value : value for HotChannel cut
-
-void GetFirstFilledBinCenter(TH1D *hist, double &a, double &b);      
-//Function to find bin center not used for now.                                                                    
-
-/////////////////////
-//Global parameters//
-/////////////////////
-int chip = 26;
-int mod = 14;
-double sig_cut = 3.0;
-bool Writecsv = false;
-//chip : # of chips on each half ladder(defalt : 26)
-//mod : # of moudles for each felix server(default : 14)
-//sig_cut : sigma cut for hot/cold channel determination default : 4.0
-//Writecsv : flag to write csv file (default : false )
-
-/////////////
-//File Path//
-/////////////
-//std::string map_input_path =  "/sphenix/tg/tg01/commissioning/INTT/QA/hitmap/2024/";
-std::string map_input_path =  "./";
-std::string root_output_path = "./";
-std::string cdb_output_path = "./";
-//std::string csv_output_path = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/HitMap/GaussianClassifier/macro/";
-//map_input_path : location of the HitMap file 
-//root_output_path : output file path
-//cdb_output_path : cdb output file path 
-//csv_output_path : csv output file path (used for Grafana online monitoring)
-
-
-struct Half_Chip {
-  int felix_id_;
-  int module_id_;
-  int chip_id_;
-};
-////////////////////////////
-//List of Half entry chips//
-////////////////////////////
-std::vector<Half_Chip> half_chips = // Chip number 0~25
-    {
-        // Felix 0
-        {0, 7, 14},
-        // Felix 2
-        {2, 9, 15},
-        // Felix 3
-        {3, 13, 20},
-        {3, 13, 22},
-        {3, 13, 24},
-        // Felix 7
-        {7, 0, 0},
-        {7, 0, 1},
-        {7, 0, 2},
-        {7, 0, 3},
-        {7, 0, 4},
-        {7, 0, 13},
-        {7, 0, 14},
-        {7, 0, 15},
-        {7, 0, 16},
-        {7, 0, 17},
-        {7, 0, 6},
-        {7, 0, 8},
-        {7, 0, 10},
-        {7, 0, 12},
-        {7, 0, 19},
-        {7, 0, 21},
-        {7, 0, 23},
-        {7, 0, 25},
-        {7, 1, 0},
-        {7, 1, 1},
-};
-
+/*!
+  @brief A macro to creat a hot channel map using a hitmap
+  @author J. Hwang (Korea Univ.)
+ */
 void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
 {
-  gStyle->SetOptFit();
+  
+  
   ////////////////////////////////////////
   // Load HitMap                        //
   ////////////////////////////////////////
-  int in_sig = 10*sig_cut;
-  std::string rootfilename = map_input_path + "hitmap_run" + to_string(runnumber) + ".root";
-  std::string cdbttree_name = cdb_output_path + "cdb_"+to_string(runnumber)+".root";
+  Classifier* cl = new Classifier( runnumber );
+  if( false )
+    {
+      cl->SetQaRootOutputDir( "./" );
+      cl->SetQaPdfOutputDir( "./" );
+    }
+
+  cl->Process();
+  cl->WriteResults();
+  cl->Print();
+  return;
+}
+
+void aaaa( int runnumber )
+{
+  int in_sig = 10 * sig_cut;
+  //  string run_num_str = to_string(runnumber);
+  string run_num_str = to_string(runnumber);
+  //std::string rootfilename = map_input_path + "hitmap_run" + to_string(runnumber) + ".root";
+  std::string rootfilename = kIntt_hitmap_dir + "hitmap_run" + run_num_str + ".root";
   TFile *file = nullptr;
   file = TFile::Open(rootfilename.c_str(), "READ");
   
-  
+  //std::string cdbttree_name = cdb_output_path + "cdb_"+run_num_str+".root";
+  std::string cdbttree_name = kIntt_cdb_dir + "cdb_" + run_num_str + ".root";
+  CDBTTree *cdbttree = new CDBTTree(cdbttree_name);
+    
   ///////////////////////////////////////////////////
   // Create Histogram for check MPV hit rate       //
   ///////////////////////////////////////////////////
@@ -130,6 +65,7 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
       h2_DeadMap[i][j] = new TH2D(Form("DeadMap_%d_%d", i, j), Form("DeadMap_%d_%d", i, j), 128, 0, 128, 27, 0, 27);
     }
   }
+  
   //////////////////////////////////////////
   // Define condition for the hot channel //
   //////////////////////////////////////////
@@ -141,6 +77,7 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
   double par_sigmaA[8][14] = {0.}; // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
   double par_meanB[8][14] = {0.};  // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
   double par_sigmaB[8][14] = {0.}; // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
+
   /////////////////////////////////////////////////
   // Create TFile and TTree to save information  //
   // TTree is mainly used to convert to CDBTTree //
@@ -154,7 +91,11 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
   //   std::cerr << "Unable to open the file." << std::endl;
   //   return;
   // }
-  std::string outputfile = root_output_path + "InttHotDeadMap_"+to_string(runnumber)+"_"+to_string(in_sig)+".root";
+  
+  //std::string outputfile = root_output_path + "InttHotDeadMap_"+to_string(runnumber)+"_"+to_string(in_sig)+".root";
+  std::string outputfile = kIntt_hitmap_dir + "plots/"
+    + "InttHotDeadMap_" + run_num_str + "_" + to_string(in_sig) + ".root";
+  
   //TFile *sfile = new TFile(Form("./rootfile/InttHotDeadMap_%d_%d.root", runnumber, in_sig), "RECREATE");
   TFile *sfile = new TFile(outputfile.c_str(), "RECREATE");
   TTree *st = new TTree("tree", "tree");
@@ -182,51 +123,66 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
     canA[i]->Divide(7, 2);
     canB[i]->Divide(7, 2);
   }
+
   TH1D *h1_hist_fit_A[8][14];
   TH1D *h1_hist_fit_B[8][14];
-  double mean_first = 0;
+  //double mean_first = 0; // not used...
+  
+  // loop over all channels of all to fill histograms
   for (int felix = 0; felix < 8; felix++)
   {
     for (int i = 0; i < 14; i++)
     {
-      h1_hist_fit_A[felix][i] = new TH1D(Form("h1_hist_fit_A%d_%d", felix, i), Form("h1_hist_fit_A%d_%d", felix, i), 200, 1, 201);
-      h1_hist_fit_B[felix][i] = new TH1D(Form("h1_hist_fit_B%d_%d", felix, i), Form("h1_hist_fit_B%d_%d", felix, i), 200, 1, 201);
+      h1_hist_fit_A[felix][i] = new TH1D(Form("h1_hist_fit_A%d_%d", felix, i),
+					 Form("h1_hist_fit_A%d_%d", felix, i),
+					 200, 1, 201);
+      h1_hist_fit_B[felix][i] = new TH1D(Form("h1_hist_fit_B%d_%d", felix, i),
+					 Form("h1_hist_fit_B%d_%d", felix, i),
+					 200, 1, 201);
+
+      // loop over all chips in this ladder
       for (int j = 0; j < 26; j++)
       {
+
+	// loop over all channels in this chip
         for (int chan = 0; chan < 128; chan++)
         {
           int NumberOfEntry = h2_AllMap[felix][i]->GetBinContent(chan+1,j+1);
           if(NumberOfEntry!=0)
           {
             NumberOfFiredChan[felix][i]++;
+	    auto content = h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1);
             if (j < 5 || (j > 12 && j < 18)) // Condition for type B
             {
-              h1_hist_fit_B[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-              h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
+              h1_hist_fit_B[felix][i]->Fill( content );
+              h1_hist_MPV->Fill( content );
             }
-            else
+            else // in the case of type-A
             {
-              h1_hist_fit_A[felix][i]->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-              h1_hist_MPV->Fill(h2_AllMap[felix][i]->GetBinContent(chan + 1, j + 1));
-            }
-          }
-        }
+
+              h1_hist_fit_A[felix][i]->Fill( content );
+              h1_hist_MPV->Fill( content );
+            } // if
+          } // for( chan )
+        } // for( chip )
       }
-      double mean, sigma;
+      
       h1_hist_MPV_ladder->Fill(NumberOfFiredChan[felix][i]);
       canA[felix]->cd(i + 1);
-      std::cout << "CHENCK !! Felix : " << felix << " module : " << i << std::endl;
-    }
-  }
+      //std::cout << "CHENCK !! Felix : " << felix << " module : " << i << std::endl;
+      
+    } // for( ladder )
+  } // for( felix )
 
   sfile->cd();
   h1_hist_MPV->Write();
   h1_hist_MPV_ladder->Write();
+  
   int hotchannelcut = h1_hist_MPV->GetXaxis()->GetBinCenter(h1_hist_MPV->GetMaximumBin()) * 2;
-  double hotladdercut = h1_hist_MPV_ladder->GetMean()*5;
+  double hotladdercut = h1_hist_MPV_ladder->GetMean() * 5;
   std::cout << "hot channel cut : " << hotchannelcut << std::endl;
   std::cout << "hot ladder cut : " << hotladdercut << std::endl;
-  CDBTTree *cdbttree = new CDBTTree(cdbttree_name);
+  
   int size = 0;
   TDirectory *dir[8];
   for (int felix = 0; felix < 8; felix++)
@@ -235,16 +191,19 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
     dir[felix]->cd();
     for (int i = 0; i < 14; i++)
     {
+
+      // ???
       if(NumberOfFiredChan[felix][i]>hotladdercut)
        {
         std::cout<<"HERE IS HOT LADDER"<<std::endl;
         std::cout<< felix<<" "<< i<<std::endl;
        }
-    //  cout << "HELLO moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
-    //  cout << "HELLO moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
+      //  cout << "HELLO moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
+      //  cout << "HELLO moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
+      
       for (int j = 0; j < 26; j++)
       {
-    //    cout << "Felix : " << felix << " moudle : " << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
+	//    cout << "Felix : " << felix << " moudle : " << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
        
         for (int chan = 0; chan < 128; chan++)
         {
@@ -256,11 +215,13 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
           chip_id_ = j;
           chan_ = chan;
           flag_ = 0;
+	  
           // if (felix_ > 3) // Masking all north side
           // {
           //     flag_ = 8;
           // }
-          if (ch_entry > hotchannelcut || NumberOfFiredChan[felix][i]>hotladdercut)
+	  
+          if (ch_entry > hotchannelcut || NumberOfFiredChan[felix][i]>hotladdercut )
           //if (ch_entry > hotchannelcut)
           {
             flag_ = 8;
@@ -304,6 +265,7 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
     canA[felix]->Write();
     canB[felix]->Write();
   }
+  
   cdbttree->SetSingleIntValue("size", size);
   cdbttree->Commit();
   cdbttree->CommitSingle();
@@ -318,5 +280,9 @@ void InttChannelClassifier_cosmics(int runnumber = 39367) //runnumber
 
   sfile->Close();
   file->Close();
-}
+  cout << "  Input:  " << rootfilename << endl;
+  cout << "  Output: " << cdbttree_name << endl;
+  cout << "  Output: " << outputfile << endl;
 
+  return;
+}

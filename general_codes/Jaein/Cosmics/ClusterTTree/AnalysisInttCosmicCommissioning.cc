@@ -30,11 +30,14 @@ AnalysisInttCosmicCommissioning::AnalysisInttCosmicCommissioning(const std::stri
     double xmax = (vcoordinates_[i].first == 2 ? 25 : 11);
     lines_[i] = new TF1(name.c_str(), "pol1", -xmax, xmax);
   }
+
 }
 
 AnalysisInttCosmicCommissioning::~AnalysisInttCosmicCommissioning()
 {
 }
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 // private ///////////////////////////////////////////////////////////////////
@@ -53,32 +56,52 @@ void AnalysisInttCosmicCommissioning::DrawIntt(double xmax, double ymax)
       circle->Draw("same");
     }
   }
+  else // z-y or z-x
+    {
+      for( int i=0; i<4; i++ )
+	{
+	  auto box = new TBox( -20, -kLayer_radii[i], 20, kLayer_radii[i] );
+	  box->SetLineColorAlpha( kGray, 0.5 );
+	  box->SetLineWidth( 2 );
+	  box->SetFillStyle( 0 );
+	  box->Draw( "same" );
+	}
+    }
 }
 
 int AnalysisInttCosmicCommissioning::Fit()
 {
 
+  bool is_fitting_good = false;
+  c_->Clear();
+  c_->Divide(2, 2);
+  
   for (unsigned int i = 0; i < vcoordinates_.size(); i++)
   {
     // if (graphs_[i]->GetN() < 4 || graphs_[i]->GetN() > 8) // Condition to draw pdf and outTree_->Fill()
     //   return 0; // Not used. Event selection should be done in process_event.
 
-    graphs_[i]->Fit(lines_[i], "RQN");
-    constants_[i] = lines_[i]->GetParameter(0);
-    slopes_[i] = lines_[i]->GetParameter(1);
-    chi2ndfs_[i] = lines_[i]->GetChisquare() / lines_[i]->GetNDF();
-
-    ///////////////////// Calculate the average distance ///////////////////
-    double sumDistance = 0.0;
-    for (int i = 0; i < graphs_[i]->GetN(); ++i)
-    {
-      double x, y;
-      graphs_[i]->GetPoint(i, x, y);
-      double distance = TMath::Abs((slopes_[i] * x - y + constants_[i])) / TMath::Sqrt(1 + slopes_[i] * slopes_[i]);
-      sumDistance += distance;
-    }
-    average_distances_[i] = sumDistance / graphs_[i]->GetN();
-
+    if( IsFittable( graphs_[i] ) == true )
+      {
+	graphs_[i]->Fit(lines_[i], "RQN");
+	
+	constants_[i] = lines_[i]->GetParameter(0);
+	slopes_[i] = lines_[i]->GetParameter(1);
+	chi2ndfs_[i] = lines_[i]->GetChisquare() / lines_[i]->GetNDF();
+	
+	///////////////////// Calculate the average distance ///////////////////
+	double sumDistance = 0.0;
+	for (int i = 0; i < graphs_[i]->GetN(); ++i)
+	  {
+	    double x, y;
+	    graphs_[i]->GetPoint(i, x, y);
+	    double distance = TMath::Abs((slopes_[i] * x - y + constants_[i])) / TMath::Sqrt(1 + slopes_[i] * slopes_[i]);
+	    sumDistance += distance;
+	  }
+	average_distances_[i] = sumDistance / graphs_[i]->GetN();
+	
+      }
+    
     graphs_[i]->SetTitle(Form("Event : %d", misc_counter_));
     int x_axis_num = vcoordinates_[i].first;
     int y_axis_num = vcoordinates_[i].second;
@@ -88,7 +111,7 @@ int AnalysisInttCosmicCommissioning::Fit()
     c_->cd(i + 1);
     if (i == 2)
       c_->cd(4);
-    if (i == 3)
+    else if (i == 3)
       c_->cd(3);
 
     string frame_title = Int2Coordinate(x_axis_num) + " vs " + Int2Coordinate(y_axis_num) +" Event : "+std::to_string(misc_counter_) +";" // pad title
@@ -106,9 +129,26 @@ int AnalysisInttCosmicCommissioning::Fit()
     c_->Update();
   }
 
-  c_->Print(output_pdf_.c_str());
+  if( IsYFired_[0] && IsYFired_[1] )
+    {
+      if( print_counter_ < 101 )
+	{
+	  c_->Print(output_pdf_file_.c_str());
+	}
+      print_counter_++;
+    }
+  
   n_cluster_ = posX_.size();
+
+  // evaluate fitting quality
+  if( is_fitting_good == true )
+    {
+      slope_consistency_ = (slopes_[0] - (slopes_[2] / slopes_[1]) ) / slopes_[0]; // {a - e/c} / a 
+      constant_consistency_ = (constants_[0] - (constants_[2] - constants_[1]) / slopes_[1] ) / constants_[0]; // {b - (f-d)/c} / b
+    }
+  
   outTree_->Fill();
+  std::cout << outTree_->GetEntries() << std::endl;
 
   return 0;
 }
@@ -346,6 +386,32 @@ int AnalysisInttCosmicCommissioning::GetNodes(PHCompositeNode *topNode)
   return 0;
 }
 
+void AnalysisInttCosmicCommissioning::InitPaths()
+{
+  /*
+  auto slash_position = output_name_.find_last_of("/");
+  if (slash_position == string::npos)
+    slash_position = 0;
+  else
+    slash_position++;
+      
+  string output_basename = output_name_.substr(slash_position, output_name_.size()); // including the prefix (.root)
+  output_pdf_ = output_basename.substr(0, output_basename.size() - 5) + ".pdf";
+  
+  / *
+      string output_basename = output_name_.substr( slash_position, output_name_.size() ); // including the prefix (.root)
+  output_pdf_ = output_name_.substr( 0, output_name_.find_last_of( "/" ) )  + "/../plots/"
+    + output_basename.substr( 0, output_basename.size()-5 ) + ".pdf";
+  
+  */
+
+  string output_root_path = output_path_ + "root/" + to_string( year_ ) + "/";
+  output_root_file_ = output_root_path + output_name_;
+  
+  string output_pdf_path = output_path_ + "plots/" + to_string( year_ ) + "/";
+  output_pdf_file_ = output_pdf_path + output_name_.substr( 0, output_name_.size() - 5 ) + ".pdf";
+}
+
 std::string AnalysisInttCosmicCommissioning::Int2Coordinate(int num)
 {
   if (num == 0)
@@ -360,12 +426,40 @@ std::string AnalysisInttCosmicCommissioning::Int2Coordinate(int num)
   return "unkown_coordinate_num" + to_string(num);
 }
 
-int AnalysisInttCosmicCommissioning::MakeGraphs(vector<pair<TrkrCluster *, const Acts::Vector3>> &cluster_pos_pairs)
+bool AnalysisInttCosmicCommissioning::IsFittable( TGraphErrors* g )
+{
+  /*!
+    @brief Check whether this graph can be fitting with pol1
+    @details If all clusters are on the same chip columns, they have the same z-coordinate (if ladder positions are not modified by the survery geometry). In this case, this graph cannot be fitted.
+  */
+
+  // get all x values
+  vector < double > values;
+  for( int i=0; i<g->GetN(); i++ )
+    {
+      double x, y;
+      g->GetPoint( i, x, y );
+      values.push_back( x );
+    }
+
+  // compare y values
+  for( unsigned int i=1; i<values.size(); i++ )
+    {
+      // if the difference is larger than the length of a chip type-A, it's OK to be fitted.
+      if( fabs(values[0] - values[i]) >= 0.16 )
+	return true;
+    }
+
+  // If you come here, all comparisons showed smaller value than the length of a chip type-A. OK, don't fit.
+  return false;
+}
+
+int AnalysisInttCosmicCommissioning::MakeGraphs(vector<pair<TrkrCluster *, const Acts::Vector3> > &cluster_pos_pairs)
 {
   // init
   for (unsigned int i = 0; i < vcoordinates_.size(); i++)
   {
-    graphs_[i] = new TGraph();
+    graphs_[i] = new TGraphErrors();
     graphs_[i]->SetMarkerStyle(20);
     graphs_[i]->SetMarkerColor(kAzure + 1);
   }
@@ -374,30 +468,34 @@ int AnalysisInttCosmicCommissioning::MakeGraphs(vector<pair<TrkrCluster *, const
   {
 
     auto cluster = val.first;
-    ROOT::Math::XYZVector vec(cluster->getPosition(0), cluster->getPosition(1), cluster->getPosition(2));
-    positions_.push_back(vec);
+
     posX_.push_back(cluster->getPosition(0));
     posY_.push_back(cluster->getPosition(1));
     posZ_.push_back(cluster->getPosition(2));
+    
     if (cluster->getPosition(1) > 0)
       IsYFired_[0] = true; // cluster y>0
     else
       IsYFired_[1] = true; //cluster y<=0
+    
     double rad = 0.0; // distance of the cluster point from the origin of the coodinate
     // loop over 3 graphs
     for (unsigned int i = 0; i < vcoordinates_.size(); i++)
     {
       if (vcoordinates_[i].first == 3 || vcoordinates_[i].second == 3) //If the coordinate is r
-        continue;
-      if (i < 2)
-      {
-        //radius in xy plane
-        rad += cluster->getPosition(i) * cluster->getPosition(i); // add a squared distance in i-th coordinate
-      }
+	{
+	  continue;
+	}
+      else if (i < 2)
+	{
+	  //radius in xy plane
+	  rad += cluster->getPosition(i) * cluster->getPosition(i); // add a squared distance in i-th coordinate
+	}
+      
       graphs_[i]->AddPoint(cluster->getPosition(vcoordinates_[i].first),   // x, z, z
                            cluster->getPosition(vcoordinates_[i].second)); // y, y, x
     }
-
+    
     // Apply  squart. Sign depends on the sign of y coordinate.
     rad = sqrt(rad) * (posY_[posY_.size() - 1] < 0 ? -1 : 1);
     //graph for rz plane
@@ -406,6 +504,8 @@ int AnalysisInttCosmicCommissioning::MakeGraphs(vector<pair<TrkrCluster *, const
     radius_.push_back(rad);
     adc_.push_back(cluster->getAdc());
     cluster_size_.push_back(cluster->getSize());
+
+    //cout << cluster->getPosition(2) << "\t" << cluster->getPhiSize() << "\t" << cluster->getZSize() << endl;
   }
 
   return 0;
@@ -441,22 +541,17 @@ int AnalysisInttCosmicCommissioning::ProcessEventRawHit()
   return 0;
 }
 
+
 //////////////////////////////////////////////////////////////////////////////
 // public ///////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
 int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
 {
-  std::string outFilename = output_name_;
+  InitPaths();
+  std::string outFilename = output_root_file_; // output_name_;
 
   outFile_ = new TFile(outFilename.c_str(), "RECREATE");
-
-  auto slash_position = output_name_.find_last_of("/");
-  if (slash_position == string::npos)
-    slash_position = 0;
-
-  string output_basename = output_name_.substr(slash_position, output_name_.size()); // including the prefix (.root)
-  output_pdf_ = output_basename.substr(0, output_basename.size() - 5) + ".pdf";
 
   outTree_ = new TTree("cluster_tree", "cluster_tree");
 
@@ -469,8 +564,6 @@ int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
   outTree_->Branch("posX", &posX_);
   outTree_->Branch("posY", &posY_);
   outTree_->Branch("posZ", &posZ_);
-  //outTree_->Branch("pos", &positions_);
-  //   std::vector < ROOT::Math::XYZVector > positions_;
 
   outTree_->Branch("radius", &radius_);
   outTree_->Branch("adc", &adc_);
@@ -497,15 +590,17 @@ int AnalysisInttCosmicCommissioning::Init(PHCompositeNode *topNode)
     outTree_->Branch(average_dist_name.c_str(), &average_distances_[i]);
   }
 
+  outTree_->Branch( "slope_consistency", &slope_consistency_ );
+  outTree_->Branch( "constant_consistency", &constant_consistency_ );
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int AnalysisInttCosmicCommissioning::InitRun(PHCompositeNode *topNode)
 {
-
-  c_->Print((output_pdf_ + "[").c_str());
-  this->ResetEvent(topNode);
-
+  
+  c_->Print( (output_pdf_file_+"[").c_str() );
+  this->ResetEvent( topNode );
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -515,10 +610,13 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   if (status == Fun4AllReturnCodes::ABORTEVENT)
     return Fun4AllReturnCodes::ABORTEVENT;
 
-  cout << "Event: " << misc_counter_ << "\t"
-       << setprecision(15) << setw(17) << node_intteventheader_map_->get_bco_full();
-
-  if (true)
+  // cout << "Event: " << misc_counter_ << "\t"
+  //      << setprecision(15) << setw(17) << node_intteventheader_map_->get_bco_full();
+  
+  misc_counter_++;
+  bco_ = node_intteventheader_map_->get_bco_full();
+  
+  if (false)
   {
     cout << string(50, '=') << "\n"
          << " Event information: "
@@ -530,21 +628,20 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
     this->ProcessEventRawHit();
 
   auto cluster_pos_pair = this->GetClusters(); // vector < pair < TrkrCluster*, const Acts::vector3 > >
-  if (cluster_pos_pair.size() != 0)
-  {
-    cout << setw(5) << cluster_pos_pair.size()
-         << endl;
-  }
 
-  
   ////////////////////////////////////////////////////////////////////////////////
   // event selection /////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   //  if (raw_hit_num > 40)
+  //    return Fun4AllReturnCodes::EVENT_OK;  
+  //  if (cluster_pos_pair.size() > 10 || cluster_pos_pair.size() < 3)
+  //    return Fun4AllReturnCodes::EVENT_OK;  
   //    return Fun4AllReturnCodes::EVENT_OK;
-    if (cluster_pos_pair.size() > 5 || cluster_pos_pair.size() < 4)
-      return Fun4AllReturnCodes::EVENT_OK;
 
+  // analyze events having 4 <= #cluster <= 5 only
+  if (cluster_pos_pair.size() < 4 || cluster_pos_pair.size() > 5 )
+    return Fun4AllReturnCodes::EVENT_OK;
+  
   vector<double> distances;
   for (int i = 0; i < int(cluster_pos_pair.size()); i++)
   {
@@ -562,85 +659,11 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
   this->MakeGraphs(cluster_pos_pair);
   // if (*max_element(distances.begin(), distances.end()) < 8)
   //   return Fun4AllReturnCodes::EVENT_OK;
-  if (!(IsYFired_[0] && IsYFired_[1]))
-    return Fun4AllReturnCodes::EVENT_OK;
+  
+  // if (!(IsYFired_[0] && IsYFired_[1]))
+  //   return Fun4AllReturnCodes::EVENT_OK;
   
   this->Fit();
-  /*
-  TGraph *g = new TGraph(); //For xy plane
-  g->SetMarkerStyle(20);
-  g->SetMarkerColor(kBlue);
-
-  TGraph *g_2 = new TGraph(); // for rz plane
-  g_2->SetMarkerStyle(20);
-  g_2->SetMarkerColor(kBlue);
-
-
-  if(g->GetN()>=4 && g->GetN()<=8) //Condition to draw pdf and outTree_->Fill()
-  {
-    /////////////////////////////// XY plane ////////////////////////////
-    g->SetTitle(Form("Event : %d", misc_counter_));
-    c_->DrawFrame(-11, -11, 11, 11);
-    c_->SetTitle(Form("Event : %d", misc_counter_));
-    g->Draw("P");
-
-    TF1 *fitFunc = new TF1("fitFunc", "[0] + [1]*x", -11, 11); // y=ax+b
-    g->Fit(fitFunc,"RQ");
-    c_->Update();
-    c_->Print("xy_plane.pdf");
-
-    slope_xy_ = fitFunc->GetParameter(1);
-    constant_xy_ = fitFunc->GetParameter(0);
-    chi2_xy_ = fitFunc->GetChisquare();
-    ndf_xy_ = fitFunc->GetNDF();
-    chi2ndf_xy_ = chi2_xy_/ndf_xy_;
-
-    ///////////////////// Calculate the average distance ///////////////////
-    double sumDistance = 0.0;
-    for(int i=0;i<g->GetN();++i)
-    {
-      double x,y;
-      g->GetPoint(i,x,y);
-      double distance = TMath::Abs((slope_xy_*x-y+constant_xy_)) / TMath::Sqrt(1+slope_xy_*slope_xy_);
-      sumDistance += distance;
-    }
-    average_dist_xy_ = sumDistance / g->GetN();
-
-    ////////////////////////////////// YZ plane //////////////////////////////
-    c_->DrawFrame(-11, -25, 11, 25);
-    g_2->Draw("P");
-
-    TF1 *fitFunc_2 = new TF1("fitFunc_2", "[0] + [1]*x", -11, 11);
-    g_2->Fit(fitFunc_2,"RQ");
-    c_->Update();
-    c_->Print("yz_plane.pdf");
-
-    slope_yz_ = fitFunc_2->GetParameter(1);
-    constant_yz_ = fitFunc_2->GetParameter(0);
-    chi2_yz_ = fitFunc_2->GetChisquare();
-    ndf_yz_ = fitFunc_2->GetNDF();
-    sumDistance = 0.0;
-
-    for (int i = 0; i < g->GetN(); ++i)
-    {
-      double x, y;
-      g->GetPoint(i, x, y);
-      double distance = TMath::Abs((slope_yz_ * x - y + constant_yz_)) / TMath::Sqrt(1 + slope_yz_ * slope_yz_);
-      sumDistance += distance;
-    }
-
-    average_dist_yz_ = sumDistance / g->GetN();
-
-    chi2ndf_yz_ = chi2_yz_/ndf_yz_;
-
-    n_cluster_ = posX_.size();
-    outTree_->Fill();
-
-
-    delete fitFunc;
-    delete fitFunc_2;
-  }
-  */
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -648,31 +671,31 @@ int AnalysisInttCosmicCommissioning::process_event(PHCompositeNode *topNode)
 int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
 {
 
-  n_cluster_ = slope_xy_ = constant_xy_ = slope_yz_ = constant_yz_ = 0;
-
-  for (unsigned int i = 0; i < vcoordinates_.size(); i++)
-  {
-    slopes_[i] = constants_[i] = chi2ndfs_[i] = average_distances_[i] = -9999;
-  }
-
+  for( unsigned int i=0; i<vcoordinates_.size(); i++ )
+    {
+      slopes_[i]
+	= constants_[i]
+	= chi2ndfs_[i]
+	= average_distances_[i]
+	= -9999;
+    }
+  
   // initialize branches
   posX_.clear();
   posY_.clear();
   posZ_.clear();
-  positions_.clear();
+
   adc_.clear();
   cluster_size_.clear();
-  n_cluster_ = 0;
-  slope_xy_ = -99999;
-  constant_xy_ = -99999;
-  average_dist_xy_ = -99999;
-  average_dist_yz_ = -99999;
-  slope_yz_ = -99999;
-  constant_yz_ = -99999;
+
+  n_cluster_
+    = slope_xy_ =  constant_xy_ =   average_dist_xy_
+    = slope_yz_ =  constant_yz_ =   average_dist_yz_
+    = slope_consistency_ = constant_consistency_
+    = -99999;
 
   //initialize bool
-  IsYFired_[0] = false;
-  IsYFired_[1] = false;
+  IsYFired_[0] = IsYFired_[1] = false;
   
   //Event counter
   misc_counter_++;
@@ -681,7 +704,8 @@ int AnalysisInttCosmicCommissioning::ResetEvent(PHCompositeNode *topNode)
 
 int AnalysisInttCosmicCommissioning::EndRun(const int runnumber)
 {
-  c_->Print((output_pdf_ + "]").c_str());
+
+  c_->Print( (output_pdf_file_+"]").c_str() );
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -694,11 +718,11 @@ int AnalysisInttCosmicCommissioning::End(PHCompositeNode *topNode)
   // c_->Print( "xy_plane.pdf]" );
   // c_->Update();
   // c_->Print( "yz_plane.pdf]" );
-
+  
   outFile_->cd();
   outTree_->Write();
   outFile_->Close();
-
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -710,6 +734,7 @@ int AnalysisInttCosmicCommissioning::Reset(PHCompositeNode *topNode)
 
 void AnalysisInttCosmicCommissioning::Print(const std::string &what) const
 {
+
 }
 
 /*
@@ -730,6 +755,16 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
       return;
     }
 
+  if( path != "" ) // If nothing is give, something in data_ is used anyway. It's useful for updating the output path.
+    data_ = path; // the path to the DST data
+
+  if( data_ == "" )
+    {
+      cerr << "void AnalysisInttCosmicCommissioning::SetData(const std::string path )" << endl;
+      cerr << "No file is set. Something wrong." << endl;
+      return;
+    }
+  
   ////////////////////////////////////////////////////////////////////////////////
   // information /////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -773,11 +808,12 @@ void AnalysisInttCosmicCommissioning::SetData(const std::string path )
 
   cout << "PDF output: " << output_pdf_ << endl;
 }
-
+*/
 
 void AnalysisInttCosmicCommissioning::SetOutputPath( string path )
 {
   output_path_ = path;
-  this->SetData( "" ); // updating the output path
+  InitPaths();
+  //  this->SetData( "" ); // updating the output path
 };
-*/
+

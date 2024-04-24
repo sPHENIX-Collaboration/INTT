@@ -14,7 +14,8 @@
 #include "TF1.h"
 #include "TH1F.h"
 #include "TEllipse.h"
-#include "Math/Vector3D.h"
+#include "TBox.h"
+//#include "Math/Vector3D.h"
 
 #include <fun4all/SubsysReco.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -47,10 +48,14 @@ private:
   // variables
   //int run_num_ = 0;
   //  string data_ = "";
+  int year_ = 2024;
   string output_path_ = "./";
   string output_name_ = "output.root";
-  string output_pdf_ = "";
+  string output_root_file_ = "";
+  string output_pdf_file_ = "";
+  string output_txt_file_ = "";
   int misc_counter_ = 0;
+  bool is_magnet_ = false;
   
   // objects
   TCanvas* c_;
@@ -58,12 +63,15 @@ private:
   TTree* outTree_;
   
   // Branches for TTree
+
+  // event information
   int n_cluster_;
   uint64_t bco_;
+
+  // hit (cluster) information
   std::vector<double> posX_;
   std::vector<double> posY_;
   std::vector<double> posZ_;
-  std::vector < ROOT::Math::XYZVector > positions_;
   
   std::vector<double> radius_;
   std::vector<int> cluster_size_; 
@@ -73,7 +81,7 @@ private:
   vector < pair < int, int > > vcoordinates_;
   
   // TGraphs
-  TGraph* graphs_[4]; // 0: xy, 1: zy, 2: zx 3: zr
+  TGraphErrors* graphs_[4]; // 0: xy, 1: zy, 2: zx 3: zr
   
   // TF1
   TF1* lines_[4];
@@ -96,11 +104,25 @@ private:
   double ndf_yz_;
   double chi2ndf_yz_;
   double average_dist_yz_;
+  //  bool is_y_
+  // Variables to check fintting quality
+  //
+  // y = ax + b  ...(1)
+  // z = cy + d  ...(2)
+  // z = ex + f  ...(3)
+  //
+  // Using (2), and (3), the same forluma as (1) can be made:
+  // y = (e/c)x + (f-d)/c
+  double slope_consistency_; // {a - e/c} / a 
+  double constant_consistency_; // {b - (f-d)/c} / b
   
   // bool to check whether both top ladders and bottom ladders are fired.
   bool IsYFired_[2];
+  
   // misc
   const double kLayer_radii[4] = {7.1888, 7.800, 9.680, 10.330 };
+  int print_counter_ = 0;
+  
   // nodes
   InttEventInfo*          node_intteventheader_map_;
   InttRawHitContainer*    node_inttrawhit_map_;
@@ -110,12 +132,13 @@ private:
   // private functions
   void DrawIntt( double xmax, double ymax );
   int Fit();
-
   vector < pair < TrkrCluster*, const Acts::Vector3 > > GetClusters();
   double GetDistance( const Acts::Vector3 a, const Acts::Vector3 b, bool use_x=true, bool user_y=true, bool use_z=true); // general function
   double GetDistanceXY( const Acts::Vector3 a, const Acts::Vector3 b ){ return GetDistance( a, b, true, true, false); }; // distance in X-Y place
   int GetNodes(PHCompositeNode *topNode);
-  
+
+  bool IsFittable( TGraphErrors* g );
+  void InitPaths();
   std::string Int2Coordinate( int num );
   int MakeGraphs( vector < pair < TrkrCluster*, const Acts::Vector3 > >& cluster_pos_pairs );
   int ProcessEventRawHit();
@@ -166,9 +189,13 @@ public:
   //////////////////////////////////////////////////////////////////
   // other functions ///////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
-  std::string GetOutput(){ return output_name_;};
-  std::string GetOutputPdf(){ return output_pdf_;};
+  std::string GetOutputRoot(){ return output_root_file_;};
+  std::string GetOutputPdf(){ return output_pdf_file_;};
+
+  void SetMagnet( bool flag ){ is_magnet_ = flag;};
+  //void SetQaDir( string dir ){ output_qa_path_ = dir;};
+  void SetYear( int year ){ year_ = year;};
   // void SetData( string path = "" );
-  // void SetOutputPath( string path );
+  void SetOutputPath( string path );
 
 };
