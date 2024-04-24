@@ -56,5 +56,6 @@ R__LOAD_LIBRARY(libtrack_io.so)
 R__LOAD_LIBRARY( libAnalysisInttCosmicCommissioning.so )
 
 #include "constant_values.hh"
+#include "functions.hh"
 //#include <QaInttCosmicCommissioning.h>
 //R__LOAD_LIBRARY( libQaInttCosmicCommissioning.so )

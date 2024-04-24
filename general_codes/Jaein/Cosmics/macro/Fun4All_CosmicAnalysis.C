@@ -1,76 +1,18 @@
-// Fun4All headers
-#include <fun4all/Fun4AllServer.h>
-#include <fun4all/Fun4AllDstInputManager.h>
-#include <fun4all/Fun4AllOutputManager.h>
-#include <fun4all/Fun4AllDstOutputManager.h>
+#include "Fun4All_CosmicAnalysis.hh"
 
-// Some general headers
-#include <GlobalVariables.C>
-
-#include <G4Setup_sPHENIX.C>
-#include <G4_Input.C>
-
-// Trkr headers
-#include <Trkr_RecoInit.C>
-#include <Trkr_Clustering.C>
-
-#include <TrkrHitSetContainerv1.h>
-#include <TrkrHitSetContainer.h>
-
-#include <TrkrHitSet.h>
-#include <TrkrCluster.h>
-
-#include <TrkrClusterContainerv4.h>
-#include <TrkrClusterContainer.h>
-
-#include <TrkrClusterHitAssocv3.h>
-#include <TrkrClusterHitAssoc.h>
-
-#include <TrkrClusterCrossingAssocv1.h>
-#include <TrkrClusterCrossingAssoc.h>
-
-#include <TrkrHitSetv1.h>
-
-#include <TrkrHit.h>
-#include <TrkrHitv2.h>
-
-// something else
-#include <ffamodules/FlagHandler.h>
-#include <ffamodules/HeadReco.h>
-#include <ffamodules/SyncReco.h>
-#include <ffamodules/CDBInterface.h>
-
-#include <phool/PHRandomSeed.h>
-#include <phool/recoConsts.h>
-
-#include <intt/InttClusterizer.h>
-#include <InttEventInfov1.h>
-#include <InttEventInfo.h>
-
-R__LOAD_LIBRARY(libfun4all.so)
-R__LOAD_LIBRARY(libtrack_io.so)
-
-#include <AnalysisInttCosmicCommissioning.h>
-R__LOAD_LIBRARY( libAnalysisInttCosmicCommissioning.so )
-
-//#include <QaInttCosmicCommissioning.h>
-//R__LOAD_LIBRARY( libQaInttCosmicCommissioning.so )
-
+//const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/DST_creation/new_DST_cosmics_intt_00035692.root", 
+//const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/test_clustering_DST_cosmics_intt_00038554_10000events.root", 
+//const string &inputFile = "test_clustering_DST_cosmics_intt_00038554_10000events.root", 
 int Fun4All_CosmicAnalysis(
-		     int nEvents = 100000, //5,
-		     //const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/DST_creation/new_DST_cosmics_intt_00035692.root", 
-		     const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/test_clustering_DST_cosmics_intt_00039367_10000events.root", 
-		     const string &outputFile = "cluster_result_00039367.root",
-		     const int skip = 0
-		     )
+			   int run_num, 
+			   int nEvents = 10000, //5,
+			   const int skip = 0
+			   )
 {
-
+  
   Fun4AllServer *se = Fun4AllServer::instance();
   //se->Verbosity(0);
   
-  //Opt to print all random seed used for debugging reproducibility. Comment out to reduce stdout prints.
-  //PHRandomSeed::Verbosity(1);
-
   // just if we set some flags somewhere in this macro
   recoConsts *rc = recoConsts::instance();
   // By default every random number generator uses
@@ -83,7 +25,22 @@ int Fun4All_CosmicAnalysis(
   // or set it to a fixed value so you can debug your code
   //  rc->set_IntFlag("RANDOMSEED", 12345);
 
+  string run_num_str = GetRunNum8digits( run_num ); // string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num );
+
+  // DSTs are stored in "/sphenix/tg/tg01/commissioning/INTT/data/dst_files/{year}"
+  // A DST to be fed to this macro is supposed to
+  // - have Trkr_Cluster
+  // - have no hot channel
+  // File name format: DST_cosmics_intt_{8-digit run number}_no_hot_clusterinzed.root
+  // for exmaple: DST_cosmics_intt_00038540_no_hot_clusterinzed.root
+  string inputFile = kIntt_dst_dir
+    + "DST_cosmics_intt_" + run_num_str
+    + "_no_hot_clusterized.root";
+
+  cout << inputFile << endl;
+  
   INPUTREADHITS::filename[0] = inputFile;
+
   // This is needed to read a DST file(s).
   Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTin");
   in->fileopen( inputFile );
@@ -155,37 +112,31 @@ int Fun4All_CosmicAnalysis(
   TrackingInit(); // necessary for ActsGeometry
   if (Enable::INTT_CLUSTER) Intt_Clustering();
 
-  /*
-  InttClusterizer* inttclusterizer = new InttClusterizer("InttClusterizer", G4MVTX::n_maps_layer, G4MVTX::n_maps_layer + G4INTT::n_intt_layer - 1);
-  //  inttclusterizer->Verbosity(verbosity);
-  // no Z clustering for Intt type 1 layers (we DO want Z clustering for type 0 layers)
-  // turning off phi clustering for type 0 layers is not necessary, there is only one strip
-  // per sensor in phi
-  for (int i = G4MVTX::n_maps_layer; i < G4MVTX::n_maps_layer + G4INTT::n_intt_layer; i++)
-  {
-    if (G4INTT::laddertype[i - G4MVTX::n_maps_layer] == PHG4InttDefs::SEGMENTATION_PHI)
-    {
-      inttclusterizer->set_z_clustering(i, false);
-    }
-  }
-  se->registerSubsystem(inttclusterizer);
-  */
-
   /////////////////////
+  //const string &outputFile = "cluster_result_00038554_4point_only.root",
+  //  const string kIntt_qa_cosmics_dir = kIntt_qa_dir + "cosmics/";
+  // string outputFile = kIntt_qa_cosmics_dir + "root/"
+  //   + "cosmics_intt_" + run_num_str + ".root";
 
-  AnalysisInttCosmicCommissioning* intt_cosmic = new AnalysisInttCosmicCommissioning("AnalysisInttCosmicCommissioning",outputFile);
-
-//  intt_cosmic->SetData( inputFile );
+  string output_name = "cosmics_intt_" + run_num_str + ".root";
+  AnalysisInttCosmicCommissioning* intt_cosmic
+    = new AnalysisInttCosmicCommissioning("AnalysisInttCosmicCommissioning", output_name );
+  
+  //  intt_cosmic->SetData( inputFile );
+  intt_cosmic->SetOutputPath( kIntt_qa_cosmics_dir );
   se->registerSubsystem( intt_cosmic );
-
-//  QaInttCosmicCommissioning* qicc = new QaInttCosmicCommissioning();
-//  qicc->SetData( inputFile );
-//  se->registerSubsystem( qicc );
+  
+  //  QaInttCosmicCommissioning* qicc = new QaInttCosmicCommissioning();
+  //  qicc->SetData( inputFile );
+  //  se->registerSubsystem( qicc );
 
   se->skip(skip);
   se->run(nEvents);
   se->End();
 
+  cout << "  Input:  " << inputFile << endl;
+  cout << "  Output: " << intt_cosmic->GetOutputRoot() << endl;
+  cout << "  Output PDF: " << intt_cosmic->GetOutputPdf() << endl;
   delete se;
 
   gSystem->Exit(0);
