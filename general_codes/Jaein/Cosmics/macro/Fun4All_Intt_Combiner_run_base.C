@@ -38,31 +38,32 @@ void ShowHelp()
        << endl;
 }
 
-std::string cdb_output_path = "/sphenix/tg/tg01/commissioning/INTT/work/jaein/cosmic/NEW_DST_creation/";
-
 //void Fun4All_Intt_Combiner_run_base(int nEvents = 10, int run_oum = 26975 )
-void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, bool is_bco_cut_on = true, bool is_debug = true )
+void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, bool use_cdb = false, bool is_debug = true )
 {
   if( is_debug == true )
     ShowHelp();
-  std::string cdbttree_name = cdb_output_path + "cdb_" + to_string(run_num) + ".root";
-  std::string cdbttree_name_bco = cdb_output_path + "cdb_bco_" + to_string(run_num) + ".root";
-
+  
   ////////////////////////////////////////////////////////////////////////
   // flags
   ////////////////////////////////////////////////////////////////////////
   bool is_trkr_hit_on = false;
   bool is_trkr_cluster_on = false;
   bool is_raw_hit_on = false;
+
   if( is_debug == false )
     is_trkr_hit_on = is_trkr_cluster_on = is_raw_hit_on = true;
   
   is_trkr_hit_on = is_trkr_cluster_on = is_raw_hit_on = true;
   is_raw_hit_on = false;
+  
   ////////////////////////////////////////////////////////////////////////
   // Config for input/output files
   ////////////////////////////////////////////////////////////////////////
   string run_type = GetRunType( run_num );
+  
+  // output_base format: {run_tpye}_intt_{run number}
+  // For example, cosmics_intt_01234567
   string output_base = "_" + run_type
     + "_intt_" + string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num );
   
@@ -71,7 +72,12 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, 
 
   string debug_prefix = is_debug ? "test_" : "" ;  
   string output_dst = (is_debug ? "./" : kIntt_dst_dir )
-    + debug_prefix + "DST" + output_base + ".root";
+    + debug_prefix + "DST" + output_base;
+
+  if( use_cdb == true )
+    output_dst += "_no_hot";
+  
+  output_dst += ".root";
   
   ////////////////////////////////////////////////////////////////////////
   // Fun4All main part
@@ -104,14 +110,23 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, 
   }
   se->registerInputManager(in);
 
-  if (is_trkr_hit_on)
+  if( is_trkr_hit_on )
   {
     InttCombinedRawDataDecoder *myDecoder = new InttCombinedRawDataDecoder("myUnpacker");
     myDecoder->runInttStandalone(true);
     myDecoder->writeInttEventHeader(true);
-    myDecoder->LoadHotChannelMapLocal(cdbttree_name);
-    if (is_bco_cut_on)
-      myDecoder->SetCalibBCO(cdbttree_name_bco, InttCombinedRawDataDecoder::FILE);
+
+    if( use_cdb == true )
+      {
+	string cdbttree_name = kIntt_cdb_dir + "cdb_" + to_string(run_num) + ".root";
+	myDecoder->LoadHotChannelMapLocal(cdbttree_name);
+
+	//string cdbttree_name_bco = cdb_output_path + "cdb_bco_" + to_string(run_num) + ".root";
+	string cdbttree_name_bco = kIntt_cdb_dir + "cdb_bco_" + to_string(run_num) + ".root";
+	myDecoder->SetCalibBCO(cdbttree_name_bco, InttCombinedRawDataDecoder::FILE);
+
+      }
+    
     se->registerSubsystem(myDecoder);
   }
 
@@ -121,10 +136,6 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 39367, int nEvents = 100000, 
   }
 
   Fun4AllOutputManager *out = new Fun4AllDstOutputManager("out", output_dst );
-  // if( is_raw_hit_on )
-  // {
-  //   out->StripNode("INTTRAWHIT"); // <--- what is it?
-  // }
   se->registerOutputManager(out);
 
   se->run( nEvents );
