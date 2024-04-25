@@ -78,9 +78,7 @@ class Information() :
         self.send_map_SDCC     = args.send_map_SDCC if args.send_map_SDCC    is not None else False
         self.process_SDCC      = args.process_SDCC if args.process_SDCC is not None else False
         self.calib_2024        = args.calib_2024   if args.calib_2024   is not None else False
-        self.update_plot       = args.update_plot  if args.update_plot  is not None else False
         self.condor = args.condor
-        self.quick = args.quick
         self.check_bbox        = args.check_bbox   if args.check_bbox   is not None else True
         self.bbox_commissioning  = args.bbox_commissioning
         self.end_process_SDCC = False # Some processes at the end of processes at SDCC
@@ -97,14 +95,6 @@ class Information() :
             self.is_force_run = True
             self.year = 2024
 
-        if self.update_plot is True :  # for calibration 2024 mode
-            self.process_SDCC = False # No need for process. Only re-make and update plot
-            self.send_SDCC    = False # No need to send data. Let's assume it's already done
-            self.check_bbox   = False # No need to check the buffer box because the data has been sent to SDCC
-            self.end_process_SDCC = True
-            self.is_force_run = True
-            self.year = 2024
-            
         # Priority of send_SDCC and process_SDCC is higher than check_box.
         # If one of send_SDCC and process_SDCC is specified, but check_box was not given, determin check_box by the flag.
         if args.check_bbox is None :
@@ -185,7 +175,6 @@ class Information() :
             self.printer.AddLine( "    Do processes at SDCC?", self.process_SDCC )
             self.printer.AddLine( "    Calib 2024 mode?     ", self.calib_2024 )
             self.printer.AddLine( "    End processes?       ", self.end_process_SDCC )
-            self.printer.AddLine( "    Only update plot?    ", self.update_plot )
 
         self.printer.AddSeparator()
         self.printer.AddLine( "Auto Update?", self.auto_update, color=header_color )

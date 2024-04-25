@@ -17,7 +17,7 @@ class ProcessSDCC() :
         self.info = info
 
         # (supporsed to be constant) variables for the buffer box
-        self.bbox                 = "bbox5"
+        self.bbox                 = "bbox4"
         self.bbox_transfer_dir    = "/home/sphnxpro/mlp_transfer"
         self.bbox_log_dir         = "/logdisk/sphnxpro/condor_logs"
         self.bbox_transfer_script = "./submit_file_farm.sh"
@@ -166,7 +166,7 @@ class ProcessSDCC() :
             proc = subprocess.Popen( command, shell=True )
             print( "\t-", map_file_sdcc, "is made." )
             
-    def ProcessSDCC( self, condor=True , quick=False ) :
+    def ProcessSDCC( self, condor=True ) :
         """!
         @brief Execute some processes at SDCC
         @details The processes are defined by Milan's application. This function just submits jobs.
@@ -271,11 +271,8 @@ class ProcessSDCC() :
                 # Execute Milan's system to process the files in the list
                 command = "ssh " + self.sdcc_ssh + " \"" + \
                     "cd " + str(self.sdcc_job_dir) + "; " + \
-                    "bash " + str(self.sdcc_decode_script) + " " + raw_data 
-                if quick is True : # Quick look mode
-                    command += " 1 \""
-                else :
-                    command += "\""
+                    "bash " + str(self.sdcc_decode_script) + " " + raw_data + "\""
+            
                 print( " - Decode raw files in SDCC local" , flush=True )
                 print( command , flush=True )
                 if self.info.is_dry_run is False :

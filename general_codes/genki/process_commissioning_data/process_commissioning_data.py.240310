@@ -182,16 +182,6 @@ if __name__ == "__main__" :
                          default=False,
                          help="If it's used, the process at SDCC is executed as a batch job of condor." )
 
-    parser.add_argument( "--quick",
-                         action=argparse.BooleanOptionalAction,
-                         default=False,
-                         help="If it's used, only first about 100MB per intt to be processed." )
-
-    parser.add_argument( "--update-plot",
-                         action=argparse.BooleanOptionalAction,
-                         default=False,
-                         help="Only process End of processSDCC. " )
-
 
     args = parser.parse_args()
     #print( args )
