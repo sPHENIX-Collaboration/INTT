@@ -12,6 +12,7 @@ print( platform.system() )
 if platform.system() == "Darwin" :
     web_browser = "open -a Firefox"
 
+year = 2024
 
 font_family = "Helvetica"
 font_title = ( font_family, 25 )
@@ -23,6 +24,7 @@ button_size = (80, 60 ) # in px
 button_size_double = (button_size[0]*2, button_size[1])
 button_size_triple = (button_size[0]*3, button_size[1])
 button_size_small = (button_size[0]/2, button_size[1])
+button_size_15 = (button_size[0]*1.5, button_size[1])
 button_border = 1
 button_color_close = ('', '' )
 
@@ -32,7 +34,7 @@ sg.set_options( font=font_def,
                 #element_padding=(0,0) # not good
                )
 
-theme = "TealMonoa"
+theme = 'LightGreen'
 sg.theme( theme )
 
 def GetLeftMonitor() :
@@ -159,6 +161,11 @@ def LaunchDAQ() :
     process = sp.Popen( command, shell=True )
     return process
 
+def OpenRunPage():
+    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/run/" + str(year)
+    process = sp.Popen( command, shell=True )
+    return process
+
 def LaunchExpertGui() :
     primary_monitor = GetPrimaryMonitor()
     gui_size = [ 1200, 700 ]
@@ -234,13 +241,29 @@ def UpdatePlot( window, run_type ) :
         + ' --run-type ' + run_type + ' '\
         + ' ' + run + ' '\
 
-    year = '2024'
-    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + '/' + run + '/'
 
     command += '; ' + command_2
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
+
+def OpenRunSummary( window ) :
+    run_str = window[ 'run_number' ].get().zfill( 8 )
+    try:
+        run = str( int( run_str ) ).zfill( 8 )
+    except ValueError:
+        sg.popup_error( "Run number must be an integer" )
+        window[ 'run_number' ].update( 0 )
+        process = sp.Popen( "echo", shell=True )
+        return process
+    
+    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + run_str
+    print( command )
+
+    process = sp.Popen( command, shell=True )
+    return process
+
 
 def SendData( window, run_type ) :
     run_str = window[ 'run_number' ].get()
@@ -275,7 +298,8 @@ def MakePlot( window, run_type, condor=False, quick=False ) :
         return process
 
     #command = "/home/inttdev/bin/process_data "\
-    command = "/Users/genki/bin/process_data "\
+    #command = "/Users/genki/bin/process_data "\
+    command = "~/bin/process_data "\
         + ' --calib-2024 '\
         + ' --run-type ' + run_type + ' '\
         + ' ' + run + ' '\
@@ -286,8 +310,7 @@ def MakePlot( window, run_type, condor=False, quick=False ) :
     if window[ 'condor' ].get() is True :
         command += ' --condor '
 
-    year = '2024'
-    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + '/' + run + '/'
 
     command += '; ' + command_2
     print( command ) 
@@ -307,7 +330,8 @@ def DSTProcess( window, run_type, event ) :
     
     #if window[ 
     #command = "/home/inttdev/bin/process_data "\
-    command = "/Users/genki/bin/process_data "\
+    #command = "/Users/genki/bin/process_data "\
+    command = "~/bin/process_data "\
         + ' ' + event + ' '\
         + ' --run-type ' + run_type + ' '\
         + ' ' + run + ' '
@@ -332,8 +356,7 @@ def RaulDaq( window ) :
     command = "ssh inttdaq \"source /usr/local/root/bin/thisroot.sh; cd /home/inttdev/macro/ ; ./process_latest_data_2024_all.sh" \
         + ' ' + run_str1 + ' ' + run_str2 + "\""
 
-    year = '2024'    
-    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + '/'
 
     command += '; ' + command_2
     
@@ -386,24 +409,25 @@ def app() :
         #sg.Text( "INTT Operation", font=font_title, justification="center" )
         #],
         [
-            sg.Button( "ALL", size_px=button_size, font=font_button ),
+            #sg.Button( "ALL", size_px=button_size, font=font_button ),
             sg.Button( "LV", size_px=button_size, font=font_button ),
             sg.Button( "HV", size_px=button_size, font=font_button ),
-            sg.Button( "DAQ", size_px=button_size, font=font_button),
+            #sg.Button( "DAQ", size_px=button_size, font=font_button),
             #sg.Button( "Start\ngRPCs", key="expert_gui_start_grpc", size_px=button_size, font=font_button ),
             #sg.Button( "Kill\ngRPCs", key="expert_gui_kill_grpc", size_px=button_size, font=font_button ),
             sg.Button( "Expert\nGUI", key="expert_gui", size_px=button_size, font=font_button ),
-            sg.Button( "Home\nPage", key="opne_hp", size_px=button_size, font=font_button ),
+            sg.Button( "OPC0\nTunnel", key="opc0_tunnel", size_px=button_size, font=font_button),
+            sg.Button( "HowTo", size_px=button_size, font=font_button )
         ],
         [ frame ],
         [
-            sg.Button( "OPC0\nTunnel", key="opc0_tunnel", size_px=button_size, font=font_button),
+            sg.Button( "Run\nPage", key='open_run_page', size_px=button_size, font=font_button),
+            sg.Button( "INTT\nPage", key="opne_hp", size_px=button_size, font=font_button ),
             sg.Button( "Elog", size_px=button_size, font=font_button ),
             sg.Button( "Run\nLog", key="run_log", size_px=button_size, font=font_button ),
             sg.Button( "Wiki", size_px=button_size, font=font_button ),
-            sg.Button( "Beam", size_px=button_size, font=font_button ),
+            sg.Button( "Beam", size_px=button_size, font=font_button )
             #sg.Button( "Close", size_px=button_size, font=font_button, button_color=button_color_close )
-            sg.Button( "HowTo", size_px=button_size, font=font_button )
         ],
         [
             sg.Button( "↓", key="decrease_run_number", size_px=button_size_small ),
@@ -416,7 +440,8 @@ def app() :
             sg.Text( "", size_px=button_size_small ),
             sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
             sg.Text( "", size_px=button_size_small ),
-            sg.Button( "Update\nWeb", key="update_plot", size_px=button_size, font=font_button )
+            sg.Button( "Open Run\nSummary", key="open_run_summary", size_px=button_size_15, font=font_button ),
+            sg.Button( "Update Run\nSummary", key="update_plot", size_px=button_size_15, font=font_button )
         ],
         
         [
@@ -457,7 +482,7 @@ def app() :
                         keep_on_top=True,
                         grab_anywhere=True,
                         no_titlebar=True,
-                        alpha_channel=0.8,
+                        alpha_channel=1,
                         location=GetWindowLocation() ,
                         finalize=True )
     #window.bind("<Control-q>", "Ctrl-q")
@@ -497,6 +522,8 @@ def app() :
         elif event == "HV" :
             processes.append( LaunchHV() )
 
+        elif event == "open_run_page" :
+            processes.append( OpenRunPage() )
         elif event == "DAQ" :
             location = [window.current_location()[0], window.current_location()[1] ]
             location = [ location[0]-200, location[1] ]
@@ -533,7 +560,9 @@ def app() :
             processes.append( OperateExpertGuiGrpc( mode="kill" ) )
         elif event == "update_plot" :
             processes.append( UpdatePlot( window, values['run_type'] ) )
-            logg.info("Update plot on Run: " + run)
+        elif event == "open_run_summary" :
+            logg.info("Opening Run page: " + run)
+            processes.append( OpenRunSummary( window ) )
         elif event == "send_data" :
             processes.append( SendData( window, values['run_type'] ) )
             logg.info("Send Data Run: " + run)
