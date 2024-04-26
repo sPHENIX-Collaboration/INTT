@@ -5,6 +5,13 @@ import signal
 import time
 import screeninfo
 import logging
+import platform
+
+web_browser = "firefox"
+print( platform.system() )
+if platform.system() == "Darwin" :
+    web_browser = "open -a Firefox"
+
 
 font_family = "Helvetica"
 font_title = ( font_family, 25 )
@@ -15,6 +22,7 @@ font_def = ( font_family, 20 )
 button_size = (80, 60 ) # in px
 button_size_double = (button_size[0]*2, button_size[1])
 button_size_triple = (button_size[0]*3, button_size[1])
+button_size_small = (button_size[0]/2, button_size[1])
 button_border = 1
 button_color_close = ('', '' )
 
@@ -177,36 +185,36 @@ def OperateExpertGuiGrpc( mode="start" ) :
     return process
 
 def LaunchElog() :
-    command = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/elog/INTT/"
+    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/elog/INTT/"
     process = sp.Popen( command, shell=True )
     return process
 
 def LaunchRunLog() :
     # command = "firefox https://docs.google.com/spreadsheets/d/1dkvDEc5iUQd_xskGzAvR5JQ_HzxxxeJfPXEdy0TMKas/edit#gid=0" # Run23
-    command = "firefox https://docs.google.com/spreadsheets/d/1qCxH_oOPnLCEpg9fgW_zC0G5__piRsRhklkb0tKznRQ/edit?usp=sharing" # Run24
+    command = web_browser + " https://docs.google.com/spreadsheets/d/1qCxH_oOPnLCEpg9fgW_zC0G5__piRsRhklkb0tKznRQ/edit?usp=sharing" # Run24
     process = sp.Popen( command, shell=True )
     return process
 
 def LaunchWiki() :
-    command = "firefox https://wiki.sphenix.bnl.gov/index.php/Intermediate_Tracker_\(INTT\)"
+    command = web_browser + " https://wiki.sphenix.bnl.gov/index.php/Intermediate_Tracker_\(INTT\)"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
 
 def LaunchHomepage() :
-    command = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/"
+    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
 
 def LaunchBeamMonitor() :
-    command = "firefox https://cadweb.bnl.gov/dashs/Operations/BroadcastWeb/BroadcastMain.dash"
+    command = web_browser + " https://cadweb.bnl.gov/dashs/Operations/BroadcastWeb/BroadcastMain.dash"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
 
 def LaunchHowTo() :
-    command = "firefox https://docs.google.com/presentation/d/1w16_TctvFx27ZP1ikPqal-Ndi733mIvDfO8xNmMXGvg/edit?usp=sharing"
+    command = web_browser + " https://docs.google.com/presentation/d/1w16_TctvFx27ZP1ikPqal-Ndi733mIvDfO8xNmMXGvg/edit?usp=sharing"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
@@ -227,7 +235,7 @@ def UpdatePlot( window, run_type ) :
         + ' ' + run + ' '\
 
     year = '2024'
-    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
 
     command += '; ' + command_2
     print( command ) 
@@ -266,25 +274,55 @@ def MakePlot( window, run_type, condor=False, quick=False ) :
         process = sp.Popen( "echo", shell=True )
         return process
 
-    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+    #command = "/home/inttdev/bin/process_data "\
+    command = "/Users/genki/bin/process_data "\
         + ' --calib-2024 '\
         + ' --run-type ' + run_type + ' '\
         + ' ' + run + ' '\
 
-    if condor is True :
-        command += ' --condor'
-
-    if quick is True :
-        command += ' --quick'
+    if window[ 'quick' ].get() is True :
+        command += ' --quick '
+        
+    if window[ 'condor' ].get() is True :
+        command += ' --condor '
 
     year = '2024'
-    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
 
     command += '; ' + command_2
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
 
+def DSTProcess( window, run_type, event ) :
+    run_str = window[ 'run_number' ].get()
+    try:
+        run = str( int( run_str ) ).zfill( 8 )
+    except ValueError:
+        sg.popup_error( "Run number must be an integer" )
+        window[ 'run_number' ].update( 0 )
+        process = sp.Popen( "echo", shell=True )
+        return process
+
+    
+    #if window[ 
+    #command = "/home/inttdev/bin/process_data "\
+    command = "/Users/genki/bin/process_data "\
+        + ' ' + event + ' '\
+        + ' --run-type ' + run_type + ' '\
+        + ' ' + run + ' '
+        #+ ' --dry-run ' \
+
+    if window[ 'quick' ].get() is True :
+        command += ' --quick '
+        
+    if window[ 'condor' ].get() is True :
+        command += ' --condor '
+        
+    print( command )
+    proc = sp.Popen( command, shell=True )
+    return proc
+                         
 def RaulDaq( window ) :
     run_str1 = window[ 'run_date' ].get()
     run_str2 = window[ 'run_time' ].get()
@@ -295,7 +333,7 @@ def RaulDaq( window ) :
         + ' ' + run_str1 + ' ' + run_str2 + "\""
 
     year = '2024'    
-    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/'
+    command_2 = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/'
 
     command += '; ' + command_2
     
@@ -368,19 +406,37 @@ def app() :
             sg.Button( "HowTo", size_px=button_size, font=font_button )
         ],
         [
-            sg.Input( 31417, key="run_number", size_px=button_size_double ),
-            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="pedestal", key='run_type', size_px=button_size_double ),
+            sg.Button( "↓", key="decrease_run_number", size_px=button_size_small ),
+            sg.Input( 39494, key="run_number", size_px=button_size ),
+            sg.Button( "↑", key="increase_run_number", size_px=button_size_small ),
+            #sg.Spin(values=[ i for i in range(0, 99) ], key="run_number_spin", size_px=button_size_double),
+            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
             sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button ),
             sg.Button( "Update\nWeb", key="update_plot", size_px=button_size, font=font_button ),
         ],
         [
-            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_button ),
-            sg.Button( "Quick\nCheck!", key="make_plots_quick", size_px=button_size, font=font_button ),
-            sg.Button( "Make\nPlots!", key="make_plots", size_px=button_size, font=font_button ),
-            sg.Button( "Condor\nPlots!", key="make_plots_condor", size_px=button_size, font=font_button ),
+            sg.Checkbox( "Only first 1M hits", default=True, key="quick", size_px=button_size_triple ),
+            sg.Checkbox( "Condor batchjob", default=False, key="condor", size_px=button_size_triple )
+            
         ],
         [
-            sg.Text( "DST\nProcess", size_px=button_size_double, font=font_button )
+            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_title, justification="rigth" ),
+            #sg.Button( "", key="make_plots_quick", size_px=button_size, font=font_button ),
+            sg.Button( "Make\nPlots!", key="make_plots", size_px=button_size, font=font_button )
+            #sg.Button( "Condor\nPlots!", key="make_plots_condor", size_px=button_size, font=font_button ),
+        ],
+        [
+            sg.Text( "DST\nProcesses", size_px=button_size_double, font=font_title, justification="right" ),
+            sg.Button( "RAW HIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Hitmap", key="--DST-INTTRAW-hitmap", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Hot ch", key="--DST-INTTRAW-hot-ch", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "BCO diff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+        ],
+        [
+            sg.Text( "", size_px=button_size_double, font=font_title, justification="right" ),
+            sg.Button( "Trkr Hit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Trkr Cluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Do All", key="--DST-all", size_px=button_size, font=font_button ),
         ],
         [
             sg.Input( 240311, key="run_date", size_px=button_size_double ),
@@ -485,6 +541,13 @@ def app() :
         elif event == "make_plots_condor" :
             processes.append( MakePlot( window, values['run_type'], condor=True ) )
             logg.info("Make Plot Run: " + run)
+        elif event == "increase_run_number" :
+            window[ 'run_number' ].update( str(int(window['run_number'].get()) + 1) )
+        elif event == "decrease_run_number" :
+            window[ 'run_number' ].update( str(int(window['run_number'].get()) - 1) )
+        elif "DST" in event :
+            logg.info( event + ":" + run )
+            processes.append( DSTProcess( window, values[ 'run_type'], event ) )
         elif event == "raul_daq" :
             processes.append( RaulDaq( window ) )
             logg.info("Process RaulDAQ data" )
