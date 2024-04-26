@@ -68,7 +68,7 @@ int MakeHotChannelListFromHitMap(int felix_, int module_, double hot_channel_cut
         for (int j = 0; j < channel; j++)
         {
             nhits = hitmap[felix_][module_]->GetBinContent(i + 1, j + 1);
-            if (nhits > hot_chan_cut || nhits > average_hit)
+            if (nhits > hot_chan_cut && nhits > average_hit)
             {
                 nhot++;
                 int ROC_ID = serverFC_toinfo_map.at(server_name).ROC;
