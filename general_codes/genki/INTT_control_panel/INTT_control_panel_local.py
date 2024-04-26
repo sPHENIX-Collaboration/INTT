@@ -407,35 +407,40 @@ def app() :
         ],
         [
             sg.Button( "↓", key="decrease_run_number", size_px=button_size_small ),
-            sg.Input( 39494, key="run_number", size_px=button_size ),
+            sg.Input( 39494, key="run_number", size_px=button_size_double ),
             sg.Button( "↑", key="increase_run_number", size_px=button_size_small ),
             #sg.Spin(values=[ i for i in range(0, 99) ], key="run_number_spin", size_px=button_size_double),
-            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
-            sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button ),
-            sg.Button( "Update\nWeb", key="update_plot", size_px=button_size, font=font_button ),
+            sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button )
         ],
+        [
+            sg.Text( "", size_px=button_size_small ),
+            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
+            sg.Text( "", size_px=button_size_small ),
+            sg.Button( "Update\nWeb", key="update_plot", size_px=button_size, font=font_button )
+        ],
+        
         [
             sg.Checkbox( "Only first 1M hits", default=True, key="quick", size_px=button_size_triple ),
             sg.Checkbox( "Condor batchjob", default=False, key="condor", size_px=button_size_triple )
             
         ],
         [
-            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_title, justification="rigth" ),
+            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_button, justification="rigth" ),
             #sg.Button( "", key="make_plots_quick", size_px=button_size, font=font_button ),
             sg.Button( "Make\nPlots!", key="make_plots", size_px=button_size, font=font_button )
             #sg.Button( "Condor\nPlots!", key="make_plots_condor", size_px=button_size, font=font_button ),
         ],
         [
-            sg.Text( "DST\nProcesses", size_px=button_size_double, font=font_title, justification="right" ),
-            sg.Button( "RAW HIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Text( "DST\nProcesses", size_px=button_size_double, font=font_button, justification="right" ),
+            sg.Button( "RAW\nHIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "Hitmap", key="--DST-INTTRAW-hitmap", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "Hot ch", key="--DST-INTTRAW-hot-ch", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "BCO diff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "BCO\ndiff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
         ],
         [
             sg.Text( "", size_px=button_size_double, font=font_title, justification="right" ),
-            sg.Button( "Trkr Hit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Trkr Cluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Trkr\nHit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Trkr\nCluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "Do All", key="--DST-all", size_px=button_size, font=font_button ),
         ],
         [
