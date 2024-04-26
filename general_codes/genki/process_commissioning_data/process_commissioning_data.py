@@ -177,6 +177,41 @@ if __name__ == "__main__" :
                          default=False,
                          help="If it's true, files are seached under /bbox/commissioning/INTT. Otherwise, /bbox/bbox?/INTT will be searched (? is 0-5)." )
 
+    parser.add_argument( "--DST-all",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether all processes using a DST file is done or not. Default: False." )
+
+    parser.add_argument( "--DST-INTTRAW",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing INTTRAWHIT is produced or not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-hitmap",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether hitmaps using INTTRAWHIT is generated not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-hot-ch",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a hot channel map using the hitmaps are generated or not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-bco-diff",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a CDB for the BCO difference cut is generated or not. Default: False." )
+    
+    parser.add_argument( "--DST-TrkrHit",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing Trkr_hit is produced using the hot channel map (+BCO diff cut) or not. Default: False." )
+    
+    parser.add_argument( "--DST-TrkrCluster",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing Trkr_cluster is produced using a DST containig Trkr_hit or not. Default: False." )
+    
     parser.add_argument( "--condor",
                          action=argparse.BooleanOptionalAction,
                          default=False,

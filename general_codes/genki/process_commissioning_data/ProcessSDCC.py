@@ -24,7 +24,8 @@ class ProcessSDCC() :
         self.bbox_check_script    = "/home/phnxrc/INTT/genki/check_transfer.sh"
         
         # (supporsed to be constant) variables for SDCC
-        self.sdcc_ssh             = "sphnx_nukazuka"
+        #self.sdcc_ssh             = "sphnx_nukazuka"
+        self.sdcc_ssh             = "sphnx04"
         self.sdcc_bbox_dir        = pathlib.Path( "/sphenix/lustre01/sphnxpro/bbox?/INTT" )
         if self.info.bbox_commissioning is True : 
             self.sdcc_bbox_dir    = pathlib.Path( "/sphenix/lustre01/sphnxpro/commissioning/INTT" )
@@ -37,6 +38,11 @@ class ProcessSDCC() :
         self.sdcc_decode_script   = pathlib.Path( "executable_individual.sh" )
         self.sdcc_felix_viewer    = pathlib.Path( "./FelixQuickViewer" )
         self.sdcc_raw_files       = [] # List of raw files in SDCC to be processed
+
+        #############################################
+        # for DST process
+        self.sdcc_dst_process    = self.sdcc_job_dir / "executable_cosmics_DST.sh"
+        self.sdcc_dst_job_process = self.sdcc_job_dir / "submitjobs_cosmics_DST.sh"
         
         # something else
         self.is_ended             = None
@@ -317,6 +323,34 @@ class ProcessSDCC() :
         print( "ProcessSDCC.EndProcessSDCC" )
         print( self.sdcc_raw_files )
 
+    def DstProcess( self, condor=False, quick=False ) :
+        if self.info.dst_all is True :
+            command = "ssh " + self.sdcc_ssh + " " \
+            + "bash -c \"" \
+            + "cd " + str(self.sdcc_job_dir) + "; " # cd to the job directory
+
+            if condor is True :                
+                command += str( self.sdcc_dst_job_process ) + " " # shell script
+            else: 
+                command += str( self.sdcc_dst_process ) + " "  # shell script
+                
+            command += str( int(self.info.run) ) + " "      # run number, the some first 0s are removed
+
+            # the number of events to be proceed
+            if quick is True :
+                command += "10000 "
+            else:
+                command += "0 " # it means all
+
+            command += "true" # whether produce a DST (true) or using an official DST (false)
+
+            command += "\""
+            print( command )
+            #return None
+            proc = subprocess.Popen( command, shell=True )
+            if condor is False:
+                proc.wait()
+                
         
     def Do( self ) :
         if self.info.is_force_run is False: 
@@ -349,7 +383,7 @@ class ProcessSDCC() :
         # Processes at SDCC
         if self.info.process_SDCC is True :
             self.proc_sdcc.ProcessSDCC()
-
+            
         # reset the flag
         self.is_ended = None
 
