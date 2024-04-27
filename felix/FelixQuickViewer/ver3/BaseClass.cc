@@ -55,6 +55,9 @@ void BaseClass::InitLadderMap()
       ladder_map_path_ = kMap_dir_SDCC_ + to_string( year_ ) + "/" + intt_server_ + "_map.txt";
     }
 
+  // evt files no longer transferred by ourself so the maps are also not send. Let's use the default one
+  ladder_map_path_ = kMap_dir_SDCC_ + to_string( year_ ) + "/" + intt_server_ + "_map.txt";
+
   
   cout << ladder_map_path_ << endl;
   ladder_map_ = new LadderMap( ladder_map_path_ );

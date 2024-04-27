@@ -49,10 +49,16 @@ protected:
   int canvas_counter = 0;
   const int kLadder_colors[14]
   = {
-    kBlack,      kRed,         kOrange + 1, kGreen + 2,
-    kTeal + 2,   kCyan + 2,    kAzure + 1,  kBlue + 2,
-    kViolet + 1, kMagenta + 1, kPink + 1,   kGray + 1,
-    kYellow + 2, kViolet + 5
+    kBlack,      kRed, kGreen + 2, kAzure + 1, kViolet + 1, kGray + 1,    kYellow + 2,
+
+    kOrange + 1, 
+    kTeal + 2, 
+    kCyan + 2,
+    
+    kBlue + 2,
+    kMagenta + 1, kPink + 1,
+    
+    kViolet + 5
   };
   
   TFile* f1_;

@@ -37,10 +37,24 @@ class Information() :
         #############################################################################
         self.LUSTRE_DIR = pathlib.Path( "/sphenix/lustre01/sphnxpro/" )
         self.RAW_DATA_DIR = ""
-        self.DATA_ROOT_DIR = pathlib.Path( "/sphenix/tg/tg01/commissioning/INTT/data/" )
-        self.ROOT_FILE_DIR = pathlib.Path( self.DATA_ROOT_DIR / "root_files" / str( self.year ) )
+        self.INTT_ROOT_DIR = pathlib.Path( "/sphenix/tg/tg01/commissioning/INTT/" )
+
+        # under data dir
+        self.DATA_ROOT_DIR = self.INTT_ROOT_DIR / "data"
+        self.ROOT_FILE_DIR = self.DATA_ROOT_DIR / "root_files" / str( self.year ) 
         self.MERGED_ROOT_FILE_DIR = pathlib.Path( self.DATA_ROOT_DIR / "merged_root_files" / str( self.year ) )
         self.DST_FILE_DIR = pathlib.Path( self.DATA_ROOT_DIR / "dst_files" / str( self.year ) )
+
+        # under QA dir
+        self.QA_DIR = self.INTT_ROOT_DIR / "QA"
+        self.HITMAP_DIR = self.QA_DIR / "hitmap"
+        self.HOTMAP_DIR = self.QA_DIR / "hotdeadmap"
+        self.BCODIFF_DIR = self.QA_DIR / "bco_bcofull_difference"
+        self.RAWHIT_DIR = self.QA_DIR / "raw_hit" / str( self.year )
+        self.TRKRHIT_DIR = self.QA_DIR / "trkr_hit" / str( self.year )
+        self.TRKRCLUSTER_DIR = self.QA_DIR / "cluster_hit" / str( self.year )
+        self.COSMIC_DIR = self.QA_DIR / "cosmics"
+        self.QA_SUBDIR_LIST = [ "root", "plots", "txt" ]
         
         #############################################################################
         # Processes for flags determined by command-line arguments                  #
@@ -62,7 +76,6 @@ class Information() :
         self.plot_skip_hist_generation = args.plot_skip_hist_generation
         
         self.plot_exe_type = args.exe_type
-
             
         #############################################################################
         # Processes for data                                                        #
@@ -88,6 +101,9 @@ class Information() :
         
         self.homepage_plots = []
         self.GetHomepagePlots()
+        self.GetHotChannelPlots()
+        self.GetRawHitPlots()
+        self.GetCosmicPlots()
         
         #self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
@@ -166,13 +182,48 @@ class Information() :
             self.plot_mode = False
             self.printer.Print( color="Red" )
             self.printer.Clear()
-        
+
+    def GetPlots( self, dir, container, suffix=".pdf" ) :
+        """
+        @brief A function to make a list of plots using arguments
+        @param dir It should be pathlib.Path or anything that str() works
+        @param container A list to contain the list. A member variable of a list is good.
+        @param suffix The suffix to be used for the file serch
+        """
+        contaier= sorted( list( dir.glob( "*" + str(self.run) + "*" + suffix) ) )
+    
     def GetHomepagePlots( self ) :
         # For example:
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_adc.png
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_entryvschan.png
         self.homepage_plots = sorted( list(self.ROOT_FILE_DIR.glob( "*" + str(self.run) + "*.png" ) ) )
         
+    def GetHotChannelPlots( self ) :
+        # For example:
+        path = self.HOTMAP_DIR / "plots" / str( self.year )
+        self.hot_channel_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        
+        path = self.HOTMAP_DIR / "txt" / str( self.year )
+        self.hot_channel_txt = sorted( list( path.glob( "*" + str(self.run) + "*.txt" ) ) )        
+
+    def GetCosmicPlots( self ) :
+        path = self.COSMIC_DIR / "plots" / str( self.year )
+        self.cosmic_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+
+    def GetRawHitPlots( self ) :
+        self.raw_hit_plots = []
+        self.GetPlots( self.RAWHIT_DIR / "plots", self.raw_hit_plots )
+        #path = self.RAWHIT_DIR / "plots"
+        #self.raw_hit_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+
+    def GetTrkrHitPlots( self ) :
+        path = self.TrkrHIT_DIR / "plots"
+        self.trkr_hit_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+
+    def GetTrkrClusterPlots( self ) :
+        path = self.TRKRCLUSTER_DIR / "plots"
+        self.trkr_cluster_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+
     def PrintLine( self ) :
         print( '+' + '-'*50 + '+' , flush=True )
         

@@ -46,26 +46,10 @@ void Viewer::Init()
   c_adc_    = new TCanvas( "ADC", "ADC distribution",2560,1600);
   //c_pedestal_ = new TCanvas( "Pedestal", "Pedestal", 2560, 1600 );
   
-  //this->InitLadderMap();
   this->SetStyle();
   
 }
 
-/*
-void Viewer::InitLadderMap()
-{
-  // /sphenix/tg/tg01/commissioning/INTT/root_files/calib_intt7-00025922-0000.root
-  string felix_num = filename_.substr( filename_.find_last_of( "_" ) + 1 + string( "intt" ).size(), 1);
-  
-  cout << "felix num: " << felix_num << endl;
-  
-  //LadderMap
-  ladder_map_path_ = map_dir + "intt" + felix_num + "_map.txt";
-  ladder_map_ = new LadderMap( ladder_map_path_ );
-  ladder_map_->Print();
-  
-}
-*/
 
 unsigned int Viewer::GetMaxBinContent1D( TH1D* hists[kLadder_num_], int rank = 1, int ladder_min, int ladder_max )
 {
@@ -104,7 +88,7 @@ unsigned int Viewer::GetMaxBinContent1D( TH1D* hists[kLadder_num_], int rank = 1
 
 unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], int rank = 1, int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
-  assert( r > 0 );
+  assert( rank > 0 );
   
   vector < unsigned int > values;
   for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
@@ -122,7 +106,7 @@ unsigned int Viewer::GetMaxBinContent( TH1D* hists[kLadder_num_][kChip_num_], in
     }
 
   int return_value = 0 ;
-  if( rank == 1 )
+  if( rank == 1 || rank == 0 )
     {
       return_value = *max_element( values.begin(), values.end() );
     }
@@ -517,11 +501,13 @@ int Viewer::Draw()
 	  this->Draw_HitDist();
 	  this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
 	  this->Draw_HitDist( kLadder_num_/2, kLadder_num_); // 
+	  this->Draw_BcoDiff();
 	}
       else if( run_type_ == "cosmics" )
 	{
 	  this->Draw_HitDist();
 	  this->Draw_BcoDiff();
+	  this->Draw_AdcChannel();
 	}
       else if( run_type_ == "beam" )
 	{
@@ -781,7 +767,11 @@ int Viewer::Draw_HitDist( int ladder_min, int ladder_max, int chip_min, int chip
   //  TCanvas* c = c_pedestal_;
   TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
 
-  auto y_max = GetMaxBinContentRatio( hist_ch_, 0.01, ladder_min, ladder_max, chip_min, chip_max ); // Bins on the top 1% are ignored
+  double rank_ratio = 0.01;
+  if( run_type_ == "cosmics" ) // Don't hide anything
+    rank_ratio = 0.0;
+
+  auto y_max = GetMaxBinContentRatio( hist_ch_, rank_ratio, ladder_min, ladder_max, chip_min, chip_max ); // Bins on the top 1% are ignored
 
   if( run_type_ == "calib" || run_type_ == "calibration" )
     y_max = 500;
@@ -871,7 +861,8 @@ int Viewer::Draw_BcoDiff( int ladder_min, int ladder_max, int chip_min, int chip
   for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
     {
 
-      hist_bco_diff_ladder[i]->SetLineColor( kLadder_colors[i] );
+      hist_bco_diff_ladder[i]->SetLineColor( kLadder_colors[ i%7 ] );
+      hist_bco_diff_ladder[i]->SetFillColorAlpha( hist_bco_diff_ladder[i]->GetLineColor(), 0.1 );
       hist_bco_diff_ladder[i]->SetLineWidth( 3 );
       hist_bco_diff_ladder[i]->GetYaxis()->SetRangeUser( 0.9, y_max );
       string option = "HIST same";
