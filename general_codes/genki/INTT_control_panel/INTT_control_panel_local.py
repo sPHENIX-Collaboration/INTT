@@ -258,7 +258,7 @@ def OpenRunSummary( window ) :
         process = sp.Popen( "echo", shell=True )
         return process
     
-    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + run_str
+    command = web_browser + " https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + str(year) + '/' + run_str
     print( command )
 
     process = sp.Popen( command, shell=True )
