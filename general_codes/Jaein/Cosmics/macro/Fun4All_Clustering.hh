@@ -56,6 +56,7 @@
 #include <trackingdiagnostics/TrackResiduals.h>
 #include <trackingdiagnostics/TrkrNtuplizer.h>
 
+#include "functions.hh"
 #include "constant_values.hh"
 
 R__LOAD_LIBRARY(libfun4all.so)

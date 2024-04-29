@@ -8,20 +8,22 @@ int Fun4All_Clustering(
 {
   string run_num_str = string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num );
 
+  string run_type = GetRunType( run_num );
+
   std::string inputFile = kIntt_dst_dir
-    + "DST_cosmics_intt_"
+    + "DST_" + run_type + "_intt_"
     + run_num_str;
 
-  if( nEvents != 0 )
-    inputFile += "_" + std::to_string(nEvents) + "events";
+  // if( nEvents != 0 )
+  //   inputFile += "_" + std::to_string(nEvents) + "events";
 
   inputFile += "_no_hot.root";
   
   std::string outputFile = kIntt_dst_dir
-    + "DST_cosmics_intt_"
+    + "DST_" + run_type + "_intt_"
     + run_num_str ;
-  if( nEvents != 0 )
-    outputFile += "_" + std::to_string(nEvents) + "events";
+  // if( nEvents != 0 )
+  //   outputFile += "_" + std::to_string(nEvents) + "events";
 
   outputFile += "_no_hot_clusterized.root";
   
@@ -30,6 +32,7 @@ int Fun4All_Clustering(
   
   recoConsts *rc = recoConsts::instance();
   INPUTREADHITS::filename[0] = inputFile;
+  rc->set_IntFlag("RUNNUMBER", run_num );
 
   // This is needed to read a DST file(s).
   Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTin");
@@ -49,8 +52,7 @@ int Fun4All_Clustering(
   rc->set_StringFlag("CDB_GLOBALTAG",CDB::global_tag);
   // 64 bit timestamp
   rc->set_uint64Flag("TIMESTAMP",CDB::timestamp);
-
-
+  
   //////////////////////////////
   Enable::MVTX					= true;
   Enable::INTT					= true;
