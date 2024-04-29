@@ -348,8 +348,8 @@ class ProcessSDCC() :
             print( command )
             #return None
             proc = subprocess.Popen( command, shell=True )
-            if condor is False:
-                proc.wait()
+            #if condor is False:
+            #    proc.wait()
                 
         
     def Do( self ) :

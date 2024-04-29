@@ -121,11 +121,15 @@ int HistMaker::Process()
 	      if( ampl_<70 && chan_id_<127 && chip_id_<27 && chip_id_==j+1 && module_==i )
 		{
 		  hist_ch_adc_ampl_[i][j]->Fill( chan_id_, adc_, ampl_ );
-		  
-		  auto diff = bco_full_&0x7f - bco_;
-		  if( diff < 0 )
-		    diff += 128;
-		  hist_bco_diff_[i][j]->Fill( diff );
+
+		  // noise rejection should be good for BCO diff hists
+		  if( adc_ > 0 )
+		    {
+		      auto diff = (bco_full_&0x7f) - bco_;
+		      if( diff < 0 )
+			diff += 128;
+		      hist_bco_diff_[i][j]->Fill( diff );
+		    }
 
 		}
 	    }

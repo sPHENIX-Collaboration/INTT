@@ -128,6 +128,12 @@ class Homepage() :
 
         # for table of contents
         self.WriteToc()
+
+        # QA section (hot channel/cosmic analysis)
+        self.WriteQaSection()
+        
+        with open( str(self.index_html), mode='a' ) as file :
+            file.write( "<h2>Plots for each FELIX</h2>\n" )
             
         for felix in range(0, 8 ):
             self.WriteFelixSection( felix )
@@ -171,19 +177,144 @@ class Homepage() :
                 return None
 
             # Write toc!
+            file.write( "<br><b>Table of Contents for each FELIX</b>:\n" )
             file.write( "<ul>\n" )
             for server in felix_list :
                 file.write( "    <li><a href=\"#" + server + "\">" + server + "</a></li>\n" )
 
             file.write( "</ul>\n\n" )
-                    
+
+    def WriteQaSection( self ) :
+        with open( str(self.index_html), mode='a' ) as file :
+            file.write( "<h2>QA</h2>\n" )
+
+        self.WriteRawHitSection()
+        self.WriteHotChannelSection()
+        self.WriteCosmicSection()
+
+    def WriteRawHitSection( self ) :
+        # If no plots are found, let's finish
+        if len( self.info.raw_hit_plots ) == 0 :
+            return None
+        
+        with open( str(self.index_html), mode='a' ) as file :
+            contents = "<h3>INTTRAWHIT </h3>\n" \
+                "<details open>\n" \
+                "    <summary>Hide/Show</summary>\n"
+
+            for plot in self.info.raw_hit_plots :
+                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                print( self.RUN_DIR/ plot.name )
+                contents += \
+                    "<div class=\"center\">\n" \
+                    "    <object data=\"" + plot.name + "\"" \
+                    "type=\"application/pdf\">\n" \
+                    "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                    "    </object>\n" \
+                    "</div>\n" \
+
+            contents += "</details>\n"
+            file.write( contents )
+        
+        
+    def WriteHotChannelSection( self ) :
+        # self.HITMAP_DIR         self.HOTMAP_DIR         self.BCODIFF_DIR
+        # If no plots are found, let's finish
+        if len( self.info.hot_channel_plots ) == 0 :
+            return None
+        
+        with open( str(self.index_html), mode='a' ) as file :
+            contents = "<h3>Hot/Dead channel</h3>\n" \
+                "<details open>\n" \
+                "    <summary>Hide/Show</summary>\n"
+
+            if len( self.info.hot_channel_txt) > 1 :
+                print( "More than 1 txt file of hot channel list for this run were found..." )
+            else:
+                with open( str(self.info.hot_channel_txt[0]), mode='r' ) as hot_ch_list :
+                    contents += \
+                        "<table>\n" \
+                        "    <caption>List of hot channels</caption>\n" \
+                        "    <thead>\n" \
+                        "        <tr>\n" \
+                        "            <th>FELIX</th>\n" \
+                        "            <th>FELIX ch</th>\n" \
+                        "            <th>Chip</th>\n" \
+                        "            <th>Channel</th>\n" \
+                        "        </tr>\n" \
+                        "    </thead>\n" \
+                        "    <tbody>\n" \
+                        
+                    for line in hot_ch_list:
+                        # skip comment lines
+                        if line[0] == "#" :
+                            continue
+
+                        contents += "        <tr>\n"
+                        words = line.split()
+                        #print( words )
+                        for word in words :
+                            contents += "            <td>" + str(word) + "</td>\n"
+                        contents += "        </tr>\n"
+
+                    contents += \
+                        "    </tbody>\n" \
+                        "</table>\n" \
+                        "</details>\n\n" \
+                        "<details open>\n" \
+                        "    <summary>Hide/Show</summary>\n"
+            
+            for plot in self.info.hot_channel_plots :
+                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                print( self.RUN_DIR/ plot.name )
+                contents += \
+                    "<div class=\"center\">\n" \
+                    "    <object data=\"" + plot.name + "\"" \
+                    "type=\"application/pdf\">\n" \
+                    "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                    "    </object>\n" \
+                    "</div>\n" \
+
+            contents += "</details>\n"
+            file.write( contents )
+        
+    def WriteCosmicSection( self ) :
+        # self.COSMIC_DIR
+        print( self.info.cosmic_plots )
+        if len( self.info.cosmic_plots) == 0 :
+            return None
+
+        with open( str(self.index_html), mode='a' ) as file :
+            contents = "<h2>Cosmic analysis</h2>\n" \
+                "<details open>\n" \
+                "    <summary>Hide/Show</summary>\n"
+
+            for plot in self.info.cosmic_plots :
+                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                suffix = str(plot).split( "." )[1]
+
+                if suffix == "pdf" :
+                    contents += \
+                    "<div class=\"center\">\n" \
+                    "    <object data=\"" + plot.name + "\"" \
+                    "type=\"application/pdf\">\n" \
+                    "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                    "    </object>\n" \
+                    "</div>\n" \
+
+                print( str( plot ), suffix )
+                # end of if suffix
+            # end of for plot in ...
+            contents += "</details>\n"
+            file.write( contents )
+        # end of with open()...
         
     def WriteFelixSection( self, felix ) :
         with open( str(self.index_html), mode='a' ) as file :
             server = "intt" + str(felix)
 
             counter = 0
-            contents = ""
+            contents = "    <details open><summary>Hide/Show</summary>\n" 
             # loop over all plots
             for plot in self.info.homepage_plots :
                 #print( plot, server, server in str(plot) )
@@ -221,9 +352,12 @@ class Homepage() :
                         "      </a>\n" \
                         "    </figure>\n"
 
+
             # after loop over all plots, all contents are in the variable. It the contents is not nohting, write it down
             if counter != 0 :
-                file.write( "<h2 id=\"" + server+ "\">" + server + "</h2>\n" )
+                file.write( "<h3 id=\"" + server+ "\">" + server + "</h3>\n" )
+                
+                contents += "    </details>\n"
                 file.write( contents )
                 contents = ""
 
