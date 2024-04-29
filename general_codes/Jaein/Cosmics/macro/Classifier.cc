@@ -57,9 +57,9 @@ void Classifier::InitPaths()
 
 void Classifier::InitHists()
 {
-  h1_hist_MPV_ = new TH1D("hist_MPV","hist_MPV",200, 1, 201);
+  h1_hist_MPV_ = new TH1D("hist_MPV","hist_MPV", 5000, 1, 5001);
   h1_hist_MPV_->SetTitle( "#hit/ch (non-zero only);#hit;Entries" );
-  h1_hist_MPV_ladder_ = new TH1D("NumberOfFiredChannels_ladder","NumberOfFiredChannels_ladder",350, 1, 3501);
+  h1_hist_MPV_ladder_ = new TH1D("NumberOfFiredChannels_ladder","NumberOfFiredChannels_ladder", 1000, 1, 10000);
 
   for (int i = 0; i < 8; i++)
   {
@@ -252,6 +252,8 @@ void Classifier::Process()
   hot_ch_cut_ = h1_hist_MPV_->GetXaxis()->GetBinCenter( h1_hist_MPV_->GetMaximumBin() ) * 2;
   hot_ladder_cut_ = h1_hist_MPV_ladder_->GetMean() * 5;
 
+  hot_ch_cut_ = 1000;
+  //hot_ladder_cut_ = 2000;
   process_done_ = true;
 }
 
@@ -297,7 +299,7 @@ void Classifier::WriteResults()
   tf_qa_ = new TFile(output_qa_root_file_.c_str(), "RECREATE");
   InitQaTree();
 
-  ofstream qa_txt( output_qa_txt_file_.c_str(), ios_base::out | ios_base::app );
+  ofstream qa_txt( output_qa_txt_file_.c_str(), ios_base::out | ios_base::trunc );
   qa_txt << "# FELIX\t" << "FELIX_CH\t" << "CHIP\t" << "CHANNEL" << endl;
 
   DrawHists();
