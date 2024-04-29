@@ -26,9 +26,12 @@ string GetRunType( int run_num = 26975 )
       for( int j=0; j<kFelix_num; j++ )
 	{
 	  string file_path = file_pre + to_string( j ) + "-" + string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num ) + file_suf;
-	  cout << " - " << file_path << endl;
+	  //cout << " - " << file_path << endl;
 	  if( IsFileExist( file_path ) == true )
-	    return kRun_types[i];
+	    {
+	      cout << file_path << " was found. The run type is " << kRun_types[i] << endl;
+	      return kRun_types[i];
+	    }
 	    
 	}
 
