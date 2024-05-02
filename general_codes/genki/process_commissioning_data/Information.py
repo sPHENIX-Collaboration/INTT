@@ -264,7 +264,7 @@ class Information() :
     
     def GetEventFilePath( self ) :
         directory = str( self.bbox_dir ) + "/" + self.run_type + "/"
-        name = self.GetFilePrefix( self.run_type ) + "_" + "intt?" + "-" + str(self.run) + "-" + "????" + ".evt"
+        name = self.GetFilePrefix( self.run_type ) + "_" + "intt?" + "-" + str(self.run) + "-" + "????" + ".{evt,prdf}"
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :

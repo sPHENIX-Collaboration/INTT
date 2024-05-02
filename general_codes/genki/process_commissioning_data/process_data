@@ -11,8 +11,8 @@ then
     python3 ${dir}/process_commissioning_data.py $@
     
 else
-    #log=/home/inttdev/INTT/log/inttdaq_cron/`date +\%Y\%m\%d_\%H\%M\%S\%3N`.log
-    log=/Users/genki/INTT/log/process_data/`date +\%Y\%m\%d_\%H\%M\%S\%3`.log
+    log=/home/inttdev/INTT/log/inttdaq_cron/`date +\%Y\%m\%d_\%H\%M\%S\%N`.log
+    #log=/Users/genki/INTT/log/process_data/`date +\%Y\%m\%d_\%H\%M\%S\%3`.log
     echo -e "\nLog file: ${log}\n"
     
     python3 ${dir}/process_commissioning_data.py $@ 2>&1 | tee $log
