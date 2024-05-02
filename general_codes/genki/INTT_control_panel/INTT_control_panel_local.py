@@ -16,12 +16,14 @@ year = 2024
 
 font_family = "Helvetica"
 font_title = ( font_family, 25 )
+font_button_small = ( font_family, 13 )
 font_button = ( font_family, 15 )
 font_def = ( font_family, 20 )
 
 #button_size = (100, 70 ) # in px
 button_size = (80, 60 ) # in px
 button_size_double = (button_size[0]*2, button_size[1])
+button_size_25 = (button_size[0]*2.5, button_size[1])
 button_size_triple = (button_size[0]*3, button_size[1])
 button_size_small = (button_size[0]/2, button_size[1])
 button_size_15 = (button_size[0]*1.5, button_size[1])
@@ -236,7 +238,7 @@ def UpdatePlot( window, run_type ) :
         process = sp.Popen( "echo", shell=True )
         return process
 
-    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+    command = "~/bin/process_data "\
         + ' --update-plot '\
         + ' --run-type ' + run_type + ' '\
         + ' ' + run + ' '\
@@ -275,7 +277,7 @@ def SendData( window, run_type ) :
         process = sp.Popen( "echo", shell=True )
         return process
 
-    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+    command = "~/bin/process_data "\
         + ' --send-SDCC '\
         + ' --no-check-bbox ' \
         + ' --root-dir bbox0 ' \
@@ -434,39 +436,49 @@ def app() :
             sg.Input( 39494, key="run_number", size_px=button_size_double ),
             sg.Button( "↑", key="increase_run_number", size_px=button_size_small ),
             #sg.Spin(values=[ i for i in range(0, 99) ], key="run_number_spin", size_px=button_size_double),
-            sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button )
+            sg.Combo( values=( "physics", "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
+            sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button ),
         ],
         [
             sg.Text( "", size_px=button_size_small ),
-            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
-            sg.Text( "", size_px=button_size_small ),
-            sg.Button( "Open Run\nSummary", key="open_run_summary", size_px=button_size_15, font=font_button ),
-            sg.Button( "Update Run\nSummary", key="update_plot", size_px=button_size_15, font=font_button )
+            sg.Combo( values=( "Official DST", "Own DST"), default_value="Official DST", key='dst_type', size_px=button_size_25 )
         ],
-        
         [
             sg.Checkbox( "Only first 1M hits", default=True, key="quick", size_px=button_size_triple ),
             sg.Checkbox( "Condor batchjob", default=False, key="condor", size_px=button_size_triple )
             
         ],
         [
-            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_button, justification="rigth" ),
+            sg.Text( "Run\nSummary", size_px=button_size, font=font_button_small ),
+            sg.Button( "Open Run\nSummary", key="open_run_summary", size_px=button_size_15, font=font_button ),
+            sg.Button( "Update Run\nSummary", key="update_plot", size_px=button_size_15, font=font_button )
+        ],
+        
+        [
+            sg.Text( "Hit-Base\nProc", size_px=button_size, font=font_button, justification="rigth" ),
             #sg.Button( "", key="make_plots_quick", size_px=button_size, font=font_button ),
             sg.Button( "Make\nPlots!", key="make_plots", size_px=button_size, font=font_button )
             #sg.Button( "Condor\nPlots!", key="make_plots_condor", size_px=button_size, font=font_button ),
         ],
         [
-            sg.Text( "DST\nProcesses", size_px=button_size_double, font=font_button, justification="right" ),
+            sg.Text( "DST\nProd", size_px=button_size, font=font_button, justification="right" ),
             sg.Button( "RAW\nHIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "Hitmap", key="--DST-INTTRAW-hitmap", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "Hot ch", key="--DST-INTTRAW-hot-ch", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
             sg.Button( "BCO\ndiff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
         ],
         [
-            sg.Text( "", size_px=button_size_double, font=font_title, justification="right" ),
+            sg.Text( "", size_px=button_size, font=font_button, justification="right" ),
             sg.Button( "Trkr\nHit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Trkr\nCluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Do All", key="--DST-all", size_px=button_size, font=font_button ),
+            sg.Button( "Trkr\nCluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close )
+
+        ],
+        [
+            sg.Text( "", size_px=button_size, font=font_title, justification="right" ),
+            sg.Button( "Vertex\nFinding", key="--DST-vertex-finding", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Tracking", key="--DST-Tracking", size_px=button_size, font=font_button_small, disabled=False, button_color=button_color_close ),
+            sg.Button( "Event\nDisplay", key="--DST-evernt-display", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Do All", key="--DST-all", size_px=button_size, font=font_button )
         ],
         [
             sg.Input( 240311, key="run_date", size_px=button_size_double ),
@@ -581,7 +593,8 @@ def app() :
             window[ 'run_number' ].update( str(int(window['run_number'].get()) - 1) )
         elif "DST" in event :
             logg.info( event + ":" + run )
-            processes.append( DSTProcess( window, values[ 'run_type'], event ) )
+            #processes.append( DSTProcess( window, values[ 'run_type'], event ) )
+            DSTProcess( window, values[ 'run_type'], event )
         elif event == "raul_daq" :
             processes.append( RaulDaq( window ) )
             logg.info("Process RaulDAQ data" )
