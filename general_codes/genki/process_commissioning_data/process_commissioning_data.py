@@ -66,7 +66,7 @@ if __name__ == "__main__" :
     run_types = ["beam",               "calib",              "calibration",       "commissioning",
                  "commissioning_5_23", "commissioning_5_30", "commissioning_6_2", "commissioning_6_4",
                  "commissioning_6_6",  "cosmics",            "josephb",           "junk",
-                 "pedestal",           "root_files_obsolete"
+                 "pedestal",           "root_files_obsolete", "physics"
                  ]
     
     parser.add_argument( "--run-type", type=str,
