@@ -8,6 +8,7 @@ import socket
 import subprocess
 import sys
 import time
+import pprint
 
 import Printer
         
@@ -23,7 +24,12 @@ class Information() :
         self.is_force_run = args.force_run if args.force_run is not None else False
 
         #self.run        = str(args.run).zfill( 8 ) # fill all 8-digit length with 0 if given number is not 8-digit
-        self.run = [ str(element).zfill(8) for element in args.run ]
+        self.runs = [ str(element).zfill(8) for element in args.run ]
+        self.run = -1 # self.runs[0]
+        self.year = args.year
+        if self.year is None:
+            self.year = datetime.date.today().year
+            
         self.runs_processed = [] # A list of runs to be processed. It's for auto-update mode for now.
         self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
@@ -69,9 +75,19 @@ class Information() :
 
         # Flags related to SDCC
         self.send_SDCC         = args.send_SDCC    if args.send_SDCC    is not None else False
+        self.send_map_SDCC     = args.send_map_SDCC if args.send_map_SDCC    is not None else False
         self.process_SDCC      = args.process_SDCC if args.process_SDCC is not None else False
+        self.calib_2024        = args.calib_2024   if args.calib_2024   is not None else False
+        self.update_plot       = args.update_plot  if args.update_plot  is not None else False
+        self.condor = args.condor
+        self.quick = args.quick
         self.check_bbox        = args.check_bbox   if args.check_bbox   is not None else True
+        self.bbox_commissioning  = args.bbox_commissioning
+        self.end_process_SDCC = False # Some processes at the end of processes at SDCC
 
+        if self.send_SDCC is True :
+            self.send_map_SDCC = True
+                    
         # Priority of send_SDCC and process_SDCC is higher than check_box.
         # If one of send_SDCC and process_SDCC is specified, but check_box was not given, determin check_box by the flag.
         if args.check_bbox is None :
@@ -81,10 +97,51 @@ class Information() :
         else :
             # If check_box is given, set is_SDCC_used using the 3 flags
             self.is_SDCC_used      = self.send_SDCC or self.process_SDCC or self.check_bbox
-                
-        # misc
+
+        if self.calib_2024 is True :  # for calibration 2024 mode
+            self.process_SDCC = True  # Let's do processes at SDCC
+            self.send_SDCC    = False # No need to send data. Let's assume it's already done
+            self.check_bbox   = False # No need to check the buffer box because the data has been sent to SDCC
+            self.end_process_SDCC = True
+            self.bbox_commissioning  = True
+            self.is_force_run = True
+            self.year = 2024
+
+        if self.update_plot is True :  # for calibration 2024 mode
+            self.process_SDCC = False # No need for process. Only re-make and update plot
+            self.send_SDCC    = False # No need to send data. Let's assume it's already done
+            self.check_bbox   = False # No need to check the buffer box because the data has been sent to SDCC
+            self.end_process_SDCC = True
+            self.is_force_run = True
+            self.year = 2024
+
+        #############################################################
+        # Flags for DST processes                                   #
+        #############################################################
+        self.dst_all = args.DST_all
+        self.dst_raw = args.DST_INTTRAW or self.dst_all
+        self.dst_raw_hitmap = args.DST_INTTRAW_hitmap or self.dst_all
+        self.dst_raw_hot_ch = args.DST_INTTRAW_hot_ch or self.dst_all
+        self.dst_raw_bco_diff = args.DST_INTTRAW_bco_diff or self.dst_all
+        self.dst_TrkrHit = args.DST_TrkrHit or self.dst_all
+        self.dst_TrkrCluster = args.DST_TrkrCluster or self.dst_all
+
+        self.dst_any = \
+            self.dst_raw or \
+            self.dst_raw_hitmap or \
+            self.dst_raw_hot_ch or \
+            self.dst_raw_bco_diff or \
+            self.dst_TrkrHit or \
+            self.dst_TrkrCluster
+
+        # It should be OK to force running for DST processes, I hope
+        if self.dst_any is True : 
+            self.is_force_run = True
+            
+        # paths
         self.plotter           = self.home_dir_in_plotting_server + "macro/FelixQuickViewer_1Felix.C"
         self.plotter_in_server = self.sphenix_intt_home + "macro/FelixQuickViewer_1Felix.C"
+        self.bbox_dir = pathlib.Path( "/bbox/bbox?/INTT/" if self.bbox_commissioning is False else "/bbox/commissioning/INTT/" )
 
         source_dir             = os.path.dirname( __file__ ) + "/"
         self.config_dir             = str( pathlib.Path().home() / ".INTT" )
@@ -145,10 +202,23 @@ class Information() :
         self.printer.AddSeparator()
         self.printer.AddLine( "Is SDCC used?", self.is_SDCC_used, color=header_color )
         if self.is_SDCC_used :
-            self.printer.AddLine( "    Check files to SDCC?", self.check_bbox )
-            self.printer.AddLine( "    Send files to SDCC?", self.send_SDCC )
+            self.printer.AddLine( "    Check files to SDCC? ", self.check_bbox )
+            self.printer.AddLine( "    Send files to SDCC?  ", self.send_SDCC )
             self.printer.AddLine( "    Do processes at SDCC?", self.process_SDCC )
-        
+            self.printer.AddLine( "    Calib 2024 mode?     ", self.calib_2024 )
+            self.printer.AddLine( "    End processes?       ", self.end_process_SDCC )
+            self.printer.AddLine( "    Only update plot?    ", self.update_plot )
+
+        self.printer.AddSeparator()
+        self.printer.AddLine( "Does DST processes?", self.dst_any )
+        if self.dst_any is True :
+            self.printer.AddLine( "    Make DST(INTTRAW)?", self.dst_raw )
+            self.printer.AddLine( "    Make hitmap?", self.dst_raw_hitmap )
+            self.printer.AddLine( "    Make hot ch map?", self.dst_raw_hot_ch )
+            self.printer.AddLine( "    Make BCO diff CDB?", self.dst_raw_bco_diff )
+            self.printer.AddLine( "    Make DST(Trkr_hit)?", self.dst_TrkrHit )
+            self.printer.AddLine( "    Make DST(Trkr_cluster)?", self.dst_TrkrCluster )
+
         self.printer.AddSeparator()
         self.printer.AddLine( "Auto Update?", self.auto_update, color=header_color )
         self.printer.AddLine( "Update list?", self.update_list, color=header_color )
@@ -166,26 +236,35 @@ class Information() :
             
         command += " | grep " + __file__
         
-        #print( command , flush=True )
-        #command = "ls -1"
         proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
         outputs = proc.communicate()[0].decode().split( '\n' )[0:-1]
-        #print( "ps:", outputs , flush=True )
-        #print( type(outputs), flush=True )
 
         if len(outputs) > 1 :
             return True
         else:
             return False
 
-    def GetEventFilePath( self ) :
-        directory = "/bbox/commissioning/INTT/" + self.run_type + "/"
-        #name = self.run_type + "_" + "inttX" + "-" + str(self.run).zfill( 8 ) + "-" + "0000" + ".evt"
+    def GetBBoxServer( self, intt_num ) :
+        """
+        @brief The corresponding buffer box server to the given INTT Felix server is returned.
+        @retval "bbox?" as a string, where ? is from 0 to 5.
+        """
+        return "bbox" + str( intt_num % 6 )
 
-        if self.run_type == "pedestal" or self.run_type == "junk" : 
-            name = "intt_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
+    def GetFilePrefix( self, run_type ) :
+        """
+        @brief A prefix of a file (evt, root) is returned. It's needed because there are some exceptionals...
+        """
+        if (run_type == "pedestal" or self.run_type == "junk") and self.year == 2023 : 
+            rtn = "intt"
         else :
-            name = self.run_type + "_" + "inttX" + "-" + self.run + "-" + "0000" + ".evt"
+            rtn = run_type
+
+        return rtn
+    
+    def GetEventFilePath( self ) :
+        directory = str( self.bbox_dir ) + "/" + self.run_type + "/"
+        name = self.GetFilePrefix( self.run_type ) + "_" + "intt?" + "-" + str(self.run) + "-" + "????" + ".evt"
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :

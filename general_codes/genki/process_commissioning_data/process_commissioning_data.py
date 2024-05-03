@@ -56,7 +56,10 @@ if __name__ == "__main__" :
                          default=False,
                          help="Use it to process data at SDCC.\n" )
 
-
+    parser.add_argument( "--year", type=int,
+                         default=None,
+                         help="The year of the data tobe processed. This year is taken as a default value. If you want to process data taken last year(s), use this.")
+    
     ####################################################
     # General flags                                    #
     ####################################################
@@ -68,9 +71,9 @@ if __name__ == "__main__" :
     
     parser.add_argument( "--run-type", type=str,
                          choices=run_types,
-                         default="cosmics",
+                         default="calib",
                          help="A type of run, which determins the directory in the buffer box, i.e. /bbox/commissioning/INTT/{here}. "\
-                         "A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"beam\" is default." )
+                         "A name of event files also depends on the run type.  You can give: beam/calib/junk/calibration. \"calib\" is default." )
     
     parser.add_argument( "--only",
                          action=argparse.BooleanOptionalAction,
@@ -108,7 +111,7 @@ if __name__ == "__main__" :
     
     parser.add_argument( "--root-subdir", type=str,
                          help="A name of sub-directory that contains ROOT files. \"hit_files\" is default. You don't need to change it normally." )
-        
+            
     ####################################################
     # Decoding and making plots (general)              #
     ####################################################
@@ -157,14 +160,79 @@ if __name__ == "__main__" :
                          action=argparse.BooleanOptionalAction,
                          help="Transferring evt files from the buffer box to SDCC if it's ON." )
 
+    parser.add_argument( "--send-map-SDCC",
+                         action=argparse.BooleanOptionalAction,
+                         help="Transferring the ladder map from 1008 to SDCC if it's ON." )
+
     parser.add_argument( "--process-SDCC",
                          action=argparse.BooleanOptionalAction,
                          help="Some processes (decoding for hit-wise and event-wise TTrees, and making plots) are done in SDCC." )
+
+    parser.add_argument( "--calib-2024",
+                         action=argparse.BooleanOptionalAction,
+                         help="Some processes (decoding for hit-wise, making plots, and writting summarized results in the PostgreSQL in inttdaq) are done in SDCC locally." )
+
+    parser.add_argument( "--bbox-commissioning",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="If it's true, files are seached under /bbox/commissioning/INTT. Otherwise, /bbox/bbox?/INTT will be searched (? is 0-5)." )
+
+    parser.add_argument( "--DST-all",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether all processes using a DST file is done or not. Default: False." )
+
+    parser.add_argument( "--DST-INTTRAW",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing INTTRAWHIT is produced or not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-hitmap",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether hitmaps using INTTRAWHIT is generated not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-hot-ch",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a hot channel map using the hitmaps are generated or not. Default: False." )
+    
+    parser.add_argument( "--DST-INTTRAW-bco-diff",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a CDB for the BCO difference cut is generated or not. Default: False." )
+    
+    parser.add_argument( "--DST-TrkrHit",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing Trkr_hit is produced using the hot channel map (+BCO diff cut) or not. Default: False." )
+    
+    parser.add_argument( "--DST-TrkrCluster",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="A switch to choose whether a DST containing Trkr_cluster is produced using a DST containig Trkr_hit or not. Default: False." )
+    
+    parser.add_argument( "--condor",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="If it's used, the process at SDCC is executed as a batch job of condor." )
+
+    parser.add_argument( "--quick",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="If it's used, only first about 100MB per intt to be processed." )
+
+    parser.add_argument( "--update-plot",
+                         action=argparse.BooleanOptionalAction,
+                         default=False,
+                         help="Only process End of processSDCC. " )
+
 
     args = parser.parse_args()
     #print( args )
     process = Process.Process( args )
     process.info.Print()
+    #process.info.GetEventFilePath()
     process.Do()
 
     time.sleep( 1 )

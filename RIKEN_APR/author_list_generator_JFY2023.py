@@ -92,10 +92,10 @@ class People:
             "NTU": "Department of Physics, National Taiwan University",
             "Korea": "Department of Physics, Korea University",
             "BNL_Instr": "Instrumentation Division, Brookhaven National Laboratory",
-            "JAEA": "Japan Atomic Energy Agency",
+            "JAEA": "Advanced Science Research Center, Japan Atomic Energy Agency",
             "BNL": "Physics Department, Brookhaven National Laboratory",
             "RIKEN": "RIKEN Nishina Center",
-            "TIRI": "Tokyo Metropolitan Industrial Technology Research Institute"
+            "TIRI": "Information Systems Technology Division, Tokyo Metropolitan Industrial Technology Research Institute"
         }
         self.sorted_affiliations_ = []
         

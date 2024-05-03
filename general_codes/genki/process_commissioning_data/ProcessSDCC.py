@@ -17,58 +17,40 @@ class ProcessSDCC() :
         self.info = info
 
         # (supporsed to be constant) variables for the buffer box
-        self.bbox = "bbox3"
-        self.bbox_transfer_dir = "/home/sphnxpro/mlp_transfer"
-        self.bbox_log_dir = "/logdisk/sphnxpro/condor_logs"
+        self.bbox                 = "bbox5"
+        self.bbox_transfer_dir    = "/home/sphnxpro/mlp_transfer"
+        self.bbox_log_dir         = "/logdisk/sphnxpro/condor_logs"
         self.bbox_transfer_script = "./submit_file_farm.sh"
-        self.bbox_check_script = "/home/phnxrc/INTT/genki/check_transfer.sh"
+        self.bbox_check_script    = "/home/phnxrc/INTT/genki/check_transfer.sh"
         
         # (supporsed to be constant) variables for SDCC
-        self.sdcc_ssh = "sphnx_nukazuka"
-        self.sdcc_bbox_dir = pathlib.Path( "/sphenix/lustre01/sphnxpro/commissioning/INTT" )
-        self.sdcc_work_dir = pathlib.Path( "/sphenix/tg/tg01/commissioning/INTT/" )
-        self.sdcc_job_dir = self.sdcc_work_dir / pathlib.Path( "commissioning_production/condorjobsintt" )
-        self.sdcc_file_list = pathlib.Path( self.info.config_dir ) / pathlib.Path( "infiles.list" )
-        self.sdcc_process_script = pathlib.Path( "submitjobs.sh" )
+        #self.sdcc_ssh             = "sphnx_nukazuka"
+        self.sdcc_ssh             = "sphnx04"
+        self.sdcc_bbox_dir        = pathlib.Path( "/sphenix/lustre01/sphnxpro/bbox?/INTT" )
+        if self.info.bbox_commissioning is True : 
+            self.sdcc_bbox_dir    = pathlib.Path( "/sphenix/lustre01/sphnxpro/commissioning/INTT" )
+            
+        self.sdcc_work_dir        = pathlib.Path( "/sphenix/tg/tg01/commissioning/INTT/" )
+        self.sdcc_job_dir         = self.sdcc_work_dir / pathlib.Path( "commissioning_production/condorjobsintt" )
+        self.sdcc_felix_viewer_dir= self.sdcc_job_dir / pathlib.Path( "FelixQuickViewer" )
+        self.sdcc_file_list       = pathlib.Path( self.info.config_dir ) / pathlib.Path( "infiles.list" )
+        self.sdcc_process_script  = pathlib.Path( "submitjobs.sh" )
+        self.sdcc_decode_script   = pathlib.Path( "executable_individual.sh" )
+        self.sdcc_felix_viewer    = pathlib.Path( "./FelixQuickViewer" )
+        self.sdcc_raw_files       = [] # List of raw files in SDCC to be processed
 
+        #############################################
+        # for DST process
+        self.sdcc_dst_process    = self.sdcc_job_dir / "executable_cosmics_DST.sh"
+        self.sdcc_dst_job_process = self.sdcc_job_dir / "submitjobs_cosmics_DST.sh"
+        
         # something else
-        self.sending_trial = 0 
-        self.sending_trial_max = 5
+        self.is_ended             = None
+        self.sending_trial        = 0 
+        self.sending_trial_max    = 5
         
     def Print( self ) :
         print( "ProcessSDCC" , flush=True )
-
-    def SendSDCC( self ) :
-        """!
-        @brief Sending evt files from the buffer box to SDCC.
-        @This is done by sphnxpro@bbox0. The introcution for transferring data is in https://sphenix-intra.sdcc.bnl.gov/WWW/run/2023/filetransfer.html
-        """
-
-        # check the buffer box only if specified
-        if self.CheckSendEnd() is True:
-                return None
-
-        if self.sending_trial > self.sending_trial_max :
-            print( "- #trial of sending files from 1008 to SDCC is", \
-                   self.sending_trial, \
-                   ". It's too much. Let's give up.", \
-                   flush=True, file=sys.stderr )
-            
-            return True
-            
-        print( "Sending evt files from the buffer box to SDCC. Run", self.info.run , flush=True )
-
-        command = "ssh " + self.bbox + " \"" \
-            "cd " + self.bbox_transfer_dir + " ; " \
-            "ls " + self.info.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) + \
-            " | xargs -I {} bash " + self.bbox_transfer_script + " {}\""
-
-        print( "Command:", command , flush=True )
-        if self.info.is_dry_run is False : 
-            proc = subprocess.Popen( command, shell=True )
-        # I don't wait till the end of the process
-
-        return False
 
     def CheckSendEnd( self ) :
         if self.info.check_bbox is False :
@@ -76,17 +58,21 @@ class ProcessSDCC() :
         
         print( "Checking whether sending data to SDCC has been finished or not" , flush=True )
         command = "ssh " + self.bbox + " \"" \
-            "ls " + self.info.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) + \
-            "\""
+            "ls " + self.info.GetEventFilePath() + "\""
 
         print( "- Get list of files:", command , flush=True )
         proc = subprocess.Popen( command, shell=True, stdout=subprocess.PIPE )
         proc.wait()
         files = proc.communicate()[0].decode().split( '\n' )
-
+    
         processes = []
         # loop over all files and check whether the transfer was successfully done or not
-        for afile in files[0:-1] : 
+        for afile in files[0:-1] :
+
+            # If the check flag is False, skip checking
+            if self.info.check_bbox is False :
+                break
+            
             command = "ssh " + self.bbox + " \"" + \
                 self.bbox_check_script + " " + afile + \
                 "\""
@@ -107,21 +93,96 @@ class ProcessSDCC() :
         if self.info.is_dry_run is False : 
             for proc in processes :
                 afile = proc.args.split()[-1].replace( "\"", "" ) # the last element is the file path
+                result = True if proc.returncode == 0 else False
                 all_done = all_done and ( proc.returncode ==  0 ) # True && (file0 OK?) && ... && (fileN OK?)
-                print( " -", afile, "return code:", proc.returncode, "--->", all_done , flush=True )
+                print( " -", afile, "return code:", proc.returncode, "--->", result , flush=True )
 
             print( " - Have all files been sent?\t", Printer.Printer.ColorBoolean(all_done) , flush=True )
 
-        return all_done
+        return all_done        
+
+    def SendSDCC( self ) :
+        """!
+        @brief Sending evt files from the buffer box to SDCC.
+        @This is done by sphnxpro@bbox0. The introcution for transferring data is in https://sphenix-intra.sdcc.bnl.gov/WWW/run/2023/filetransfer.html
+        """
+
+        # check the buffer box only if specified
+        if self.is_ended is True:
+            return None
+
+        if self.sending_trial > self.sending_trial_max :
+            print( "- #trial of sending files from 1008 to SDCC is", \
+                   self.sending_trial, \
+                   ". It's too much. Let's give up.", \
+                   flush=True, file=sys.stderr )
+            
+            return True
+            
+        print( "Sending evt files from the buffer box to SDCC. Run", self.info.run , flush=True )
+
+        command = "ssh " + self.bbox + " \"" \
+            "cd " + self.bbox_transfer_dir + " ; " \
+            "ls " + self.info.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) + \
+            " | xargs -I {} bash " + self.bbox_transfer_script + " {}\""
+
+        print( "Command:", command , flush=True )
+        if self.info.is_dry_run is False : 
+            proc = subprocess.Popen( command, shell=True )
+        # I don't wait the end of the process
+
+        return False
+
+    def SendMapSDCC( self ) :
+        print( "- Send ladder map files from 1008 to SDCC" )
         
-    def ProcessSDCC( self ) :
+        #########################################################
+        # Get list of evt files of this run from the buffer box #
+        #########################################################
+        command = "ssh " + self.bbox + " " \
+            "ls " + self.info.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ) 
+
+        print( "Command:", command )
+        proc = subprocess.Popen( command, stdout=subprocess.PIPE, shell=True )
+
+        #########################################################
+        # Make unique list of operated felix servers            #
+        #########################################################
+        felix_list = []
+        for line in proc.stdout.readlines() :
+            for felix in range(0, 8 ) :
+                if ("intt" + str(felix) ) in str(line) :
+                    felix_list.append( felix )
+        
+        uniq_felix_list = set( felix_list )
+
+        #########################################################
+        # Send the map to SDCC                                  #
+        #########################################################
+        for felix in uniq_felix_list :
+            # 2024/intt1_map.txt
+            map_file_sdcc = os.path.basename( self.info.GetEventFilePath().replace( "intt?", "intt" + str(felix) ).replace( "-????.evt", "_map.txt" ) )
+
+            command = "scp -3 " + self.bbox + ":../phnxrc/INTT/map_ladder/intt" + str(felix) + "_map.txt " \
+                + " " + self.sdcc_ssh + ":/sphenix/tg/tg01/commissioning/INTT/data/root_files/" \
+                + str(self.info.year) + "/" \
+                + map_file_sdcc
+
+            print( "Command:", command )
+            proc = subprocess.Popen( command, shell=True )
+            print( "\t-", map_file_sdcc, "is made." )
+            
+    def ProcessSDCC( self, condor=True , quick=False ) :
         """!
         @brief Execute some processes at SDCC
         @details The processes are defined by Milan's application. This function just submits jobs.
         """
         print( " - Processes at SDCC.", flush=True ) # Let's wait for 120s." , flush=True )
 
-        # If the number of sending data to SDCC is more than threashold, give it up
+        #########################################################
+        # If the number of attempt to send data to SDCC is more #
+        # than threashold, give it up                           #
+        #########################################################
         if self.sending_trial > self.sending_trial_max :
             print( " - Sending files to SDCC was repeated for", self.sending_trial, "."\
                    "Process run", self.info.run, "by hand.", \
@@ -133,9 +194,10 @@ class ProcessSDCC() :
                 
             return None
 
-        # Check whether evt files are available in SDCC or not
-        is_ended = self.CheckSendEnd()
-        if is_ended is False and self.info.is_dry_run is False : 
+        #########################################################
+        # Check whether evt files are available in SDCC or not  #
+        #########################################################
+        if self.is_ended is True and self.info.is_dry_run is False : 
             print( " - Some files have not been sent. No process is done." , flush=True )
             print( " - Send the files." , flush=True )
             self.sending_trial += 1
@@ -151,9 +213,11 @@ class ProcessSDCC() :
 
             return None
 
-        # Make the list of files to be processed from the real paths
+        ##############################################################
+        # Make the list of files to be processed from the real paths #
+        ##############################################################
         directory = self.sdcc_bbox_dir / self.info.run_type
-        file_expression = self.info.GetEventFilePath().replace ( "inttX", "intt?" ).replace( "-0000.", "-????." ).split( "/")[-1]
+        file_expression = self.info.GetEventFilePath().split( "/" )[-1]
 
         # It's something like
         # ssh rcas_nukazuka "ls /sphenix/lustre01/sphnxpro/commissioning/INTT/cosmics/cosmics_intt?-00025193-????.evt"
@@ -165,7 +229,9 @@ class ProcessSDCC() :
         proc.wait()
         outputs = proc.communicate()[0].decode().split( '\n' )
 
-        # Write the list of files to a text file
+        ##############################################################
+        # Write the list of files to a text file                     #
+        ##############################################################
         print( " - Files to be processed:" , flush=True )
         # change the name of the file list from infiles.list to infiles_${run}.list
         # not to confuse runs among batch jobs
@@ -176,8 +242,10 @@ class ProcessSDCC() :
                     print( "   -", output , flush=True )
                     file.write( output + "\n" )
 
-        # Send the file list with scp. The command looks like:
+        ##############################################################
+        # Send the file list with scp. The command looks like:       #
         # scp infiles.list rcas_nukazuka:/sphenix/tg/tg01/commissioning/INTT/work/genki/commissioning_production/condorjobsintt/infiles.list
+        ##############################################################
         command = "scp " + str(self.sdcc_file_list) + " " + \
             self.sdcc_ssh + ":" + str(self.sdcc_job_dir / self.sdcc_file_list.name )
         print( " - Send the file list", self.sdcc_file_list, "to SDCC by the command:" , flush=True )
@@ -187,25 +255,110 @@ class ProcessSDCC() :
             proc = subprocess.Popen( command, shell=True )
             proc.wait()
 
-        # Execute Milan's system to process the files in the list
-        command = "ssh " + self.sdcc_ssh + " \"" + \
-            "cd " + str(self.sdcc_job_dir) + "; " + \
-            "bash " + str(self.sdcc_process_script) + " " + str(self.sdcc_file_list.name) + "\""
+        if condor is True : # batch job mode            
+            # Execute Milan's system to process the files in the list
+            command = "ssh " + self.sdcc_ssh + " \"" + \
+                "cd " + str(self.sdcc_job_dir) + "; " + \
+                "bash " + str(self.sdcc_process_script) + " " + str(self.sdcc_file_list.name) + "\""
+            
+            print( " - Submit jobs to process the files with Milan\'s system." , flush=True )
+            print( command , flush=True )
+            if self.info.is_dry_run is False :
+                proc = subprocess.Popen( command, shell=True )
+                proc.wait()
+        else: # local mode
+            processes = []
+            self.sdcc_raw_files = outputs[0:-1]
+            
+            for raw_data in outputs[0:-1] :
+            #for raw_data in outputs[0:3] :
+                print( raw_data )
+                
+                # Execute Milan's system to process the files in the list
+                command = "ssh " + self.sdcc_ssh + " \"" + \
+                    "cd " + str(self.sdcc_job_dir) + "; " + \
+                    "bash " + str(self.sdcc_decode_script) + " " + raw_data 
+                if quick is True : # Quick look mode
+                    command += " 1 \""
+                else :
+                    command += "\""
+                print( " - Decode raw files in SDCC local" , flush=True )
+                print( command , flush=True )
+                if self.info.is_dry_run is False :
+                    proc = subprocess.Popen( command, shell=True )
+                    # store proc to the list 
+                    processes.append( proc )
+                    #proc.wait()
+                    
+            # Loop over all processes to wait for all 
+            for proc in processes :
+                proc.wait()
 
-        print( " - Submit jobs to process the files with Milan\'s system." , flush=True )
-        print( command , flush=True )
-        if self.info.is_dry_run is False :
-            proc = subprocess.Popen( command, shell=True )
-            proc.wait()
+    def EndProcessSDCC( self ) :
+        if self.info.year != 2023 :
 
-    def Do( self ) :
-        if self.info.IsOtherProcessRunning() is True:
-            print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" , flush=True )
+            # make run pages
+            for run in self.info.runs : 
+                command = "ssh " + self.sdcc_ssh + " \"" \
+                    "cd " + str( self.sdcc_felix_viewer_dir ) + "; " \
+                    + str( self.sdcc_felix_viewer ) + " --homepage-run --run " + str( run ) + "\""
+                print( " - Make run page for", run )
+                print( command )
+                if self.info.is_dry_run is False :
+                    proc = subprocess.Popen( command, shell=True )
+                else :
+                    print( "Dry run mode. Nothing done." )
 
-            if self.info.is_force_run is True :
-                print( "** But the force flag is True. This program runs anyway. **" , flush=True )
+            # make the title page
+            command = "ssh " + self.sdcc_ssh + " \"" \
+                "cd " + str( self.sdcc_felix_viewer_dir ) + "; " \
+                + str( self.sdcc_felix_viewer ) + " --homepage-title \""
+            print( " - Make the title page" )
+            print( command )
+            if self.info.is_dry_run is False :
+                proc = subprocess.Popen( command, shell=True )
+            else :
+                print( "Dry run mode. Nothing done." )
+                            
+        print( "ProcessSDCC.EndProcessSDCC" )
+        print( self.sdcc_raw_files )
+
+    def DstProcess( self, condor=False, quick=False ) :
+        if self.info.dst_all is True :
+            command = "ssh " + self.sdcc_ssh + " " \
+            + "bash -c \"" \
+            + "cd " + str(self.sdcc_job_dir) + "; " # cd to the job directory
+
+            if condor is True :                
+                command += str( self.sdcc_dst_job_process ) + " " # shell script
+            else: 
+                command += str( self.sdcc_dst_process ) + " "  # shell script
+                
+            command += str( int(self.info.run) ) + " "      # run number, the some first 0s are removed
+
+            # the number of events to be proceed
+            if quick is True :
+                command += "10000 "
             else:
+                command += "0 " # it means all
+
+            command += "true" # whether produce a DST (true) or using an official DST (false)
+
+            command += "\""
+            print( command )
+            #return None
+            proc = subprocess.Popen( command, shell=True )
+            #if condor is False:
+            #    proc.wait()
+                
+        
+    def Do( self ) :
+        if self.info.is_force_run is False: 
+            if self.info.IsOtherProcessRunning() is True:
+                print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" , flush=True )
                 return None
+        else:
+            print( "** But the force flag is True. This program runs anyway. **" , flush=True )
 
         #self.info.Print()
         #time.sleep( 5 ) 
@@ -216,7 +369,7 @@ class ProcessSDCC() :
             return None
 
         if self.info.check_bbox is True :
-            is_ended = self.CheckSendEnd()
+            self.is_ended = self.CheckSendEnd()
             done_or_not = Printer.Printer.ColorIt( "been done.", 'Green') if is_ended else Printer.Printer.ColorIt( "not been done.", 'Red')
             print( " - Sending", self.info.run, "has", done_or_not , flush=True )
 
@@ -224,10 +377,15 @@ class ProcessSDCC() :
         if self.info.send_SDCC is True :
             self.proc_sdcc.SendSDCC()
 
+        if self.info.send_map_SDCC is True :
+            self.proc_sdcc.SendMapSDCC()
+            
         # Processes at SDCC
         if self.info.process_SDCC is True :
             self.proc_sdcc.ProcessSDCC()
-        
+            
+        # reset the flag
+        self.is_ended = None
 
 if __name__ == "__main__" :
     print( "ProcessSDCC main function." , flush=True )

@@ -12,7 +12,7 @@ EXE = .exe
 
 FLGS = $(shell root-config --cflags)
 INCS = -I$(OFFLINE_MAIN)/include -isystem$(ROOTSYS)/include
-LIBS = -L$(OFFLINE_MAIN)/lib -lintt $(shell root-config --glibs)
+LIBS = -L$(OFFLINE_MAIN)/lib -lintt -lphool -lphparameter $(shell root-config --glibs)
 
 TRGT = example$(EXE)
 OBJS = example$(OXX)

@@ -30,7 +30,7 @@ private:
   void Init() override;
 
   // ROOT objects
-  TFile* f1_;
+  //TFile* f1_;
   TTree* tr1_;
 
   TH2D* hist_adc_ch_[14][26];

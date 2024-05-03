@@ -4,13 +4,15 @@ import os
 import signal
 import time
 import screeninfo
+import logging
 
 font_family = "Helvetica"
 font_title = ( font_family, 25 )
 font_button = ( font_family, 15 )
 font_def = ( font_family, 20 )
 
-button_size = (100, 70 ) # in px
+#button_size = (100, 70 ) # in px
+button_size = (80, 60 ) # in px
 button_size_double = (button_size[0]*2, button_size[1])
 button_size_triple = (button_size[0]*3, button_size[1])
 button_border = 1
@@ -24,7 +26,6 @@ sg.set_options( font=font_def,
 
 theme = "TealMonoa"
 sg.theme( theme )
-
 
 def GetLeftMonitor() :
     # Loop over all monitors to find the monitor at 0 in x
@@ -113,7 +114,7 @@ def LaunchOpc0Tunnel() :
     command = "gnome-terminal --title=OPC0_tunnel " \
         + "--window --geometry=23x13+" \
         + str(location[0]) + "+" + str(location[1]) + " " \
-        + "-- ssh OPC0"
+        + "-- ssh opc0"
 
     #print( command ) 
     process = sp.Popen( command, shell=True )
@@ -181,7 +182,8 @@ def LaunchElog() :
     return process
 
 def LaunchRunLog() :
-    command = "firefox https://docs.google.com/spreadsheets/d/1dkvDEc5iUQd_xskGzAvR5JQ_HzxxxeJfPXEdy0TMKas/edit#gid=0"
+    # command = "firefox https://docs.google.com/spreadsheets/d/1dkvDEc5iUQd_xskGzAvR5JQ_HzxxxeJfPXEdy0TMKas/edit#gid=0" # Run23
+    command = "firefox https://docs.google.com/spreadsheets/d/1qCxH_oOPnLCEpg9fgW_zC0G5__piRsRhklkb0tKznRQ/edit?usp=sharing" # Run24
     process = sp.Popen( command, shell=True )
     return process
 
@@ -191,11 +193,124 @@ def LaunchWiki() :
     process = sp.Popen( command, shell=True )
     return process
 
+def LaunchHomepage() :
+    command = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/"
+    print( command ) 
+    process = sp.Popen( command, shell=True )
+    return process
+
 def LaunchBeamMonitor() :
     command = "firefox https://cadweb.bnl.gov/dashs/Operations/BroadcastWeb/BroadcastMain.dash"
     print( command ) 
     process = sp.Popen( command, shell=True )
     return process
+
+def LaunchHowTo() :
+    command = "firefox https://docs.google.com/presentation/d/1w16_TctvFx27ZP1ikPqal-Ndi733mIvDfO8xNmMXGvg/edit?usp=sharing"
+    print( command ) 
+    process = sp.Popen( command, shell=True )
+    return process
+
+def UpdatePlot( window, run_type ) :
+    run_str = window[ 'run_number' ].get()
+    try:
+        run = str( int( run_str ) ).zfill( 8 )
+    except ValueError:
+        sg.popup_error( "Run number must be an integer" )
+        window[ 'run_number' ].update( 0 )
+        process = sp.Popen( "echo", shell=True )
+        return process
+
+    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+        + ' --update-plot '\
+        + ' --run-type ' + run_type + ' '\
+        + ' ' + run + ' '\
+
+    year = '2024'
+    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+
+    command += '; ' + command_2
+    print( command ) 
+    process = sp.Popen( command, shell=True )
+    return process
+
+def SendData( window, run_type ) :
+    run_str = window[ 'run_number' ].get()
+    try:
+        run = str( int( run_str ) ).zfill( 8 )
+    except ValueError:
+        sg.popup_error( "Run number must be an integer" )
+        window[ 'run_number' ].update( 0 )
+        process = sp.Popen( "echo", shell=True )
+        return process
+
+    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+        + ' --send-SDCC '\
+        + ' --no-check-bbox ' \
+        + ' --root-dir bbox0 ' \
+        + ' --force-run ' \
+        + ' --run-type ' + run_type + ' '\
+        + ' ' + run + ' '\
+
+    print( command )
+    process = sp.Popen( command, shell=True )
+    return process
+
+def MakePlot( window, run_type, condor=False, quick=False ) :
+    run_str = window[ 'run_number' ].get()
+    try:
+        run = str( int( run_str ) ).zfill( 8 )
+    except ValueError:
+        sg.popup_error( "Run number must be an integer" )
+        window[ 'run_number' ].update( 0 )
+        process = sp.Popen( "echo", shell=True )
+        return process
+
+    command = "ssh inttdaq /home/inttdev/bin/process_data "\
+        + ' --calib-2024 '\
+        + ' --run-type ' + run_type + ' '\
+        + ' ' + run + ' '\
+
+    if condor is True :
+        command += ' --condor'
+
+    if quick is True :
+        command += ' --quick'
+
+    year = '2024'
+    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/' + run + '/'
+
+    command += '; ' + command_2
+    print( command ) 
+    process = sp.Popen( command, shell=True )
+    return process
+
+def RaulDaq( window ) :
+    run_str1 = window[ 'run_date' ].get()
+    run_str2 = window[ 'run_time' ].get()
+
+#    command = "ssh inttdaq \"source /usr/local/root/bin/thisroot.sh; cd /home/inttdev/macro/ ; ./process_latest_data_2024.sh\""
+
+    command = "ssh inttdaq \"source /usr/local/root/bin/thisroot.sh; cd /home/inttdev/macro/ ; ./process_latest_data_2024_all.sh" \
+        + ' ' + run_str1 + ' ' + run_str2 + "\""
+
+    year = '2024'    
+    command_2 = "firefox https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/commissioning_plots/" + year + '/'
+
+    command += '; ' + command_2
+    
+    process = sp.Popen( command, shell=True )
+    return process
+    
+def GetLog():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(' %(asctime)s -- %(message)s')
+    file_handler = logging.FileHandler('/tmp/INTT_control_panel.log')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
 
 def LaunchAll( window ) :
     LaunchLV()
@@ -220,7 +335,6 @@ def app() :
             sg.Button( "intt 7\n6N, 7N", key="terminal_intt7", size_px=button_size, font=font_button ),
             sg.Button( "ALL intt", key="terminal_all", size_px=button_size, font=font_button ),
         ]
-
         ]
     
     frame = sg.Frame( "", 
@@ -241,6 +355,7 @@ def app() :
             #sg.Button( "Start\ngRPCs", key="expert_gui_start_grpc", size_px=button_size, font=font_button ),
             #sg.Button( "Kill\ngRPCs", key="expert_gui_kill_grpc", size_px=button_size, font=font_button ),
             sg.Button( "Expert\nGUI", key="expert_gui", size_px=button_size, font=font_button ),
+            sg.Button( "Home\nPage", key="opne_hp", size_px=button_size, font=font_button ),
         ],
         [ frame ],
         [
@@ -249,9 +364,31 @@ def app() :
             sg.Button( "Run\nLog", key="run_log", size_px=button_size, font=font_button ),
             sg.Button( "Wiki", size_px=button_size, font=font_button ),
             sg.Button( "Beam", size_px=button_size, font=font_button ),
-            sg.Button( "Close", size_px=button_size, font=font_button )
+            #sg.Button( "Close", size_px=button_size, font=font_button, button_color=button_color_close )
+            sg.Button( "HowTo", size_px=button_size, font=font_button )
+        ],
+        [
+            sg.Input( 31417, key="run_number", size_px=button_size_double ),
+            sg.Combo( values=( "beam", "cosmics", "calib", "pedestal", "junk"), default_value="pedestal", key='run_type', size_px=button_size_double ),
+            sg.Button( "Send\nData", key="send_data", size_px=button_size, font=font_button ),
+            sg.Button( "Update\nWeb", key="update_plot", size_px=button_size, font=font_button ),
+        ],
+        [
+            sg.Text( "Hit-Base\nProcesses", size_px=button_size_double, font=font_button ),
+            sg.Button( "Quick\nCheck!", key="make_plots_quick", size_px=button_size, font=font_button ),
+            sg.Button( "Make\nPlots!", key="make_plots", size_px=button_size, font=font_button ),
+            sg.Button( "Condor\nPlots!", key="make_plots_condor", size_px=button_size, font=font_button ),
+        ],
+        [
+            sg.Text( "DST\nProcess", size_px=button_size_double, font=font_button )
+        ],
+        [
+            sg.Input( 240311, key="run_date", size_px=button_size_double ),
+            sg.Input(   1207, key="run_time", size_px=button_size ),
+            sg.Button( "RaulDAQ\nProcess", key="raul_daq", size_px=button_size_double, font=font_button ),
+            sg.Button( "Close", size_px=button_size, font=font_button, button_color=button_color_close )
         ]
-
+        
     ]
 
 
@@ -264,9 +401,15 @@ def app() :
                         finalize=True )
     #window.bind("<Control-q>", "Ctrl-q")
 
+    ## added for GUI log
+    logg = GetLog()
+
     processes = []
     while True :
         event, values = window.read( timeout=1000 )
+
+        ## added for GUI log
+        run = window[ 'run_number' ].get()
 
         if event is not None and event != "__TIMEOUT__" :
             print( "event:", event)
@@ -315,6 +458,10 @@ def app() :
             processes.append( LaunchRunLog() )
         elif event == "Beam" :
             processes.append( LaunchBeamMonitor() )
+        elif event == "HowTo" :
+            processes.append( LaunchHowTo() )
+        elif event == "opne_hp" :
+            processes.append( LaunchHomepage() )
         elif event == "opc0_tunnel" :
             processes.append( LaunchOpc0Tunnel() )
         elif event == "expert_gui" :
@@ -323,7 +470,25 @@ def app() :
             processes.append( OperateExpertGuiGrpc( mode="start" ) )
         elif event == "expert_gui_kill_grpc" :
             processes.append( OperateExpertGuiGrpc( mode="kill" ) )
-            
+        elif event == "update_plot" :
+            processes.append( UpdatePlot( window, values['run_type'] ) )
+            logg.info("Update plot on Run: " + run)
+        elif event == "send_data" :
+            processes.append( SendData( window, values['run_type'] ) )
+            logg.info("Send Data Run: " + run)
+        elif event == "make_plots" :
+            processes.append( MakePlot( window, values['run_type'] ) )
+            logg.info("Make Plot Run: " + run)
+        elif event == "make_plots_quick" :
+            processes.append( MakePlot( window, values['run_type'], quick=True ) )
+            logg.info("QuickLook Run: " + run)
+        elif event == "make_plots_condor" :
+            processes.append( MakePlot( window, values['run_type'], condor=True ) )
+            logg.info("Make Plot Run: " + run)
+        elif event == "raul_daq" :
+            processes.append( RaulDaq( window ) )
+            logg.info("Process RaulDAQ data" )
+
     print( "Terminate all processes" )
     for proc in processes :
         #os.killpg(os.getpgid(proc.pid), signal.SIGTERM)

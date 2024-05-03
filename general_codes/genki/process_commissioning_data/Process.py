@@ -48,14 +48,14 @@ class Process() :
 
         if is_event_wise is False :
             command_to_dir = "cd /home/phnxrc/INTT/jbertaux ; "
-            #command_decode = "ls -r " + self.info.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice bash ./myfirstproject.sh {}"
-            command_decode = "ls -r " + self.info.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} bash ./myfirstproject.sh {}"
+            #command_decode = "ls -r " + self.info.GetEventFilePath_Commissioning().replace( "-0000.", "-????." ) + " | xargs -I {} nice bash ./myfirstproject.sh {}"
+            command_decode = "ls -r " + self.info.GetEventFilePath() + " | xargs -I {} bash ./myfirstproject.sh {}"
 
             whole_command = init_commands + command_to_dir + command_decode
         else:
             command_to_dir = "cd /home/phnxrc/INTT/hachiya/convertInttRaw/test1/ ; "
-            #command_decode = "ls -r " + self.info.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} nice root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
-            command_decode = "ls -r " + self.info.GetEventFilePath().replace( "-0000.", "-????." ) + " | xargs -I {} root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            #command_decode = "ls -r " + self.info.GetEventFilePath_Commissioning().replace( "-0000.", "-????." ) + " | xargs -I {} nice root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
+            command_decode = "ls -r " + self.info.GetEventFilePath() + " | xargs -I {} root -l -q -b 'runConvertInttData.C(\\\"{}\\\")'"
             
             whole_command = init_commands + command_to_dir + command_decode
             
@@ -124,7 +124,9 @@ class Process() :
     def MakeEvtList( self, ignored_runs=[] ):
         print( "MakeEvtList" , flush=True )
         print( "Ignored runs:", ignored_runs , flush=True )
-        command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.info.GetEventFilePath() ) + " | head -n 400"
+        #command = "ssh intt2 " + "ls -1t " + os.path.dirname( self.info.GetEventFilePath_Commissioning() ) + " | head -n 400"
+        #command = "ssh intt2 " + "ls -1t " + os.path.dirname( str(self.info.GetEventFilePath()) ) + " | head -n 400"
+        command = "ssh intt2 \"find  " + str( os.path.dirname( self.info.GetEventFilePath() ) ) + " -type f | xargs ls -t1 \" | head -n 400 2>/dev/null"
         print( command , flush=True )
 
         if self.info.is_dry_run is False :
@@ -134,14 +136,19 @@ class Process() :
 
             all_runs = []
             for output in outputs[0:-2] :
-                pos_left = len( self.info.run_type ) + 7
-                pos_right = pos_left + 8
+                #pos_left = len( self.info.run_type ) + 7
+                #pos_right = pos_left + 8
+
+                pos_right = len( output ) - ( 3 + 1 + 4 + 1 ) # lest pos - ( "evt" - "." - "0000" )
+                pos_left = pos_right - 8 # pos_right - "00000000"
+                
                 #print( type(pos_left), pos_left, type(pos_right), pos_right, type(output), output , flush=True )
 
                 # There may be files with a name different from the assumed format
                 # ( {self.info.run_type}_intt?-????????-????.evt, e.g. beam_intt1-00001234-0056.evt)
                 # For the moment, I exclude files with shorter name than the assumed format not to affect in reading file.
                 run = output[ pos_left:pos_right ]
+
                 #print( "debugging:", run ), flush=True )
                 #print( "MakeEvtList:", ignored_runs, run, run in ignored_runs , flush=True )
                 if run != '' :
@@ -149,6 +156,7 @@ class Process() :
                         all_runs.append( run )
                 # end of for output in outputs[0:-2]
             # end of if self.info.is_dry_run is False
+            
             # keep only unique elements
             #runs = sorted( list(set(all_runs)) )
             runs = sorted( list(set(all_runs)) )
@@ -247,10 +255,10 @@ class Process() :
             # end of if self.info.update_list is True 
 
         print( "Let\'s find new runs!" , flush=True )
-        runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
-        self.info_runs_processed = runs_processed # give the list of runs to be processed.
+        self.info.runs_processed = self.GetNewRuns()[0:-1] # skip the latest run since it may be running now
+        #self.info_runs_processed = runs_processed # give the list of runs to be processed.
         
-        if runs_processed == [] :
+        if self.info.runs_processed == [] :
             print( "No runs processed" , flush=True )
             # Get the current list back from the temp file
             command = "cp " + self.info.evt_list_temp + " " + self.info.evt_list
@@ -270,25 +278,27 @@ class Process() :
         self.info.update_list = False
         # loop over all runs to be processed
         counter = 0
+        print( "End of autoupdate function" )
+        #print( runs_processed )
+        print( self.info.runs_processed )
         self.DoIteratively()
 
     def DoIteratively( self ) :        
         print( "Loop over new runs", self.info.runs_processed , flush=True )
         for run in self.info.runs_processed :
             self.info.run = run # change the run to be processed
-            print( "Auto update, Processing Run", self.info.run , flush=True )
+            print( "Processing Run", self.info.run , flush=True )
             self.Do()
             # end of for run in runs_processed
 
         print( "Processed runs:", self.info.runs_processed , flush=True )
             
     def Do( self ) :
-        if self.info.IsOtherProcessRunning() is True:
-            print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" , flush=True )
-
-            if self.info.is_force_run is True :
+        if self.info.is_force_run is False :
+            if self.info.IsOtherProcessRunning() is True:
                 print( "** But the force flag is True. This program runs anyway. **" , flush=True )
             else:
+                print( "Other process is running. Nothing done.", "(dry run)" if self.info.is_dry_run else "" , flush=True )
                 return None
 
         #self.info.Print()
@@ -301,9 +311,10 @@ class Process() :
             return None
 
         # it's historical reason... if self.info.run is a list, execute DoIteratively (it's always a list now...)
-        if type( self.info.run ) is list :
-            print( self.info.run, self.info.runs_processed )
-            self.info.runs_processed = self.info.run
+        #if type( self.info.runs ) is list :
+        if self.info.run == -1 :
+            print( self.info.runs, self.info.runs_processed )
+            self.info.runs_processed = self.info.runs
             self.info.run = 0
             print( self.info.run, self.info.runs_processed )
             self.DoIteratively()
@@ -339,6 +350,16 @@ class Process() :
             self.TransferPlot()
             print( "Plots transferred!", "(dry run)" if self.info.is_dry_run else "" , flush=True )
 
+        # copy ladder map files from opc0 to SDCC
+        if self.info.send_map_SDCC is True :
+            self.proc_sdcc.SendMapSDCC()
+
         # Processes at SDCC
         if self.info.process_SDCC is True :
-            self.proc_sdcc.ProcessSDCC()            
+            self.proc_sdcc.ProcessSDCC( condor=self.info.condor , quick=self.info.quick )
+
+        if self.info.dst_any is True :
+            self.proc_sdcc.DstProcess( condor=self.info.condor , quick=self.info.quick )
+
+        if self.info.end_process_SDCC is True :
+            self.proc_sdcc.EndProcessSDCC()
