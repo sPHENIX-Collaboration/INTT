@@ -82,6 +82,7 @@ private:
 
   // mother 3D hist
   TH3I* hist_fee_chip_chan_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix
+  TH3I* hist_fee_chip_chan_woclonehit_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix ; without clonehit
   TH3I* hist_fee_bco_full_event_counter_[ kFelix_num_ ]; // event counter vs bco full vs ladder vs felix
   TH3I* hist_fee_bco_full_event_counter_diff_[ kFelix_num_ ]; // difference of event counter vs difference of bco full vs ladder vs felix, difference means ( val - Min( val(felix=Min(felix) ) ) )
   
@@ -92,6 +93,8 @@ private:
   // a simple 1D hists
   TH1I* hist_nhit_; // the number of INTTRAWHIT
   TH1I* hist_pid_; // the number of hits for each FELIX server
+  TH1I* hist_nhit_south_; // the number of INTTRAWHIT
+  TH1I* hist_nhit_north_; // the number of INTTRAWHIT
 
   // TH1I* hist_fee_;
   // TH1I* hist_chip_;
@@ -103,6 +106,9 @@ private:
   // felix vs event counter
   TH1D* hist_event_counter_[ kFelix_num_];
   TH1D* hist_event_counter_diff_[ kFelix_num_];
+ 
+ // bool to check the clone hit 
+  bool IsCloneHit_[ kFelix_num_ ][ kFee_num_ ][ kChip_num_ ][ kChan_num_ ]{};
 
   // nodes
   InttEventInfo*          node_intteventheader_map_;
