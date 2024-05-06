@@ -266,7 +266,6 @@ void InttClassifier::ProcessBeam()
     std::cout << par[1] << std::endl;
     std::cout << par[2] << std::endl;
     hot_ch_cut_gaus_[i] = par[1] + par[2] * sig_cut_;
-    DoGausClassification(i,hot_ch_cut_gaus_[i]);
   }
 }
 
