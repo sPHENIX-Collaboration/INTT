@@ -92,6 +92,19 @@ void InttRawHitQA::DrawHists()
   DrawStats( hist_nhit_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:Hit num per event" );
 
+// #hit dist
+  gPad->SetLogy( true );
+  hist_nhit_south_->Draw();
+  DrawStats( hist_nhit_south_, 0.9, 0.65, 0.99, 0.9 );
+  c->Print( output_pdf_.c_str(), "Title:# Hit South" );
+
+  // #hit dist
+  gPad->SetLogy( true );
+  hist_nhit_north_->Draw();
+  DrawStats( hist_nhit_north_, 0.9, 0.65, 0.99, 0.9 );
+  c->Print( output_pdf_.c_str(), "Title:# Hit North" );
+
+
   ////////////////////////////////////////////////////////
   // FELIX dist
   gPad->SetLogy( true );
@@ -245,6 +258,7 @@ void InttRawHitQA::ProcessHists()
       for( int ladder=0; ladder<kFee_num_; ladder++ )
 	{
 	  hist_fee_chip_chan_[ felix ]->GetXaxis()->SetRange( ladder+1, ladder+1 );
+	  hist_fee_chip_chan_woclonehit_[ felix ]->GetXaxis()->SetRange( ladder+1, ladder+1 );
 	  //hist_fee_chip_chan_[ felix ]->GetXaxis()->SetRange( 2, 5 );
 	  // TProfile2D* Project3DProfile(Option_t* option = "xy") const     // *MENU*
 
@@ -330,7 +344,14 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
 		    kFee_num_, 0, kFee_num_,
 		    kChip_num_, 1, kChip_num_+1,
 		    kChan_num_, 0, kChan_num_ );
-      
+
+      string name_woclonehit = name + "_woclonehit";
+      string title_woclonehit = title + ";woclonehit";
+      hist_fee_chip_chan_woclonehit_[felix] = new TH3I(name_woclonehit.c_str(), title_woclonehit.c_str(),
+                                                     kFee_num_, 0, kFee_num_,
+                                                     kChip_num_, 1, kChip_num_ + 1,
+                                                     kChan_num_, 0, kChan_num_);
+
       string name_bco_event = name + "_bco_full_event_counter";
       string title_bco_event = name + ";FELIX_CH;BCO full;Event Counter";
       hist_fee_bco_full_event_counter_[ felix ]
@@ -348,7 +369,6 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
 		    kFee_num_, 0, kFee_num_,
 		    2 * max / 100, -max, max,
 		    2 * max / 100, -max, max );
-
     }
 
   /////////////////////////////////////////////
@@ -373,6 +393,12 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
   /////////////////////////////////////////////
   hist_nhit_ = new TH1I( "nhit", "#INTTRAWHIT per event;#hit;Entries", 1e4, 0, 1e4 );
   this->HistConfig( hist_nhit_ );
+ 
+  hist_nhit_south_ = new TH1I( "nhit_south", "#INTTRAWHIT South;event;#hit", 1e4, 0, 1e5 );
+  this->HistConfig( hist_nhit_south_ );
+  
+  hist_nhit_north_ = new TH1I( "nhit_north", "#INTTRAWHIT North;event;#hit", 1e4, 0, 1e5 );
+  this->HistConfig( hist_nhit_north_ );
 
   hist_pid_      = new TH1I ( "pid", "Packet ID distribution;pid;Entries", kFelix_num_, kFirst_pid_, kFirst_pid_ + kFelix_num_ );
   this->HistConfig( hist_pid_ );
@@ -393,7 +419,6 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
 int InttRawHitQA::process_event(PHCompositeNode *topNode)
 {
 
-
   // Get nodes to access data
   auto status = this->GetNodes(topNode);
 
@@ -409,8 +434,12 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
   //auto bco_full = node_inttrawhit_map_->get_hit(0)->get_bco();
   hist_bco_full_->Fill( bco_full );
 
+  // Intitialize for Clone hit counter
+  memset(IsCloneHit_, false, sizeof(IsCloneHit_));
+  
   // initial loop to get some values    
   uint32_t event_counter_ref = 100000000; // 100 M
+
   
   for (unsigned int i = 0; i < raw_hit_num; i++)
   {
@@ -429,51 +458,62 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
   for (unsigned int i = 0; i < raw_hit_num; i++)
   {
     auto hit = node_inttrawhit_map_->get_hit(i);
-    
+
     int felix = hit->get_packetid() - kFirst_pid_;
     int felix_ch = hit->get_fee();
     int chip = hit->get_chip_id();
     int chan = hit->get_channel_id();
-    
+
     // The raw Chip ID can be more than 26
-    if( chip > kChip_num_ )
-      {
-	chip = chip - kChip_num_;
-      }
+    if (chip > kChip_num_)
+    {
+      chip = chip - kChip_num_;
+    }
+    if (IsCloneHit_[felix][felix_ch][chip][chan])
+    {
+      // loop for clone hit info. 
+    }
+    else
+    {
+      // loop for something related to clone hit QA
+      // In this loop, hit without clone hit will be used.
+      hist_fee_chip_chan_woclonehit_[felix]->Fill(felix_ch, chip, chan);
+      IsCloneHit_[felix][felix_ch][chip][chan] = true;
+    }
+    hist_fee_chip_chan_[felix]->Fill(felix_ch, chip, chan);
+    hist_adc_->Fill(hit->get_adc());
+    hist_bco_->Fill(hit->get_FPHX_BCO());
 
-    hist_fee_chip_chan_[ felix ]->Fill( felix_ch, chip, chan );
-    hist_adc_->Fill( hit->get_adc() );
-    hist_bco_->Fill( hit->get_FPHX_BCO() );
+    hist_fee_bco_full_event_counter_[felix]
+        ->Fill(felix_ch, // chip, chan );
+               hit->get_bco(),
+               hit->get_event_counter());
 
-    hist_fee_bco_full_event_counter_[ felix ]
-      ->Fill( felix_ch, //chip, chan );
-	      hit->get_bco(),
-	      hit->get_event_counter() );
-    
-    hist_fee_bco_full_event_counter_diff_[ felix ]
-      ->Fill( felix_ch,
-	      hit->get_bco() - bco_full,
-	      hit->get_event_counter() - event_counter_ref );
-
-    
-    
-    //if( false )
-    if( hit->get_event_counter() - event_counter_ref != 0 )
-      {
-	found = true;
-	cout << setw(6) << i << " "
-	     << setw(13) << event_counter_ref
-	     << setw(10) << hit->get_event_counter() << " "
-	     << setw(4) << "felix " << hit->get_packetid() << " "   // Packet ID
-	     << setw(3) << hit->get_fee() << " "        // FELIX CH (module)
-	     << setw(4) << chip << " "    // chip_id
-	     << setw(4) << hit->get_channel_id() << " " // chan_id
-	     << setw(3) << hit->get_adc() << " "        // adc
-	     << setw(3) << hit->get_FPHX_BCO() << " "   // bco
-	     << setw(12) << hit->get_bco() << " "       // bco_full
-	     << setw(3) << (hit->get_bco() & 0x7F) - hit->get_FPHX_BCO() << " "
-	     << endl;
-      }
+    hist_fee_bco_full_event_counter_diff_[felix]
+        ->Fill(felix_ch,
+               hit->get_bco() - bco_full,
+               hit->get_event_counter() - event_counter_ref);
+    if (felix < 4)
+      hist_nhit_south_->Fill(hit->get_event_counter());
+    else
+      hist_nhit_north_->Fill(hit->get_event_counter());
+    // if( false )
+    if (hit->get_event_counter() - event_counter_ref != 0)
+    {
+      found = true;
+      cout << setw(6) << i << " "
+           << setw(13) << event_counter_ref
+           << setw(10) << hit->get_event_counter() << " "
+           << setw(4) << "felix " << hit->get_packetid() << " " // Packet ID
+           << setw(3) << hit->get_fee() << " "                  // FELIX CH (module)
+           << setw(4) << chip << " "                            // chip_id
+           << setw(4) << hit->get_channel_id() << " "           // chan_id
+           << setw(3) << hit->get_adc() << " "                  // adc
+           << setw(3) << hit->get_FPHX_BCO() << " "             // bco
+           << setw(12) << hit->get_bco() << " "                 // bco_full
+           << setw(3) << (hit->get_bco() & 0x7F) - hit->get_FPHX_BCO() << " "
+           << endl;
+    }
   }
 
   if( found )
@@ -515,9 +555,14 @@ int InttRawHitQA::EndRun(const int runnumber)
     {
       tf_output_->WriteTObject( hist, hist->GetName() );
     }
-
+    for (auto &hist : hist_fee_chip_chan_woclonehit_)
+    {
+      tf_output_->WriteTObject(hist, hist->GetName());
+    }
   // write 1D hists into a ROOT file
   tf_output_->WriteTObject( hist_nhit_, hist_nhit_->GetName() );
+  tf_output_->WriteTObject( hist_nhit_south_, hist_nhit_south_->GetName() );
+  tf_output_->WriteTObject( hist_nhit_north_, hist_nhit_north_->GetName() );
   tf_output_->WriteTObject( hist_pid_, hist_pid_->GetName() );
   tf_output_->WriteTObject( hist_adc_, hist_adc_->GetName() );
   tf_output_->WriteTObject( hist_bco_, hist_bco_->GetName() );
