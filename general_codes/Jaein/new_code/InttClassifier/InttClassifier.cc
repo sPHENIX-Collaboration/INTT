@@ -385,6 +385,10 @@ void InttClassifier::WriteResults()
   tf_qa_->WriteTObject(h1_hist_gaus_, h1_hist_gaus_->GetName());
   tf_qa_->WriteTObject(h1_hist_chip_, h1_hist_chip_->GetName());
   tf_qa_->WriteTObject(h1_hist_MPV_ladder_, h1_hist_MPV_ladder_->GetName());
+  for(int i=0;i<8;i++)
+  {
+    tf_qa_->WriteTObject(h1_hist_gaus_felix_[i], h1_hist_gaus_felix_[i]->GetName());
+  }
 
   int size = 0;
   TDirectory *dir[kFelix_num];
@@ -432,12 +436,21 @@ void InttClassifier::WriteResults()
           // }
 
           // in the case of hot channel
-          if(isbeam_)
+          if (isbeam_)
           {
-            if(ch_entry_ < hot_ch_cut_gaus_[felix])
-            ishot_ = true;
+            if (ch_entry_ > hot_ch_cut_gaus_[felix])
+              ishot_ = true;
+            else
+              ishot_ = false;
           }
-          if (entry_ > hot_ch_cut_ || NumberOfFiredChan_[felix][i] > hot_ladder_cut_)
+
+          if (!isbeam_)
+          {
+            if (ch_entry_ > hot_ch_cut_ || NumberOfFiredChan_[felix][i] > hot_ladder_cut_)
+              ishot_ = true;
+            else
+              ishot_ = false;
+          }
           // if (ch_entry_ > hotchannelcut)
           if(ishot_)
           {
