@@ -44,6 +44,9 @@ class ProcessSDCC() :
         self.sdcc_dst_process    = self.sdcc_job_dir / "executable_cosmics_DST.sh"
         self.sdcc_dst_job_process = self.sdcc_job_dir / "submitjobs_cosmics_DST.sh"
         
+        self.sdcc_general_dst_process    = self.sdcc_job_dir / "executable_general_DST.sh"
+        self.sdcc_general_dst_job_process = self.sdcc_job_dir / "submitjobs_general_DST.sh"
+        
         # something else
         self.is_ended             = None
         self.sending_trial        = 0 
@@ -347,9 +350,62 @@ class ProcessSDCC() :
             command += "\""
             print( command )
             #return None
-            proc = subprocess.Popen( command, shell=True )
+            if self.info.is_dry_run is False : 
+                proc = subprocess.Popen( command, shell=True )
+            else:
+                print( "Dry run mode. Nothing done." )
             #if condor is False:
             #    proc.wait()
+                
+        
+    def GeneralDstProcess( self, condor=False, quick=False ) :
+        if self.info.dst_any is True :
+            command = "ssh " + self.sdcc_ssh + " " \
+            + "bash -c \"" \
+            + "cd " + str(self.sdcc_job_dir) + "; " # cd to the job directory
+
+            if condor is True :                
+                command += str( self.sdcc_general_dst_job_process ) + " " # shell script
+            else: 
+                command += str( self.sdcc_general_dst_process ) + " "  # shell script
+
+            #######################################################################################################################################
+            # executable_general_DST.sh                                                                                                           #
+            # usage: ./executable_general_DST.sh [run_number] [processed_event_num] [make own DST] [process type]                                 #
+            #     [run_number]         : The run to be processed.                                                                                 #
+            #     [processed_event_num]: The number of events to be processed. The default value is all events in the file.                       #
+            #                          : If you set -1, it means dry run (nothing done for debugging).                                            #
+            #     [make own DST]       : It can be true/false (default: false). If it's true, a DST containing INTTRAWHIT is                      #
+            #                          : generated otherwise, an official DST will be used. If the official DST is not found, this job is stopped.#
+            #     [process type]       : Choise of process. It can be                                                                             #
+            #     DST_INTTRAWHIT hitmap hot_ch_list bco_diff_cut DST_Trkr_hit DST_Trkr_Cluster all debug                                          #
+            #######################################################################################################################################
+            command += str( int(self.info.run) ) + " "      # run number, the some first 0s are removed
+
+            # the number of events to be proceed
+            if quick is True :
+                command += "10000 "
+                #command += "-1 "
+            else:
+                command += "0 " # it means all
+
+            if self.info.use_official_dst is True : 
+                command += "true " # whether produce a DST (true) or using an official DST (false)
+            else:
+                command += "false " # in the case of own DST
+
+            all_commands = ""
+            for flag in self.info.dst_flags :
+
+                this_command = command + flag + "\""
+                print( this_command )
+                all_commands += this_command + "; "
+
+            print( all_commands )
+            if self.info.is_dry_run is False : 
+                proc = subprocess.Popen( all_commands, shell=True )
+            else:
+                print( "Dry run mode. Nothing done." )
                 
         
     def Do( self ) :

@@ -3,8 +3,8 @@
 using namespace std;
 
 //____________________________________________________________________________..
-InttRawHitQA::InttRawHitQA(const std::string &name):
- SubsysReco(name)
+InttRawHitQA::InttRawHitQA(const std::string &name, bool is_official ):
+  SubsysReco(name), is_official_( is_official )
 {
 
 }
@@ -22,6 +22,7 @@ int InttRawHitQA::GetNodes(PHCompositeNode *topNode)
 {
   /////////////////////////////////////////////////////////////////////////
   // INTT event header
+
   string node_name_intteventheader = "INTTEVENTHEADER";
   node_intteventheader_map_ =
     findNode::getClass<InttEventInfo>(topNode, node_name_intteventheader);
@@ -293,10 +294,15 @@ void InttRawHitQA::SetOutputDir( string dir )
       output_dir_ = dir;
     }
   
-  string run_num_str = string( 8 - to_string(run_num_).size(), '0' ) + to_string( run_num_ );  
-  output_root_ = output_dir_ + to_string( year_ ) + "/root/" + output_basename_ + run_num_str + ".root";
-  output_pdf_  = output_dir_ + to_string( year_ ) + "/plots/" + output_basename_ + run_num_str + ".pdf";
-  output_txt_  = output_dir_ + to_string( year_ ) + "/txt/" + output_basename_ + run_num_str + ".txt";
+  string run_num_str = string( 8 - to_string(run_num_).size(), '0' ) + to_string( run_num_ );
+  string suffix_official_private = "_official";
+  if( is_official_ == false )
+    suffix_official_private = "_special";
+  
+
+  output_root_ = output_dir_ + to_string( year_ ) + "/root/" + output_basename_ + run_num_str + suffix_official_private + ".root";
+  output_pdf_  = output_dir_ + to_string( year_ ) + "/plots/" + output_basename_ + run_num_str + suffix_official_private + ".pdf";
+  output_txt_  = output_dir_ + to_string( year_ ) + "/txt/" + output_basename_ + run_num_str + suffix_official_private + ".txt";
 			      
 }
 
@@ -423,7 +429,9 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
   auto raw_hit_num = node_inttrawhit_map_->get_nhits();
   hist_nhit_->Fill( raw_hit_num );
 
+  //  cout << node_intteventheader_map_->get_bco_full() << endl;
   auto bco_full = node_intteventheader_map_->get_bco_full();
+  //auto bco_full = node_inttrawhit_map_->get_hit(0)->get_bco();
   hist_bco_full_->Fill( bco_full );
 
   // Intitialize for Clone hit counter
