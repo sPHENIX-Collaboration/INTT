@@ -212,6 +212,21 @@ if __name__ == "__main__" :
                          default=False,
                          help="A switch to choose whether a DST containing Trkr_cluster is produced using a DST containig Trkr_hit or not. Default: False." )
     
+    parser.add_argument( "--official-DST",
+                         #action=argparse.BooleanOptionalAction,
+                         dest="official_DST",
+                         action="store_true",
+                         #default=True,
+                         help="The official DST is used if specified. (default: True)" )
+
+    parser.add_argument( "--own-DST",
+                         #action=argparse.BooleanOptionalAction,
+                         dest="official_DST",
+                         action="store_false",
+                         #default=True,
+                         help="Own DST is used or produced if specified. (default: False)" )
+    parser.set_defaults(  official_DST=True )
+
     parser.add_argument( "--condor",
                          action=argparse.BooleanOptionalAction,
                          default=False,
@@ -236,4 +251,4 @@ if __name__ == "__main__" :
     process.Do()
 
     time.sleep( 1 )
-    print( "All processes were ended" , flush=True )
+    #print( "All processes were ended" , flush=True )

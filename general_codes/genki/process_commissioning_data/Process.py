@@ -359,7 +359,7 @@ class Process() :
             self.proc_sdcc.ProcessSDCC( condor=self.info.condor , quick=self.info.quick )
 
         if self.info.dst_any is True :
-            self.proc_sdcc.DstProcess( condor=self.info.condor , quick=self.info.quick )
+            self.proc_sdcc.GeneralDstProcess( condor=self.info.condor , quick=self.info.quick )
 
         if self.info.end_process_SDCC is True :
             self.proc_sdcc.EndProcessSDCC()
