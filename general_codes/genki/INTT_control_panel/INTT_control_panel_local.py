@@ -319,7 +319,7 @@ def MakePlot( window, run_type, condor=False, quick=False ) :
     process = sp.Popen( command, shell=True )
     return process
 
-def DSTProcess( window, run_type, event ) :
+def DSTProcess( window, run_type, dst_type, event ) :
     run_str = window[ 'run_number' ].get()
     try:
         run = str( int( run_str ) ).zfill( 8 )
@@ -329,23 +329,28 @@ def DSTProcess( window, run_type, event ) :
         process = sp.Popen( "echo", shell=True )
         return process
 
-    
     #if window[ 
     #command = "/home/inttdev/bin/process_data "\
     #command = "/Users/genki/bin/process_data "\
     command = "~/bin/process_data "\
+        + ' --force-run' \
         + ' ' + event + ' '\
-        + ' --run-type ' + run_type + ' '\
-        + ' ' + run + ' '
-        #+ ' --dry-run ' \
+        + ' --run-type ' + run_type + ' '
+        #+ ' --dry-run '
 
+    # If Own DST is selected, add the flag, otherwise use the default (official DST)
+    if "Own" in dst_type :
+        command += "--own-DST "
+        
     if window[ 'quick' ].get() is True :
         command += ' --quick '
         
     if window[ 'condor' ].get() is True :
         command += ' --condor '
-        
+    
+    command += ' ' + run + ' '
     print( command )
+    
     proc = sp.Popen( command, shell=True )
     return proc
                          
@@ -433,7 +438,7 @@ def app() :
         ],
         [
             sg.Button( "↓", key="decrease_run_number", size_px=button_size_small ),
-            sg.Input( 39494, key="run_number", size_px=button_size_double ),
+            sg.Input( 39497, key="run_number", size_px=button_size_double ),
             sg.Button( "↑", key="increase_run_number", size_px=button_size_small ),
             #sg.Spin(values=[ i for i in range(0, 99) ], key="run_number_spin", size_px=button_size_double),
             sg.Combo( values=( "physics", "beam", "cosmics", "calib", "pedestal", "junk"), default_value="cosmics", key='run_type', size_px=button_size_double ),
@@ -462,22 +467,19 @@ def app() :
         ],
         [
             sg.Text( "DST\nProd", size_px=button_size, font=font_button, justification="right" ),
-            sg.Button( "RAW\nHIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Hitmap", key="--DST-INTTRAW-hitmap", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Hot ch", key="--DST-INTTRAW-hot-ch", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "BCO\ndiff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-        ],
-        [
-            sg.Text( "", size_px=button_size, font=font_button, justification="right" ),
-            sg.Button( "Trkr\nHit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Trkr\nCluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close )
-
+            sg.Button( "RAW\nHIT", key="--DST-INTTRAW", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close ),
+            sg.Button( "Hitmap", key="--DST-INTTRAW-hitmap", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close ),
+            sg.Button( "Hot ch", key="--DST-INTTRAW-hot-ch", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close ),
+            sg.Button( "BCO\ndiff", key="--DST-INTTRAW-bco-diff", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close ),
+            #sg.Button( "Trkr\nHit", key="--DST-TrkrHit", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close ),
+            #sg.Button( "Trkr\nCluster", key="--DST-TrkrCluster", size_px=button_size, font=font_button, disabled=False ), # , button_color=button_color_close )
         ],
         [
             sg.Text( "", size_px=button_size, font=font_title, justification="right" ),
-            sg.Button( "Vertex\nFinding", key="--DST-vertex-finding", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
-            sg.Button( "Tracking", key="--DST-Tracking", size_px=button_size, font=font_button_small, disabled=False, button_color=button_color_close ),
-            sg.Button( "Event\nDisplay", key="--DST-evernt-display", size_px=button_size, font=font_button, disabled=False, button_color=button_color_close ),
+            sg.Button( "Trkr\nHit/Cluster", key="--DST-TrkrCluster", size_px=button_size_double, font=font_button, disabled=False ), # , button_color=button_color_close )
+            sg.Button( "Vertex\nFinding", key="--DST-vertex-finding", size_px=button_size, font=font_button, disabled=True, button_color=button_color_close ),
+            sg.Button( "Tracking", key="--DST-Tracking", size_px=button_size, font=font_button_small, disabled=True, button_color=button_color_close ),
+            sg.Button( "Event\nDisplay", key="--DST-evernt-display", size_px=button_size, font=font_button, disabled=True, button_color=button_color_close ),
             sg.Button( "Do All", key="--DST-all", size_px=button_size, font=font_button )
         ],
         [
@@ -594,7 +596,7 @@ def app() :
         elif "DST" in event :
             logg.info( event + ":" + run )
             #processes.append( DSTProcess( window, values[ 'run_type'], event ) )
-            DSTProcess( window, values[ 'run_type'], event )
+            DSTProcess( window, values[ 'run_type'], values[ 'dst_type' ], event )
         elif event == "raul_daq" :
             processes.append( RaulDaq( window ) )
             logg.info("Process RaulDAQ data" )
