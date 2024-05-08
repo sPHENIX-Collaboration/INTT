@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cdbobjects/CDBTTree.h>
+R__LOAD_LIBRARY(libcdbobjects.so)
+
 #include "constant_values.hh"
 #include "InttClassifier.hh"
 
@@ -82,4 +84,3 @@ std::string cdb_output_path = "./";
 //         {7, 1, 1},
 // };
 
-R__LOAD_LIBRARY(libcdbobjects.so)
