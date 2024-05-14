@@ -39,8 +39,8 @@ void InttClassifier::InitPaths()
 {
 
   std::string run_num_str = GetRunNum8digits(run_num_);
-  
-  hitmap_file_ = hitmap_dir_ + "hitmap_run" + run_num_str + this->GetFileSuffix() + ".root";
+  if (hitmap_file_.empty())
+    hitmap_file_ = hitmap_dir_ + "hitmap_run" + run_num_str + this->GetFileSuffix() + ".root";
 
   if( output_tag_ != "" )
     output_tag_ = "_" + output_tag_;
@@ -126,6 +126,11 @@ void InttClassifier::InitQaTree()
 void InttClassifier::PrintLine(std::string head, std::string contents, std::string separator)
 {
   printed_contents_.push_back(head + separator + " " + contents);
+}
+
+void InttClassifier::SetHitMapWithPath(std::string fname)
+{
+  hitmap_file_ = fname;
 }
 
 void InttClassifier::DumpPrintBuffer()
@@ -355,20 +360,20 @@ TLine *InttClassifier::DrawThreshold(double threshold, bool log_y)
 
 void InttClassifier::ProcessBeam()
 {
-  if( did_init_ == false )
-    {
-      cerr << " Please do InttClassiffier::Init() before ProcessBeam." << endl;
-      cerr << " Nothing done." << endl;
-      return;
-    }
-  
-  if( isbeam_ != true )
-    {
-      cerr << " Beam flag is " << isbeam_ << "." << endl;
-      cerr << " Why do you run ProcessBeam?" << endl;
-      cerr << " Nothing done." << endl;
-    }
-  
+  if (did_init_ == false)
+  {
+    cerr << " Please do InttClassiffier::Init() before ProcessBeam." << endl;
+    cerr << " Nothing done." << endl;
+    return;
+  }
+
+  if (isbeam_ != true)
+  {
+    cerr << " Beam flag is " << isbeam_ << "." << endl;
+    cerr << " Why do you run ProcessBeam?" << endl;
+    cerr << " Nothing done." << endl;
+  }
+
   for (int felix = 0; felix < kFelix_num; felix++)
   {
     for (int i = 0; i < kLadders_in_felix_num; i++)
@@ -388,25 +393,55 @@ void InttClassifier::ProcessBeam()
 
           n_fired_ch++;
           content /= merged_event_;
+          // if (content != 0)
+          //   std::cout << content << std::endl;
+          bool ishalf = false;
+          for (const auto &chip : half_Chips_)
+          {
+            if (chip.felix_id_ == felix && chip.module_id_ == i && chip.chip_id_ == j)
+            {
+              ishalf = true;
+              break;
+            }
+          }
           h1_hist_gaus_->Fill(content);
-          h1_hist_gaus_felix_[felix]->Fill(content);
+          if (!ishalf)
+            h1_hist_gaus_felix_[felix]->Fill(content);
           content_chip += content;
 
         } // for( chan )
         h1_hist_chip_->Fill(content_chip / n_fired_ch);
       } // for( chip )
-    }   // for( ladder )
+    } // for( ladder )
   }
 
   auto result = DoGaussianFit(h1_hist_gaus_);
-  auto parameters = result->Parameters();
-  hot_ch_cut_ = result->Parameters()[1] + result->Parameters()[2] * sig_cut_;
+  if (h1_hist_gaus_->GetMean() == 0)
+  {
+    std::cout << "InttClassifier::Histogram is empty or invalid." << std::endl;
+    std::cout << "Skip histogram : " << h1_hist_gaus_->GetName() << std::endl;
+    hot_ch_cut_ = 99999;
+  }
+  else
+  {
+    auto parameters = result->Parameters();
+    hot_ch_cut_ = result->Parameters()[1] + result->Parameters()[2] * sig_cut_;
+  }
 
   for (int i = 0; i < 8; i++)
   {
     TFitResultPtr fitResult = DoGaussianFit(h1_hist_gaus_felix_[i]);
-    std::vector<double> par = fitResult->Parameters();
-    hot_ch_cut_gaus_[i] = par[1] + par[2] * sig_cut_;
+    if (h1_hist_gaus_felix_[i]->GetMean() == 0)
+    {
+      std::cout << "InttClassifier::Histogram is empty or invalid." << std::endl;
+      std::cout << "Skip histogram : " << h1_hist_gaus_felix_[i]->GetName() << std::endl;
+      hot_ch_cut_gaus_[i] = 99999;
+    }
+    else
+    {
+      std::vector<double> par = fitResult->Parameters();
+      hot_ch_cut_gaus_[i] = par[1] + par[2] * sig_cut_;
+    }
   }
 }
 
