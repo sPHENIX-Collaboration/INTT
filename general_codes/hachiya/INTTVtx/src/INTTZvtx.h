@@ -54,6 +54,34 @@ struct clu_info {
 
 class INTTZvtx
 {
+    public:
+      struct ZvtxInfo {
+        public:
+          double       zvtx{-9999.};  // gaussian fit
+          double       zvtx_err{-1};  // gaussian fit
+          double       chi2ndf{-1};   // gaussian fit
+          double       width{-1};     // gaussian fit
+          bool         good{false};   // gaussian fit
+          long         nclus{0};      // Total_nclus
+          unsigned int ntracklets{0}; // ngood tracklet N_comb
+          unsigned int ngroup{0};     // ngroup in likebreak histogram
+          double       peakratio{-1}; // peak ratio in likebreak histogram
+          double       peakwidth{-1}; // peak width in likebreak histogram
+
+          void clear(){
+            zvtx       = -9999.;// gaussian fit
+            zvtx_err   = -1;    // gaussian fit
+            chi2ndf    = -1;    // gaussian fit
+            width      = -1;    // gaussian fit
+            good       = false; // gaussian fit
+            nclus      =  0;    // Total_nclus
+            ntracklets =  0;    // ngood tracklet N_comb
+            ngroup     =  0;    // ngroup in likebreak histogram
+            peakratio  = -1;    // peak ratio in likebreak histogram
+            peakwidth  = -1;    // peak width in likebreak histogram
+          };
+      };
+
     public : 
         INTTZvtx(string               runType, 
                  string               outFolderDirectory, 
@@ -98,6 +126,7 @@ class INTTZvtx
 
         vector<double>       GetEvtZPeak();
         pair<double, double> GetBeamOrigin() { return beam_origin; }
+        ZvtxInfo&            GetZvtxInfo()   { return m_zvtxinfo; }
         void                 SetBeamOrigin(double beamx, double beamy) { beam_origin = std::make_pair(beamx, beamy); }
         void                 SetPrintMessageOpt(const bool opt)        { print_message_opt = opt; }
         void                 SetOutDirectory(const string sOutDirectory){ out_folder_directory = sOutDirectory; }
@@ -134,6 +163,8 @@ class INTTZvtx
 
         vector< vector< pair<bool,clu_info>>> inner_clu_phi_map{}; // note: phi
         vector< vector< pair<bool,clu_info>>> outer_clu_phi_map{}; // note: phi
+
+        ZvtxInfo      m_zvtxinfo;
         
         TH1F*         evt_possible_z     {nullptr};
         TH1F*         line_breakdown_hist{nullptr};       // note : try to fill the line into the histogram
@@ -813,7 +844,8 @@ bool INTTZvtx::ProcessEvt(
 
     out_N_cluster_north = 0;
     out_N_cluster_south = 0;
-    ////////////////////////////////////////
+
+    m_zvtxinfo.clear();
 
     good_zvtx_tag      = false;
     good_zvtx_tag_int  = 0;
@@ -997,8 +1029,6 @@ bool INTTZvtx::ProcessEvt(
     } // note : end of inner clu loop
     //--cout<<"--4--"<<endl;
 
-    //cout<<"good pair count : "<<good_pair_count<<endl;
-    cout<<"evt : "<<event_i<<", good pair count : "<< N_comb.size()<<endl;
 
     // if (event_i == 906) {
     //     for (int hist_i = 0; hist_i < line_breakdown_hist->GetNbinsX(); hist_i++){
@@ -1014,6 +1044,7 @@ bool INTTZvtx::ProcessEvt(
 
     //--cout<<"--4 00--"<<endl;
     //-----------------------
+    //
     // Fit histogram to determine Zvertex
     if (N_comb.size() > zvtx_cal_require)
     {
@@ -1210,7 +1241,7 @@ bool INTTZvtx::ProcessEvt(
           MC_true_zvtx = TrigZvtxMC * 10.;
 
            // note : if N good tracks in xy found > certain value
-        }  
+        }
 
         //--cout<<"--8--"<<endl;
         // drawing event display & QA histograms
@@ -1384,7 +1415,29 @@ bool INTTZvtx::ProcessEvt(
             //cout<<"--13--"<<endl;
 
         } // if (draw_event_display == true)
+
+        m_zvtxinfo.zvtx     = loose_offset_peak;
+        m_zvtxinfo.zvtx_err = loose_offset_peakE;
+        m_zvtxinfo.width     = gaus_fit -> GetParameter(2);        
+        m_zvtxinfo.chi2ndf   = gaus_fit -> GetChisquare() / double(gaus_fit -> GetNDF());
+        m_zvtxinfo.good      = good_zvtx_tag;
+        m_zvtxinfo.ngroup    = N_group_info_detail[0];   
+        m_zvtxinfo.peakratio = N_group_info_detail[1];
+        m_zvtxinfo.peakwidth = fabs(N_group_info_detail[3] - N_group_info_detail[2]) / 2.;
+
+        cout<<"chi2 : "<<m_zvtxinfo.chi2ndf<<" "<<m_zvtxinfo.width<<endl;
+
     } // if (N_comb.size() > zvtx_cal_require)
+
+    m_zvtxinfo.nclus      = total_NClus;
+    m_zvtxinfo.ntracklets = N_comb.size();
+
+    ////////////////////////////////////////
+
+    //cout<<"good pair count : "<<good_pair_count<<endl;
+    cout<<"evt : "<<event_i<<", good pair count : "<< N_comb.size()<<endl;
+
+
 
     //--cout<<"--14 0--"<<endl;
     if(m_enable_qa) tree_out -> Fill();

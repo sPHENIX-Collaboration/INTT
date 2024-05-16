@@ -232,6 +232,11 @@ int InttZVertexFinder::process_event(PHCompositeNode *topNode)
         
         double clu_radius = sqrt(pow(clu_x,2)+pow(clu_y,2));
 
+        //int size = cluster->getSize();
+        int adc  = cluster->getAdc();
+
+        if(adc<40) continue;
+
 
         p_temp_sPH_nocolumn_vec->push_back({
             -1, 
@@ -293,6 +298,8 @@ int InttZVertexFinder::process_event(PHCompositeNode *topNode)
                                       beamorigin.second*0.1, 
                                       vtxout[1]        *0.1}; // mm -> cm by 0.1
 
+ INTTZvtx::ZvtxInfo& zvtxinfo = m_inttzvtx->GetZvtxInfo();
+
   //--if(m_inttvertexmap->size()>0){
   //--  cout<<"added to existing vertex"<<endl;
   //--  for(auto vtx = m_inttvertexmap->begin(); vtx!=m_inttvertexmap->end(); ++vtx){
@@ -307,7 +314,17 @@ int InttZVertexFinder::process_event(PHCompositeNode *topNode)
     vertex->set_x(final_vtx[0]);
     vertex->set_y(final_vtx[1]);
     vertex->set_z(final_vtx[2]);
-    //vertex->set_id(0);
+
+
+    vertex->set_chi2ndf(zvtxinfo.chi2ndf);
+    vertex->set_width(zvtxinfo.width);
+    vertex->set_good(zvtxinfo.good);
+    vertex->set_nclus(zvtxinfo.nclus);
+    vertex->set_ntracklet(zvtxinfo.ntracklets);
+    vertex->set_ngroup(zvtxinfo.ngroup);
+    vertex->set_peakratio(zvtxinfo.peakratio);
+    vertex->set_peakwidth(zvtxinfo.peakwidth);
+   
     // vertex->set_z_err(); // no value asigned yet
     m_inttvertexmap->insert(vertex.release());
   //}
