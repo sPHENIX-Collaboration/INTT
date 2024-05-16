@@ -13,7 +13,9 @@
 #include <phool/recoConsts.h>
 
 #include <intt/InttCombinedRawDataDecoder.h>
-#include <Trkr_Clustering.C>
+//#include <Trkr_Clustering.C>
+
+#include <GlobalVariables.C>
 
 #include "constant_values.hh"
 #include "functions.hh"
@@ -22,6 +24,9 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libffarawmodules.so)
 R__LOAD_LIBRARY(libintt.so)
+
+#include "InttRawHitQA.h"
+R__LOAD_LIBRARY( libInttRawHitQA.so )
 
 SingleInttPoolInput *sngl[9]{};
 
@@ -67,8 +72,8 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, b
   string output_base = "_" + run_type
     + "_intt_" + string( 8 - to_string(run_num).size(), '0' ) + to_string( run_num );
   
-  if( nEvents > 0 )
-    output_base +=  + "_" + to_string( nEvents ) + "events";
+  // if( nEvents > 0 )
+  //   output_base +=  + "_" + to_string( nEvents ) + "events";
 
   string debug_prefix = is_debug ? "test_" : "" ;  
   string output_dst = (is_debug ? "./" : kIntt_dst_dir )
@@ -130,11 +135,15 @@ void Fun4All_Intt_Combiner_run_base( int run_num = 38554, int nEvents = 10000, b
     se->registerSubsystem(myDecoder);
   }
 
-  if( is_trkr_cluster_on )
-  {
-    Intt_Clustering(); //Be careful!!! INTT z-clustering may be off which is not what you want!
-  }
-
+  // if( is_trkr_cluster_on )
+  // {
+  //   Intt_Clustering(); //Be careful!!! INTT z-clustering may be off which is not what you want!
+  // }
+  
+  InttRawHitQA* irhq = new InttRawHitQA();
+  //irhq->SetOutputDir( "./" );
+  se->registerSubsystem( irhq );
+  
   Fun4AllOutputManager *out = new Fun4AllDstOutputManager("out", output_dst );
   se->registerOutputManager(out);
 

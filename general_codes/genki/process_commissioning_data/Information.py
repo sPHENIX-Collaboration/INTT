@@ -118,14 +118,42 @@ class Information() :
         #############################################################
         # Flags for DST processes                                   #
         #############################################################
+        self.use_official_dst = args.official_DST
+        
         self.dst_all = args.DST_all
         self.dst_raw = args.DST_INTTRAW or self.dst_all
+        # If the official DST is used, force not to process for INTTRAWHTI DST
+        if self.use_official_dst is True :
+            self.dst_raw = False
+        
         self.dst_raw_hitmap = args.DST_INTTRAW_hitmap or self.dst_all
         self.dst_raw_hot_ch = args.DST_INTTRAW_hot_ch or self.dst_all
         self.dst_raw_bco_diff = args.DST_INTTRAW_bco_diff or self.dst_all
         self.dst_TrkrHit = args.DST_TrkrHit or self.dst_all
         self.dst_TrkrCluster = args.DST_TrkrCluster or self.dst_all
 
+        self.dst_flags = []
+        if self.dst_all is True :
+            #self.dst_flags.append( vars( args )['DST_all'] )
+            self.dst_flags.append( "DST-all" )
+        else:
+            if self.dst_raw is True :
+                self.dst_flags.append( "DST-INTTRAW" )
+            if self.dst_raw_hitmap is True :
+                self.dst_flags.append( "DST-INTTRAW-hitmap" )
+            if self.dst_raw_hot_ch is True :
+                self.dst_flags.append( "DST-INTTRAW-hot-ch" )
+            if self.dst_raw_bco_diff is True :
+                self.dst_flags.append( "DST-INTTRAW-bco-diff" )
+            if self.dst_TrkrHit is True :
+                self.dst_flags.append( "DST-TrkrHit" )
+            if self.dst_TrkrCluster is True :
+                self.dst_flags.append( "DST-TrkrCluster" )
+
+        print( "list of DST processes:", self.dst_flags )
+        
+        #if self.dst_all is True :
+        #    self.dst_flags = 
         self.dst_any = \
             self.dst_raw or \
             self.dst_raw_hitmap or \
@@ -212,6 +240,7 @@ class Information() :
         self.printer.AddSeparator()
         self.printer.AddLine( "Does DST processes?", self.dst_any )
         if self.dst_any is True :
+            self.printer.AddLine( "    Does official DST used?", self.use_official_dst )
             self.printer.AddLine( "    Make DST(INTTRAW)?", self.dst_raw )
             self.printer.AddLine( "    Make hitmap?", self.dst_raw_hitmap )
             self.printer.AddLine( "    Make hot ch map?", self.dst_raw_hot_ch )
@@ -264,7 +293,7 @@ class Information() :
     
     def GetEventFilePath( self ) :
         directory = str( self.bbox_dir ) + "/" + self.run_type + "/"
-        name = self.GetFilePrefix( self.run_type ) + "_" + "intt?" + "-" + str(self.run) + "-" + "????" + ".evt"
+        name = self.GetFilePrefix( self.run_type ) + "_" + "intt?" + "-" + str(self.run) + "-" + "????" + ".{evt,prdf}"
         return directory + name
     
     def GetRootFilePath( self, is_event_wise=False ) :

@@ -48,6 +48,7 @@ private:
 
   // general variables
   int run_num_ = 0;
+  bool is_official_ = true;
   int year_ = 2024;
   static const int kFelix_num_ = 8; // the number of our FELIX server
   static const int kFee_num_ = 14;  // the number of half-ladders in a single FELIX server
@@ -228,7 +229,7 @@ private:
 
 public:
 
-  InttRawHitQA(const std::string &name = "InttRawHitQA");
+  InttRawHitQA(const std::string &name = "InttRawHitQA", bool is_official=true );
 
   ~InttRawHitQA() override;
 
