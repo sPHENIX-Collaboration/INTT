@@ -1,5 +1,13 @@
-# InttRawHitQA
+# INTT QA
 This is an analysis module for QA using INTTRAWHIT.
+
+## Modules
+- InttRawHitQA
+- InttCloneRawHitQA
+- InttFineDelayScan
+
+## Common libraries
+- InttQaCommon: Variables, and functions for general use are here. Namespace InttQa is used.
 
 ## How to use
 
