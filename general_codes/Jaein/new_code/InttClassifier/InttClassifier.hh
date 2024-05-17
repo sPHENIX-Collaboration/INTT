@@ -60,9 +60,9 @@ private:
 
   /////////////////////////////////////////////////
   // QA hists/outputs
-  int bin_num_ = 500;
+  int bin_num_ = 2500;
   double xmin_ = 0;
-  double xmax_ = 1e-3;
+  double xmax_ = 1e-2;
   
   TH1D* h1_hist_MPV_; // #hit distribution for each channel. 0 count is excluded.  
   TH1D* h1_hist_gaus_; // #hit distribution for each channel. 0 count is excluded.
@@ -108,43 +108,58 @@ private:
   // Something else
   struct Half_Chip
   {
-    int _felix_id_;
-    int _module_id_;
-    int _chip_id_;
+    int felix_id_;
+    int module_id_;
+    int chip_id_;
   };
-  
+
   std::vector<Half_Chip> half_Chips_ = // Chip number 0~25
-  {
-    // Felix 0
-    {0, 7, 14},
-    // Felix 2
-    // Felix 3
-    {3, 13, 20},
-    {3, 13, 22},
-    {3, 13, 24},
-    // Felix 7
-    {7, 0, 0},
-    {7, 0, 1},
-    {7, 0, 2},
-    {7, 0, 3},
-    {7, 0, 4},
-    {7, 0, 6},
-    {7, 0, 8},
-    {7, 0, 10},
-    {7, 0, 12},
-    {7, 0, 13},
-    {7, 0, 14},
-    {7, 0, 15},
-    {7, 0, 16},
-    {7, 0, 17},
-    {7, 0, 19},
-    {7, 0, 21},
-    {7, 0, 23},
-    {7, 0, 25},
-    {7, 1, 0},
-    {7, 1, 1},
+      {
+          // Felix 0
+          {0, 6, 0},
+          {0, 6, 1},
+          {0, 6, 2},
+          {0, 6, 3},
+          {0, 6, 4},
+          {0, 6, 5},
+          {0, 6, 6},
+          {0, 6, 7},
+          {0, 6, 8},
+          {0, 6, 9},
+          {0, 6, 10},
+          {0, 6, 11},
+          {0, 6, 12},
+          {0, 7, 14},
+          // Felix 2
+          // Felix 3
+          {3, 13, 20},
+          {3, 13, 22},
+          {3, 13, 24},
+          // Felix 5
+          {5, 3, 15},
+          // Felix 7
+          {7, 0, 0},
+          {7, 0, 1},
+          {7, 0, 2},
+          {7, 0, 3},
+          {7, 0, 4},
+          {7, 0, 6},
+          {7, 0, 8},
+          {7, 0, 10},
+          {7, 0, 12},
+          {7, 0, 13},
+          {7, 0, 14},
+          {7, 0, 15},
+          {7, 0, 16},
+          {7, 0, 17},
+          {7, 0, 19},
+          {7, 0, 21},
+          {7, 0, 23},
+          {7, 0, 25},
+          {7, 1, 0},
+          {7, 1, 1},
   };
-  
+
   /////////////////////////////////////////////////
   // Init functions
   void Init();
@@ -154,6 +169,7 @@ private:
 
   /////////////////////////////////////////////////
   // misc
+  void SetHitMapWithPath(std::string fname);
   void DrawHists();
   void DrawHist( TCanvas* c, TH1D* hist, double threshold, int hot_ch_num, int total_ch_num );
   void DrawFittedFunction( TH1D* hist, double threshold, int hot_ch_num, int total_ch_num );
