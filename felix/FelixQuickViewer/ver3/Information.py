@@ -49,13 +49,14 @@ class Information() :
         self.QA_DIR = self.INTT_ROOT_DIR / "QA"
         self.HITMAP_DIR = self.QA_DIR / "hitmap"
         self.HOTMAP_DIR = self.QA_DIR / "hotdeadmap"
+        self.BCODIFF_DIR = self.QA_DIR / "bco_bcofull_difference" 
         self.BCODIFF_DIR = self.QA_DIR / "bco_bcofull_difference"
         self.RAWHIT_DIR = self.QA_DIR / "raw_hit" / str( self.year )
         self.TRKRHIT_DIR = self.QA_DIR / "trkr_hit" / str( self.year )
         self.TRKRCLUSTER_DIR = self.QA_DIR / "cluster_hit" / str( self.year )
         self.COSMIC_DIR = self.QA_DIR / "cosmics"
         self.QA_SUBDIR_LIST = [ "root", "plots", "txt" ]
-        
+
         #############################################################################
         # Processes for flags determined by command-line arguments                  #
         #############################################################################
@@ -104,6 +105,7 @@ class Information() :
         self.GetHotChannelPlots()
         self.GetRawHitPlots()
         self.GetCosmicPlots()
+        self.GetBcoDiffPlots()
         
         #self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
@@ -183,14 +185,14 @@ class Information() :
             self.printer.Print( color="Red" )
             self.printer.Clear()
 
-    def GetPlots( self, dir, container, suffix=".pdf" ) :
+    def GetPlots( self, dir, suffix=".pdf" ) :
         """
         @brief A function to make a list of plots using arguments
         @param dir It should be pathlib.Path or anything that str() works
         @param container A list to contain the list. A member variable of a list is good.
         @param suffix The suffix to be used for the file serch
         """
-        contaier= sorted( list( dir.glob( "*" + str(self.run) + "*" + suffix) ) )
+        return sorted( list( dir.glob( "*" + str(self.run) + "*" + suffix) ) )
     
     def GetHomepagePlots( self ) :
         # For example:
@@ -207,22 +209,21 @@ class Information() :
         self.hot_channel_txt = sorted( list( path.glob( "*" + str(self.run) + "*.txt" ) ) )        
 
     def GetCosmicPlots( self ) :
-        path = self.COSMIC_DIR / "plots" / str( self.year )
-        self.cosmic_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        #path = self.COSMIC_DIR / "plots" / str( self.year )
+        #self.cosmic_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        self.cosmic_plots = self.GetPlots( self.COSMIC_DIR / "plots" )
 
+    def GetBcoDiffPlots( self ) :
+        self.bco_diff_plots = self.GetPlots( self.BCODIFF_DIR / "plots" / str(self.year) )
+        
     def GetRawHitPlots( self ) :
-        self.raw_hit_plots = []
-        self.GetPlots( self.RAWHIT_DIR / "plots", self.raw_hit_plots )
-        #path = self.RAWHIT_DIR / "plots"
-        #self.raw_hit_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        self.raw_hit_plots = self.GetPlots( self.RAWHIT_DIR / "plots" )
 
     def GetTrkrHitPlots( self ) :
-        path = self.TrkrHIT_DIR / "plots"
-        self.trkr_hit_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        self.trkr_hit_plots = self.GetPlots( self.TRKRHIT_DIR / "plots" )
 
     def GetTrkrClusterPlots( self ) :
-        path = self.TRKRCLUSTER_DIR / "plots"
-        self.trkr_cluster_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
+        self.trkr_cluster_plots = self.GetPlots( self.TRKRCLUSTER_DIR / "plots" ) 
 
     def PrintLine( self ) :
         print( '+' + '-'*50 + '+' , flush=True )

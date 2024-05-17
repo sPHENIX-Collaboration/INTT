@@ -86,6 +86,13 @@ void HistMaker::Init()
 	  
 	  hist_bco_diff_[i][j]->SetLineColor( kLadder_colors[i] );
 	  hist_bco_diff_[i][j]->SetFillColorAlpha( hist_bco_diff_[i][j]->GetLineColor(), 0.15 );
+
+	  hist_bco_diff_raw_[i][j] = new TH1D( Form("hist_bco_diff_raw_module%d_chip%d", i, j ),
+					       Form("hist_bco_diff_raw_module%d_chip%d;BCO full&0x7f - FPHX BCO;Entries", i, j ),
+					       256, -128, 128 );
+	  
+	  hist_bco_diff_raw_[i][j]->SetLineColor( kLadder_colors[i] );
+	  hist_bco_diff_raw_[i][j]->SetFillColorAlpha( hist_bco_diff_[i][j]->GetLineColor(), 0.15 );
 	}
     }
   
@@ -126,8 +133,11 @@ int HistMaker::Process()
 		  if( adc_ > 0 )
 		    {
 		      auto diff = (bco_full_&0x7f) - bco_;
+		      hist_bco_diff_raw_[i][j]->Fill( diff );
+		      
 		      if( diff < 0 )
 			diff += 128;
+		      
 		      hist_bco_diff_[i][j]->Fill( diff );
 		    }
 
@@ -170,6 +180,7 @@ void HistMaker::SaveHists()
 	  tf->WriteTObject( hist_ampl_adc_[i][j], hist_ampl_adc_[i][j]->GetName() );
 	  tf->WriteTObject( hist_ch_ampl_[i][j], hist_ch_ampl_[i][j]->GetName() );
 	  tf->WriteTObject( hist_bco_diff_[i][j], hist_bco_diff_[i][j]->GetName() );
+	  tf->WriteTObject( hist_bco_diff_raw_[i][j], hist_bco_diff_raw_[i][j]->GetName() );
 	}
     }
 
