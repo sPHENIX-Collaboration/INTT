@@ -6,7 +6,8 @@
  */
 void InttChannelClassifier(int runnumber = 41047, int event_num=0 ) //runnumber
 {
-  
+
+  // The hot channel classifier class. It requires the run number and a factor related to the threshold determination
   InttClassifier* cl = new InttClassifier( runnumber , 5.0);
   if( true ) // for debugging
     {
@@ -17,15 +18,13 @@ void InttChannelClassifier(int runnumber = 41047, int event_num=0 ) //runnumber
       cl->SetOfficialDstFlag( false );
     }
 
-  //cl->SetOutputTag( "test" );
-
   // for some special porpose, temp
-  if( event_num > 0 )
-    string tag = "_special_" + to_string( event_num ) ;
+  string tag = "";
+  if( event_num > -1 )
+    tag = "_special_" + to_string( event_num ) ;
 
   cl->SetFileSuffix( tag );
   cl->SetFittingMode( "double_gaus" );
-  cl->Init();
 
   // Launch the analysis part
   cl->ProcessBeam();

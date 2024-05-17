@@ -124,9 +124,10 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libInttRawHitQA_la_DEPENDENCIES =
-am_libInttRawHitQA_la_OBJECTS = InttRawHitQA.lo
-libInttRawHitQA_la_OBJECTS = $(am_libInttRawHitQA_la_OBJECTS)
+libInttQA_la_DEPENDENCIES =
+am_libInttQA_la_OBJECTS = InttRawHitQA.lo InttTrkrHitQA.lo \
+	InttCloneRawHitQA.lo InttFineDelayScan.lo TH2INTT.lo
+libInttQA_la_OBJECTS = $(am_libInttQA_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -134,7 +135,7 @@ am__v_lt_1 =
 PROGRAMS = $(noinst_PROGRAMS)
 am_testexternals_OBJECTS = testexternals.$(OBJEXT)
 testexternals_OBJECTS = $(am_testexternals_OBJECTS)
-testexternals_DEPENDENCIES = libInttRawHitQA.la
+testexternals_DEPENDENCIES = libInttQA.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -169,8 +170,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libInttRawHitQA_la_SOURCES) $(testexternals_SOURCES)
-DIST_SOURCES = $(libInttRawHitQA_la_SOURCES) $(testexternals_SOURCES)
+SOURCES = $(libInttQA_la_SOURCES) $(testexternals_SOURCES)
+DIST_SOURCES = $(libInttQA_la_SOURCES) $(testexternals_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -346,26 +347,33 @@ AM_LDFLAGS = \
   -L$(OFFLINE_MAIN)/lib64
 
 pkginclude_HEADERS = \
-  InttRawHitQA.h
+  InttRawHitQA.h \
+  InttTrkrHitQA.h \
+  InttCloneRawHitQA.h \
+  InttFineDelayScan.h \
+  InttQaCommon.h \
+  TH2INTT.h
 
 lib_LTLIBRARIES = \
-  libInttRawHitQA.la
+  libInttQA.la
 
-libInttRawHitQA_la_SOURCES = \
-  InttRawHitQA.cc
+libInttQA_la_SOURCES = \
+  InttRawHitQA.cc \
+  InttTrkrHitQA.cc \
+  InttCloneRawHitQA.cc \
+  InttFineDelayScan.cc \
+  TH2INTT.cc
 
-libInttRawHitQA_la_LIBADD = \
+libInttQA_la_LIBADD = \
   -lphool \
   -lSubsysReco \
   -lffaobjects \
   -lffarawobjects \
   -ltrack_io
 
-
-#include <ffarawobjects/InttRawHit.h>
 BUILT_SOURCES = testexternals.cc
 testexternals_SOURCES = testexternals.cc
-testexternals_LDADD = libInttRawHitQA.la
+testexternals_LDADD = libInttQA.la
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -441,8 +449,8 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libInttRawHitQA.la: $(libInttRawHitQA_la_OBJECTS) $(libInttRawHitQA_la_DEPENDENCIES) $(EXTRA_libInttRawHitQA_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK) -rpath $(libdir) $(libInttRawHitQA_la_OBJECTS) $(libInttRawHitQA_la_LIBADD) $(LIBS)
+libInttQA.la: $(libInttQA_la_OBJECTS) $(libInttQA_la_DEPENDENCIES) $(EXTRA_libInttQA_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK) -rpath $(libdir) $(libInttQA_la_OBJECTS) $(libInttQA_la_LIBADD) $(LIBS)
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
@@ -463,7 +471,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttCloneRawHitQA.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttFineDelayScan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttRawHitQA.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttTrkrHitQA.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TH2INTT.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testexternals.Po@am__quote@
 
 .cc.o:

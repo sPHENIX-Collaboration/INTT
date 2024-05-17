@@ -5,6 +5,8 @@
 #include "constant_values.hh"
 #include "functions.hh"
 
+R__LOAD_LIBRARY(libcdbobjects.so)
+
 // It supposed to be used as a part of ROOT macros
 class InttClassifier
 {
@@ -12,37 +14,39 @@ private:
 
   /////////////////////////////////////////////////
   // constant values: see constant_values.hh
-
-  /////////////////////////////////////////////////
-  // general variables
-  int run_num_      = 0;
-  int year_         = 2024; // used in the directory selection for both input and output
-  double sig_cut_   = 3.0;
-  int in_sig_       = 0; 
-  bool Writecsv_    = false;
-  bool is_official_ = true;
-  bool isbeam_      = true; // true is beam, false is cosmics
-  bool did_init_    = false;
-  string fitting_mode_ = "gaus";
   
   /////////////////////////////////////////////////
+  // general variables
+  int run_num_		= 0;
+  int year_		= 2024; // used in the directory selection for both input and output
+  double sig_cut_	= 3.0;
+  int in_sig_		= 0; 
+  bool Writecsv_	= false;
+  bool is_official_	= true;
+  bool isbeam_		= true; // true is beam, false is cosmics
+  bool did_init_	= false;
+  string fitting_mode_	= "gaus"; // "gaus" and "double_gaus" are available
+  bool process_done_	= false; // a flag to know whether ProcessBeam was done or not
+
+
+  /////////////////////////////////////////////////
   // File I/O
-  bool force_suffix_ = false;
-  string suffix_ = "_official"; // It's attached to the input/output file. To disable it, do SetFileSuffix("" );
-  string output_tag_ = ""; // It's attached b/w basename and the suffix (not file suffix above, the real suffix like .root)
-  string hitmap_dir_ = "./";
+  bool force_suffix_       = false;
+  string suffix_           = "_official"; // It's attached to the input/output file. To disable it, do SetFileSuffix("" );
+  string output_tag_       = ""; // It's attached b/w basename and the suffix (not file suffix above, the real suffix like .root)
+  string hitmap_dir_       = "./";
   std::string hitmap_file_ = ""; // path to the hitmap file
 
   // for CDB
-  std::string output_cdb_dir_ = kIntt_cdb_dir; // path to the output dir of CDB files
+  std::string output_cdb_dir_  = kIntt_cdb_dir; // path to the output dir of CDB files
   std::string output_cdb_file_ = ""; // path th the file
 
   // for QA
-  std::string output_qa_root_dir_ = kIntt_hotmap_dir; // path to the QA ROOT dir
+  std::string output_qa_root_dir_  = kIntt_hotmap_dir; // path to the QA ROOT dir
   std::string output_qa_root_file_ = ""; // path to the QA ROOT file
-  std::string output_qa_pdf_dir_ = kIntt_hotmap_dir; // path to the QA pdf dir
-  std::string output_qa_pdf_file_ = ""; // path to the QA pdf file
-  std::string output_qa_txt_file_ = "";
+  std::string output_qa_pdf_dir_   = kIntt_hotmap_dir; // path to the QA pdf dir
+  std::string output_qa_pdf_file_  = ""; // path to the QA pdf file
+  std::string output_qa_txt_file_  = "";
   
   // TFile I/O
   TFile* tf_hitmap_; // input
@@ -69,6 +73,7 @@ private:
   TFitResultPtr DoGaussianFit(TH1D* hist);
   
   TTree* tree_output_;
+
   // variables for the tree_output_
   double ch_entry_;
   double mean_gaus_;
@@ -82,8 +87,8 @@ private:
 
   /////////////////////////////////////////////////
   //
-  TH1D *h1_hist_fit_A_[8][14];
-  TH1D *h1_hist_fit_B_[8][14];
+  TH1D *h1_hist_fit_A_[8][14]; // filled but not used, why?
+  TH1D *h1_hist_fit_B_[8][14]; // filled but not used, why?
 
   TH2D *h2_AllMap_[8][14]; // Original HitMap
   TH2D *h2_ColdMap_[8][14];// 2D histogram for coldmap
@@ -92,22 +97,12 @@ private:
   TH2D *h2_HotMap_[8][14]; // 2D histogram for hotmap
 
   /////////////////////////////////////////////////
-  // not used...
-  // double HotChannelCut_A_Fit_[8][14] = {0.};
-  // double HotChannelCut_B_Fit_[8][14] = {0.};
-  // double ColdChannelCut_A_Fit_[8][14] = {0.};
-  // double ColdChannelCut_B_Fit_[8][14] = {0.};
-  // double par_meanA_[8][14] = {0.};  // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
-  // double par_sigmaA_[8][14] = {0.}; // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
-  // double par_meanB_[8][14] = {0.};  // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
-  // double par_sigmaB_[8][14] = {0.}; // Array to save the mean & sigma value, [0][module] = mean, [1][module] = sigma
-
-  /////////////////////////////////////////////////
   // Cut variables
-  int hot_ch_num_ = 0;
-  double hot_ch_cut_ = 0;
-  double hot_ladder_cut_ = 0.0;
-  double hot_ch_cut_gaus_[8] = {0.}; 
+  int hot_ch_num_		= 0;
+  int hot_ch_num_felix_[8] = {0};
+  double hot_ch_cut_		= 0;
+  double hot_ladder_cut_	= 0.0;
+  double hot_ch_cut_gaus_[8]	= {0.}; 
 
   /////////////////////////////////////////////////
   // Something else
@@ -167,6 +162,7 @@ private:
 
   /////////////////////////////////////////////////
   // Init functions
+  void Init();
   void InitPaths();
   void InitHists();
   void InitQaTree();
@@ -175,7 +171,8 @@ private:
   // misc
   void SetHitMapWithPath(std::string fname);
   void DrawHists();
-  void DrawFittedFunction( TH1D* hist, double threshold );
+  void DrawHist( TCanvas* c, TH1D* hist, double threshold, int hot_ch_num, int total_ch_num );
+  void DrawFittedFunction( TH1D* hist, double threshold, int hot_ch_num, int total_ch_num );
   TLine* DrawThreshold( double threshold, bool log_y=false );
 
   template < typename TH >
@@ -216,12 +213,13 @@ private:
   template < class TH >
   void HistConfig( TH* hist )
   {
-    hist->SetLineColor( kAzure + 1 );
+    //hist->SetLineColor( kAzure + 1 );
+    hist->SetLineColor( kBlack );
     hist->SetLineWidth( 2 );
     hist->SetFillColorAlpha( hist->GetLineColor(), 0.05 );
-    hist->GetXaxis()->SetLabelSize( 0.02 );
+    hist->GetXaxis()->SetLabelSize( 0.025 );
     hist->GetXaxis()->CenterTitle();
-    hist->GetYaxis()->SetLabelSize( 0.02 );
+    hist->GetYaxis()->SetLabelSize( 0.04 );
     hist->GetYaxis()->CenterTitle();
     
     int max_bin = GetMaxBinWithEntry( hist );
@@ -229,10 +227,6 @@ private:
   }
 
   
-  /////////////////////////////////////////////////
-  // flags
-  bool process_done_ = false;
-  bool ishot_        = false;
   
   /////////////////////////////////////////////////
   // Things for print
@@ -246,31 +240,30 @@ public:
   InttClassifier( int run_num , double sig_cut );
 
   /////////////////////////////////////////////////
-  // Init function for user
-  //   It has to be done after setting paremeters
-  void Init();
-
-  /////////////////////////////////////////////////
   // Analysis functions
   void ProcessCosmics();
   void ProcessBeam();
 
   /////////////////////////////////////////////////
   // Get/Set function to change something inside this class
-  void SetHitmapDir( string path ){ hitmap_dir_ = path; };
-  void SetCdcOupoutDir( std::string dir ){ output_cdb_dir_ = dir; }; //output_cdb_dir_
-  void SetQaRootOutputDir( std::string dir ){ output_qa_root_dir_ = dir ;}; // output_qa_root_path_
-  void SetQaPdfOutputDir( std::string dir ){ output_qa_pdf_dir_ = dir ;};; // output_qa_pdf_path_ 
 
+  // paths
+  void SetHitmapDir		( string path )		{ hitmap_dir_ = path; };
+  void SetCdcOupoutDir		( std::string dir )	{ output_cdb_dir_ = dir; }; //output_cdb_dir_
+  void SetQaRootOutputDir	( std::string dir )	{ output_qa_root_dir_ = dir ;}; // output_qa_root_path_
+  void SetQaPdfOutputDir	( std::string dir )	{ output_qa_pdf_dir_ = dir ;};; // output_qa_pdf_path_ 
 
-  //
-  void SetBeamFlag( bool flag ){ isbeam_ = flag; };
-  string GetFileSuffix(); //! You can get the suffix for the input/output files
-  void SetFittingMode( string mode ); //! "gaus" and "double gaus" are available
-  void SetFileSuffix( string suffix ){ suffix_ = suffix; force_suffix_ = true; }; //! Set the file suffix and force to use it.
-  void SetOutputTag( string tag ){ output_tag_ = tag ;}; //! tag is attached to name of the output files.
+  // for input/output
+  void SetOutputTag	( string tag )	{ output_tag_ = tag ;}; //! tag is attached to name of the output files.
+  void SetYear		( int year )	{ year_ = year;}; //! year of this data is set. This is used for the output path.
+
+  // flags
+  void SetBeamFlag	( bool flag )		{ isbeam_ = flag; };
+  string GetFileSuffix	(); //! You can get the suffix for the input/output files
+  void SetFittingMode	( string mode ); //! "gaus" and "double gaus" are available
+  void SetFileSuffix	( string suffix )	{ suffix_ = suffix; force_suffix_ = true; }; //! Set the file suffix and force to use it.
+  
   void SetOfficialDstFlag( bool flag ){ is_official_ = flag; }; // 
-  void SetYear( int year ){ year_ = year;}; //! year of this data is set. This is used for the output path.
   
   /////////////////////////////////////////////////
   // Print function to show the status

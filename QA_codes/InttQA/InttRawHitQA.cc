@@ -4,7 +4,8 @@ using namespace std;
 
 //____________________________________________________________________________..
 InttRawHitQA::InttRawHitQA(const std::string &name, bool is_official ):
-  SubsysReco(name), is_official_( is_official )
+  SubsysReco(name),
+  is_official_( is_official )
 {
 
 }
@@ -23,15 +24,29 @@ int InttRawHitQA::GetNodes(PHCompositeNode *topNode)
   /////////////////////////////////////////////////////////////////////////
   // INTT event header
 
-  string node_name_intteventheader = "INTTEVENTHEADER";
-  node_intteventheader_map_ =
-    findNode::getClass<InttEventInfo>(topNode, node_name_intteventheader);
-  
-  if (!node_intteventheader_map_)
+  if( is_official_ == false )
     {
-      cerr << PHWHERE << node_name_intteventheader << " node is missing." << endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
+      /*
+	string node_name_intteventheader = "INTTEVENTHEADER";
+      node_intteventheader_map_ =
+	findNode::getClass<InttEventInfo>(topNode, node_name_intteventheader);
+      
+      if (!node_intteventheader_map_)
+	{
+	  cerr << PHWHERE << node_name_intteventheader << " node is missing." << endl;
+	  intt_header_found_ = false;
+	  //return Fun4AllReturnCodes::ABORTEVENT;
+	}
+  
+      intt_header_found_ = true;
+      */
     }
+  else
+    {
+      intt_header_found_ = false;
+    }
+  
+  intt_header_found_ = false;
   
   /////////////////////////////////////////////////////////////////////////
   // INTT raw hit
@@ -46,6 +61,20 @@ int InttRawHitQA::GetNodes(PHCompositeNode *topNode)
     }
 
   return 0;
+}
+
+vector < InttRawHit* > InttRawHitQA::GetHits()
+{
+  
+  vector < InttRawHit* > hits;
+  auto raw_hit_num = node_inttrawhit_map_->get_nhits();
+  for (unsigned int i = 0; i < raw_hit_num; i++)
+    {
+      auto hit = node_inttrawhit_map_->get_hit(i);
+      hits.push_back( hit );
+    }
+  
+  return hits;
 }
 
 /*
@@ -89,19 +118,19 @@ void InttRawHitQA::DrawHists()
   // #hit dist
   gPad->SetLogy( true );
   hist_nhit_->Draw();
-  DrawStats( hist_nhit_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_nhit_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:Hit num per event" );
 
 // #hit dist
   gPad->SetLogy( true );
   hist_nhit_south_->Draw();
-  DrawStats( hist_nhit_south_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_nhit_south_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:# Hit South" );
 
   // #hit dist
   gPad->SetLogy( true );
   hist_nhit_north_->Draw();
-  DrawStats( hist_nhit_north_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_nhit_north_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:# Hit North" );
 
 
@@ -109,37 +138,37 @@ void InttRawHitQA::DrawHists()
   // FELIX dist
   gPad->SetLogy( true );
   hist_pid_->Draw( "HIST TEXT0" );
-  DrawStats( hist_pid_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_pid_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:FELIX dist" );
   
   ////////////////////////////////////////////////////////
   // ADC dist
   gPad->SetLogy( true );
   hist_adc_->Draw( "HIST TEXT0" );
-  DrawStats( hist_adc_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_adc_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:ADC dist" );
 
   ////////////////////////////////////////////////////////
   // BCO dist
-  gPad->SetLogy( true );
+  gPad->SetLogy( false );
   hist_bco_->Draw( "" );
-  DrawStats( hist_bco_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_bco_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:BCO dist" );
 
   ////////////////////////////////////////////////////////
   // BCO full dist
   gPad->SetLogy( false );
   hist_bco_full_->Draw( "" );
-  DrawStats( hist_bco_full_, 0.9, 0.65, 0.99, 0.9 );
+  InttQa::DrawStats( hist_bco_full_, 0.9, 0.65, 0.99, 0.9 );
   c->Print( output_pdf_.c_str(), "Title:BCO full dist" );
 
   ////////////////////////////////////////////////////////
   // Event counter vs FELIX
   c->SetMargin( 0.1, 0.2, 0.1, 0.1); // L, R, B, T
   gPad->SetLogy( false );
-  this->HistsConfig( kFelix_num_, hist_event_counter_ );
+  InttQa::HistsConfig( InttQa::kFelix_num, hist_event_counter_ );
   
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       auto hist = hist_event_counter_[ felix ];
 
@@ -150,11 +179,11 @@ void InttRawHitQA::DrawHists()
 
       double xmin = 0.801 + 0.099 * (felix<4 ? 0 : 1) ;
       double ymin = 0.6 - 0.15 * (felix<4 ? felix : felix-4 );
-      DrawStats( hist,
-		 xmin,
-		 ymin,
-		 xmin + 0.099,
-		 ymin + 0.15 );
+      InttQa::DrawStats( hist,
+			 xmin,
+			 ymin,
+			 xmin + 0.099,
+			 ymin + 0.15 );
       
     }
   
@@ -166,8 +195,8 @@ void InttRawHitQA::DrawHists()
   // Event counter diff vs FELIX
   c->SetMargin( 0.1, 0.2, 0.1, 0.1); // L, R, B, T
   gPad->SetLogy( false );
-  this->HistsConfig( kFelix_num_, hist_event_counter_diff_ );
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  InttQa::HistsConfig( InttQa::kFelix_num, hist_event_counter_diff_ );
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       auto hist = hist_event_counter_diff_[ felix ];
 
@@ -178,11 +207,11 @@ void InttRawHitQA::DrawHists()
             
       double xmin = 0.801 + 0.099 * (felix<4 ? 0 : 1) ;
       double ymin = 0.6 - 0.15 * (felix<4 ? felix : felix-4 );
-      DrawStats( hist,
-		 xmin,
-		 ymin,
-		 xmin + 0.099,
-		 ymin + 0.15 );
+      InttQa::DrawStats( hist,
+			 xmin,
+			 ymin,
+			 xmin + 0.099,
+			 ymin + 0.15 );
     }
   
   c->BuildLegend( 0.801, 0.6 + 0.125, 0.999, 0.99, "Event counter difference" );
@@ -192,16 +221,16 @@ void InttRawHitQA::DrawHists()
   ////////////////////////////////////////////////////////
   // Hitmap
   c->SetMargin( 0.1, 0.1, 0.1, 0.1); // L, R, B, T
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       c->Clear();
       //      c->SetCanvasSize( 800, 1200 );
-      c->Divide( 1, kFee_num_, 0.01, 0 );
+      c->Divide( 1, InttQa::kFee_num, 0.01, 0 );
 
-      for( int ladder=0; ladder<kFee_num_; ladder++ )
+      for( int ladder=0; ladder<InttQa::kFee_num; ladder++ )
 	{
 
-	  auto frame = c->cd( kFee_num_ - ladder );
+	  auto frame = c->cd( InttQa::kFee_num - ladder );
 	  //auto frame = c->cd( ladder+1 );
 	  frame->SetMargin( 0.1, 0.15, 0.1, 0.02 );
 	  gPad->SetGrid( true, true );
@@ -218,8 +247,8 @@ void InttRawHitQA::DrawHists()
 	  
 	  hist_hitmap_[ felix ][ ladder ]->Draw( "colz" );
 	  
-	  DrawStats( hist_hitmap_[ felix ][ ladder ], 0.9, 0, 1.0, 1.0 );
-	  // DrawPaletteAxis( hist_hitmap_[ felix ][ ladder ], 0.86, 0.0, 0.88, 1.0, 0.07 );
+	  InttQa::DrawStats( hist_hitmap_[ felix ][ ladder ], 0.9, 0, 1.0, 1.0 );
+	  // InttQa::DrawPaletteAxis( hist_hitmap_[ felix ][ ladder ], 0.86, 0.0, 0.88, 1.0, 0.07 );
 	  
 	}
 
@@ -234,31 +263,25 @@ void InttRawHitQA::DrawHists()
 }
 
 
-int InttRawHitQA::GetColor( int num )
-{
-  assert( 0 <= num && num < 10 );
-  return colors[ num ];
-}
-
 void InttRawHitQA::ProcessHists()
 {
 
   // pid dist
-  for( int i=0; i<kFelix_num_; i++ )
+  for( int i=0; i<InttQa::kFelix_num; i++ )
     {
       //cout << hist_fee_chip_chan_[i]->GetEntries() << endl;
       hist_pid_->SetBinContent( i+1, hist_fee_chip_chan_[i]->GetEntries() );
     }
 
 
-  //  TH2I* hist_hitmap[ kFelix_num_ ][ kFee_num_ ];
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  //  TH2I* hist_hitmap[ InttQa::kFelix_num ][ InttQa::kFee_num ];
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
 
-      for( int ladder=0; ladder<kFee_num_; ladder++ )
+      for( int ladder=0; ladder<InttQa::kFee_num; ladder++ )
 	{
 	  hist_fee_chip_chan_[ felix ]->GetXaxis()->SetRange( ladder+1, ladder+1 );
-	  hist_fee_chip_chan_woclonehit_[ felix ]->GetXaxis()->SetRange( ladder+1, ladder+1 );
+	  //	  hist_fee_chip_chan_woclonehit_[ felix ]->GetXaxis()->SetRange( ladder+1, ladder+1 );
 	  //hist_fee_chip_chan_[ felix ]->GetXaxis()->SetRange( 2, 5 );
 	  // TProfile2D* Project3DProfile(Option_t* option = "xy") const     // *MENU*
 
@@ -270,7 +293,7 @@ void InttRawHitQA::ProcessHists()
     }
 
   // 3D, Ladder vs BCO full vs Event counter (felix)
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       hist_event_counter_[ felix ]
 	= hist_fee_bco_full_event_counter_[ felix ]->ProjectionZ( "_pz" );
@@ -283,6 +306,22 @@ void InttRawHitQA::ProcessHists()
   
 }
 
+void InttRawHitQA::WriteResults2Txt()
+{
+  ofstream output( output_txt_.c_str(), ios::app );
+  if( output.fail() )
+    {
+      cerr << output_txt_ << " cannot be opened." << endl;
+      cerr << "Nothing written..." << endl;
+      return;
+    }
+
+  output << 1 ;
+  output.close();
+
+  cout << output_txt_ << endl;
+}
+
 /////////////////////////////////////////////////////////////////////////
 // public
 /////////////////////////////////////////////////////////////////////////
@@ -293,13 +332,13 @@ void InttRawHitQA::SetOutputDir( string dir )
     {
       output_dir_ = dir;
     }
-  
+
+
   string run_num_str = string( 8 - to_string(run_num_).size(), '0' ) + to_string( run_num_ );
   string suffix_official_private = "_official";
   if( is_official_ == false )
     suffix_official_private = "_special";
   
-
   output_root_ = output_dir_ + to_string( year_ ) + "/root/" + output_basename_ + run_num_str + suffix_official_private + ".root";
   output_pdf_  = output_dir_ + to_string( year_ ) + "/plots/" + output_basename_ + run_num_str + suffix_official_private + ".pdf";
   output_txt_  = output_dir_ + to_string( year_ ) + "/txt/" + output_basename_ + run_num_str + suffix_official_private + ".txt";
@@ -312,12 +351,14 @@ void InttRawHitQA::SetOutputDir( string dir )
 
 int InttRawHitQA::Init(PHCompositeNode *topNode)
 {
-
+  cout << "int InttRawHitQA::Init(PHCompositeNode *topNode)" << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int InttRawHitQA::InitRun(PHCompositeNode *topNode)
 {
+  cout << "int InttRawHitQA::InitRun(PHCompositeNode *topNode)" << endl;
+
   // I want to get the run number here... 
   // auto status = this->GetNodes( topNode );
   // if (status == Fun4AllReturnCodes::ABORTEVENT)
@@ -335,30 +376,30 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
   /////////////////////////////////////////////
   // Init 3D hists                           //
   /////////////////////////////////////////////
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       string name = "intt" + to_string( felix );
       string title = name + ";FELIX CH;Chip;Channel";
       hist_fee_chip_chan_[ felix ]
 	= new TH3I( name.c_str(), title.c_str(),
-		    kFee_num_, 0, kFee_num_,
-		    kChip_num_, 1, kChip_num_+1,
-		    kChan_num_, 0, kChan_num_ );
+		    InttQa::kFee_num, 0, InttQa::kFee_num,
+		    InttQa::kChip_num, 1, InttQa::kChip_num+1,
+		    InttQa::kChan_num, 0, InttQa::kChan_num );
 
-      string name_woclonehit = name + "_woclonehit";
-      string title_woclonehit = title + ";woclonehit";
-      hist_fee_chip_chan_woclonehit_[felix] = new TH3I(name_woclonehit.c_str(), title_woclonehit.c_str(),
-                                                     kFee_num_, 0, kFee_num_,
-                                                     kChip_num_, 1, kChip_num_ + 1,
-                                                     kChan_num_, 0, kChan_num_);
+      // string name_woclonehit = name + "_woclonehit";
+      // string title_woclonehit = title + ";woclonehit";
+      // hist_fee_chip_chan_woclonehit_[felix] = new TH3I(name_woclonehit.c_str(), title_woclonehit.c_str(),
+      //                                                InttQa::kFee_num, 0, InttQa::kFee_num,
+      //                                                InttQa::kChip_num, 1, InttQa::kChip_num + 1,
+      //                                                InttQa::kChan_num, 0, InttQa::kChan_num);
 
       string name_bco_event = name + "_bco_full_event_counter";
       string title_bco_event = name + ";FELIX_CH;BCO full;Event Counter";
       hist_fee_bco_full_event_counter_[ felix ]
 	= new TH3I( name_bco_event.c_str(), title_bco_event.c_str(),
-		    kFee_num_, 0, kFee_num_,
+		    InttQa::kFee_num, 0, InttQa::kFee_num,
 		    100, 0, TMath::Power(2, 40),
-		    10000, 0, 1e6 );
+		    1e4, 0, 1e7 );
       
       string name_bco_event_diff = name + "_bco_full_event_counter_diff";
       string title_bco_event_diff = name + ";FELIX_CH;#Delta BCO full;#Delta Event Counter";
@@ -366,7 +407,7 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
       int max = 10000;
       hist_fee_bco_full_event_counter_diff_[ felix ]
 	= new TH3I( name_bco_event_diff.c_str(), title_bco_event_diff.c_str(),
-		    kFee_num_, 0, kFee_num_,
+		    InttQa::kFee_num, 0, InttQa::kFee_num,
 		    2 * max / 100, -max, max,
 		    2 * max / 100, -max, max );
     }
@@ -374,45 +415,52 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
   /////////////////////////////////////////////
   // Init 2D hists                           //
   /////////////////////////////////////////////
-  for( int felix=0; felix<kFelix_num_;felix++ )
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
 
-      for( int ladder=0; ladder<kFee_num_; ladder++ )
+      for( int ladder=0; ladder<InttQa::kFee_num; ladder++ )
 	{
 	  string name = "intt" + to_string( felix ) + "_" + to_string( ladder );
 	  string title = name + ";Chip;Channel";
 	  //hist_hitmap_[ felix ][ ladder ] = new TH2I( name.c_str(), title.c_str(),
 	  hist_hitmap_[ felix ][ ladder ] = new TProfile2D( name.c_str(), title.c_str(),
-							    kChip_num_, 1, kChip_num_,
-							    kChan_num_, 0, kChan_num_ );
+							    InttQa::kChip_num, 1, InttQa::kChip_num,
+							    InttQa::kChan_num, 0, InttQa::kChan_num );
 	}
     }
-  
+
   /////////////////////////////////////////////
   // Init 1D hists                           //
   /////////////////////////////////////////////
   hist_nhit_ = new TH1I( "nhit", "#INTTRAWHIT per event;#hit;Entries", 1e4, 0, 1e4 );
-  this->HistConfig( hist_nhit_ );
+  InttQa::HistConfig( hist_nhit_ );
  
-  hist_nhit_south_ = new TH1I( "nhit_south", "#INTTRAWHIT South;event;#hit", 1e4, 0, 1e5 );
-  this->HistConfig( hist_nhit_south_ );
+  hist_nhit_south_ = new TH1I( "nhit_south", "#INTTRAWHIT South;event;#hit", 1e4, 0, 1e7 );
+  InttQa::HistConfig( hist_nhit_south_ );
   
-  hist_nhit_north_ = new TH1I( "nhit_north", "#INTTRAWHIT North;event;#hit", 1e4, 0, 1e5 );
-  this->HistConfig( hist_nhit_north_ );
+  hist_nhit_north_ = new TH1I( "nhit_north", "#INTTRAWHIT North;event;#hit", 1e4, 0, 1e7 );
+  InttQa::HistConfig( hist_nhit_north_ );
 
-  hist_pid_      = new TH1I ( "pid", "Packet ID distribution;pid;Entries", kFelix_num_, kFirst_pid_, kFirst_pid_ + kFelix_num_ );
-  this->HistConfig( hist_pid_ );
+  hist_pid_      = new TH1I ( "pid", "Packet ID distribution;pid;Entries", InttQa::kFelix_num, InttQa::kFirst_pid, InttQa::kFirst_pid + InttQa::kFelix_num );
+  InttQa::HistConfig( hist_pid_ );
   
   hist_adc_      = new TH1I( "adc", "ADC distribution;BCO;Entries", 8, 0, 8 );
-  this->HistConfig( hist_adc_ );
+  InttQa::HistConfig( hist_adc_ );
   
   hist_bco_      = new TH1I( "bco", "BCO distribution;BCO;Entries", 128, 0, 128 );
-  this->HistConfig( hist_bco_ );
+  InttQa::HistConfig( hist_bco_ );
   
   hist_bco_full_ = new TH1D( "bco_full", "BCO full distribution;BCO full;Entries",
 			     100, 0, TMath::Power( 2, 40 ) );
-  this->HistConfig( hist_bco_full_ );
+  InttQa::HistConfig( hist_bco_full_ );
 
+  ////////////////////////////////////////////////////////////
+  // g_event_hit_num_ = new TGraph();
+  // g_event_hit_num_->SetName( "g_event_hit_num" );
+  
+  // g_event_hit_num_strange_peak_ = new TGraph();
+  // g_event_hit_num_strange_peak_->SetName( "g_event_hit_num_strange_peak" );
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -429,57 +477,60 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
   auto raw_hit_num = node_inttrawhit_map_->get_nhits();
   hist_nhit_->Fill( raw_hit_num );
 
-  //  cout << node_intteventheader_map_->get_bco_full() << endl;
-  auto bco_full = node_intteventheader_map_->get_bco_full();
-  //auto bco_full = node_inttrawhit_map_->get_hit(0)->get_bco();
+  if( raw_hit_num == 0 )
+    return Fun4AllReturnCodes::EVENT_OK;
+    
+  uint64_t bco_full;
+  if( intt_header_found_ == true )
+    {
+      //bco_full = node_intteventheader_map_->get_bco_full();
+    }
+  else
+    {
+      bco_full = (node_inttrawhit_map_->get_hit( 0 )->get_bco());
+    }
+
   hist_bco_full_->Fill( bco_full );
 
-  // Intitialize for Clone hit counter
-  memset(IsCloneHit_, false, sizeof(IsCloneHit_));
+  auto hits = this->GetHits();
   
   // initial loop to get some values    
   uint32_t event_counter_ref = 100000000; // 100 M
-
-  
   for (unsigned int i = 0; i < raw_hit_num; i++)
   {
     auto hit = node_inttrawhit_map_->get_hit(i);
-    // if( hit->get_packetid() != pid_ref_ )
-    //   continue;
 
     // Because *min_element crashed the Fun4All process, I have to do it...
     if( hit->get_event_counter() < event_counter_ref )
-      event_counter_ref = hit->get_event_counter();
+      {
+	event_counter_ref = hit->get_event_counter();
+      }
       
   }
-  
+
   // loop over all raw hits
   bool found = false;
-  for (unsigned int i = 0; i < raw_hit_num; i++)
+  for (unsigned int i = 0; i < hits.size(); i++)
   {
-    auto hit = node_inttrawhit_map_->get_hit(i);
+    auto hit = hits[i];
 
-    int felix = hit->get_packetid() - kFirst_pid_;
+    int felix = hit->get_packetid() - InttQa::kFirst_pid;
     int felix_ch = hit->get_fee();
     int chip = hit->get_chip_id();
     int chan = hit->get_channel_id();
-
+    auto adc = hit->get_adc();
+    auto bco = hit->get_FPHX_BCO();
+    
+    int bco_diff = (bco_full & 0x7f ) - bco;
+    if( bco_diff < 0 )
+      bco_diff += 128;
+    
     // The raw Chip ID can be more than 26
-    if (chip > kChip_num_)
+    if (chip > InttQa::kChip_num)
     {
-      chip = chip - kChip_num_;
+      chip = chip - InttQa::kChip_num;
     }
-    if (IsCloneHit_[felix][felix_ch][chip][chan])
-    {
-      // loop for clone hit info. 
-    }
-    else
-    {
-      // loop for something related to clone hit QA
-      // In this loop, hit without clone hit will be used.
-      hist_fee_chip_chan_woclonehit_[felix]->Fill(felix_ch, chip, chan);
-      IsCloneHit_[felix][felix_ch][chip][chan] = true;
-    }
+    
     hist_fee_chip_chan_[felix]->Fill(felix_ch, chip, chan);
     hist_adc_->Fill(hit->get_adc());
     hist_bco_->Fill(hit->get_FPHX_BCO());
@@ -497,8 +548,10 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
       hist_nhit_south_->Fill(hit->get_event_counter());
     else
       hist_nhit_north_->Fill(hit->get_event_counter());
-    // if( false )
-    if (hit->get_event_counter() - event_counter_ref != 0)
+    
+    if( false )
+    //if (hit->get_event_counter() - event_counter_ref != 0)
+    //if( !found )
     {
       found = true;
       cout << setw(6) << i << " "
@@ -532,19 +585,77 @@ int InttRawHitQA::process_event(PHCompositeNode *topNode)
 	     << endl;
 
     }
-  
+
+  //this->process_event_clone_hit( topNode );
   return Fun4AllReturnCodes::EVENT_OK;
 }
+
+// int InttRawHitQA::process_event_clone_hit(  PHCompositeNode* topNode )
+// {
+
+//   auto raw_hit_num = node_inttrawhit_map_->get_nhits();
+//   auto bco_full = node_intteventheader_map_->get_bco_full();
+
+//   if( raw_hit_num == 0 )
+//     return Fun4AllReturnCodes::EVENT_OK;
+    
+//   uint32_t event_counter = node_inttrawhit_map_->get_hit( 0 )->get_event_counter();
+//   int hit_num = 0;
+//   int hit_num_strange_peak = 0 ;
+  
+//   for (unsigned int i = 0; i < raw_hit_num; i++)
+//   {
+//     auto hit = node_inttrawhit_map_->get_hit(i);
+//     int felix = hit->get_packetid() - InttQa::kFirst_pid;
+//     int felix_ch = hit->get_fee();
+//     int chip = hit->get_chip_id();
+//     int chan = hit->get_channel_id();
+//     auto adc = hit->get_adc();
+//     auto bco = hit->get_FPHX_BCO();
+    
+//     int bco_diff = (bco_full & 0x7f ) - bco;
+//     if( bco_diff < 0 )
+//       bco_diff += 128;
+
+//     // if (IsCloneHit_[felix][felix_ch][chip-1][chan]) // case of clone hit
+//     //   {
+//     // 	// loop for clone hit info. 
+//     //   }
+//     // else // case of non-clone hit
+//     //   {
+//     // 	// loop for something related to clone hit QA
+//     // 	// In this loop, hit without clone hit will be used.
+//     // 	hist_fee_chip_chan_woclonehit_[felix]->Fill(felix_ch, chip, chan);
+//     // 	IsCloneHit_[felix][felix_ch][chip-1][chan] = true;
+	
+//     // 	if( adc>0)
+//     // 	  {
+//     // 	    hit_num++;
+	    
+//     // 	    if( 39 < bco_diff && bco_diff < 45 )
+//     // 	      hit_num_strange_peak++;
+//     // 	  }	
+//     //   }
+//   }
+  
+//   return Fun4AllReturnCodes::EVENT_OK;
+// }
 
 int InttRawHitQA::ResetEvent(PHCompositeNode *topNode)
 {
 
+  // Intitialize for Clone hit counter
+  // cout << "before memset" << endl;
+  //  memset(IsCloneHit_, false, sizeof(IsCloneHit_));
+
+  intt_header_found_ = false;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int InttRawHitQA::EndRun(const int runnumber)
 {
-
+  cout << "int InttRawHitQA::EndRun(const int runnumber)" << endl;
+  
   this->ProcessHists();
   
   // // Draw hits and save them into a PDF file.
@@ -555,10 +666,12 @@ int InttRawHitQA::EndRun(const int runnumber)
     {
       tf_output_->WriteTObject( hist, hist->GetName() );
     }
-    for (auto &hist : hist_fee_chip_chan_woclonehit_)
-    {
-      tf_output_->WriteTObject(hist, hist->GetName());
-    }
+
+    // for (auto &hist : hist_fee_chip_chan_woclonehit_)
+    // {
+    //   tf_output_->WriteTObject(hist, hist->GetName());
+    // }
+
   // write 1D hists into a ROOT file
   tf_output_->WriteTObject( hist_nhit_, hist_nhit_->GetName() );
   tf_output_->WriteTObject( hist_nhit_south_, hist_nhit_south_->GetName() );
@@ -571,25 +684,29 @@ int InttRawHitQA::EndRun(const int runnumber)
   // for( auto hist : hist_event_counter_ )
   //   tf_output_->WriteTObject( hist, hist->GetName() );
 
-  // for( int felix=0; felix<kFelix_num_; felix++ )
+  // for( int felix=0; felix<InttQa::kFelix_num; felix++ )
   //   tf_output_->WriteTObject( hist_event_counter_[felix], hist_event_counter_[felix]->GetName() );
 
   // Close the ROOT file
 
-  
+  // tf_output_->WriteTObject( g_event_hit_num_, g_event_hit_num_->GetName() );
+  // tf_output_->WriteTObject( g_event_hit_num_strange_peak_, g_event_hit_num_strange_peak_->GetName() );
+
+  this->WriteResults2Txt();
   tf_output_->Close();
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int InttRawHitQA::End(PHCompositeNode *topNode)
 {
-
+  cout << "int InttRawHitQA::End(PHCompositeNode *topNode)" << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int InttRawHitQA::Reset(PHCompositeNode *topNode)
 {
-
+  cout << "int InttRawHitQA::Reset(PHCompositeNode *topNode)" << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
