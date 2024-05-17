@@ -72,6 +72,7 @@ protected:
   TH1D* hist_ch_[14][26];
 
   TH1D* hist_bco_diff_[14][26];
+  TH1D* hist_bco_diff_raw_[14][26]; // +128 is not done even if diff < 0 
 
   /////////////////////////////////////
   // protected member functions      //

@@ -79,6 +79,7 @@ private:
 
   void DivideCanvas( TCanvas* c, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
   
+  void WriteLabels2Panes( TCanvas* c, int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
   void WriteLabelFelix( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
   void WriteLabelRoc( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
   void WriteLabelLadder( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_ );
@@ -108,6 +109,7 @@ public:
   int Draw_AmplAdc( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   int Draw_ChAmpl( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   int Draw_BcoDiff( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
+  int Draw_BcoDiffRaw( int ladder_min=0, int ladder_max=kLadder_num_, int chip_min=0, int chip_max=kChip_num_);
   
   TCanvas* GetCanvasCh(){ return (TCanvas*)(c_ch_->Clone()); }
   

@@ -52,7 +52,7 @@ if __name__ == "__main__" :
                          default="",
                          help="Choose the directory path for the data." )
 
-    run_type_list = [ None, "beam", "cosmics", "calib", "calibration", "pedestal", "junk" ]
+    run_type_list = [ None, "physics", "beam", "cosmics", "calib", "calibration", "pedestal", "junk" ]
     parser.add_argument( "--run-type", type=str,
                          choices=run_type_list,
                          default=None,
