@@ -26,7 +26,6 @@
 string               sDataType           = "data"; // or "MC"
 string               sOutFolderDirectory = "./";
 pair<double, double> beam_origin         = {-0.23436750, 2.5985125}; // note : for run20869
-int                  geo_mode_id         = 1;                        // note : 0 -> perfect geo., 1 -> first-order survey geo.
 double               phi_diff_cut        = 1; //0.265 + 0.269;            // note : for run20869
 //pair<double, double> DCA_cut             = {0.277 - 0.730, 0.277 + 0.730}; // note : for run20869
 pair<double, double> DCA_cut             = {-3,3}; // note : for run20869
@@ -44,12 +43,11 @@ int                  clu_size_cut        = 4;
 
 int                  data_type           = 2; // note : private gen data cluster
 
-//INTTReadTree * INTTClu = new INTTReadTree(data_type, input_directory, file_name, tree_name, clu_size_cut, clu_sum_adc_cut);
-//INTTZvtx     * MCz     = new INTTZvtx(INTTClu -> GetRunType(), out_folder_directory, beam_origin, geo_mode_id, phi_diff_cut, DCA_cut, N_clu_cutl, N_clu_cut, zvtx_cal_require, zvtx_QA_width, zvtx_QA_ratio, draw_event_display, peek);
 
+/*
 bool GetPhiCheckTag(
-        std::vector<clu_info>& temp_sPH_inner_nocolumn_vec,
-        std::vector<clu_info>& temp_sPH_outer_nocolumn_vec
+        std::vector<INTTZvtx::clu_info>& temp_sPH_inner_nocolumn_vec,
+        std::vector<INTTZvtx::clu_info>& temp_sPH_outer_nocolumn_vec
       )
 {
     int inner_1_check = 0;
@@ -82,6 +80,7 @@ bool GetPhiCheckTag(
           outer_1_check + outer_2_check + outer_3_check + outer_4_check) != 8 ) {return false;}
     else { return true; }
 }
+*/
 
 
 //____________________________________________________________________________..
@@ -98,7 +97,6 @@ InttZVertexFinder::InttZVertexFinder(const std::string &name):
                            zvtx_QA_width, 
                            draw_event_display, 
                            enable_qa, 
-                           geo_mode_id, 
                            peek))
 {
   std::cout << "InttZVertexFinder::InttZVertexFinder(const std::string &name) Calling ctor" << std::endl;
@@ -200,8 +198,8 @@ int InttZVertexFinder::process_event(PHCompositeNode *topNode)
   /////////////////////////
   //cluster list
   // fill cluster
-  std::vector<clu_info> temp_sPH_inner_nocolumn_vec;
-  std::vector<clu_info> temp_sPH_outer_nocolumn_vec;
+  std::vector<INTTZvtx::clu_info> temp_sPH_inner_nocolumn_vec;
+  std::vector<INTTZvtx::clu_info> temp_sPH_outer_nocolumn_vec;
 
   std::vector< std::vector<double> > temp_sPH_nocolumn_vec(2);
   std::vector< std::vector<double> > temp_sPH_nocolumn_rz_vec(2);
@@ -209,7 +207,7 @@ int InttZVertexFinder::process_event(PHCompositeNode *topNode)
 
   for (unsigned int inttlayer = 0; inttlayer < 4; inttlayer++)
   {
-    std::vector<clu_info>* p_temp_sPH_nocolumn_vec = 
+    std::vector<INTTZvtx::clu_info>* p_temp_sPH_nocolumn_vec = 
                   (inttlayer<2) ? (&temp_sPH_inner_nocolumn_vec) 
                                 : (&temp_sPH_outer_nocolumn_vec);
 

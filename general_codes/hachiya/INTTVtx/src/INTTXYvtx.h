@@ -1,12 +1,15 @@
 #ifndef INTTXYvtx_h
 #define INTTXYvtx_h
 
-#include <filesystem>
-#include "InttConversion_new.h"
-#include "sigmaEff.h"
-#include "gaus_func.h"
+#include "InttVertexUtil.h"
 
+#include <string>
+#include <vector>
+#include <map>
+#include <iostream>
 #include <numeric>
+#include <filesystem>
+
 
 #include <TH1.h>
 #include <TH2.h>
@@ -14,7 +17,14 @@
 #include <TLegend.h>
 #include <TGraphErrors.h>
 #include <TProfile.h>
-#include <TROOT.h>
+#include <TLatex.h>
+#include <TFile.h>
+
+using std::string;
+using std::vector;
+using std::pair;
+using std::cout;
+using std::endl;
 
 // note : this class mainly focus on two things 
 // note : 1. find a single vertex for the whole run
@@ -431,7 +441,7 @@ void INTTXYvtx::InitRest()
       cos_fit -> SetParNames("[A]", "[B]", "[C]", "[D]");
       cos_fit -> SetLineColor(2);
 
-      gaus_fit = new TF1("gaus_fit",gaus_func,0,360,4);
+      gaus_fit = new TF1("gaus_fit", InttVertexUtil::gaus_func,0,360,4);
       gaus_fit -> SetLineColor(4);
       gaus_fit -> SetLineWidth(1);
       gaus_fit -> SetParNames("size", "mean", "width", "offset");

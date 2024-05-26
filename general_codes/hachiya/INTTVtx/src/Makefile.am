@@ -25,9 +25,7 @@ pkginclude_HEADERS = \
 noinst_HEADERS = \
   INTTZvtx.h \
   INTTXYvtx.h \
-  InttConversion_new.h \
-  gaus_func.h \
-  sigmaEff.h
+  InttVertexUtil.h 
 
 lib_LTLIBRARIES = \
   libInttXYVertexFinder.la
@@ -36,9 +34,7 @@ libInttXYVertexFinder_la_SOURCES = \
   $(ROOTDICTS) \
   InttXYVertexFinder.cc \
   InttZVertexFinder.cc \
-  InttConversion_new.cc \
-  gaus_func.cc \
-  sigmaEff.cc \
+  InttVertexUtil.cc \
   InttVertexv1.cc \
   InttVertexMap.cc \
   InttVertexMapv1.cc \

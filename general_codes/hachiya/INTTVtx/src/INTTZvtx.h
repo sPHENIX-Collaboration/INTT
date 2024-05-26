@@ -1,60 +1,52 @@
 #ifndef INTTZvtx_h
 #define INTTZvtx_h
 
-#include "InttConversion_new.h"
-#include "sigmaEff.h"
-#include "gaus_func.h"
+#include "InttVertexUtil.h"
 
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
 
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TGraphErrors.h>
 #include <TColor.h>
+#include <TLine.h>
+#include <TLatex.h>
+#include <TFile.h>
+#include <TTree.h>
+
 
 using std::string;
+using std::vector;
+using std::map;
 using std::pair;
+using std::cout;
+using std::endl;
 
-double double_gaus_func(double *x, double *par)
-{
-    // note : par[0] : size of gaus1
-    // note : par[1] : mean of gaus1
-    // note : par[2] : width of gaus1
 
-    // note : par[3] : size of gaus2
-    // note : par[4] : mean of gaus2
-    // note : par[5] : width of gaus2
-
-    // note : par[6] : systematic ffset
-    double gaus1 = par[0] * TMath::Gaus(x[0],par[1],par[2]); 
-    double gaus2 = par[3] * TMath::Gaus(x[0],par[4],par[5]); 
-
-    return gaus1 + gaus2 + par[6];
-}
-
-struct clu_info {
-  int column;
-  // int chip_id;
-  double avg_chan;
-  int sum_adc;
-  int sum_adc_conv;
-  int size;
-  
-  double x;
-  double y;
-  double z;
-  int layer;
-  double phi;
-  //std::vector<double> bco_diff_vec; // note : for the multi-hit cluster, more than one hit was included. so more than one bco_diff
-};
-    
 
 class INTTZvtx
 {
     public:
+      struct clu_info {
+        int column;
+        // int chip_id;
+        double avg_chan;
+        int sum_adc;
+        int sum_adc_conv;
+        int size;
+        
+        double x;
+        double y;
+        double z;
+        int layer;
+        double phi;
+        //std::vector<double> bco_diff_vec; // note : for the multi-hit cluster, more than one hit was included. so more than one bco_diff
+      };
+    
       struct ZvtxInfo {
         public:
           double       zvtx{-9999.};  // gaussian fit
@@ -94,7 +86,6 @@ class INTTZvtx
                  pair<double,double>  zvtxQAWidth      = {39.62, 65.36}, 
                  bool                 drawEventDisplay = true, 
                  bool                 enableQA         = true, 
-                 int                  geoModeId        = 0, 
                  double               peekCut          = 3.32405, 
                  bool                 printMessageOpt  = true);
 
@@ -146,7 +137,6 @@ class INTTZvtx
         pair<double, double> zvtx_QA_width;    // note : for the zvtx range Quality check, check the width 
         bool                 draw_event_display{false};
         bool                 m_enable_qa       {false};
-        int                  geo_mode_id;      // used in  InttConversion
         double               peek;
         bool                 print_message_opt;
 
@@ -223,7 +213,6 @@ class INTTZvtx
         TPad* pad_inner_outer_phi{nullptr}; // ProcessEvt
         TPad* pad_phi_diff_1D    {nullptr}; // ProcessEvt
         
-        InttConversion* ch_pos_DB           {nullptr}; // tempbkg
         TLine*          ladder_line         {nullptr}; // tempbkg
         TLine*          final_fit_range_line{nullptr}; // ProcessEvt
         TLine*          coord_line          {nullptr}; // ProcessEvt
@@ -295,9 +284,6 @@ class INTTZvtx
         // for Tree
         double              LB_geo_mean(TH1F * hist_in, pair<double, double> search_range, int event_i);
 
-        // event display
-        void                temp_bkg(TPad * p1, pair<double,double> beam_origin, InttConversion * ch_pos_DB);
-
         // InitCanvas
         void                Characterize_Pad(TPad *pad, float left = 0.15, float right = 0.1, 
                                                         float top  = 0.1,  float bottom = 0.12, 
@@ -318,7 +304,6 @@ INTTZvtx::INTTZvtx(string              runType,
                    pair<double,double> zvtxQAWidth, 
                    bool                drawEventDisplay, 
                    bool                enableQA, 
-                   int                 geoModeId, 
                    double              peekCut, 
                    bool                printMessageOpt)
   : run_type(            runType)
@@ -332,7 +317,6 @@ INTTZvtx::INTTZvtx(string              runType,
   , zvtx_QA_width(       zvtxQAWidth)
   , draw_event_display(  drawEventDisplay)
   , m_enable_qa(         enableQA)
-  , geo_mode_id(         geoModeId)
   , peek(                peekCut)
   , print_message_opt(   printMessageOpt)
 {
@@ -398,7 +382,6 @@ INTTZvtx::~INTTZvtx()
     }
 
     if(draw_event_display) {
-      delete ch_pos_DB;
       delete final_fit_range_line;
       delete coord_line;
       delete ladder_line;
@@ -752,7 +735,7 @@ void INTTZvtx::InitTreeOut()
 
 void INTTZvtx::InitRest()
 {
-    gaus_fit = new TF1("gaus_fit",gaus_func,evt_possible_z_range.first,evt_possible_z_range.second,4);
+    gaus_fit = new TF1("gaus_fit",InttVertexUtil::gaus_func,evt_possible_z_range.first,evt_possible_z_range.second,4);
     gaus_fit -> SetLineColor(2);
     gaus_fit -> SetLineWidth(1);
     gaus_fit -> SetNpx(1000);
@@ -768,8 +751,6 @@ void INTTZvtx::InitRest()
       coord_line = new TLine();
 
       ladder_line = new TLine();
-
-      ch_pos_DB = new InttConversion(conversion_mode_BD[geo_mode_id], peek);
 
       bkg = new TGraph(2);
     }
@@ -1102,7 +1083,7 @@ bool INTTZvtx::ProcessEvt(
         // additional QA below
         // note : eff sigma method, relatively sensitive to the background
         // note : use z-mid to do the effi_sig, because that line_breakdown takes too long time
-        temp_event_zvtx_info = sigmaEff_avg(z_mid,Integrate_portion);
+        temp_event_zvtx_info = InttVertexUtil::sigmaEff_avg(z_mid,Integrate_portion);
 
         vector<double> eff_N_comb;  // QA
         vector<double> eff_N_comb_e;// QA
@@ -1278,7 +1259,6 @@ bool INTTZvtx::ProcessEvt(
             //cout<<"draw_text "<<(long)draw_text<<endl;
             pad_xy -> cd();
             temp_event_xy -> Draw("ap");
-           // temp_bkg(pad_xy, beam_origin, ch_pos_DB);
            // temp_event_xy -> Draw("p");
             draw_text -> DrawLatex(0.2, 0.85, 
                                     Form("eID : %i, inner Ncluster : %zu, outer Ncluster : %zu",
@@ -1529,7 +1509,7 @@ void INTTZvtx::PrintPlots()
       c1 -> cd();
       vector<float> avg_event_zvtx_info = {0,0,0};
       if (avg_event_zvtx_vec.size() > 10) 
-        {avg_event_zvtx_info = sigmaEff_avg(avg_event_zvtx_vec,Integrate_portion_final);}
+        {avg_event_zvtx_info = InttVertexUtil::sigmaEff_avg(avg_event_zvtx_vec,Integrate_portion_final);}
 
       avg_event_zvtx -> SetMinimum( 0 );  
       avg_event_zvtx -> SetMaximum( avg_event_zvtx->GetBinContent(avg_event_zvtx->GetMaximumBin()) * 1.5 );
@@ -1576,9 +1556,9 @@ void INTTZvtx::PrintPlots()
       // note : ---------------------------------------------------------------------------------------
       if (run_type == "MC")
       {
-          vector<float> Z_resolution_vec_info = sigmaEff_avg(Z_resolution_vec,Integrate_portion_final);
+          vector<float> Z_resolution_vec_info = InttVertexUtil::sigmaEff_avg(Z_resolution_vec,Integrate_portion_final);
 
-          TF1* gaus_fit_2 = new TF1("gaus_fit_2",gaus_func,evt_possible_z_range.first,evt_possible_z_range.second,4);
+          TF1* gaus_fit_2 = new TF1("gaus_fit_2",InttVertexUtil::gaus_func,evt_possible_z_range.first,evt_possible_z_range.second,4);
           gaus_fit_2 -> SetLineColor(2);
           gaus_fit_2 -> SetLineWidth(2);
           gaus_fit_2 -> SetNpx(1000);
@@ -1848,43 +1828,6 @@ double INTTZvtx::calculateAngleBetweenVectors(double x1, double y1, double x2, d
     return DCA_distance;
 }
 
-void INTTZvtx::temp_bkg(TPad * p1, pair<double,double> beam_origin, InttConversion * ch_pos_DB)
-{
-    if(!draw_event_display) return;
-
-    p1 -> cd();
-
-    //--int N_ladder[4] = {12, 12, 16, 16};
-    string ladder_index_string[16] = {"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15"};
-
-    vector<double> x_vec; x_vec.clear();
-    vector<double> y_vec; y_vec.clear();
-
-    vector<double> x_vec_2; x_vec_2.clear();
-    vector<double> y_vec_2; y_vec_2.clear();
-
-    bkg -> SetPoint(0,0,0);
-    bkg -> SetPoint(1,beam_origin.first,beam_origin.second);
-    
-    bkg -> Draw("p");
-
-    
-    if(ch_pos_DB!=nullptr){
-      for (int server_i = 0; server_i < 4; server_i++)
-      {
-          for (int FC_i = 0; FC_i < 14; FC_i++)
-          {
-              ladder_line -> DrawLine(
-                  ch_pos_DB -> Get_XY_all(Form("intt%i",server_i),FC_i,14,0).x, 
-                  ch_pos_DB -> Get_XY_all(Form("intt%i",server_i),FC_i,14,0).y,
-                  ch_pos_DB -> Get_XY_all(Form("intt%i",server_i),FC_i, 1,0).x, 
-                  ch_pos_DB -> Get_XY_all(Form("intt%i",server_i),FC_i, 1,0).y
-              );
-          }
-      }
-      ladder_line -> Draw("l same");
-   }
-}
 
 double INTTZvtx::Get_extrapolation(double given_y, double p0x, double p0y, double p1x, double p1y) // note : x : z, y : r
 {
