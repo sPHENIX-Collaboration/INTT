@@ -11,22 +11,29 @@ AM_LDFLAGS = \
   -L$(OFFLINE_MAIN)/lib64
 
 pkginclude_HEADERS = \
-  InttRawHitQA.h
+  InttRawHitQA.h \
+  InttTrkrHitQA.h \
+  InttCloneRawHitQA.h \
+  InttFineDelayScan.h \
+  InttQaCommon.h \
+  TH2INTT.h
 
 lib_LTLIBRARIES = \
-  libInttRawHitQA.la
+  libInttQA.la
 
-libInttRawHitQA_la_SOURCES = \
-  InttRawHitQA.cc
+libInttQA_la_SOURCES = \
+  InttRawHitQA.cc \
+  InttTrkrHitQA.cc \
+  InttCloneRawHitQA.cc \
+  InttFineDelayScan.cc \
+  TH2INTT.cc
 
-libInttRawHitQA_la_LIBADD = \
+libInttQA_la_LIBADD = \
   -lphool \
   -lSubsysReco \
   -lffaobjects \
   -lffarawobjects \
   -ltrack_io
-
-#include <ffarawobjects/InttRawHit.h>
 
 BUILT_SOURCES = testexternals.cc
 
@@ -34,7 +41,7 @@ noinst_PROGRAMS = \
   testexternals
 
 testexternals_SOURCES = testexternals.cc
-testexternals_LDADD   = libInttRawHitQA.la
+testexternals_LDADD   = libInttQA.la
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@

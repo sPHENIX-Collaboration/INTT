@@ -208,6 +208,37 @@ void Viewer::DivideCanvas( TCanvas* c, int ladder_min, int ladder_max, int chip_
 ///////////////////////////////////////////////////////////////////////////
 // functions for label                                                   //
 ///////////////////////////////////////////////////////////////////////////
+void Viewer::WriteLabels2Panes( TCanvas* c, int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+  c->cd( 1 );
+  TLatex* tex = new TLatex();
+  tex->SetTextColor( color_ );
+  tex->SetTextSize( 0.1 );
+
+  // INTT server label: intt0
+  tex->DrawLatexNDC( margin_left * 0.1,
+		     1.0 - margin_top ,
+		     intt_server_.c_str() );
+
+  string comment = "";
+  
+  double x_roc_label = margin_left ;
+  //  double y_roc_label = 0.7; // 1.0 - margin_top * 0.7; // - pad_height / 10;
+  double y_roc_label = 1.0 - margin_top; // * 0.7; // - pad_height / 10;
+  // upper part, higher ROC ID number
+  comment = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) + 1 )
+    + ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+  tex->DrawLatexNDC( x_roc_label, y_roc_label, comment.c_str() );
+  
+  c->cd( 2 );
+  // lower part, smaller ROC ID number
+  comment = "RC-" + to_string( 2 * (stoi( felix_num_ ) % 4 ) )
+    + ( stoi( felix_num_ ) < 4 ? "S" : "N" );
+  //y_roc_label /= 2;
+  //  y_roc_label = 0.4;
+  tex->DrawLatexNDC( x_roc_label, y_roc_label, comment.c_str() );
+}
+
 void Viewer::WriteLabelFelix( int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
   TLatex* tex = new TLatex();
@@ -509,12 +540,13 @@ int Viewer::Draw()
 	  this->Draw_BcoDiff();
 	  this->Draw_AdcChannel();
 	}
-      else if( run_type_ == "beam" )
+      else if( run_type_ == "beam" || run_type_ == "physics" )
 	{
-	  this->Draw_Channel();
+	  //this->Draw_Channel();
 	  this->Draw_AdcChannel();
 	  this->Draw_HitDist();
 	  this->Draw_BcoDiff();
+	  this->Draw_BcoDiffRaw();
 	}
     }
   else // for junk data
@@ -882,7 +914,83 @@ int Viewer::Draw_BcoDiff( int ladder_min, int ladder_max, int chip_min, int chip
 	}
     }
 
+  this->WriteLabels2Panes( c, ladder_min, ladder_max, chip_min, chip_max );
+  
   string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "bco_diff" );
+  c->Print( output.c_str() );
+  cout << output << endl << endl;
+  
+  return 0;
+}
+
+int Viewer::Draw_BcoDiffRaw( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+
+  TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
+
+  //////////////////////////////////////////////////
+  // Make histogram ladder by ladder since it's made for every ladder and chip
+  //////////////////////////////////////////////////
+
+  // make the instance and init with the hist for chip0
+  TH1D* hist_bco_diff_raw_ladder[ kLadder_num_ ];
+  for( int i=0; i<kLadder_num_; i++ )
+    hist_bco_diff_raw_ladder[i] = (TH1D*)hist_bco_diff_raw_[i][0]->Clone();
+
+  // Add data 
+  for( int i=0; i<kLadder_num_; i++ )
+    for( int j=1; j<kChip_num_; j++ )
+      {
+	hist_bco_diff_raw_ladder[i]->Add( hist_bco_diff_raw_[i][j] );
+      }
+  
+  //auto y_max = GetMaxBinContentRatio( hist_bco_diff_ladder_, 0.01, ladder_min, ladder_max, chip_min, chip_max ); // Bins on the top 1% are ignored
+  auto y_max = GetMaxBinContent1D( hist_bco_diff_raw_ladder, 1 );
+
+  if( run_type_ == "calib" || run_type_ == "calibration" )
+    y_max = 500;
+  else if( y_max < 0.9 )
+    y_max = 1;
+  
+  // this->CanvasPreparation( c,
+  // 			   0, 127, 0.9, y_max,
+  // 			   0, 2, 0, 1,
+  // 			   hist_bco_diff_[0][0]->GetName() );
+
+  c->Divide( 1, 2 );
+
+  ////////////////////////////////////////////////////////////////////////
+  // Draw!                                                              //
+  ////////////////////////////////////////////////////////////////////////
+  TLegend* leg = new TLegend( 0.91, 0.1, 0.99, 0.9 );
+  
+  c->cd( 2 );
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+
+      hist_bco_diff_raw_ladder[i]->SetLineColor( kLadder_colors[ i%7 ] );
+      hist_bco_diff_raw_ladder[i]->SetFillColorAlpha( hist_bco_diff_raw_ladder[i]->GetLineColor(), 0.1 );
+      hist_bco_diff_raw_ladder[i]->SetLineWidth( 3 );
+      hist_bco_diff_raw_ladder[i]->GetYaxis()->SetRangeUser( 0.9, y_max );
+      string option = "HIST same";
+      if( i == 0 || i == 7 )
+	option = "HIST";
+      
+      hist_bco_diff_raw_ladder[i]->Draw( option.c_str() );
+      this->SetStyle();
+      gPad->SetLogy( true );
+
+      leg->AddEntry( hist_bco_diff_raw_ladder[i], ( "FELIX CH" + to_string(i) ).c_str() );
+      if( i == 6 || i == ladder_max-1 )
+	{
+	  leg->Draw();
+	  leg = new TLegend( 0.91, 0.1, 0.99, 0.9 );
+	  c->cd( 1 );
+	}
+    }
+
+  this->WriteLabels2Panes( c, ladder_min, ladder_max, chip_min, chip_max );
+  string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "bco_diff_diff" );
   c->Print( output.c_str() );
   cout << output << endl << endl;
   

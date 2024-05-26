@@ -190,6 +190,7 @@ class Homepage() :
 
         self.WriteRawHitSection()
         self.WriteHotChannelSection()
+        self.WriteBcoDiffCutSection()
         self.WriteCosmicSection()
 
     def WriteRawHitSection( self ) :
@@ -198,73 +199,85 @@ class Homepage() :
             return None
         
         with open( str(self.index_html), mode='a' ) as file :
-            contents = "<h3>INTTRAWHIT </h3>\n" \
-                "<details open>\n" \
+            contents = "<h3>INTTRAWHIT </h3>\n"
+            html_detail = "<details>\n" \
                 "    <summary>Hide/Show</summary>\n"
 
+            
             for plot in self.info.raw_hit_plots :
                 shutil.copy( str(plot), self.RUN_DIR/ plot.name )
                 print( self.RUN_DIR/ plot.name )
-                contents += \
-                    "<div class=\"center\">\n" \
+                contents += "<h4>" + plot.name + "</h4>\n"
+                contents += html_detail + \
+                "<div class=\"center\">\n" \
                     "    <object data=\"" + plot.name + "\"" \
                     "type=\"application/pdf\">\n" \
                     "    Your browser cannot show PDF. Why don't you use new one?\n"\
                     "    </object>\n" \
                     "</div>\n" \
+                    "</details>\n\n"
 
-            contents += "</details>\n"
             file.write( contents )
-        
-        
+                
     def WriteHotChannelSection( self ) :
-        # self.HITMAP_DIR         self.HOTMAP_DIR         self.BCODIFF_DIR
         # If no plots are found, let's finish
         if len( self.info.hot_channel_plots ) == 0 :
             return None
         
         with open( str(self.index_html), mode='a' ) as file :
-            contents = "<h3>Hot/Dead channel</h3>\n" \
-                "<details open>\n" \
+            contents = "<h3>Hot/Dead channel</h3>\n"
+            html_detail = "<details>\n" \
+                "    <summary>Hide/Show</summary>\n"
+            
+            for txt in self.info.hot_channel_txt :                
+                print( txt )
+                shutil.copy( str( txt ), self.RUN_DIR/ txt.name )
+
+                hot_num = 0;
+                
+                with open( str(txt), mode='r' ) as hot_ch_list :
+                    lines = hot_ch_list.readlines()
+                    hot_num = len( lines ) - 1 # take 1 out for the header
+                    # close txt
+                    
+                contents += "<h4>" + str( txt.name ) + "</h4>\n" \
+                    "<a href=\"" + txt.name + "\">Hot ch list (txt)</a><br>\n" \
+                    "#hot channels: " + str( hot_num ) + "\n"
+                
+                for plot in self.info.hot_channel_plots :
+                    if plot.name.split( '.' )[0] != txt.name.split( '.' )[0] :
+                        continue
+
+                    contents_parts = ""
+                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                    print( self.RUN_DIR/ plot.name )
+                    contents_parts += \
+                        "<div class=\"center\">\n" \
+                        "    <object data=\"" + plot.name + "\"" \
+                        "type=\"application/pdf\">\n" \
+                        "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                        "    </object>\n" \
+                        "</div>\n"
+
+                contents += "<details>\n" \
+                "    <summary>Hide/Show</summary>\n" \
+                + contents_parts \
+                + "</details>\n\n"
+
+            file.write( contents )
+
+    def WriteBcoDiffCutSection( self ) :
+        # If no plots are found, let's finish
+        
+        if len( self.info.bco_diff_plots ) == 0 :
+            return None
+        
+        with open( str(self.index_html), mode='a' ) as file :
+            contents = "<h3>BCO difference cut </h3>\n" \
+                "<details>\n" \
                 "    <summary>Hide/Show</summary>\n"
 
-            if len( self.info.hot_channel_txt) > 1 :
-                print( "More than 1 txt file of hot channel list for this run were found..." )
-            else:
-                with open( str(self.info.hot_channel_txt[0]), mode='r' ) as hot_ch_list :
-                    contents += \
-                        "<table>\n" \
-                        "    <caption>List of hot channels</caption>\n" \
-                        "    <thead>\n" \
-                        "        <tr>\n" \
-                        "            <th>FELIX</th>\n" \
-                        "            <th>FELIX ch</th>\n" \
-                        "            <th>Chip</th>\n" \
-                        "            <th>Channel</th>\n" \
-                        "        </tr>\n" \
-                        "    </thead>\n" \
-                        "    <tbody>\n" \
-                        
-                    for line in hot_ch_list:
-                        # skip comment lines
-                        if line[0] == "#" :
-                            continue
-
-                        contents += "        <tr>\n"
-                        words = line.split()
-                        #print( words )
-                        for word in words :
-                            contents += "            <td>" + str(word) + "</td>\n"
-                        contents += "        </tr>\n"
-
-                    contents += \
-                        "    </tbody>\n" \
-                        "</table>\n" \
-                        "</details>\n\n" \
-                        "<details open>\n" \
-                        "    <summary>Hide/Show</summary>\n"
-            
-            for plot in self.info.hot_channel_plots :
+            for plot in self.info.bco_diff_plots :
                 shutil.copy( str(plot), self.RUN_DIR/ plot.name )
                 print( self.RUN_DIR/ plot.name )
                 contents += \
@@ -286,7 +299,7 @@ class Homepage() :
 
         with open( str(self.index_html), mode='a' ) as file :
             contents = "<h2>Cosmic analysis</h2>\n" \
-                "<details open>\n" \
+                "<details>\n" \
                 "    <summary>Hide/Show</summary>\n"
 
             for plot in self.info.cosmic_plots :

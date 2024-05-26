@@ -185,6 +185,16 @@ bool BaseClass::ReadHistograms()
 	      hist_bco_diff_[i][j] = new TH1D();
 	    }
 
+	  string name_hist_bco_diff_raw = "hist_bco_diff_raw_" + name_module + name_chip;
+	  try
+	    {
+	      hist_bco_diff_raw_[i][j] = (TH1D*)f1_->Get( name_hist_bco_diff_raw.c_str() );
+	    }
+	  catch( const std::runtime_error& error )
+	    {
+	      hist_bco_diff_raw_[i][j] = new TH1D();
+	    }
+
 
 	}
     }

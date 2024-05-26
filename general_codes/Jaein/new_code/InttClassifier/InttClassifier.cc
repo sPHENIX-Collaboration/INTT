@@ -64,7 +64,7 @@ void InttClassifier::InitHists()
   
   h1_hist_MPV_ = new TH1D("hist_MPV", "hist_MPV", 200, 1, 201);
 
-  string title = "Normalized #hit/ch" + title_x + title_y;
+  string title = "Normalized #hit/ch;" + title_x + title_y;
   h1_hist_gaus_ = new TH1D("hist_gaus", title.c_str(), bin_num_, xmin_, xmax_ );
   
   for (int i = 0; i < 8; i++)
@@ -153,10 +153,57 @@ void InttClassifier::DumpPrintBuffer()
   printed_contents_.clear();
 }
 
+
+void InttClassifier::DrawHist( TCanvas* c, TH1D* hist, double threshold, int hot_ch_num, int total_ch_num )
+{
+
+  // For histograms to be drawn like this
+  //
+  //                         0.6             0.95
+  //   +-----------------------+---------------+ 0.9
+  //   |                       |               |
+  // E |      _                | Stat          |
+  // n |     | |               |   Box         |
+  // t |    |   |              |               |
+  // r |   |    |              |               |
+  // i |   |    |              +---------------+ 0.5
+  // e |   |    |        Ch with non zero...   |
+  // s |  ||    |        Hot ch threshold      |
+  //   | |       |       #Hot ch  xxx          |
+  //   | |        |      #ch in main gaus xxx% |
+  //   | |         |     #ch in half-entryxxx% |
+  //   | |          |                          |
+  //   +---------------------------------------+
+  //           #hit/ch/strip length/(r/r_innter)
+  
+  HistConfig(hist);
+  
+  hist->Draw();
+  this->DrawStats( hist, 0.6, 0.5, 0.95, 0.9 );
+  
+  this->DrawFittedFunction( hist, threshold, hot_ch_num, total_ch_num );
+  
+  auto line = DrawThreshold(threshold, true);
+  
+  TLatex *tex = new TLatex();
+  tex->SetTextColor(line->GetLineColor());
+  tex->DrawLatex(threshold, line->GetY2() / 2, "#rightarrow hot ch");
+  
+  // set x range to show the threshold
+  if( threshold < xmax_/3 )
+    hist->GetXaxis()->SetRangeUser(0, threshold * 3);
+  else
+    hist->GetXaxis()->SetRangeUser(0, xmax_ );
+  
+  gPad->Update();
+  c->Print( c->GetName() );
+}
+
 void InttClassifier::DrawHists()
 {
   gStyle->SetOptFit();
   gStyle->SetOptStat(1111111);
+  gStyle->SetGridColor( kGray );
 
   TCanvas *c_pdf = new TCanvas(output_qa_pdf_file_.c_str(), "title", 1600, 1200);
   c_pdf->Print(((std::string)c_pdf->GetName() + "[").c_str());
@@ -165,92 +212,35 @@ void InttClassifier::DrawHists()
 
   if( isbeam_ == false ) // for cosmics
   {
-    auto hist = h1_hist_MPV_;
-    HistConfig(hist);
-    hist->Draw();
-    auto line = DrawThreshold(hot_ch_cut_, true);
-
-    TLatex *tex = new TLatex();
-    tex->SetTextColor(line->GetLineColor());
-    tex->DrawLatex(hot_ch_cut_, line->GetY2() / 2, "#rightarrow hot channels");
-    c_pdf->Print(c_pdf->GetName());
+    this->DrawHist( c_pdf, h1_hist_MPV_, hot_ch_cut_, hot_ch_num_, 128 * 26 * 14 * 8 );
   }
 
-  // #hit / ch / normarization factor
-  {
-    auto hist = h1_hist_gaus_;
-    HistConfig(hist);
-    hist->Draw();
-    this->DrawStats( hist, 0.7, 0.5, 0.95, 0.9 );
-    
-    // set x range to show the threshold
-    if( hot_ch_cut_ > xmax_ )
-      hist->GetXaxis()->SetRangeUser(0, hot_ch_cut_);
-    
-    this->DrawFittedFunction( hist, hot_ch_cut_ );
+  // #hit / ch for all of all
+  this->DrawHist( c_pdf,
+		  h1_hist_gaus_,
+		  hot_ch_cut_,
+		  hot_ch_num_,
+		  128 * 26 * 14 * 8 );
 
-    auto line = DrawThreshold(hot_ch_cut_, true);
-
-    TLatex *tex = new TLatex();
-    tex->SetTextColor(line->GetLineColor());
-    tex->DrawLatex(hot_ch_cut_, line->GetY2() / 2, "#rightarrow hot channels");
-    
-    c_pdf->Print(c_pdf->GetName());
-  }
-  
-  c_pdf->Print(((std::string)c_pdf->GetName() + "]").c_str());
-  return;
-
-  // #hit / ch / felix / normarization factor
+  // #hit / ch for each FELIX
   for (int i = 0; i < kFelix_num; i++)
     {
-      auto hist = h1_hist_gaus_felix_[i];
-      HistConfig(hist);
-      
-      hist->Draw();
-      
-      // set x range to show the threshold
-      if( hot_ch_cut_gaus_[i] > xmax_ )
-	hist->GetXaxis()->SetRangeUser(0, hot_ch_cut_gaus_[i]);
-      else
-	hist->GetXaxis()->SetRangeUser(0, xmax_);
-
-      hist->GetXaxis()->SetLabelSize( 0.02 );
-      gPad->Update();
-      bool is_log = false;
-      gPad->SetLogy( is_log );
-      auto line = DrawThreshold(hot_ch_cut_gaus_[i], is_log );
-      
-      TLatex *tex = new TLatex();
-      tex->SetTextColor(line->GetLineColor());
-      tex->DrawLatex(hot_ch_cut_gaus_[i], line->GetY2() / 2, "#rightarrow hot channels");
-      c_pdf->Print(c_pdf->GetName());
+      this->DrawHist( c_pdf,
+		      h1_hist_gaus_felix_[i],
+		      hot_ch_cut_gaus_[i],
+		      hot_ch_num_felix_[i],
+		      128 * 26 * 14 );
     }
-
+  
   if( false )
   {
-    auto hist = h1_hist_MPV_ladder_;
-    HistConfig(hist);
-    hist->Draw();
-    gPad->SetLogy(false);
-
-    gPad->Update();
-    auto xmax = gPad->GetUxmax();
-    if (xmax < hot_ladder_cut_)
-      hist->GetXaxis()->SetRangeUser(0, hot_ladder_cut_);
-
-    auto line = DrawThreshold(hot_ladder_cut_);
-
-    TLatex *tex = new TLatex();
-    tex->SetTextColor(line->GetLineColor());
-    tex->DrawLatex(hot_ladder_cut_, line->GetY2() / 2, "#rightarrow hot ladders");
-    c_pdf->Print(c_pdf->GetName());
+    this->DrawHist( c_pdf, h1_hist_MPV_ladder_, hot_ch_cut_, hot_ch_num_, 128 * 26 * 14 * 8 );
   }
 
   c_pdf->Print(((std::string)c_pdf->GetName() + "]").c_str());
 }
 
-void InttClassifier::DrawFittedFunction( TH1D* hist, double threshold )
+void InttClassifier::DrawFittedFunction( TH1D* hist, double threshold, int hot_ch_num, int total_ch_num )
 {
 
   TF1* fit = (TF1*)hist->GetListOfFunctions()->At( 0 );
@@ -284,17 +274,24 @@ void InttClassifier::DrawFittedFunction( TH1D* hist, double threshold )
       gaus_half->SetParameter( 1, fit->GetParameter(1) * 0.5 );
       gaus_half->SetParameter( 2, fit->GetParameter(4) );
       gaus_half->SetLineStyle( 3 );
-      gaus_half->SetLineColor( kGreen + 1 );
+      gaus_half->SetLineColor( kAzure + 1 );
       gaus_half->SetFillColorAlpha( gaus_half->GetLineColor(), 0.25 );
       gaus_half->SetFillStyle( 1001 );
       gaus_half->Draw( "same" );
 
       TLatex* tex = new TLatex();
       tex->SetTextSize( 0.03 );
-      double pos_x = 0.65, pos_y = 0.425;
+      double pos_x = 0.60, pos_y = 0.45;
+      double pitch_y = 0.04;
       stringstream words;
+      words << "#ch including dead ch: "
+	    << total_ch_num;
+      tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
+
+      words.str( "" );
       words << "Ch with non-zero hit: "
-	    << setprecision(3) << 100 * hist->GetEntries() / (128 * 26 * 14 * 8) << "%";
+	    << setprecision(3) << 100 * hist->GetEntries() / total_ch_num << "%";
+      pos_y -= pitch_y;
       tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
 
       words.str( "" );
@@ -302,17 +299,22 @@ void InttClassifier::DrawFittedFunction( TH1D* hist, double threshold )
 	    << setprecision(3)
 	    << threshold;
       tex->SetTextColor( fit->GetLineColor() );
-      pos_y -= 0.05;
+      pos_y -= pitch_y;
       tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
 
       words.str( "" );
       words << "#Hot ch: "
-	    << hot_ch_num_;
+	    << hot_ch_num;
       tex->SetTextColor( fit->GetLineColor() );
-      pos_y -= 0.05;
+      pos_y -= pitch_y;
       tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
 
       // lambda function to calcurate #ch in a gaussian
+      auto GetNch = [](TH1D* hist, TF1* gaus)
+      {
+	return gaus->Integral(0, 1) / hist->GetXaxis()->GetBinWidth( 0 );	
+      };
+
       auto GetNchRatio = [](TH1D* hist, TF1* gaus)
       {
 	return  100 * gaus->Integral(0, 1) / hist->GetXaxis()->GetBinWidth( 0 ) / hist->GetEntries();	
@@ -320,18 +322,23 @@ void InttClassifier::DrawFittedFunction( TH1D* hist, double threshold )
 
       words.str( "" );
       words << "#ch in main gaus: "
+	    << int( GetNch( hist, gaus_main ) )
+	    << " #rightarrow " 
 	    << setprecision(3)
 	    << GetNchRatio( hist, gaus_main ) << "%";
       tex->SetTextColor( gaus_main->GetLineColor() );
-      pos_y -= 0.05;
+      pos_y -= pitch_y;
       tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
       
       words.str( "" );
       words << "#ch in half-entry ch: "
+	//<< ios::dec
+	    << int( GetNch( hist, gaus_half ) )
+	    << " #rightarrow " 
 	    << setprecision(3)
 	    << GetNchRatio( hist, gaus_half ) << "%";
       tex->SetTextColor( gaus_half->GetLineColor() );
-      pos_y -= 0.05;
+      pos_y -= pitch_y;
       tex->DrawLatexNDC( pos_x, pos_y, words.str().c_str() );
             
     }
@@ -348,7 +355,7 @@ TLine *InttClassifier::DrawThreshold(double threshold, bool log_y)
 
   TLine *line = new TLine(threshold, 0, threshold, ymax);
   line->SetLineColor(kRed - 4);
-  line->SetLineWidth(2);
+  line->SetLineWidth( 2 );
   line->DrawLine(threshold, 0, threshold, ymax);
 
   return line;
@@ -360,6 +367,7 @@ TLine *InttClassifier::DrawThreshold(double threshold, bool log_y)
 
 void InttClassifier::ProcessBeam()
 {
+  this->Init();
   if (did_init_ == false)
   {
     cerr << " Please do InttClassiffier::Init() before ProcessBeam." << endl;
@@ -461,18 +469,26 @@ TFitResultPtr InttClassifier::DoGaussianFit(TH1D *hist)
   else if( fitting_mode_ == "double_gaus" )
     {
       f = new TF1( "double_gaus", "[0]*exp(-0.5*((x-[1])/[2])**2) + [3]*exp(-0.5*((x-[1]*0.5)/[4])**2)", 0, 1 );
+      f->SetParName( 0, "Const_{main}" );
+      f->SetParName( 1, "#mu_{main}" );
+      f->SetParName( 2, "#sigma_{main}" );
+      f->SetParName( 3, "Const_{half}" );
+      f->SetParName( 4, "#sigma_{half}" );
+      
       f->SetParLimits( 0, 0, 3e5 ); // Main gaus: constant
       f->SetParLimits( 1, 0, 1 );   // Main gaus: mean
       f->SetParLimits( 2, 0, 1 );   // Main gaus: std. dev.
       f->SetParLimits( 3, 0, 3e5 ); // Half-entry gaus: constant
       f->SetParLimits( 4, 0, 1 );   // Half-entry gaus: std. dev.
+
       f->SetParameter( 1, hist->GetMean() );
       f->SetParameter( 2, hist->GetStdDev() );
       f->SetParameter( 4, 1e-6 );
+
       f->SetNpx( 1000 );
     }
 
-  f->SetLineWidth( 1 );
+  f->SetLineWidth( 3 );
   return hist->Fit( f, "S");
 }
 
@@ -534,11 +550,6 @@ void InttClassifier::ProcessCosmics()
 
   // Cut determination
   hot_ch_cut_ = h1_hist_MPV_->GetXaxis()->GetBinCenter(h1_hist_MPV_->GetMaximumBin()) * 2;
-  // cout << "-----------------------------------------------" << endl;
-  // cout << h1_hist_MPV_->GetMaximumBin() << endl;
-  // cout << h1_hist_MPV_->GetXaxis()->GetBinCenter(h1_hist_MPV_->GetMaximumBin()) << endl;
-  // cout << "-----------------------------------------------" << endl;  
-
   hot_ladder_cut_ = h1_hist_MPV_ladder_->GetMean() * 5;
 
   process_done_ = true;
@@ -569,7 +580,7 @@ void InttClassifier::SetFittingMode( string mode )
 void InttClassifier::Print()
 {
   this->PrintLine("Hitmap", hitmap_file_);
-  this->PrintLine("CDB output", output_cdb_dir_);
+  this->PrintLine("CDB output", output_cdb_file_);
   this->PrintLine("QA output (ROOT)", output_qa_root_file_);
   this->PrintLine("QA output (PDF)", output_qa_pdf_file_);
   this->PrintLine("QA output (txt)", output_qa_txt_file_);
@@ -637,73 +648,67 @@ void InttClassifier::WriteResults()
         std::cout << "HERE IS HOT LADDER" << std::endl;
         std::cout << felix << " " << i << std::endl;
       }
-      //  cout << "HELLO moudle : " << i << " Type A " << HotChannelCut_A_Fit[felix][i] << endl;
-      //  cout << "HELLO moudle : " << i << " Type B " << HotChannelCut_B_Fit[felix][i] << endl;
 
       for (int j = 0; j < kChip_num; j++)
       {
-        //    cout << "Felix : " << felix << " moudle : "
-        // << i << " Type A and chip : " << j << "  " << HotChannelCut_A_Fit[felix][i] << endl;
 
         for (int chan = 0; chan < kCh_num; chan++)
         {
           // double entry = h1_chip_[i][j]->GetBinContent(chan + 1);
           double entry = h2_AllMap_[felix][i]->GetBinContent(chan + 1, j + 1);
+	  
           felix_ = felix;
           ch_entry_ = entry;
+	  
           if (isbeam_)
-            ch_entry_ /= merged_event_;
+	    {
+	      ch_entry_ /= merged_event_;
+	    }
+	  
           module_ = i;
           chip_id_ = j;
           chan_ = chan;
           flag_ = 0;
-          if (chip_id_ < 5 || (chip_id_ > 12 && chip_id_ < 18))
+	  
+          if (chip_id_ < 5 || (chip_id_ > 12 && chip_id_ < 18) )
             type_ = 1;
           else
             type_ = 0;
-          // if (felix_ > 3) // Masking all north side
+
+	  // Masking all north side
+          // if (felix_ > 3)
           // {
           //     flag_ = 8;
           // }
 
+	  bool is_hot = false;
           // in the case of hot channel
           if (isbeam_)
-          {
-            if (ch_entry_ > hot_ch_cut_gaus_[felix])
-              ishot_ = true;
-            else
-              ishot_ = false;
-          }
-
-          if (!isbeam_)
-          {
-            if (ch_entry_ > hot_ch_cut_ || NumberOfFiredChan_[felix][i] > hot_ladder_cut_)
-              ishot_ = true;
-            else
-              ishot_ = false;
-          }
+	    {
+	      is_hot = ch_entry_ > hot_ch_cut_gaus_[felix];
+	    }
+          else 
+	    {
+	      is_hot = (ch_entry_ > hot_ch_cut_ || NumberOfFiredChan_[felix][i] > hot_ladder_cut_);
+	    }
+	  
           // if (ch_entry_ > hotchannelcut)
-          if(ishot_)
-          {
-	    hot_ch_num_++;
-            // cout << "Hot channel: " << felix_ << "\t" << module_ << "\t" << chip_id_ << "\t" << chan_ << endl;
-            //	    std::stringstream contents;
-            qa_txt << felix_ << "\t" << module_ << "\t" << chip_id_ << "\t" << chan_ << endl;
-            // qa_txt.write( contents.str().c_str() );
-
-            flag_ = 8;
-            // std::cout<<felix_<<std::endl;
-            // std::cout<<module_<<std::endl;
-            // std::cout<<chip_id_<<std::endl;
-            // std::cout<<chan_<<std::endl;
-            cdbttree->SetIntValue(size, "felix_server", felix);
-            cdbttree->SetIntValue(size, "felix_channel", module_);
-            cdbttree->SetIntValue(size, "chip", chip_id_);
-            cdbttree->SetIntValue(size, "channel", chan_);
-            cdbttree->SetIntValue(size, "flag", flag_);
-            ++size;
-            h2_HotMap_[felix][i]->SetBinContent(chan + 1, j + 1, ch_entry_);
-          }
+          if( is_hot )
+	    {
+	      hot_ch_num_felix_[felix]++;
+	      //	    std::stringstream contents;
+	      qa_txt << felix_ << "\t" << module_ << "\t" << chip_id_ << "\t" << chan_ << endl;
+	      // qa_txt.write( contents.str().c_str() );
+	      
+	      flag_ = 8;
+	      cdbttree->SetIntValue(size, "felix_server", felix);
+	      cdbttree->SetIntValue(size, "felix_channel", module_);
+	      cdbttree->SetIntValue(size, "chip", chip_id_);
+	      cdbttree->SetIntValue(size, "channel", chan_);
+	      cdbttree->SetIntValue(size, "flag", flag_);
+	      ++size;
+	      h2_HotMap_[felix][i]->SetBinContent(chan + 1, j + 1, ch_entry_);
+	    }	  
           // else if ( (felix==1 && module_ == 10) || (felix==1 && module_<3) )
           // {
           //   flag_ = 8;
@@ -715,23 +720,26 @@ void InttClassifier::WriteResults()
           //   ++size;
           //   h2_HotMap[felix][i]->SetBinContent(chan + 1, j + 1, ch_entry_);
           // }
-
+	  
           tree_output_->Fill();
-        }
-      }
-
-      dir[felix]->WriteObject(h2_AllMap_[felix][i], h2_AllMap_[felix][i]->GetName());
+        } // end of for( chan )
+      } // end of for( chip )
+      
+      dir[felix]->WriteObject(h2_AllMap_[felix][i],  h2_AllMap_[felix][i]->GetName());
       dir[felix]->WriteObject(h2_DeadMap_[felix][i], h2_DeadMap_[felix][i]->GetName());
       dir[felix]->WriteObject(h2_ColdMap_[felix][i], h2_ColdMap_[felix][i]->GetName());
       dir[felix]->WriteObject(h2_HalfMap_[felix][i], h2_HalfMap_[felix][i]->GetName());
-      dir[felix]->WriteObject(h2_HotMap_[felix][i], h2_HotMap_[felix][i]->GetName());
-    }
-
+      dir[felix]->WriteObject(h2_HotMap_[felix][i],  h2_HotMap_[felix][i]->GetName());
+    } // end of for( ladder )
+    
     tf_qa_->cd();
     // tf_qa_->WriteTObject( canA_[felix], canA_[felix]->GetName() );
     // tf_qa_->WriteTObject( canB_[felix], canB_[felix]->GetName() );
-  }
+  } // end of for( felix )
 
+
+  hot_ch_num_ = accumulate( begin( hot_ch_num_felix_ ), end( hot_ch_num_felix_), 0 );
+  
   cdbttree->SetSingleIntValue("size", size);
   cdbttree->Commit();
   cdbttree->CommitSingle();
