@@ -1,9 +1,30 @@
-#include "InttFineDelayScan.h"
+#include "InttFineDelayScanTrkrHit.h"
 
 using namespace std;
 
+TrkrHitInfo::TrkrHitInfo( InttNameSpace::Online_s hit, uint16_t bco_fphx, int event_counter, int dac )
+  : hit_( hit ), bco_fphx_( bco_fphx ), event_counter_( event_counter ) , dac_( dac )
+{};
+
+void TrkrHitInfo::Print()
+{
+
+  cout << "TrkrHitInfo: " 
+       << setw(2) << GetFelixServer	()
+       << setw(3) << GetFelixChannel	()
+       << setw(3) << GetChip		()
+       << setw(4) << GetChannel	()
+       << setw(4) << GetFPHXBco()
+       << setw(4) << GetDac()
+       << setw(10) << GetEventCounter()
+       << endl;
+
+}
+
+
+  
 //____________________________________________________________________________..
-InttFineDelayScan::InttFineDelayScan(const std::string &name, bool is_official ):
+InttFineDelayScanTrkrHit::InttFineDelayScanTrkrHit(const string &name, bool is_official ):
   SubsysReco(name),
   is_official_( is_official )
 {
@@ -11,7 +32,7 @@ InttFineDelayScan::InttFineDelayScan(const std::string &name, bool is_official )
 }
 
 //____________________________________________________________________________..
-InttFineDelayScan::~InttFineDelayScan()
+InttFineDelayScanTrkrHit::~InttFineDelayScanTrkrHit()
 {
 
 }
@@ -19,7 +40,7 @@ InttFineDelayScan::~InttFineDelayScan()
 /////////////////////////////////////////////////////////////////////////
 // private
 /////////////////////////////////////////////////////////////////////////
-int InttFineDelayScan::GetNodes(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::GetNodes(PHCompositeNode *topNode)
 {
   /////////////////////////////////////////////////////////////////////////
   // INTT event header
@@ -49,10 +70,24 @@ int InttFineDelayScan::GetNodes(PHCompositeNode *topNode)
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
+  /////////////////////////////////////////////////////////////////////////
+  // Trkr hit
+  // TRKR_HITSET (IO,TrkrHitSetContainerv1)
+  
+  string node_name_trkr_hitset = "TRKR_HITSET";
+  // node_inttrawhit_map_ =
+  node_trkrhitset_map_ = 
+    findNode::getClass<TrkrHitSetContainer>(topNode, node_name_trkr_hitset);
+  
+  if (!node_trkrhitset_map_)
+    {
+      cerr << PHWHERE << node_name_trkr_hitset << " node is missing." << endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+
   return 0;
 }
-
-vector < InttRawHit* > InttFineDelayScan::GetHits()
+vector < InttRawHit* > InttFineDelayScanTrkrHit::GetRawHits()
 {
   
   vector < InttRawHit* > hits;
@@ -66,7 +101,228 @@ vector < InttRawHit* > InttFineDelayScan::GetHits()
   return hits;
 }
 
-void InttFineDelayScan::DrawRatioToPad( TCanvas* c,
+vector < InttRawHit* > InttFineDelayScanTrkrHit::GetRawHitsWithoutClone()
+{
+
+  auto hits = this->GetRawHits();
+  vector < InttRawHit* > rtn;
+
+  for( int i=0; i<hits.size(); i++ )
+    {
+
+      bool is_same_found = false;
+      for( int j=i+1; j<hits.size(); j++ )
+        {
+
+          is_same_found = is_same_found || this->IsSame( hits[i], hits[j] );
+          if( is_same_found == true )
+            {
+              break;
+            }
+
+        } // end of for( hit_j )
+
+      // if this hit is still unique (same hit is not found), keep it
+      if( is_same_found == false )
+        rtn.push_back( hits[i] );
+
+    } // end of for( hit_i )
+
+  return rtn;
+}
+
+vector < pair < InttNameSpace::Online_s,  unsigned int > >
+InttFineDelayScanTrkrHit::GetTrkrHits( TrkrHitSetContainer::ConstRange hitsets )
+{
+  /*!
+    @param ConstRange hitsets This is ConstRange = pair< ConstIterator, ConstIterator >
+  */
+  // hitsets.first, hitsets.second: ConstIterator = Map::const_iterator, here Map = map < TrkrDefs::hitsetkey, TrkrHitSet* >
+  // (*hitsets.first), (*hitsets.second): Map
+  // (*hitsets.first).first, .second: TrkrDefs::hitsetkey, TrkrHitSet*
+  // (*hitsets.second).first, .second: TrkrDefs::hitsetkey, TrkrHitSet* 
+  //cout << (*hitsets.first).first << "\t" << (*hitsets.second).first << endl;
+  //  cout << "\t" << TrkrDefs::printBits( (*hitsets.first).first ) << endl;
+  // TrkrDefs::printBits( (*hitsets.first).first );
+  // TrkrDefs::printBits( (*hitsets.second).first );
+
+  vector < pair < InttNameSpace::Online_s, unsigned int > > hits_information;
+  auto current = hitsets.first;
+  while( current != hitsets.second )
+    {
+      auto hitset = (*current).second;
+
+      //TrkrDefs::printBits( (*current).first );
+      auto layer       = TrkrDefs::getLayer( (*current).first );
+      // layer: 0, 1, 2   : MVTX
+      //        3, 4, 5, 6: INTT
+      //        6<        : TPC
+
+      // Take hits from only INTT
+      if( !(3<= layer && layer <= 6) )
+	continue;
+      
+      auto detector_id = TrkrDefs::getTrkrId( (*current).first );
+      auto phi         = InttDefs::getLadderPhiId( (*current).first ); //TrkrDefs::getPhiElement( (*current).first );
+      auto z           = InttDefs::getLadderZId( (*current).first ); // TrkrDefs::getZElement( (*current).first );
+      // cout << "-----> "
+      // 	   << int(detector_id) << "\t" << int(layer) << "\t"
+      // 	   << int(phi) << "\t" << int(z) ;
+      // 	//<< endl;
+      // cout << " + " << (*current).first << "\t"
+      // 	   << hitset->size()
+      // 	   << endl;
+
+      auto hits = hitset->getHits(); // ConstRange = std::pair< ConstIterator, ConstIterator >
+      auto current2 = hits.first; // ConstIterator = Map::const_iterator, here, Map = std::map < TrkrDefs::hitkey, TrkrHit* >, This Map is different from the Map for TrkrHitSetContainer!!!
+      while( current2 != hits.second )
+	{
+	  auto key = (*current2).first;
+	  auto hit = (*current2).second;
+
+	  auto col = InttDefs::getCol( key );
+	  auto row = InttDefs::getRow( key );
+
+	  InttNameSpace::Offline_s offline_hit;
+	  offline_hit.layer = layer;
+	  offline_hit.ladder_phi = phi;
+	  offline_hit.ladder_z = z;
+	  offline_hit.strip_x = row;
+	  offline_hit.strip_y = col;
+
+	  InttNameSpace::Online_s online_hit = InttNameSpace::ToOnline( offline_hit );
+	  
+	  auto hit_info = pair < InttNameSpace::Online_s, unsigned int >( online_hit, hit->getAdc() );
+	  hits_information.push_back( hit_info );
+	  // cout << "\t\tHit " << key << "\t"
+	  //      << col << "\t"
+	  //      << row << "\t"
+	  //      << hit->getAdc() << "\t|  "
+	  //      << online_hit.ldr << "\t"
+	  //      << online_hit.arm
+	  //      << endl;
+	  
+	  current2++;
+	}
+      
+      current++;
+    }
+
+  return hits_information;
+}
+
+vector < TrkrHitInfo* > InttFineDelayScanTrkrHit::GetHitInfo()
+{
+
+  vector < InttRawHit* > raw_hits = this->GetRawHitsWithoutClone();
+  vector < pair < InttNameSpace::Online_s,  unsigned int > > online_hits = this->GetTrkrHits(  node_trkrhitset_map_->getHitSets() );
+
+  InttDacMap* dac_map = new InttDacMap();
+  
+  int counter = 0;
+  vector < TrkrHitInfo* > info; // to be returned
+  for( int i=0; i<online_hits.size(); i++ )
+    {
+      ////////////////////////////////////////////
+      // struct Online_s                        //
+      //   int lyr, int ldr,  int arm           //
+      //   int chp, int chn                     //
+      ////////////////////////////////////////////
+      auto online_hit = online_hits[i].first;
+      auto dac = online_hits[i].second;
+
+      ////////////////////////////////////////////
+      // struct RawData_s:                      //
+      //   int felix_server, int felix_channel  //
+      //   int chip,         int channel,       //
+      ////////////////////////////////////////////
+      // InttNameSpace::RawData_s
+      auto raw_data  = InttNameSpace::ToRawData( online_hit );
+      
+      ////////////////////////////////////////////
+      // struct Offline_s                       //
+      //   int layer,     int ladder_phi,       //
+      //   int ladder_z,  int strip_x,          //
+      //   int strip_y,                         //
+      ////////////////////////////////////////////
+      // InttNameSpace::Offline_s
+      auto offline_hit = InttNameSpace::ToOffline( online_hit );
+
+      // cout << "TrkrHit: "
+      // 	   << setw(4) << i
+      // 	   << ": " 
+      // 	   << setw(3) << raw_data.felix_server
+      // 	   << setw(5) << raw_data.felix_channel
+      // 	   << setw(4) << raw_data.chip
+      // 	   << setw(6) << raw_data.channel
+      // 	   << setw(4) << dac
+      // 	   << " vs ";
+	//	   << endl;
+      
+      for( int j=0; j<raw_hits.size(); j++ )
+	{
+	  
+	  auto raw_hit = raw_hits[j];
+
+	  int chan_raw		= raw_hit->get_channel_id();
+	  // first selections
+	  if( chan_raw != raw_data.channel )
+	    continue;
+	  
+	  // uint16_t InttRawHit::get_chip_id
+	  int chip_raw		= raw_hit->get_chip_id();    
+	  if(chip_raw  > InttQa::kChip_num)
+	    chip_raw = chip_raw - InttQa::kChip_num;
+
+	  chip_raw--; // to change from 1-base to 0-base
+	  if( chip_raw != raw_data.chip )
+	    continue;
+
+	  int felix_raw		= raw_hit->get_packetid() - InttQa::kFirst_pid;
+	  int felix_ch_raw	= raw_hit->get_fee();
+	  bool is_same = (felix_raw == raw_data.felix_server
+			  || felix_ch_raw == raw_data.felix_channel );
+			  // || adc_raw == adc );
+
+	  if( is_same == false )
+	    continue;
+
+	  auto adc_raw		= raw_hit->get_adc();
+	  /*
+	    virtual unsigned short GetDAC(const uint& felix_server,
+                                const uint& felix_channel,
+                                const uint& chip,
+                                const uint& channel,
+                                const uint& adc);
+	  */
+	  auto dac_raw = dac_map->GetDAC( felix_raw, felix_ch_raw, chip_raw, chan_raw, adc_raw );
+	  if( dac_raw != dac )
+	    continue;
+	  
+	  auto bco_raw		= raw_hit->get_FPHX_BCO();
+	  int event_counter_raw	= raw_hit->get_event_counter(); // uint32_t IttRawHit::get_event_counter()
+	  pair < uint16_t, int > bco_event_counter( bco_raw, event_counter_raw );
+	  //	  rtn.push_back( bco_event_counter );
+	  //counter++;
+
+	  TrkrHitInfo* hit_info = new TrkrHitInfo( online_hit, bco_raw, event_counter_raw, dac );
+	  //hit_info->Print();
+	  info.push_back( hit_info );
+	  		
+	  // cout << "( "
+	  //      << setw(3) << bco_raw << ", " << setw(1) << adc_raw << "-> " << dac
+	  //      << "), ";
+	}
+      
+    }
+
+  // cout << counter << " / " << online_hits.size() << " found their corresponding raw hit while there are "
+  //      << raw_hits.size() << " raw hits in this event." 
+  //      << endl;
+  return info;
+}
+
+void InttFineDelayScanTrkrHit::DrawRatioToPad( TCanvas* c,
 					int pad_num,
 					string title_ratio,
 					vector < TH1D* > hists_ratio,
@@ -121,7 +377,7 @@ void InttFineDelayScan::DrawRatioToPad( TCanvas* c,
     }
 }
 
-void InttFineDelayScan::DrawBcoDiffRatioPair( TCanvas* c,
+void InttFineDelayScanTrkrHit::DrawBcoDiffRatioPair( TCanvas* c,
 					      string title_bco_full, 
 					      vector < TH3D* > hists_bco_diff,
 					      string title_ratio,
@@ -220,7 +476,7 @@ void InttFineDelayScan::DrawBcoDiffRatioPair( TCanvas* c,
   
 }
 
-void InttFineDelayScan::DrawRatioPair( TCanvas* c,
+void InttFineDelayScanTrkrHit::DrawRatioPair( TCanvas* c,
 				       string title_ratio_upper,
 				       vector < TH1D* > hists_ratio_upper,
 				       string title_ratio_lower,
@@ -273,8 +529,8 @@ void InttFineDelayScan::DrawRatioPair( TCanvas* c,
   c->Clear();
   c->Divide( 1, 2 );
 
-  cout << title_ratio_upper << "\t" << hists_ratio_upper.size() << endl;
-  cout << title_ratio_lower << "\t" << hists_ratio_lower.size() << endl;
+  // cout << title_ratio_upper << "\t" << hists_ratio_upper.size() << endl;
+  // cout << title_ratio_lower << "\t" << hists_ratio_lower.size() << endl;
   
   ////////////////////////////////////////////////////////
   // upper pad
@@ -294,7 +550,7 @@ void InttFineDelayScan::DrawRatioPair( TCanvas* c,
 }
 
 
-void InttFineDelayScan::DrawHists()
+void InttFineDelayScanTrkrHit::DrawHists()
 {
   TCanvas* c = new TCanvas( "canvas", "title", 1600, 1200 );
   c->Print( (output_pdf_+"[").c_str() );
@@ -503,7 +759,37 @@ void InttFineDelayScan::DrawHists()
 }
 
 
-void InttFineDelayScan::ProcessHists()
+bool InttFineDelayScanTrkrHit::IsSame( InttRawHit* hit1, InttRawHit* hit2 )
+{
+
+  if( hit1->get_word() != hit2->get_word() ) // only this might be enough
+    return false;
+  else if( hit1->get_bco() != hit2->get_bco() )
+    return false;
+  else if( hit1->get_FPHX_BCO() != hit2->get_FPHX_BCO() )
+    return false;
+  else if( hit1->get_channel_id() != hit2->get_channel_id() )
+    return false;
+  else if( hit1->get_chip_id() != hit2->get_chip_id() )
+    return false;
+  else if( hit1->get_fee() != hit2->get_fee() )
+    return false;
+  else if( hit1->get_packetid() != hit2->get_packetid() )
+    return false;
+  else if( hit1->get_adc() != hit2->get_adc() )
+    return false;
+  else if( hit1->get_full_FPHX() != hit2->get_full_FPHX() )
+    return false;
+  // else if( hit1->get_full_ROC() != hit2->get_full_ROC() ) // maybe no value is assigned?
+  //   return false;
+  // else if( hit1->get_amplitude()!= hit2->get_amplitude()) // maybe no value is assigned?
+  //   return false;
+
+  // hits pass all comparison are the same
+  return true;
+};
+
+void InttFineDelayScanTrkrHit::ProcessHists()
 {
   
   /////////////////////////////////////////////////////
@@ -642,7 +928,7 @@ void InttFineDelayScan::ProcessHists()
 // public
 /////////////////////////////////////////////////////////////////////////
 
-void InttFineDelayScan::SetOutputDir( string dir )
+void InttFineDelayScanTrkrHit::SetOutputDir( string dir )
 {
   if( dir != "" )
     {
@@ -664,13 +950,13 @@ void InttFineDelayScan::SetOutputDir( string dir )
 // Fun4All stuff
 /////////////////////////////////////////////////////////////////////////
 
-int InttFineDelayScan::Init(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::Init(PHCompositeNode *topNode)
 {
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int InttFineDelayScan::InitRun(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::InitRun(PHCompositeNode *topNode)
 {
   // I want to get the run number here... 
   // auto status = this->GetNodes( topNode );
@@ -799,7 +1085,7 @@ int InttFineDelayScan::InitRun(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int InttFineDelayScan::process_event(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::process_event(PHCompositeNode *topNode)
 {
 
   // Get nodes to access data
@@ -809,7 +1095,8 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
   if (status == Fun4AllReturnCodes::ABORTEVENT)
     return Fun4AllReturnCodes::ABORTEVENT;
 
-  auto raw_hit_num = node_inttrawhit_map_->get_nhits();  
+  auto raw_hit_num = node_inttrawhit_map_->get_nhits();
+
   if( raw_hit_num == 0 )
     return Fun4AllReturnCodes::EVENT_OK;
     
@@ -825,19 +1112,24 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
   
   hist_bco_full_->Fill( bco_full );
 
-  auto hits = this->GetHits();
-
+  //  auto hits = this->GetHits();
+  auto hits_info = this->GetHitInfo();
+  
   // loop over all raw hits
   bool found = false;
-  for (unsigned int i = 0; i < hits.size(); i++)
+  for (unsigned int i = 0; i < hits_info.size(); i++)
   {
-    auto hit = hits[i];
+    
+    //auto hit = hits[i];
+    auto hit_info = hits_info[i];
 
-    int felix = hit->get_packetid() - InttQa::kFirst_pid;
-    int felix_ch = hit->get_fee();
-    int chip = hit->get_chip_id();
-    int chan = hit->get_channel_id();
-    auto bco = hit->get_FPHX_BCO();
+    int felix = hit_info->GetFelixServer();
+    int felix_ch = hit_info->GetFelixChannel();
+    int chip =  hit_info->GetChip();
+    int chan =  hit_info->GetChannel();
+    auto bco =  hit_info->GetFPHXBco();
+    int event_counter = hit_info->GetEventCounter();
+    int dac = hit_info->GetDac();
     
     int bco_diff = (bco_full & 0x7f ) - bco;
     
@@ -859,20 +1151,20 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
     hist_fee_chip_bco_diff_raw_[ felix ]->Fill( felix_ch, chip, bco_diff );
     //    hist_bco_->Fill(hit->get_FPHX_BCO());
 
-   if( false )
+   if( found )
     {
       found = true;
       cout << setw(6) << i << " "
 	//<< setw(13) << event_counter_ref
-           << setw(10) << hit->get_event_counter() << " "
-           << setw(4) << "felix " << hit->get_packetid() << " " // Packet ID
-           << setw(3) << hit->get_fee() << " "                  // FELIX CH (module)
+           << setw(10) << event_counter << " "
+           << setw(4) << "felix " << felix << " " // Packet ID
+           << setw(3) << felix_ch << " "                  // FELIX CH (module)
            << setw(4) << chip << " "                            // chip_id
-           << setw(4) << hit->get_channel_id() << " "           // chan_id
-           << setw(3) << hit->get_adc() << " "                  // adc
-           << setw(3) << hit->get_FPHX_BCO() << " "             // bco
-           << setw(12) << hit->get_bco() << " "                 // bco_full
-           << setw(3) << (hit->get_bco() & 0x7F) - hit->get_FPHX_BCO() << " "
+           << setw(4) << chan << " "           // chan_id
+           << setw(3) << dac << " "                  // adc
+           << setw(3) << bco << " "             // bco
+           << setw(12) << bco_full<< " "                 // bco_full
+           << setw(3) << bco_diff  << " "
            << endl;
     }
   } // end of for( hits )
@@ -894,20 +1186,21 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
 
     }
 
-  last_event_counter_ = hits[0]->get_event_counter();
+  last_event_counter_ = hits_info[0]->GetEventCounter();
   //this->process_event_clone_hit( topNode );
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 
-int InttFineDelayScan::ResetEvent(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::ResetEvent(PHCompositeNode *topNode)
 {
 
   intt_header_found_ = false;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int InttFineDelayScan::EndRun(const int runnumber)
+int InttFineDelayScanTrkrHit::EndRun(const int runnumber)
 {
 
   this->ProcessHists();
@@ -944,26 +1237,27 @@ int InttFineDelayScan::EndRun(const int runnumber)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int InttFineDelayScan::End(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::End(PHCompositeNode *topNode)
 {
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int InttFineDelayScan::Reset(PHCompositeNode *topNode)
+int InttFineDelayScanTrkrHit::Reset(PHCompositeNode *topNode)
 {
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-void InttFineDelayScan::Print(const std::string &what) const
+void InttFineDelayScanTrkrHit::Print(const string &what) const
 {
   int width = 100;
   cout << string( width, '-' ) << endl;
+  cout << " InttFineDelayScanTrkrHit" << endl;
   cout << "  - Output (ROOT): " << output_root_ << endl;
   cout << "  - Output  (PDF): " << output_pdf_ << endl;
   cout << "  - Output  (txt): " << output_txt_ << endl;
   cout << string( width, '-' ) << endl;
-  // this->PrintLine( "Class", "InttFineDelayScan" );
+  // this->PrintLine( "Class", "InttFineDelayScanTrkrHit" );
 //   this->DumpPrintBuffer();
 }

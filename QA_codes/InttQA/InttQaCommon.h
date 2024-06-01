@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 
 namespace InttQa
 {
@@ -148,4 +149,51 @@ namespace InttQa
     std::cout << "Y range: " << min_y << "\t" << max_y << std::endl;
   }
 
+  template < class T >
+  std::pair < int, int > OptimizeRange( T* hist, int axis_param=0 )
+  {
+    /*!
+      @brief The range of histogram is optimized to show bins with non-zero entries
+      @param hist A histogram to be modified
+      @param axis_param Choice of axis to be modified. It can be x(0), y(1), or z(2).
+      @retval pair < int, int > The minimum bin (.first) and maximum bin (.second)
+     */
+
+    TAxis* axis = hist->GetXaxis();
+    if( axis_param == 1 )
+      axis = hist->GetYaxis();
+    else if( axis_param == 2 )
+      axis = hist->GetZaxis();
+    
+    int bin_min = 0; // container for the minimum bin ID
+    int bin_max = axis->GetNbins(); // container for the maximum bin ID
+    int bin_max_sweep = bin_max; // for for loop
+
+    // sweep from low to up to find the minimum bin with non-zero content
+    for( int i=1; i<bin_max_sweep; i++ )
+      {
+
+	auto content = hist->GetBinContent( i );
+	if( content > 0 )
+	  {
+	    bin_min = i;
+	    break;
+	  }
+      }
+
+    // sweep from up to low to find the maximum bin with non-zero content
+    for( int i=bin_max_sweep-1; i>0; i-- )
+      {
+	auto content = hist->GetBinContent( i );
+	if( content > 0 )
+	  {
+	    bin_max = i;
+	    break;
+	  }
+      }
+
+    axis->SetRange( bin_min, bin_max );
+    std::pair < int, int >rtn( bin_min, bin_max );
+    return rtn;
+  }
 } // end of namespace InttQa

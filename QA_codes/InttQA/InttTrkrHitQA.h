@@ -26,6 +26,7 @@
 
 #include <phool/PHCompositeNode.h>
 #include <phool/getClass.h>
+#include <phool/recoConsts.h>
 
 #include <trackbase/InttDefs.h>
 #include <trackbase/InttEventInfo.h>
@@ -44,6 +45,7 @@
 #include <ffarawobjects/InttRawHitContainer.h>
 
 #include <intt/InttMapping.h>
+#include <intt/InttDacMap.h>
 
 #include "InttQaCommon.h"
 #include "TH2INTT.h"
@@ -56,6 +58,10 @@ private:
 
   // general variables
   int run_num_ = 0;
+  int year_ = 2024;
+  int is_official_ = true;
+
+  int event_counter_by_myself_  = 0; // because the event counter is not reliable, I count it by myself for histogram normalization
   
   // variables for the output
   std::string output_dir_ = "/sphenix/tg/tg01/commissioning/INTT/QA/trkr_hit/";
@@ -73,6 +79,8 @@ private:
   // 2D hists
   //TH2I* hist_hitmap_[ InttQa::kFelix_num ][ InttQa::kFee_num ];
   TProfile2D* hist_hitmap_[ InttQa::kFelix_num ][ InttQa::kFee_num ];
+
+  TH2INTT* intt_cross_section_;
   
   // a simple 1D hists
   TH1I* hist_nhit_; // the number of INTTTRKRHIT
@@ -87,14 +95,21 @@ private:
   
   // nodes
   InttEventInfo*          node_intteventheader_map_;
-  //  InttRawHitContainer*    node_inttrawhit_map_;
+  InttRawHitContainer*    node_inttrawhit_map_;
   // TRKR_HITSET (IO,TrkrHitSetContainerv1)
   TrkrHitSetContainer* node_trkrhitset_map_;
   
   // functions
-  void GetHits( TrkrHitSetContainer::ConstRange hitsets ); //! Draw hits and save them into a PDF file
   void DrawHists();
+  vector < InttRawHit* > GetRawHits();
+  vector < InttRawHit* > GetRawHitsWithoutClone();
+  std::vector < std::pair < InttNameSpace::Online_s, unsigned int > >
+    GetHits( TrkrHitSetContainer::ConstRange hitsets ); //! Draw hits and save them into a PDF file
+  std::vector < std::pair < uint16_t, int > >
+  GetBcoEventCounter();
+  
   void InitPaths();
+  bool IsSame( InttRawHit* hit1, InttRawHit* hit2 );
   void ProcessHists(); //! Some processes for hits, like making 1D and 2D hists from 3D hists, are done
   
   int GetNodes(PHCompositeNode *topNode);
@@ -105,7 +120,7 @@ private:
 
 public:
 
-  InttTrkrHitQA(const std::string &name = "InttTrkrHitQA");
+  InttTrkrHitQA(const std::string &name = "InttTrkrHitQA", bool is_official = true );
 
   ~InttTrkrHitQA() override;
 
@@ -142,5 +157,6 @@ public:
 
   void Print(const std::string &what = "ALL") const override;
 
-  void SetOutputDir( std::string dir );
+  void SetOutputDir( std::string dir = "" );
+  void SetYear( int year ){ year_ = year;};
 };
