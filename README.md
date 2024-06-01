@@ -24,7 +24,7 @@ Active people are written here:
 * Cheng-Wei Shi (NCU), https://github.com/ChengWeiShih, Sep/2021 - current
 * Milan Stojanovic (Purdue Univ.) https://github.com/milanchestojanovic, Jan/2022 - current
 * Joseph Bertaux (Purdue University), https://github.com/josephbertaux, June/2023 - current
-* Jaein Hwang (Korea University), Jan/2022 - current
+* Jaein Hwang (Korea University), Jan/2023 - current
 * Takashi Hachiya (NWU), - current
 * Manami Fujiwara (NWU), Apr/2023 - current
 
