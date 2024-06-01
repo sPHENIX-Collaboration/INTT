@@ -107,9 +107,9 @@ void InttFineDelayScan::DrawRatioToPad( TCanvas* c,
       
       hists_ratio[i]->GetYaxis()->SetRangeUser( 0, ymax );
       
-      string option = "";
+      string option = "HIST";
       if( i > 0 )
-	option = "sames";
+	option = "HIST sames";
 
       hists_ratio[i]->Draw( option.c_str());
       //hist_sidelobe_ratio_odd_->Draw( "sames" );
@@ -123,7 +123,7 @@ void InttFineDelayScan::DrawRatioToPad( TCanvas* c,
 
 void InttFineDelayScan::DrawBcoDiffRatioPair( TCanvas* c,
 					      string title_bco_full, 
-					      vector < TH3I* > hists_bco_diff,
+					      vector < TH3D* > hists_bco_diff,
 					      string title_ratio,
 					      vector < TH1D* > hists_ratio,
 					      bool inherit_ymax )
@@ -196,9 +196,9 @@ void InttFineDelayScan::DrawBcoDiffRatioPair( TCanvas* c,
 
       InttQa::HistConfig( hist, i );
 
-      string option = "";
+      string option = "HIST";
       if( i > 0 )
-	option = "sames";
+	option = "HIST sames";
 
       hist->Draw( option.c_str());
       double xwidth = 0.15 - 0.001;
@@ -318,7 +318,7 @@ void InttFineDelayScan::DrawHists()
   /////////////////////////////////////////
   this->DrawBcoDiffRatioPair( c,
 			      "BCO full difference",
-			      vector < TH3I* >{ begin(hist_fee_chip_bco_diff_), end(hist_fee_chip_bco_diff_) },
+			      vector < TH3D* >{ begin(hist_fee_chip_bco_diff_), end(hist_fee_chip_bco_diff_) },
 			      "Ratio of even bins of all FELIXes",
 			      vector < TH1D* >{ hist_sidelobe_ratio_even_ }
 			      );
@@ -335,7 +335,7 @@ void InttFineDelayScan::DrawHists()
     }
   this->DrawBcoDiffRatioPair( c,
 			      "BCO full difference",
-			      vector < TH3I* >{ begin(hist_fee_chip_bco_diff_), end(hist_fee_chip_bco_diff_) },
+			      vector < TH3D* >{ begin(hist_fee_chip_bco_diff_), end(hist_fee_chip_bco_diff_) },
 			      "Ratio of even bins of each FELIX",
 			      hists_ratio_even_,
 			      true
@@ -387,45 +387,97 @@ void InttFineDelayScan::DrawHists()
 			   false
 			   );
     }
+
   /////////////////////////////////////////
-  // BCO diff, ratio (odd)
+  // BCO , ratio (even)
   /////////////////////////////////////////
   this->DrawBcoDiffRatioPair( c,
-			      "BCO full difference",
-			      vector < TH3I* >{ begin(hist_fee_chip_bco_diff_), end(hist_fee_chip_bco_diff_) },
-			      "Ratio of odd bins of all FELIXes",
-			      vector < TH1D* >{ hist_sidelobe_ratio_odd_ }
+			      "BCO_{FPHX}",
+			      vector < TH3D* >{ begin(hist_fee_chip_bco_), end(hist_fee_chip_bco_) },
+			      "Ratio of even bins of all FELIXes",
+			      vector < TH1D* >{ hist_sidelobe_ratio_bco_even_ }
 			      );
+  
+  /////////////////////////////////////////
+  // BCO diff, ratio (even), each FELIX  //
+  /////////////////////////////////////////
+  vector < TH1D* > hists_ratio_bco_even_;
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
+    {
+      auto hist = hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]->ProjectionZ(); // ratio of all hits in a FELIX
+      hists_ratio_bco_even_.push_back( hist );
+
+    }
+  this->DrawBcoDiffRatioPair( c,
+			      "BCO_{FPHX}",
+			      vector < TH3D* >{ begin(hist_fee_chip_bco_), end(hist_fee_chip_bco_) },
+			      "Ratio of even bins of each FELIX",
+			      hists_ratio_bco_even_,
+			      true
+			      );
+  
+  
+  ////////////////////////////////////////////////
+  // BCO, ratio (even), ROCs in each FELIX //
+  ////////////////////////////////////////////////
+  for( int felix=0; felix<InttQa::kFelix_num; felix++ )
+    {
+
+      string pad_title_base = "intt" + to_string( felix );
+      string roc_upper = "RC-" + to_string( 2 * (felix%4) ) + (felix<4 ? "S" : "N");
+      string roc_lower = "RC-" + to_string( 2 * (felix%4) +1 ) + (felix<4 ? "S" : "N");
+            
+      vector < TH1D* > hists;
+      TH1D* hist_roc_upper = hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]
+	->ProjectionZ( (pad_title_base + "_" + roc_upper).c_str(), 1, 7 );
+      //hist_roc_upper->SetName( ( pad_title_base + "_" + roc_upper ).c_str() );
+      hists.push_back( hist_roc_upper );
+      
+      TH1D* hist_roc_lower = hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]
+	->ProjectionZ( ( pad_title_base + "_" + roc_lower ).c_str(), 7, 13 );
+      //      hist_roc_lower->SetName( ( pad_title_base + "_" + roc_lower ).c_str() );
+      
+      for( int felix_ch=0; felix_ch<InttQa::kFee_num; felix_ch++ )
+	{
+	  string name = pad_title_base + "_FELIX_ch" + to_string( felix_ch );
+
+	  auto hist = hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]
+	    ->ProjectionZ( name.c_str(),
+			   felix_ch+1, felix_ch+1
+			   ); // ratio of all hits in a FELIX
+	  hists.push_back( hist );
+
+	  if( felix_ch == 6 )
+	    hists.push_back( hist_roc_lower );
+
+	}
+
+      //hists.insert( hists.begin(), hist_al );
+
+      this->DrawRatioPair( c,
+			   (pad_title_base + " " + roc_upper ).c_str(),
+			   vector < TH1D* >{ begin( hists ), begin( hists ) + 7 + 1 },
+			   (pad_title_base + " " + roc_lower ).c_str(),
+			   vector < TH1D* >{ begin( hists ) + 7 + 1 , end(hists)},
+			   false
+			   );
+    }
 
   /////////////////////////////////////////
   // BCO diff raw, ratio (even)
   /////////////////////////////////////////
   this->DrawBcoDiffRatioPair( c,
 			      "Raw BCO difference",
-			      vector < TH3I* >{ begin(hist_fee_chip_bco_diff_raw_), end(hist_fee_chip_bco_diff_raw_) },
+			      vector < TH3D* >{ begin(hist_fee_chip_bco_diff_raw_), end(hist_fee_chip_bco_diff_raw_) },
 			      "Ratio of even bins of all FELIXes using raw BCO difference",
 			      vector < TH1D* >{ hist_sidelobe_ratio_raw_even_ }
 			      );
   
-  /////////////////////////////////////////
-  // BCO diff raw, ratio (odd)
-  /////////////////////////////////////////
-  this->DrawBcoDiffRatioPair( c,
-			      "Raw BCO full difference",
-			      vector < TH3I* >{ begin(hist_fee_chip_bco_diff_raw_), end(hist_fee_chip_bco_diff_raw_) },
-			      "Ratio of odd bins of all FELIXes using raw BCO difference",
-			      vector < TH1D* >{ hist_sidelobe_ratio_raw_odd_ }
-			      );
-    
-  
-
-  //  c->Print( output_pdf_.c_str(), "Title:Sidelobe ratio: even bins, Each FELIX" );
-
   
   ////////////////////////////////////////////////////////
   // correlation for test
-  gPad->SetLogy( false );
-  hist_correlation_->Draw( "colz" );
+  // gPad->SetLogy( false );
+  // hist_correlation_->Draw( "colz" );
   
   c->Print( output_pdf_.c_str(), "Title:Sidelobe ratio: even bins, Each FELIX" );
 
@@ -486,23 +538,14 @@ void InttFineDelayScan::ProcessHists()
 	      hist_fee_chip_sidelobe_ratio_even_[ felix ] 
 		->Fill( felix_ch, chip, sidelobe_ratio_even );
 	      
-	      double sidelobe_ratio_odd = counter[0] / hist->Integral();
-	      hist_fee_chip_sidelobe_ratio_odd_[ felix ] 
-		->Fill( felix_ch, chip, sidelobe_ratio_odd );
-
 	      // histgram integrated over all FELIX
 	      int bin = hist_sidelobe_ratio_even_
 		->Fill( sidelobe_ratio_even );
 
-	      hist_sidelobe_ratio_odd_
-		->Fill( sidelobe_ratio_odd );
-
-	      // for debugging
-	      hist_correlation_->Fill( sidelobe_ratio_even, sidelobe_ratio_odd );
 	    } // end of for( chip )
 	} // end of for( fee, i.e. felix_ch )
     } // end of for( felix )
-
+    
   /////////////////////////////////////////////////////////
   // 3D, Ladder vs BCO full raw vs Event counter (felix) //
   /////////////////////////////////////////////////////////
@@ -534,21 +577,65 @@ void InttFineDelayScan::ProcessHists()
 	      hist_fee_chip_sidelobe_ratio_raw_even_[ felix ] 
 		->Fill( felix_ch, chip, sidelobe_ratio_raw_even );
 	      
-	      double sidelobe_ratio_raw_odd = counter[0] / hist->Integral();
-	      hist_fee_chip_sidelobe_ratio_raw_odd_[ felix ] 
-		->Fill( felix_ch, chip, sidelobe_ratio_raw_odd );
-
 	      // histgram integrated over all FELIX
 	      hist_sidelobe_ratio_raw_even_
 		->Fill( sidelobe_ratio_raw_even );
 	      
-	      hist_sidelobe_ratio_raw_odd_
-		->Fill( sidelobe_ratio_raw_odd );
+	    } // end of for( chip )
+	} // end of for( fee, i.e. felix_ch )
+    } // end of for( felix )
+
+  /////////////////////////////////////////////////////
+  // 3D, Ladder vs BCO vs Event counter (felix) //
+  /////////////////////////////////////////////////////
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
+    {
+
+      for( int felix_ch=0; felix_ch<InttQa::kFee_num; felix_ch++ )
+	{
+
+	  for( int chip=0; chip<InttQa::kChip_num; chip++ )
+	    {
+
+	      string name = "intt" + to_string( felix )
+		+ "_FELIX_ch" + to_string( felix_ch )
+		+ "_chip" + to_string( chip )
+		+ "_bco_even";
+	      auto hist = hist_fee_chip_bco_[ felix ]->ProjectionZ( name.c_str(),
+								    felix_ch+1, felix_ch+1,
+								    chip+1, chip+1 );
+	      int counter[ 2 ] = {0};
+	      for( int bin=1; bin<hist->GetNbinsX()+1; bin++ )
+		{
+
+		  // bin 1, 3, ... = BCO 0, 2, 4, ... -> odd
+		  // bin 2, 4, ... = BCO 1, 3, 5, ... -> even
+		  auto content = hist->GetBinContent( bin );
+		  counter[ (bin-1)%2 ] += content;
+		}
+	      
+	      double sidelobe_ratio_even = counter[1] / hist->Integral();
+	      hist_fee_chip_sidelobe_ratio_bco_even_[ felix ] 
+		->Fill( felix_ch, chip, sidelobe_ratio_even );
+	      
+	      // histgram integrated over all FELIX
+	      int bin = hist_sidelobe_ratio_bco_even_
+		->Fill( sidelobe_ratio_even );
 
 	    } // end of for( chip )
 	} // end of for( fee, i.e. felix_ch )
     } // end of for( felix )
 
+  // Normlization of hists using #events
+  //  hist_fee_chip_bco_diff_all_->Scale( 1.0 / last_event_counter_ );  
+  for( int felix=0; felix<InttQa::kFelix_num;felix++ )
+    {
+      //hist_fee_chip_chan_[ felix ]->Scale( 1.0 / last_event_counter_ );
+    
+      hist_fee_chip_bco_diff_[ felix ]->Scale( 1.0 / last_event_counter_ );
+  
+      hist_fee_chip_bco_diff_raw_[ felix ]->Scale( 1.0 / last_event_counter_ );
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -606,40 +693,45 @@ int InttFineDelayScan::InitRun(PHCompositeNode *topNode)
   double ratio_bin_num = (ratio_max - ratio_min ) * 200;
   
   //////////////////////////////////////////////////////
+  // 1D hists for BCO
+  string name_sidelobe_ratio_bco_even_ = name_all + "_bco_even_counter";
+  string title_sidelobe_ratio_bco_even_ = name_all + ";BCO_{FPHX};Entries/event";
+  hist_sidelobe_ratio_bco_even_
+    = new TH1D ( name_sidelobe_ratio_bco_even_.c_str(),
+		 title_sidelobe_ratio_bco_even_.c_str(),
+		 ratio_bin_num, ratio_min, ratio_max );
+  
+  //////////////////////////////////////////////////////
   // 1D hists for BCO diff
-  string name_sidelobe_ratio_even_ = name_all + "_bco_full_event_counter";
-  string title_sidelobe_ratio_even_ = name_all + ";BCOdiff_{even}/(BCOdiff_{odd} + BCOdiff_{even});Entries";
+  string name_sidelobe_ratio_even_ = name_all + "_bco_full_even_counter";
+  string title_sidelobe_ratio_even_ = name_all + ";BCOdiff_{even}/(BCOdiff_{odd} + BCOdiff_{even});Entries/event";
   hist_sidelobe_ratio_even_
     = new TH1D ( name_sidelobe_ratio_even_.c_str(),
 		 title_sidelobe_ratio_even_.c_str(),
 		 ratio_bin_num, ratio_min, ratio_max );
   
-  string name_sidelobe_ratio_odd_ = name_all + "_bco_full_oddt_counter";
-  string title_sidelobe_ratio_odd_ = name_all + ";BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{odd});Entries";
-  hist_sidelobe_ratio_odd_
-    = new TH1D ( name_sidelobe_ratio_odd_.c_str(),
-		 title_sidelobe_ratio_odd_.c_str(),
-		 ratio_bin_num, ratio_min, ratio_max );
-
   //////////////////////////////////////////////////////
   // 1D hists for BCO diff raw
-  string name_sidelobe_ratio_raw_even_ = name_all + "_bco_full_raw_event_counter";
-  string title_sidelobe_ratio_raw_even_ = name_all + ";BCOdiff_{even}/(BCOdiff_{odd} + BCOdiff_{even});Entries";
+  string name_sidelobe_ratio_raw_even_ = name_all + "_bco_full_raw_even_counter";
+  string title_sidelobe_ratio_raw_even_ = name_all + ";BCOdiff_{even}/(BCOdiff_{odd} + BCOdiff_{even});Entries/event";
   hist_sidelobe_ratio_raw_even_
     = new TH1D ( name_sidelobe_ratio_raw_even_.c_str(),
 		 title_sidelobe_ratio_raw_even_.c_str(),
 		 ratio_bin_num, ratio_min, ratio_max );
   
-  string name_sidelobe_ratio_raw_odd_ = name_all + "_bco_full_raw_oddt_counter";
-  string title_sidelobe_ratio_raw_odd_ = name_all + ";BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{odd});Entries";
-  hist_sidelobe_ratio_raw_odd_
-    = new TH1D ( name_sidelobe_ratio_raw_odd_.c_str(),
-		 title_sidelobe_ratio_raw_odd_.c_str(),
-		 ratio_bin_num, ratio_min, ratio_max );
-
   for( int felix=0; felix<InttQa::kFelix_num;felix++ )
     {
       string name = "intt" + to_string( felix );
+
+      //////////////////////////////////////////////////////
+      // hists for BCO
+      string name_fee_chip_bco = name + "_fee_chip_bco";
+      string title_fee_chip_bco = name + ";FELIX_CH;Chip;BCO_{FPHX}";
+      hist_fee_chip_bco_[ felix ]
+	 = new TH3D( name_fee_chip_bco.c_str(), title_fee_chip_bco.c_str(),
+		     InttQa::kFee_num, 0, InttQa::kFee_num,
+		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
+		     InttQa::kBco_max, 0, InttQa::kBco_max );
 
       //////////////////////////////////////////////////////
       // hists for BCO diff
@@ -648,74 +740,59 @@ int InttFineDelayScan::InitRun(PHCompositeNode *topNode)
       string name_fee_chip_bco_diff = name + "_fee_chip_bco_diff";
       string title_fee_chip_bco_diff = name + ";FELIX_CH;Chip; BCOfull%0x7f - BCO";
       hist_fee_chip_bco_diff_[ felix ]
-	 = new TH3I( name_fee_chip_bco_diff.c_str(), title_fee_chip_bco_diff.c_str(),
+	 = new TH3D( name_fee_chip_bco_diff.c_str(), title_fee_chip_bco_diff.c_str(),
 		     InttQa::kFee_num, 0, InttQa::kFee_num,
 		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
 		     InttQa::kBco_max, 0, InttQa::kBco_max );
 
       // BCO diff ratio (even)
-      string name_fee_chip_sidelobe_ratio_even = name + "_bco_full_event_counter";
+      string name_fee_chip_sidelobe_ratio_even = name + "_bco_full_even_counter";
       string title_fee_chip_sidelobe_ratio_even = name + ";FELIX_CH;Chip;BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{even})";
       hist_fee_chip_sidelobe_ratio_even_[ felix ]
-	= new TH3I ( name_fee_chip_sidelobe_ratio_even.c_str(),
+	= new TH3D ( name_fee_chip_sidelobe_ratio_even.c_str(),
 		     title_fee_chip_sidelobe_ratio_even.c_str(),
 		     InttQa::kFee_num, 0, InttQa::kFee_num,
 		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
 		     ratio_bin_num, ratio_min, ratio_max );
 		     
-      // BCO diff ratio (odd)
-      string name_fee_chip_sidelobe_ratio_odd = name + "_bco_full_odd_counter";
-      string title_fee_chip_sidelobe_ratio_odd = name + ";FELIX_CH;Chip;BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{odd})";
-      hist_fee_chip_sidelobe_ratio_odd_[ felix ]
-	= new TH3I ( name_fee_chip_sidelobe_ratio_odd.c_str(),
-		     title_fee_chip_sidelobe_ratio_odd.c_str(),
-		     InttQa::kFee_num, 0, InttQa::kFee_num,
-		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
-		     ratio_bin_num, ratio_min, ratio_max );
-
       //////////////////////////////////////////////////////
       // hists for BCO diff raw
       // BCO diff raw
       string name_fee_chip_bco_diff_raw = name + "_fee_chip_bco_diff_raw";
       string title_fee_chip_bco_diff_raw = name + ";FELIX_CH;Chip; BCOfull%0x7f - BCO (raw)";
       hist_fee_chip_bco_diff_raw_[ felix ]
-	 = new TH3I( name_fee_chip_bco_diff_raw.c_str(), title_fee_chip_bco_diff_raw.c_str(),
+	 = new TH3D( name_fee_chip_bco_diff_raw.c_str(), title_fee_chip_bco_diff_raw.c_str(),
 		     InttQa::kFee_num, 0, InttQa::kFee_num,
 		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
 		     2 * InttQa::kBco_max, -InttQa::kBco_max, InttQa::kBco_max );
 
       // BCO diff raw ratio (even)
-      string name_fee_chip_sidelobe_ratio_raw_even = name + "_bco_full_raw_event_counter";
+      string name_fee_chip_sidelobe_ratio_raw_even = name + "_bco_full_raw_even_counter";
       string title_fee_chip_sidelobe_ratio_raw_even = name + ";FELIX_CH;Chip;BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{even})";
       hist_fee_chip_sidelobe_ratio_raw_even_[ felix ]
-	= new TH3I ( name_fee_chip_sidelobe_ratio_raw_even.c_str(),
+	= new TH3D ( name_fee_chip_sidelobe_ratio_raw_even.c_str(),
 		     title_fee_chip_sidelobe_ratio_raw_even.c_str(),
 		     InttQa::kFee_num, 0, InttQa::kFee_num,
 		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
 		     ratio_bin_num, ratio_min, ratio_max );
 		     
-      // BCO diff raw ratio (odd)
-      string name_fee_chip_sidelobe_ratio_raw_odd = name + "_bco_full_raw_odd_counter";
-      string title_fee_chip_sidelobe_ratio_raw_odd = name + ";FELIX_CH;Chip;BCOdiff_{odd}/(BCOdiff_{odd} + BCOdiff_{odd})";
-      hist_fee_chip_sidelobe_ratio_raw_odd_[ felix ]
-	= new TH3I ( name_fee_chip_sidelobe_ratio_raw_odd.c_str(),
-		     title_fee_chip_sidelobe_ratio_raw_odd.c_str(),
+      //////////////////////////////////////////////////////
+      // BCO ratio (even)
+      string name_fee_chip_sidelobe_ratio_bco_even = name + "_bco_full_bco_even_counter";
+      string title_fee_chip_sidelobe_ratio_bco_even = name + ";FELIX_CH;Chip;BCO_{FPHX})";
+      hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]
+	= new TH3D ( name_fee_chip_sidelobe_ratio_bco_even.c_str(),
+		     title_fee_chip_sidelobe_ratio_bco_even.c_str(),
 		     InttQa::kFee_num, 0, InttQa::kFee_num,
 		     InttQa::kChip_num, 1, InttQa::kChip_num+1,
 		     ratio_bin_num, ratio_min, ratio_max );
 		     
-      //TH3I* hist_fee_chip_sidelobe_ratioodd_[ InttQa::kFelix_num ]; // BCOdiff_{even} / (BCOdiff_{odd} + BCOdiff_{even} )
     }
 
-  hist_correlation_ = new TH2D( "even_odd_correlation", "even_odd_correlation;even;odd",
-				ratio_bin_num, 0.0, ratio_max,
-				ratio_bin_num, 0.0, ratio_max );
-
-
-  hist_bco_      = new TH1I( "bco", "BCO distribution;BCO;Entries", 128, 0, 128 );
+  hist_bco_      = new TH1I( "bco", "BCO distribution;BCO;Entries/event", 128, 0, 128 );
   InttQa::HistConfig( hist_bco_ );
   
-  hist_bco_full_ = new TH1D( "bco_full", "BCO full distribution;BCO full;Entries",
+  hist_bco_full_ = new TH1D( "bco_full", "BCO full distribution;BCO full;Entries/event",
 			     100, 0, TMath::Power( 2, 40 ) );
   InttQa::HistConfig( hist_bco_full_ );
 
@@ -749,7 +826,7 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
   hist_bco_full_->Fill( bco_full );
 
   auto hits = this->GetHits();
-  
+
   // loop over all raw hits
   bool found = false;
   for (unsigned int i = 0; i < hits.size(); i++)
@@ -763,9 +840,6 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
     auto bco = hit->get_FPHX_BCO();
     
     int bco_diff = (bco_full & 0x7f ) - bco;
-
-    // fill BCO diff before adding 128. It's called BCO diff raw
-    hist_fee_chip_bco_diff_raw_[ felix ]->Fill( felix_ch, chip, bco_diff );
     
     if( bco_diff < 0 )
       bco_diff += 128;
@@ -777,6 +851,12 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
     }
 
     hist_fee_chip_bco_diff_[ felix ]->Fill( felix_ch, chip, bco_diff );
+
+    // BCO info
+    hist_fee_chip_bco_[ felix ]->Fill( felix_ch, chip, bco );
+    
+    // fill BCO diff before adding 128. It's called BCO diff raw
+    hist_fee_chip_bco_diff_raw_[ felix ]->Fill( felix_ch, chip, bco_diff );
     //    hist_bco_->Fill(hit->get_FPHX_BCO());
 
    if( false )
@@ -814,6 +894,7 @@ int InttFineDelayScan::process_event(PHCompositeNode *topNode)
 
     }
 
+  last_event_counter_ = hits[0]->get_event_counter();
   //this->process_event_clone_hit( topNode );
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -842,12 +923,19 @@ int InttFineDelayScan::EndRun(const int runnumber)
 
   for( int felix=0; felix<InttQa::kFelix_num; felix++ )
     {
+      
+      tf_output_->WriteTObject( hist_fee_chip_bco_[ felix ],
+				hist_fee_chip_bco_[ felix ]->GetName() );
+
+      tf_output_->WriteTObject( hist_fee_chip_bco_diff_[ felix ],
+				hist_fee_chip_bco_diff_[ felix ]->GetName() );
+
       tf_output_->WriteTObject( hist_fee_chip_sidelobe_ratio_even_[ felix ],
 				hist_fee_chip_sidelobe_ratio_even_[ felix ]->GetName() );
-      
-      tf_output_->WriteTObject( hist_fee_chip_sidelobe_ratio_odd_[ felix ],
-				hist_fee_chip_sidelobe_ratio_odd_[ felix ]->GetName() );
-      
+            
+      tf_output_->WriteTObject( hist_fee_chip_sidelobe_ratio_bco_even_[ felix ],
+				hist_fee_chip_sidelobe_ratio_bco_even_[ felix ]->GetName() );
+            
     }
 
   // Close the ROOT file

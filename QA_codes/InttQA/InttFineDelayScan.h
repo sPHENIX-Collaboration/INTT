@@ -56,6 +56,7 @@ protected:
   int year_ = 2024;  
   int pid_ref_ = 0;
   bool intt_header_found_ = false;
+  int last_event_counter_ = 0;
   
   ///////////////////////////////////////////
   // variables for the output
@@ -72,29 +73,28 @@ protected:
   ///////////////////////////////////////////
 
   // mother 3D hist
-  TH3I* hist_fee_chip_chan_[ InttQa::kFelix_num ]; // ch vs chip vs ladder vs felix
-  TH3I* hist_fee_chip_bco_diff_all_; // BCO diff vs chip vs ladder vs felix, sum of all FELIX
-  TH3I* hist_fee_chip_bco_diff_[ InttQa::kFelix_num ]; // BCO diff vs chip vs ladder vs FELIX
-  TH3I* hist_fee_chip_bco_diff_raw_[ InttQa::kFelix_num ]; // BCO diff (raw) vs chip vs ladder vs FELIX, BCO diff (raw) means the difference but +128 for negavie values is not done.
+  TH3D* hist_fee_chip_chan_[ InttQa::kFelix_num ]; // ch vs chip vs ladder vs felix
 
-  TH3I* hist_fee_chip_sidelobe_ratio_even_[ InttQa::kFelix_num ]; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} )
-  TH3I* hist_fee_chip_sidelobe_ratio_odd_[ InttQa::kFelix_num ]; // BCOdiff_{even} / (BCOdiff_{odd} + BCOdiff_{even} )
+  TH3D* hist_fee_chip_bco_[ InttQa::kFelix_num ]; // BCO vs chip vs ladder vs FELIX
+  TH3D* hist_fee_chip_bco_diff_all_; // BCO diff vs chip vs ladder vs felix, sum of all FELIX
+  TH3D* hist_fee_chip_bco_diff_[ InttQa::kFelix_num ]; // BCO diff vs chip vs ladder vs FELIX
 
-  TH3I* hist_fee_chip_sidelobe_ratio_raw_even_[ InttQa::kFelix_num ]; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} ) : BCO diff (raw)
-  TH3I* hist_fee_chip_sidelobe_ratio_raw_odd_[ InttQa::kFelix_num ]; // BCOdiff_{even} / (BCOdiff_{odd} + BCOdiff_{even} ) : BCO diff (raw)
+  TH3D* hist_fee_chip_sidelobe_ratio_even_[ InttQa::kFelix_num ]; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} )
+
+  TH3D* hist_fee_chip_bco_diff_raw_[ InttQa::kFelix_num ]; // BCO diff (raw) vs chip vs ladder vs FELIX, BCO diff (raw) means the difference but +128 for negavie values is not done.
+  TH3D* hist_fee_chip_sidelobe_ratio_raw_even_[ InttQa::kFelix_num ]; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} ) : BCO diff (raw)
+
+  TH3D* hist_fee_chip_sidelobe_ratio_bco_even_[ InttQa::kFelix_num ]; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} )
 
   // sidelobe ratio
-  // 2D hists
-  TH2D* hist_correlation_;
   
   // a simple 1D hists
   TH1I* hist_bco_; // FPHX BCO
   TH1D* hist_bco_full_; // BCO full
+  TH1D* hist_sidelobe_ratio_bco_even_; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} ), Sum of all FELIXes
   TH1D* hist_sidelobe_ratio_even_; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} ), Sum of all FELIXes
-  TH1D* hist_sidelobe_ratio_odd_; // BCOdiff_{even} / (BCOdiff_{odd} + BCOdiff_{even} ), Sum of all FELIXes
 
   TH1D* hist_sidelobe_ratio_raw_even_; // BCOdiff_{odd} / (BCOdiff_{odd} + BCOdiff_{even} ), Sum of all FELIXes
-  TH1D* hist_sidelobe_ratio_raw_odd_; // BCOdiff_{even} / (BCOdiff_{odd} + BCOdiff_{even} ), Sum of all FELIXes
 
   ///////////////////////////////////////////
   // nodes
@@ -114,7 +114,7 @@ protected:
   
   void DrawBcoDiffRatioPair( TCanvas* c,                              // +----------------+---------+  |
                              std::string title_bco_diff,              // |   _____| BCO   |----|----|  |
-                             std::vector < TH3I* > hists_bco_diff,    // |  |     | diff  |----|----|  |
+                             std::vector < TH3D* > hists_bco_diff,    // |  |     | diff  |----|----|  |
                              std::string title_ratio,                 // +----------------+---------+  |
                              std::vector < TH1D* > hists_ratio,       // +-----------_----+---------+  |
                              bool inherit_ymax=false );               // |    Ratio | |   |----|----|  |
