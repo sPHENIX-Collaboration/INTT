@@ -546,13 +546,15 @@ int Viewer::Draw()
 	  this->Draw_AdcChannel();
 	  this->Draw_HitDist();
 	  this->Draw_BcoDiff();
-	  this->Draw_BcoDiffRaw();
+	  this->Draw_Bco();
+	  //this->Draw_BcoDiffRaw();
 	}
     }
   else // for junk data
     {
       this->Draw_Channel();
       this->Draw_AdcChannel();
+      this->Draw_BcoDiff();
 
       //this->Draw_HitDist();
       this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
@@ -848,6 +850,80 @@ int Viewer::Draw_HitDist( int ladder_min, int ladder_max, int chip_min, int chip
   return 0;
 }
 
+int Viewer::Draw_Bco( int ladder_min, int ladder_max, int chip_min, int chip_max )
+{
+
+  TCanvas* c = new TCanvas( this->GetCanvasName().c_str(), this->GetCanvasTitle().c_str(), 2560, 1600 );
+
+  //////////////////////////////////////////////////
+  // Make histogram ladder by ladder since it's made for every ladder and chip
+  //////////////////////////////////////////////////
+
+  // make the instance and init with the hist for chip0
+  TH1D* hist_bco_ladder[ kLadder_num_ ];
+  for( int i=0; i<kLadder_num_; i++ )
+    hist_bco_ladder[i] = (TH1D*)hist_bco_[i][0]->Clone();
+
+  // Add data 
+  for( int i=0; i<kLadder_num_; i++ )
+    for( int j=1; j<kChip_num_; j++ )
+      {
+	hist_bco_ladder[i]->Add( hist_bco_[i][j] );
+      }
+  
+  //auto y_max = GetMaxBinContentRatio( hist_bco_ladder_, 0.01, ladder_min, ladder_max, chip_min, chip_max ); // Bins on the top 1% are ignored
+  auto y_max = GetMaxBinContent1D( hist_bco_ladder, 1 );
+
+  if( run_type_ == "calib" || run_type_ == "calibration" )
+    y_max = 500;
+  else if( y_max < 0.9 )
+    y_max = 1;
+  
+  // this->CanvasPreparation( c,
+  // 			   0, 127, 0.9, y_max,
+  // 			   0, 2, 0, 1,
+  // 			   hist_bco_[0][0]->GetName() );
+
+  c->Divide( 1, 2 );
+
+  ////////////////////////////////////////////////////////////////////////
+  // Draw!                                                              //
+  ////////////////////////////////////////////////////////////////////////
+  TLegend* leg = new TLegend( 0.91, 0.1, 0.99, 0.9 );
+  
+  c->cd( 2 );
+  for( int i=ladder_min; i<ladder_max; i++ ) // in y direction
+    {
+
+      hist_bco_ladder[i]->SetLineColor( kLadder_colors[ i%7 ] );
+      hist_bco_ladder[i]->SetFillColorAlpha( hist_bco_ladder[i]->GetLineColor(), 0.1 );
+      hist_bco_ladder[i]->SetLineWidth( 3 );
+      hist_bco_ladder[i]->GetYaxis()->SetRangeUser( 0.9, y_max );
+      string option = "HIST same";
+      if( i == 0 || i == 7 )
+	option = "HIST";
+      
+      hist_bco_ladder[i]->Draw( option.c_str() );
+      this->SetStyle();
+      gPad->SetLogy( true );
+
+      leg->AddEntry( hist_bco_ladder[i], ( "FELIX CH" + to_string(i) ).c_str() );
+      if( i == 6 || i == ladder_max-1 )
+	{
+	  leg->Draw();
+	  leg = new TLegend( 0.91, 0.1, 0.99, 0.9 );
+	  c->cd( 1 );
+	}
+    }
+
+  this->WriteLabels2Panes( c, ladder_min, ladder_max, chip_min, chip_max );
+  
+  string output = this->GetOutputPath( ladder_min, ladder_max, chip_min, chip_max, "bco" );
+  c->Print( output.c_str() );
+  cout << output << endl << endl;
+  
+  return 0;
+}
 int Viewer::Draw_BcoDiff( int ladder_min, int ladder_max, int chip_min, int chip_max )
 {
 

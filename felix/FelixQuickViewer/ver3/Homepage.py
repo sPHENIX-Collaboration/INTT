@@ -30,7 +30,7 @@ class Homepage() :
             self.RUN_DIR = pathlib.Path( self.YEAR_DIR )
 
         self.run_types = [ "calib",  "pedestal", #"calibration",
-                           "cosmics", "beam", "junk"
+                           "cosmics", "physics", "beam", "junk"
                           ]
         self.run_directories = sorted( list(self.YEAR_DIR.glob( '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/' ) ) ) # because ChatGPT said so...
         
@@ -189,6 +189,7 @@ class Homepage() :
             file.write( "<h2>QA</h2>\n" )
 
         self.WriteRawHitSection()
+        self.WriteTrkrHitSection()
         self.WriteHotChannelSection()
         self.WriteBcoDiffCutSection()
         self.WriteCosmicSection()
@@ -219,6 +220,31 @@ class Homepage() :
 
             file.write( contents )
                 
+    def WriteTrkrHitSection( self ) :
+        # If no plots are found, let's finish
+        if len( self.info.trkr_hit_plots ) == 0 :
+            return None
+        
+        with open( str(self.index_html), mode='a' ) as file :
+            contents = "<h3>Trkr_hit </h3>\n"
+            html_detail = "<details>\n" \
+                "    <summary>Hide/Show</summary>\n"
+
+            
+            for plot in self.info.trkr_hit_plots :
+                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                print( self.RUN_DIR/ plot.name )
+                contents += "<h4>" + plot.name + "</h4>\n"
+                contents += html_detail + \
+                "<div class=\"center\">\n" \
+                    "    <object data=\"" + plot.name + "\"" \
+                    "type=\"application/pdf\">\n" \
+                    "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                    "    </object>\n" \
+                    "</div>\n" \
+                    "</details>\n\n"
+
+            file.write( contents )
     def WriteHotChannelSection( self ) :
         # If no plots are found, let's finish
         if len( self.info.hot_channel_plots ) == 0 :

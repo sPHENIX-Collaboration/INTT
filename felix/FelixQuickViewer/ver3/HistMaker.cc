@@ -78,8 +78,14 @@ void HistMaker::Init()
 				      Form("hist_adc_module%d_chip%d;ADC;Entries", i, j ),
 				      8, 0, 8 );
 	  hist_adc_[i][j]->SetFillColorAlpha( kAzure + 1, 0.3 );
-
 	  
+	  hist_bco_[i][j] = new TH1D( Form("hist_bco_module%d_chip%d", i, j ),
+				      Form("hist_bco_module%d_chip%d;BCO full&0x7f - FPHX BCO;Entries", i, j ),
+					   128, 0, 128 );
+	  
+	  hist_bco_[i][j]->SetLineColor( kLadder_colors[i] );
+	  hist_bco_[i][j]->SetFillColorAlpha( hist_bco_[i][j]->GetLineColor(), 0.15 );
+
 	  hist_bco_diff_[i][j] = new TH1D( Form("hist_bco_diff_module%d_chip%d", i, j ),
 				      Form("hist_bco_diff_module%d_chip%d;BCO full&0x7f - FPHX BCO;Entries", i, j ),
 					   128, 0, 128 );
@@ -129,6 +135,8 @@ int HistMaker::Process()
 		{
 		  hist_ch_adc_ampl_[i][j]->Fill( chan_id_, adc_, ampl_ );
 
+		  hist_bco_[i][j]->Fill( bco_ );
+				 
 		  // noise rejection should be good for BCO diff hists
 		  if( adc_ > 0 )
 		    {
@@ -173,14 +181,15 @@ void HistMaker::SaveHists()
     {
       for( int j=0; j<kChip_num_; j++ )
 	{
-	  tf->WriteTObject( hist_ch_adc_ampl_[i][j], hist_ch_adc_ampl_[i][j]->GetName() );
-	  tf->WriteTObject( hist_adc_ch_[i][j], hist_adc_ch_[i][j]->GetName() );
-	  tf->WriteTObject( hist_adc_[i][j], hist_adc_[i][j]->GetName() );
-	  tf->WriteTObject( hist_ch_[i][j], hist_ch_[i][j]->GetName() );
-	  tf->WriteTObject( hist_ampl_adc_[i][j], hist_ampl_adc_[i][j]->GetName() );
-	  tf->WriteTObject( hist_ch_ampl_[i][j], hist_ch_ampl_[i][j]->GetName() );
-	  tf->WriteTObject( hist_bco_diff_[i][j], hist_bco_diff_[i][j]->GetName() );
-	  tf->WriteTObject( hist_bco_diff_raw_[i][j], hist_bco_diff_raw_[i][j]->GetName() );
+	  tf->WriteTObject( hist_ch_adc_ampl_[i][j]	, hist_ch_adc_ampl_[i][j]->GetName() );
+	  tf->WriteTObject( hist_adc_ch_[i][j]		, hist_adc_ch_[i][j]->GetName() );
+	  tf->WriteTObject( hist_adc_[i][j]		, hist_adc_[i][j]->GetName() );
+	  tf->WriteTObject( hist_ch_[i][j]		, hist_ch_[i][j]->GetName() );
+	  tf->WriteTObject( hist_ampl_adc_[i][j]	, hist_ampl_adc_[i][j]->GetName() );
+	  tf->WriteTObject( hist_ch_ampl_[i][j]		, hist_ch_ampl_[i][j]->GetName() );
+	  tf->WriteTObject( hist_bco_[i][j]		, hist_bco_[i][j]->GetName() );
+	  tf->WriteTObject( hist_bco_diff_[i][j]	, hist_bco_diff_[i][j]->GetName() );
+	  tf->WriteTObject( hist_bco_diff_raw_[i][j]	, hist_bco_diff_raw_[i][j]->GetName() );
 	}
     }
 

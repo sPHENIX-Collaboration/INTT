@@ -106,6 +106,7 @@ class Information() :
         self.GetRawHitPlots()
         self.GetCosmicPlots()
         self.GetBcoDiffPlots()
+        self.GetTrkrHitPlots()
         
         #self.root_dir   = args.root_dir if args.root_dir is not None else "commissioning/"
         # add a directory separator if it's not at the end of string
@@ -217,10 +218,13 @@ class Information() :
         self.bco_diff_plots = self.GetPlots( self.BCODIFF_DIR / "plots" / str(self.year) )
         
     def GetRawHitPlots( self ) :
+        print( "Raw hit plot" )
         self.raw_hit_plots = self.GetPlots( self.RAWHIT_DIR / "plots" )
 
     def GetTrkrHitPlots( self ) :
+        print( "Trkrhit plot" )
         self.trkr_hit_plots = self.GetPlots( self.TRKRHIT_DIR / "plots" )
+        print( self.trkr_hit_plots )
 
     def GetTrkrClusterPlots( self ) :
         self.trkr_cluster_plots = self.GetPlots( self.TRKRCLUSTER_DIR / "plots" ) 
