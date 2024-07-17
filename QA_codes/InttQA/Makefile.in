@@ -126,7 +126,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libInttQA_la_DEPENDENCIES =
 am_libInttQA_la_OBJECTS = InttRawHitQA.lo InttTrkrHitQA.lo \
-	InttCloneRawHitQA.lo InttFineDelayScan.lo TH2INTT.lo
+	InttCloneRawHitQA.lo InttFineDelayScan.lo \
+	InttFineDelayScanTrkrHit.lo TH2INTT.lo
 libInttQA_la_OBJECTS = $(am_libInttQA_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -351,6 +352,7 @@ pkginclude_HEADERS = \
   InttTrkrHitQA.h \
   InttCloneRawHitQA.h \
   InttFineDelayScan.h \
+  InttFineDelayScanTrkrHit.h \
   InttQaCommon.h \
   TH2INTT.h
 
@@ -362,6 +364,7 @@ libInttQA_la_SOURCES = \
   InttTrkrHitQA.cc \
   InttCloneRawHitQA.cc \
   InttFineDelayScan.cc \
+  InttFineDelayScanTrkrHit.cc \
   TH2INTT.cc
 
 libInttQA_la_LIBADD = \
@@ -369,7 +372,8 @@ libInttQA_la_LIBADD = \
   -lSubsysReco \
   -lffaobjects \
   -lffarawobjects \
-  -ltrack_io
+  -ltrack_io \
+  -lintt
 
 BUILT_SOURCES = testexternals.cc
 testexternals_SOURCES = testexternals.cc
@@ -473,6 +477,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttCloneRawHitQA.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttFineDelayScan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttFineDelayScanTrkrHit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttRawHitQA.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InttTrkrHitQA.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TH2INTT.Plo@am__quote@

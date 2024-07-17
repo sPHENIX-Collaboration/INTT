@@ -51,6 +51,65 @@ vector < InttRawHit* > InttCloneRawHitQA::GetHits()
 return hits;
 }
 
+vector < InttRawHit* > InttCloneRawHitQA::GetHitsWithoutClone()
+{
+  auto hits = this->GetHits();
+  vector < InttRawHit* > rtn;
+  
+  for( int i=0; i<hits.size(); i++ )
+    {
+      
+      bool is_same_found = false;
+      for( int j=i+1; j<hits.size(); j++ )
+	{
+
+	  is_same_found = is_same_found || this->IsSame( hits[i], hits[j] );
+	  if( is_same_found == true )
+	    {
+	      break;
+	    }
+	  
+	} // end of for( hit_j )
+
+      // if this hit is still unique (same hit is not found), keep it
+      if( is_same_found == false )
+	rtn.push_back( hits[i] );
+      
+    } // end of for( hit_i )
+  
+  return rtn;
+}
+
+bool InttCloneRawHitQA::IsSame( InttRawHit* hit1, InttRawHit* hit2 )
+{
+
+  if( hit1->get_word() != hit2->get_word() ) // only this might be enough
+    return false;
+  else if( hit1->get_bco() != hit2->get_bco() )
+    return false;
+  else if( hit1->get_FPHX_BCO() != hit2->get_FPHX_BCO() )
+    return false;
+  else if( hit1->get_channel_id() != hit2->get_channel_id() )
+    return false;
+  else if( hit1->get_chip_id() != hit2->get_chip_id() )
+    return false;
+  else if( hit1->get_fee() != hit2->get_fee() )
+    return false;
+  else if( hit1->get_packetid() != hit2->get_packetid() )
+    return false;
+  else if( hit1->get_adc() != hit2->get_adc() )
+    return false;
+  else if( hit1->get_full_FPHX() != hit2->get_full_FPHX() )
+    return false;
+  // else if( hit1->get_full_ROC() != hit2->get_full_ROC() ) // maybe no value is assigned?
+  //   return false;
+  // else if( hit1->get_amplitude()!= hit2->get_amplitude()) // maybe no value is assigned?
+  //   return false;
+
+  // hits pass all comparison are the same
+  return true;
+};
+
 /////////////////////////////////////////////////////////////////////////
 // public
 /////////////////////////////////////////////////////////////////////////

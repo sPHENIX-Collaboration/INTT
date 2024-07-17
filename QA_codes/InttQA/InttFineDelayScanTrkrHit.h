@@ -31,8 +31,17 @@
 #include <phool/getClass.h>
 #include <phool/recoConsts.h>
 
+#include <trackbase/InttDefs.h>
 #include <trackbase/InttEventInfo.h>
 #include <trackbase/InttEventInfov1.h>
+#include <trackbase/TrkrHitSetContainer.h>
+#include <trackbase/TrkrHitSetContainerv1.h>
+//#include <trackbase/TrkrHitSetContainerv2.h>
+#include <trackbase/TrkrHitSetv1.h>
+#include <trackbase/TrkrHitSet.h>
+#include <trackbase/TrkrHitv1.h>
+#include <trackbase/TrkrHit.h>
+#include <trackbase/TrkrDefs.h>
 
 #include <ffaobjects/FlagSavev1.h>
 #include <ffarawobjects/InttRawHit.h>
@@ -40,11 +49,53 @@
 #include <ffarawobjects/InttRawHitContainer.h>
 #include <ffarawobjects/InttRawHitContainerv2.h>
 
+#include <intt/InttMapping.h>
+#include <intt/InttDacMap.h>
 #include "InttQaCommon.h"
 
 class PHCompositeNode;
 
-class InttFineDelayScan : public SubsysReco
+class TrkrHitInfo
+{
+private:
+  InttNameSpace::Online_s hit_;
+  uint16_t bco_fphx_;
+  int event_counter_;
+  int dac_;
+
+public:
+  TrkrHitInfo( InttNameSpace::Online_s hit, uint16_t bco_fphx, int event_counter, int dac );
+
+  InttNameSpace::Online_s GetHit(){ return hit_;};
+  uint16_t GetFPHXBco(){ return bco_fphx_;};
+  int GetEventCounter(){ return event_counter_; };
+  int GetDac(){ return dac_;};
+
+  ////////////////////////////////////////////
+  // struct Online_s                        //
+  //   int lyr, int ldr,  int arm           //
+  //   int chp, int chn                     //
+  ////////////////////////////////////////////
+
+  ////////////////////////////////////////////
+  // struct RawData_s:                      //
+  int GetFelixServer	(){ return InttNameSpace::ToRawData(hit_).felix_server; };
+  int GetFelixChannel	(){ return InttNameSpace::ToRawData(hit_).felix_channel; };
+  int GetChip		(){ return InttNameSpace::ToRawData(hit_).chip; };
+  int GetChannel	(){ return InttNameSpace::ToRawData(hit_).channel; };
+      
+  ////////////////////////////////////////////
+  // struct Offline_s                       //
+  int Getlayer		(){ return InttNameSpace::ToOffline(hit_).layer; };
+  int Getladder_phi	(){ return InttNameSpace::ToOffline(hit_).ladder_phi; };
+  int Getladder_z	(){ return InttNameSpace::ToOffline(hit_).ladder_z; };
+  int Getstrip_x	(){ return InttNameSpace::ToOffline(hit_).strip_x; };
+  int Getstrip_y	(){ return InttNameSpace::ToOffline(hit_).strip_y; };
+
+  void Print();
+};
+
+class InttFineDelayScanTrkrHit : public SubsysReco
 {
 protected:
 
@@ -61,8 +112,8 @@ protected:
   ///////////////////////////////////////////
   // variables for the output
   ///////////////////////////////////////////
-  std::string output_dir_ = "/sphenix/tg/tg01/commissioning/INTT/QA/raw_hit/";
-  std::string output_basename_ = "InttFineDelayScan_run";
+  std::string output_dir_ = "/sphenix/tg/tg01/commissioning/INTT/QA/trkr_hit/";
+  std::string output_basename_ = "InttFineDelayScanTrkrHit_run";
   std::string output_root_ = "";
   std::string output_pdf_ = "";
   std::string output_txt_ = "";
@@ -101,6 +152,7 @@ protected:
   ///////////////////////////////////////////
   InttEventInfo*          node_intteventheader_map_;
   InttRawHitContainer*    node_inttrawhit_map_;
+  TrkrHitSetContainer*    node_trkrhitset_map_;
 
   ///////////////////////////////////////////
   // functions
@@ -135,7 +187,16 @@ protected:
   void ProcessHists(); //! Some processes for hits, like making 1D and 2D hists from 3D hists, are done
   
   int GetNodes(PHCompositeNode *topNode);
-  virtual std::vector < InttRawHit* > GetHits();
+  std::vector < InttRawHit* > GetHits();
+
+  std::vector < InttRawHit* > GetRawHits();
+  std::vector < InttRawHit* > GetRawHitsWithoutClone();
+  std::vector < std::pair < InttNameSpace::Online_s,  unsigned int > > GetTrkrHits( TrkrHitSetContainer::ConstRange hitsets );
+  std::vector < std::pair < uint16_t, int > > GetBcoEventCounter();
+
+  std::vector < TrkrHitInfo* > GetHitInfo();
+  
+  bool IsSame( InttRawHit* hit1, InttRawHit* hit2 );
   
   ///////////////////////////////////////////
   // misc
@@ -149,9 +210,9 @@ protected:
 
 public:
 
-  InttFineDelayScan(const std::string &name = "InttFineDelayScan", bool is_official=true );
+  InttFineDelayScanTrkrHit(const std::string &name = "InttFineDelayScanTrkrHit", bool is_official=true );
 
-  ~InttFineDelayScan() override;
+  ~InttFineDelayScanTrkrHit() override;
 
   /** Called during initialization.
       Typically this is where you can book histograms, and e.g.

@@ -59,11 +59,18 @@ protected:
   static const int kChan_num_ = 128; // the number of channel in a single chip
   static const int kFirst_pid_ = 3001; // the first pid (packet ID), which means intt0
 
-  int run_num_ = 0;
-  bool is_official_ = true;
-  int year_ = 2024;  
-  int pid_ref_ = 0;
-  bool intt_header_found_ = false;
+  int run_num_			= 0;
+  int year_			= 2024;  
+  int pid_ref_			= 0;
+
+  int previous_event_counter_	= -1;
+  int last_event_counter_	= 0;
+  int event_counter_by_myself_  = 0; // because the event counter is not reliable, I count it by myself for histogram normalization
+  
+  bool is_first_event_		= true;
+  bool is_official_		= true;
+  bool intt_header_found_	= false;
+
   
   ///////////////////////////////////////////
   // variables for the output
@@ -75,40 +82,31 @@ protected:
   std::string output_txt_ = "";
   TFile* tf_output_;
 
-  int colors[10] = {
-    kBlack,    kRed,       kBlue, 
-    kGreen+2,  kMagenta+1, kYellow+1, 
-    kCyan+1,   kOrange+1,  kBlue+9, 
-    kGray + 2
-  };
-
   ///////////////////////////////////////////
   // objects to be output
   ///////////////////////////////////////////
 
   // mother 3D hist
-  TH3I* hist_fee_chip_chan_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix
-  //TH3I* hist_fee_chip_chan_woclonehit_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix ; without clonehit
-  TH3I* hist_fee_bco_full_event_counter_[ kFelix_num_ ]; // event counter vs bco full vs ladder vs felix
-  TH3I* hist_fee_bco_full_event_counter_diff_[ kFelix_num_ ]; // difference of event counter vs difference of bco full vs ladder vs felix, difference means ( val - Min( val(felix=Min(felix) ) ) )
+  TH3D* hist_fee_chip_chan_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix
+  //TH3D* hist_fee_chip_chan_woclonehit_[ kFelix_num_ ]; // ch vs chip vs ladder vs felix ; without clonehit
+  TH3D* hist_fee_bco_full_event_counter_[ kFelix_num_ ]; // event counter vs bco full vs ladder vs felix
+  TH3D* hist_fee_bco_full_event_counter_diff_[ kFelix_num_ ]; // difference of event counter vs difference of bco full vs ladder vs felix, difference means ( val - Min( val(felix=Min(felix) ) ) )
 
-  TH3I* hist_fee_chip_sidelobe_ratio_[ kFelix_num_ ];
-  // sidelobe ratio
   // 2D hists
   //TH2I* hist_hitmap_[ kFelix_num_ ][ kFee_num_ ];
   TProfile2D* hist_hitmap_[ kFelix_num_ ][ kFee_num_ ];
   
   // a simple 1D hists
-  TH1I* hist_nhit_; // the number of INTTRAWHIT
-  TH1I* hist_pid_; // the number of hits for each FELIX server
-  TH1I* hist_nhit_south_; // the number of INTTRAWHIT
-  TH1I* hist_nhit_north_; // the number of INTTRAWHIT
+  TH1D* hist_nhit_; // the number of INTTRAWHIT
+  TH1D* hist_pid_; // the number of hits for each FELIX server
+  TH1D* hist_nhit_south_; // the number of INTTRAWHIT
+  TH1D* hist_nhit_north_; // the number of INTTRAWHIT
 
-  // TH1I* hist_fee_;
-  // TH1I* hist_chip_;
-  // TH1I* hist_chan_;
-  TH1I* hist_adc_;
-  TH1I* hist_bco_; // FPHX BCO
+  // TH1D* hist_fee_;
+  // TH1D* hist_chip_;
+  // TH1D* hist_chan_;
+  TH1D* hist_adc_;
+  TH1D* hist_bco_; // FPHX BCO
   TH1D* hist_bco_full_; // BCO full
 
   // felix vs event counter

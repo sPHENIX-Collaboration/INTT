@@ -15,6 +15,7 @@ pkginclude_HEADERS = \
   InttTrkrHitQA.h \
   InttCloneRawHitQA.h \
   InttFineDelayScan.h \
+  InttFineDelayScanTrkrHit.h \
   InttQaCommon.h \
   TH2INTT.h
 
@@ -26,6 +27,7 @@ libInttQA_la_SOURCES = \
   InttTrkrHitQA.cc \
   InttCloneRawHitQA.cc \
   InttFineDelayScan.cc \
+  InttFineDelayScanTrkrHit.cc \
   TH2INTT.cc
 
 libInttQA_la_LIBADD = \
@@ -33,7 +35,8 @@ libInttQA_la_LIBADD = \
   -lSubsysReco \
   -lffaobjects \
   -lffarawobjects \
-  -ltrack_io
+  -ltrack_io \
+  -lintt
 
 BUILT_SOURCES = testexternals.cc
 

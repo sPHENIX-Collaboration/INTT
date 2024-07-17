@@ -8,6 +8,9 @@ class InttCloneRawHitQA : public InttRawHitQA
 {
 private:
   std::vector < InttRawHit* > GetHits() override;
+  std::vector < InttRawHit* > GetHitsWithoutClone();
+
+  bool IsSame( InttRawHit* hit1, InttRawHit* hit2 );
   // bool to check the clone hit 
   bool clone_hit_flag_[ kFelix_num_ ][ kFee_num_ ][ kChip_num_ ][ kChan_num_ ]{};
 
