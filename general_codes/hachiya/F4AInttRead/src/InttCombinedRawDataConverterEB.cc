@@ -205,6 +205,7 @@ int InttCombinedRawDataConverterEB::process_event(PHCompositeNode* topNode)
 
   InttNameSpace::RawData_s raw;
   InttNameSpace::Online_s onl;
+  int nhits = inttcont->get_nhits();
   for (unsigned int i = 0; i < inttcont->get_nhits(); i++)
   {
     InttRawHit* intthit = inttcont->get_hit(i);
@@ -231,9 +232,11 @@ int InttCombinedRawDataConverterEB::process_event(PHCompositeNode* topNode)
     ////fem
     hit->bco      = intthit->get_FPHX_BCO();
     hit->bco_full = intthit->get_bco();
-    //cout<<"chip : "<<hit->adc<<" "<<hit->chip_id<<" "<<chip<<" "<<hit->chip_id-chip<<" "<<hit->chan_id<<std::endl;
 
-    //--hit->evt     = p->iValue(i, "EVTCTR");
+    hit->evt     = intthit->get_event_counter(); //p->iValue(i, "EVENT_COUNTER");
+    //
+    std::cout<<"hit : "<<nhits<<" "<<hit->adc<<" "<<hit->module<<" "<<hit->chip_id<<" "<<hit->chan_id
+             <<" "<<std::hex<<hit->bco_full<<std::dec<<" "<<hit->evt<<std::endl;
 
     //hit->felix = p->getPacketID() % 100
     hit->roc = 2 * (intthit->get_packetid() - 3001);

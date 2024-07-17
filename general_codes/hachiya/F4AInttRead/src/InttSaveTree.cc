@@ -81,6 +81,8 @@ int InttSaveTree::Init(PHCompositeNode * /*topNode*/)
   inttEvtCp_      = new InttEvent();
   inttOfflineEvt_ = new InttOfflineEvent();
   inttOfflineCls_ = new InttOfflineClusterList();
+  emcOfflineCls_  = new InttOfflineClusterList();
+  mvtxOfflineCls_ = new InttOfflineClusterList();
 
   anafile_ = new TFile(fname_.c_str(), "recreate");
 
@@ -89,6 +91,8 @@ int InttSaveTree::Init(PHCompositeNode * /*topNode*/)
   tree_->Branch("event",      "InttEvent",              &inttEvtCp_,      8000, 99);
   tree_->Branch("offevent",   "InttOfflineEvent",       &inttOfflineEvt_, 8000, 99);
   tree_->Branch("offcluster", "InttOfflineClusterList", &inttOfflineCls_, 8000, 99);
+  tree_->Branch("emccluster", "InttOfflineClusterList", &emcOfflineCls_, 8000, 99);
+  tree_->Branch("mvtxcluster","InttOfflineClusterList", &mvtxOfflineCls_, 8000, 99);
 
 
   return 0;

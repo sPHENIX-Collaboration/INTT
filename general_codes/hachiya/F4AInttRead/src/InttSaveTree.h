@@ -55,6 +55,8 @@ class InttSaveTree : public SubsysReco
   InttEvent*              inttEvtCp_;
   InttOfflineEvent*       inttOfflineEvt_;
   InttOfflineClusterList* inttOfflineCls_;
+  InttOfflineClusterList* emcOfflineCls_;
+  InttOfflineClusterList* mvtxOfflineCls_;
 
 };
 

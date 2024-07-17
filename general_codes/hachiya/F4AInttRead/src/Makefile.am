@@ -26,10 +26,17 @@ nobase_dist_pcm_DATA = \
 
 pkginclude_HEADERS = \
   InttRawData.h \
+  InttCompareRawHit.h \
+  InttSkipEvent.h \
+  InttStreamAna.h \
+  InttStreamReco.h \
+  InttBcoReco.h \
+  InttDisp.h \
   InttDummyData.h \
   InttOfflineDummyData.h \
   InttAna.h \
   InttSaveTree.h \
+  GetGeom.h \
   InttHotMap.h \
   InttCombinedRawDataConverterEB.h \
   InttEvent.h \
@@ -39,10 +46,17 @@ pkginclude_HEADERS = \
 libinttread_la_SOURCES = \
   $(ROOTDICTS) \
   InttRawData.cc  \
+  InttCompareRawHit.cc  \
+  InttSkipEvent.cc  \
+  InttStreamAna.cc  \
+  InttStreamReco.cc \
+  InttBcoReco.cc \
+  InttDisp.cc \
   InttDummyData.cc  \
   InttOfflineDummyData.cc  \
   InttAna.cc \
   InttSaveTree.cc \
+  GetGeom.cc \
   InttHotMap.cc \
   InttCombinedRawDataConverterEB.cc \
   InttEvent.cc \
@@ -58,7 +72,8 @@ libinttread_la_LDFLAGS = \
   -lphg4hit \
   -lg4dst \
   -lg4eval \
-  -lintt
+  -lintt \
+  -lInttXYVertexFinder
 
 
 ################################################

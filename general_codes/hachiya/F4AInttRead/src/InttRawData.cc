@@ -288,13 +288,24 @@ int InttRawData::process_event(PHCompositeNode *topNode)
 		rawdata.chip          = chip; //rawhit->chip_id;
 		rawdata.channel       = rawhit->chan_id;
 
-                //--cout<<"rawh : "<<rawhit->pid<<" "<<rawhit->module<<" "<<chip<<" "<<rawhit->chan_id<<endl;
 
 		adc = rawhit->adc;
 		//amp = p->iValue(n, "AMPLITUE");
 		bco = 0; // always 0 until time-in issue fixed; //-- rawhit->bco;
 
 		struct InttNameSpace::Offline_s offline = InttNameSpace::ToOffline(rawdata);
+
+                //cout<<"rawh : "<<rawhit->pid<<" "<<rawhit->module<<" "<<chip<<" "<<rawhit->chan_id<<endl;
+		//--cout<<rawdata.felix_server <<" ";
+		//--cout<<rawdata.felix_channel<<" ";
+		//--cout<<rawdata.chip         <<" ";
+		//--cout<<rawdata.channel      <<" : ";
+
+		//--cout<<offline.layer<<" ";
+                //--cout<<offline.ladder_z<<" ";
+                //--cout<<offline.ladder_phi<<" ";
+		//--cout<<offline.strip_y<<" ";
+                //--cout<<offline.strip_x<<endl;
                 
                 // this modification no longer valid since the repo-code was updated
                 //--//------------------
@@ -339,10 +350,10 @@ int InttRawData::process_event(PHCompositeNode *topNode)
                 
                 //------------------
                 // bco background 
-                if(checkBCOBg(rawdata.felix_server, 
-                              rawdata.felix_channel,
-                              rawhit->bco, 
-                              rawhit->bco_full))
+                if(!checkBCOBg(rawdata.felix_server, 
+                               rawdata.felix_channel,
+                               rawhit->bco, 
+                               rawhit->bco_full))
                 {
                    nbco++;
                    continue;
@@ -394,7 +405,7 @@ bool InttRawData::checkBCOBg(int felix, int /*ladder*/, int bco, Long64_t bcoful
   bool debug=false;
 
   bool ret = (  bcopar_[felix].size()>0
-              &&bcopar_[felix].find(bcodiff)!=bcopar_[felix].end()); // not found=true;
+              &&bcopar_[felix].find(bcodiff)!=bcopar_[felix].end()); // not found=false;
   if(debug) {
     if(ret) {
       cout<<" bco : "<<felix<<" "/*<<ladder<<" "*/<<bcodiff<<" : "<<hex<<bco<<" "<<bcofull<<dec<<endl;
