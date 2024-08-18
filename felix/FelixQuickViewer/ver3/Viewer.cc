@@ -552,13 +552,14 @@ int Viewer::Draw()
     }
   else // for junk data
     {
-      this->Draw_Channel();
+      //this->Draw_Channel();
       this->Draw_AdcChannel();
       this->Draw_BcoDiff();
+      this->Draw_Bco();
 
-      //this->Draw_HitDist();
-      this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
-      this->Draw_HitDist( kLadder_num_/2, kLadder_num_); //
+      this->Draw_HitDist();
+      //this->Draw_HitDist( 0, kLadder_num_/2); // 0 - 14/2  --> 0 - 7
+      //this->Draw_HitDist( kLadder_num_/2, kLadder_num_); //
       
     }
   
@@ -904,8 +905,12 @@ int Viewer::Draw_Bco( int ladder_min, int ladder_max, int chip_min, int chip_max
 	option = "HIST";
       
       hist_bco_ladder[i]->Draw( option.c_str() );
+      hist_bco_ladder[i]->GetXaxis()->SetNdivisions( 21010 );
+      hist_bco_ladder[i]->GetYaxis()->SetNdivisions( 21010 );
+
       this->SetStyle();
       gPad->SetLogy( true );
+      //gPad->SetLogy( false );
 
       leg->AddEntry( hist_bco_ladder[i], ( "FELIX CH" + to_string(i) ).c_str() );
       if( i == 6 || i == ladder_max-1 )
