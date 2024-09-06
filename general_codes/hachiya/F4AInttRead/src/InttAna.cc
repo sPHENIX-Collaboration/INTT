@@ -33,8 +33,10 @@
 #include <ffarawobjects/InttRawHitContainer.h>
 
 
-#include "inttxyvertexfinder/InttVertex3D.h"
-#include "inttxyvertexfinder/InttVertex3DMap.h"
+//#include "inttxyvertexfinder/InttVertex3D.h"
+//#include "inttxyvertexfinder/InttVertex3DMap.h"
+#include <intt/InttVertex.h>
+#include <intt/InttVertexMap.h>
 
 
 #include <globalvertex/SvtxVertex.h>
@@ -185,7 +187,7 @@ int InttAna::process_event(PHCompositeNode *topNode)
 
   InttEventInfo* inttevthead = findNode::getClass<InttEventInfo>(topNode, "INTTEVENTHEADER");
 
-  InttVertex3DMap* inttvertexmap = findNode::getClass<InttVertex3DMap>(topNode, "InttVertexMap");
+  InttVertexMap* inttvertexmap = findNode::getClass<InttVertexMap>(topNode, "InttVertexMap");
 
   double vtx_sim[3]{-9999,-9999,-9999};
 
@@ -319,17 +321,17 @@ int InttAna::process_event(PHCompositeNode *topNode)
 
   double vertex[10][3]{};
 
-  InttVertex3D* zvtxobj=NULL;
+  InttVertex* zvtxobj=NULL;
   if(inttvertexmap){
     int ivtx=0;
     cout<<"vertex map size : "<<inttvertexmap->size()<<endl;
-    InttVertex3DMap::ConstIter biter_beg = inttvertexmap->begin();
-    InttVertex3DMap::ConstIter biter_end = inttvertexmap->end();
+    InttVertexMap::ConstIter biter_beg = inttvertexmap->begin();
+    InttVertexMap::ConstIter biter_end = inttvertexmap->end();
     //cout<<"vertex map size : after size "<<endl;
     //inttvertexmap->identify();
 
-    for(InttVertex3DMap::ConstIter biter = biter_beg; biter != biter_end; ++biter) {
-      InttVertex3D* vtxobj = biter->second;
+    for(InttVertexMap::ConstIter biter = biter_beg; biter != biter_end; ++biter) {
+      InttVertex* vtxobj = biter->second;
       if(vtxobj){
         cout<<"vtxobj"<<ivtx<<endl;
         vtxobj->identify();

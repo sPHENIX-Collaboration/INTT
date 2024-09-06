@@ -74,8 +74,7 @@ libinttread_la_LDFLAGS = \
   -lphg4hit \
   -lg4dst \
   -lg4eval \
-  -lintt \
-  -lInttXYVertexFinder
+  -lintt
 
 
 ################################################
