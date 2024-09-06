@@ -43,8 +43,9 @@ using namespace std;
 /**
  * Constructor of module
  */
-InttBcoReco::InttBcoReco(const std::string &name)
+InttBcoReco::InttBcoReco(const std::string &name, const std::string& outfile)
   : SubsysReco(name)
+  , m_outfile(outfile)
 {
 //  m_badmap = new InttBadChannelMapv1();
   m_bcomap = new InttBCOMap();
@@ -96,7 +97,8 @@ int InttBcoReco::InitRun(PHCompositeNode * topNode)
   TrkrHitSetContainer* trkr_hit_set_container = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
 */
 
-  m_froot = TFile::Open("hdiffout.root","recreate");
+  //m_froot = TFile::Open("hdiffout.root","recreate");
+  m_froot = TFile::Open(m_outfile.c_str(), "recreate");
 
   m_t_evtgl1 = new TTree("t_evtgl1", "event BCO tree");
   m_t_evtgl1->Branch("evt_gl1",   &(m_evt_gl1),   "evt_gl1/I");
@@ -110,6 +112,8 @@ int InttBcoReco::InitRun(PHCompositeNode * topNode)
     h_hit[i]     = new TH2F(Form("h_hit_%d", i),     Form("hit_%d", i),     26*14, 0, 26*14, 128,  0, 128);
 
     h_bco_felix[i]= new TH1F(Form("h_bco_felix_%d", i), Form("bcofelix_%d", i), 128,  0, 128);
+
+//    h_bcodiff_gl1strb[i]= new TH1F(Form("h_bcodiff_gl1strb_%d", i), Form("bcodiff strb-gl1 felix_%d", i), 10000,  -5000, 5000);
   }
   h_bco_all= new TH1F("h_bco_all", "bcoall", 128,  0, 128);
 
@@ -296,6 +300,9 @@ int InttBcoReco::process_event(PHCompositeNode* topNode)
       h_bcodiff[ifelix]->Fill(ladder*26 + chip+0.5, bco7diffc+0.5);
       h_bco[ifelix]->Fill(ladder*26 + chip+0.5, bco+0.5);
       h_hit[ifelix]->Fill(ladder*26 + chip+0.5, chan+0.5);
+
+      //int64_t bcodiff_gl1strb = 
+      //h_bcodiff_gl1strb[ifelix]->Fill();
     }
 
     //cout<<"    hit : "<<ihit<<" "<<ifelix<<" 0x"<<hex<<bco<<dec<<endl;

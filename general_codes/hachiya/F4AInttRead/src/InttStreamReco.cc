@@ -197,11 +197,11 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
 
   uint64_t bcofull_corr=bcointt - bcofull_evt0;
 
-  uint64_t diff_inttgl1 = bcointt - bco_gl1;
+  int64_t diff_inttgl1 = bcointt - bco_gl1;
   h_bcointtgl1_diff->Fill(bcointt - bco_gl1);
 
   //if(bcogl1 < (bcointt-1)){ // inttbco is always 1 higher than gl1bco
-    cout<<event<<"   bco : intt:0x"<<hex<<bcointt<<", intt1:0x"<<bcointt1<<" diff 0x"<<bcodiff<<" : "<<bcofull_corr<<dec<<" "<<evtcnt<<" "<<diff_inttgl1<<endl;
+    cout<<event<<"   bco : intt:0x"<<hex<<bcointt<<", intt1:0x"<<bcointt1<<" diff 0x"<<bcodiff<<" : "<<bcofull_corr<<dec<<" "<<evtcnt<<" "<<diff_inttgl1<<" gl1:0x"<<hex<<bco_gl1<<dec<<endl;
     nskip++;
   //  return Fun4AllReturnCodes::ABORTEVENT;
   //}
@@ -280,8 +280,8 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
     // lad[25-22]+chip[21-17]+chan[16-10]+adc[9-7]+bco[6-0]
     uint key = ((ladder&0xF)<<22)|((chip&0x1F)<<17)|((chan&0x7F)<<10)|((adc&0x7)<<7)|(bco&0x7F) ;
 
-    uint64_t bcogl1diff = bcofull - bco_gl1;
-    cout<<"bco-gl1diff " <<bcogl1diff<<endl;
+    int64_t bcogl1diff = bcofull - bco_gl1;
+    //cout<<"bco-gl1diff " <<bcogl1diff<<endl;
     h_bcogl1diff_felix[ifelix]->Fill(bcogl1diff);
 
     if(vUnique[ifelix].find(key)==vUnique[ifelix].end()) {
@@ -319,14 +319,19 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
       int bco = (val)&0x7F;
       h_bco_felix[ifelix]->Fill(bco);
 
-      uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
+      // trigger mode
+      //uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
+
+      // stream mode
+      uint64_t bcofull_reco = bco + bcointt;
+
       int64_t  bcointtgl1_diff = bcofull_reco - bco_gl1;
       int64_t  bcointthit_diff = bcofull_reco - bcointt;
-      bcointtgl1_diff += 128;
-      bcointtgl1_diff %= 128;
+      //bcointtgl1_diff += 128;
+      //bcointtgl1_diff %= 128;
 
-      bcointthit_diff += 128;
-      bcointthit_diff %= 128;
+      //--bcointthit_diff += 128;
+      //--bcointthit_diff %= 128;
 
       auto bco_itr = vbco_all.find(bco);
       if(bco_itr==vbco_all.end()) {
@@ -343,12 +348,17 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   for(auto& val : vbco_all){
     int bco = val.first;
     int count = val.second;
-    //uint64_t bcofull_reco = bco + bcointt;
-    uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
+
+    // streaming
+    uint64_t bcofull_reco = bco + bcointt;
+
+    // trigger
+    //uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
 
     int64_t bcointtgl1_diff = bcofull_reco - bco_gl1;
-    bcointtgl1_diff += 128;
-    bcointtgl1_diff %= 128;
+    // for triggermode
+    //-bcointtgl1_diff += 128;
+    //-bcointtgl1_diff %= 128;
 
     cout<<"             recobco 0x"<<hex<<bcofull_reco<<dec<<" "<<bco<<" "<<count<<" "<<bcointtgl1_diff<<endl;
 
@@ -377,6 +387,7 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   if(mode==2&&maxhit<=1) return Fun4AllReturnCodes::EVENT_OK;
 
 
+/*
   //////////////////////////
   //  drawing
   //
@@ -439,16 +450,17 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   //linec7->DrawLine(bcofull_corr7, 0, bcofull_corr7,  h_bco_all->GetMaximum()*1.05);
   c2->Modified();
   c2->Update();
+*/
 
   /////////////////
-  char a;
-  cin>>a;
+  //char a;
+  //cin>>a;
 
-  if(a=='q')  return Fun4AllReturnCodes::ABORTRUN;
-  else if(a=='a')  mode=0;
-  else if(a=='b')  mode=1;
-  else if(a=='e')  mode=2;
-  else             mode=0;
+  //if(a=='q')  return Fun4AllReturnCodes::ABORTRUN;
+  //else if(a=='a')  mode=0;
+  //else if(a=='b')  mode=1;
+  //else if(a=='e')  mode=2;
+  //else             mode=0;
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

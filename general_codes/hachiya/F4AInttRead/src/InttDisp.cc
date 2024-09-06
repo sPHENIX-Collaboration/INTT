@@ -420,6 +420,19 @@ int InttDisp::process_event(PHCompositeNode* topNode)
   //for(uint i=0; i<m_vtrk_xy.size(); i++){
   //  m_vtrk_xy[i]->Draw("only");
   //}
+  //
+  c1->Modified();
+  c1->Update();
+  c2->Modified();
+  c2->Update();
+  c3->Modified();
+  c3->Update();
+
+  char a[5];
+  cin>>a;
+  if(a[0]=='q'){
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

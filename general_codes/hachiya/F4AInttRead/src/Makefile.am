@@ -30,6 +30,7 @@ pkginclude_HEADERS = \
   InttSkipEvent.h \
   InttStreamAna.h \
   InttStreamReco.h \
+  InttStreamRecoF4A.h \
   InttBcoReco.h \
   InttDisp.h \
   InttDummyData.h \
@@ -50,6 +51,7 @@ libinttread_la_SOURCES = \
   InttSkipEvent.cc  \
   InttStreamAna.cc  \
   InttStreamReco.cc \
+  InttStreamRecoF4A.cc \
   InttBcoReco.cc \
   InttDisp.cc \
   InttDummyData.cc  \

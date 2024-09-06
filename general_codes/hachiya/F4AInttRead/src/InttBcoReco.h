@@ -34,7 +34,7 @@ class InttBcoReco : public SubsysReco
   @param name Used to initialize Subsysreco
   @param fname It's assigned to fname_
   */
-  InttBcoReco(const std::string &name = "InttStreamReco");
+  InttBcoReco(const std::string &name = "InttStreamReco", const std::string &outfile="hdiffout.root");
 
   // Destructor
   virtual ~InttBcoReco();
@@ -69,6 +69,7 @@ class InttBcoReco : public SubsysReco
    std::vector<InttRawHit*> m_event_bco[128]{};
 
  protected:
+   std::string m_outfile;
    TFile* m_froot;
    TTree* m_t_evtgl1;
   
@@ -82,6 +83,8 @@ class InttBcoReco : public SubsysReco
 
    TH1* h_bco_felix[8]{nullptr};
    TH1* h_bco_all{nullptr};
+
+   //TH1* h_bcodiff_gl1strb[8]{nullptr};
 
 };
 
