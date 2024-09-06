@@ -80,7 +80,7 @@ void HistMaker::Init()
 	  hist_adc_[i][j]->SetFillColorAlpha( kAzure + 1, 0.3 );
 	  
 	  hist_bco_[i][j] = new TH1D( Form("hist_bco_module%d_chip%d", i, j ),
-				      Form("hist_bco_module%d_chip%d;BCO full&0x7f - FPHX BCO;Entries", i, j ),
+				      Form("hist_bco_module%d_chip%d;FPHX BCO;Entries", i, j ),
 					   128, 0, 128 );
 	  
 	  hist_bco_[i][j]->SetLineColor( kLadder_colors[i] );

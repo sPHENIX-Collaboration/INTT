@@ -107,9 +107,21 @@ class Homepage() :
         # Make directory for the run if it's not found
         if self.RUN_DIR.exists() is False : 
             self.RUN_DIR.mkdir()
-
+            
+        elif os.access( self.RUN_DIR, os.W_OK ) is False :
+            print( self.RUN_DIR, "is not writable for you. Ask the owner")
+            print( "\t", self.RUN_DIR.owner())
+            print( "to change the access mode. Maybe" )
+            print( "\t chmod g+w", self.RUN_DIR)
+            print( "is OK to try." )
+            return None
+            
         elif self.info.homepage_run_clean is True :
-            shutil.rmtree( self.RUN_DIR )
+            try :
+                shutil.rmtree( self.RUN_DIR )
+            except PermissionError:
+                print( self.RUN_DIR, "cannot be deleted. The directory is not cleaned, and go on!" )
+            
             os.mkdir( self.RUN_DIR )
         
         # Copy the template of index.html
@@ -203,10 +215,14 @@ class Homepage() :
             contents = "<h3>INTTRAWHIT </h3>\n"
             html_detail = "<details>\n" \
                 "    <summary>Hide/Show</summary>\n"
-
             
             for plot in self.info.raw_hit_plots :
-                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                try :
+                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                except PermissionError:
+                    print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                    continue
+                
                 print( self.RUN_DIR/ plot.name )
                 contents += "<h4>" + plot.name + "</h4>\n"
                 contents += html_detail + \
@@ -232,7 +248,12 @@ class Homepage() :
 
             
             for plot in self.info.trkr_hit_plots :
-                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                try :
+                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                except PermissionError:
+                    print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                    continue
+                
                 print( self.RUN_DIR/ plot.name )
                 contents += "<h4>" + plot.name + "</h4>\n"
                 contents += html_detail + \
@@ -255,9 +276,14 @@ class Homepage() :
             html_detail = "<details>\n" \
                 "    <summary>Hide/Show</summary>\n"
             
+            contents_parts = ""
             for txt in self.info.hot_channel_txt :                
                 print( txt )
-                shutil.copy( str( txt ), self.RUN_DIR/ txt.name )
+                try :
+                    shutil.copy( str( txt ), self.RUN_DIR/ txt.name )
+                except PermissionError :
+                    print( txt, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                    continue
 
                 hot_num = 0;
                 
@@ -271,21 +297,46 @@ class Homepage() :
                     "#hot channels: " + str( hot_num ) + "\n"
                 
                 for plot in self.info.hot_channel_plots :
+                    print( "- ", plot )
                     if plot.name.split( '.' )[0] != txt.name.split( '.' )[0] :
                         continue
 
-                    contents_parts = ""
-                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                    try :
+                        shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                    except PermissionError:
+                        print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                        continue
+                    
+                    print( self.RUN_DIR/ plot.name )
+                    if ".pdf" in plot.name : 
+                        contents_parts += \
+                            "<div class=\"center\">\n" \
+                            "    <object data=\"" + plot.name + "\"" \
+                            "type=\"application/pdf\">\n" \
+                            "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                            "    </object>\n" \
+                            "</div>\n"
+
+            for plot in self.info.hot_channel_plots :
+                if ".png" in plot.name :
+                    try :
+                        shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                    except PermissionError:
+                        print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                        continue
+                    
                     print( self.RUN_DIR/ plot.name )
                     contents_parts += \
-                        "<div class=\"center\">\n" \
-                        "    <object data=\"" + plot.name + "\"" \
-                        "type=\"application/pdf\">\n" \
-                        "    Your browser cannot show PDF. Why don't you use new one?\n"\
-                        "    </object>\n" \
-                        "</div>\n"
-
-                contents += "<details>\n" \
+                            "    <figure>\n" \
+                            "      <a href=\"" + plot.name + "\" data-lightbox=\"images\" data-title=\"" + plot.name + "\">\n" \
+                            "        <img " + "src=\"" + plot.name + "\" " + "alt=\"" + plot.name + "\"\>\n" \
+                            "      </a>\n" \
+                            "      <a href=\"" + plot.name + "\" download=\"" + plot.name + "\">\n" \
+                            "        <figcaption>" + plot.name + "</figcaption>\n" \
+                            "      </a>\n" \
+                            "    </figure>\n"
+                        
+            contents += "<details>\n" \
                 "    <summary>Hide/Show</summary>\n" \
                 + contents_parts \
                 + "</details>\n\n"
@@ -304,15 +355,31 @@ class Homepage() :
                 "    <summary>Hide/Show</summary>\n"
 
             for plot in self.info.bco_diff_plots :
-                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                try :
+                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                except PermissionError:
+                    print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                    continue
+                
                 print( self.RUN_DIR/ plot.name )
-                contents += \
-                    "<div class=\"center\">\n" \
-                    "    <object data=\"" + plot.name + "\"" \
-                    "type=\"application/pdf\">\n" \
-                    "    Your browser cannot show PDF. Why don't you use new one?\n"\
-                    "    </object>\n" \
-                    "</div>\n" \
+                if ".pdf" in plot.name : 
+                    contents += \
+                        "<div class=\"center\">\n" \
+                        "    <object data=\"" + plot.name + "\"" \
+                        "type=\"application/pdf\">\n" \
+                        "    Your browser cannot show PDF. Why don't you use new one?\n"\
+                        "    </object>\n" \
+                        "</div>\n"
+                elif ".png" in plot.name :
+                    contents += \
+                        "    <figure>\n" \
+                        "      <a href=\"" + plot.name + "\" data-lightbox=\"images\" data-title=\"" + plot.name + "\">\n" \
+                        "        <img " + "src=\"" + plot.name + "\" " + "alt=\"" + plot.name + "\"\>\n" \
+                        "      </a>\n" \
+                        "      <a href=\"" + plot.name + "\" download=\"" + plot.name + "\">\n" \
+                        "        <figcaption>" + plot.name + "</figcaption>\n" \
+                        "      </a>\n" \
+                        "    </figure>\n"
 
             contents += "</details>\n"
             file.write( contents )
@@ -329,7 +396,12 @@ class Homepage() :
                 "    <summary>Hide/Show</summary>\n"
 
             for plot in self.info.cosmic_plots :
-                shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                try :
+                    shutil.copy( str(plot), self.RUN_DIR/ plot.name )
+                except PermissionError:
+                    print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                    continue
+                
                 suffix = str(plot).split( "." )[1]
 
                 if suffix == "pdf" :
@@ -380,7 +452,14 @@ class Homepage() :
 
                     caption = run_type + "<br> " + plot_title + "<br> chunk " + chunk
 
-                    shutil.copy( plot, self.RUN_DIR / image )
+                    print( "in:", plot )
+                    print( "out:", self.RUN_DIR / image )
+                    try :
+                        shutil.copy( plot, self.RUN_DIR / image )
+                    except PermissionError:
+                        print( plot, "cannot be copied due to permission. Check the owner of the file and ask the person to add write permission to the file" )
+                        continue
+                    
                     contents += \
                         "    <figure>\n" \
                         "      <a href=\"" + image + "\" data-lightbox=\"images\" data-title=\"" + image + "\">\n" \

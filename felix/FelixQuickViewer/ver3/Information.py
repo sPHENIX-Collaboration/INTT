@@ -50,7 +50,7 @@ class Information() :
         self.HITMAP_DIR = self.QA_DIR / "hitmap"
         self.HOTMAP_DIR = self.QA_DIR / "hotdeadmap"
         self.BCODIFF_DIR = self.QA_DIR / "bco_bcofull_difference" 
-        self.BCODIFF_DIR = self.QA_DIR / "bco_bcofull_difference"
+        self.BCODIFF_NEW_DIR = self.QA_DIR / "bco_bcofull_difference"
         self.RAWHIT_DIR = self.QA_DIR / "raw_hit" / str( self.year )
         self.TRKRHIT_DIR = self.QA_DIR / "trkr_hit" / str( self.year )
         self.TRKRCLUSTER_DIR = self.QA_DIR / "cluster_hit" / str( self.year )
@@ -206,6 +206,9 @@ class Information() :
         path = self.HOTMAP_DIR / "plots" / str( self.year )
         self.hot_channel_plots = sorted( list( path.glob( "*" + str(self.run) + "*.pdf" ) ) )
         
+        for plot in list( path.glob( "*" + str(self.run) + "*.png" ) ) :
+            self.hot_channel_plots.append( plot )
+
         path = self.HOTMAP_DIR / "txt" / str( self.year )
         self.hot_channel_txt = sorted( list( path.glob( "*" + str(self.run) + "*.txt" ) ) )        
 
@@ -216,7 +219,10 @@ class Information() :
 
     def GetBcoDiffPlots( self ) :
         self.bco_diff_plots = self.GetPlots( self.BCODIFF_DIR / "plots" / str(self.year) )
-        
+        #self.bco_diff_plots.append( self.GetPlots( self.BCODIFF_DIR / "plots" / str(self.year), suffix=".png" ) )
+        for plot in self.GetPlots( self.BCODIFF_DIR / "plots" / str(self.year), suffix=".png" ) : 
+            self.bco_diff_plots.append( plot )
+
     def GetRawHitPlots( self ) :
         print( "Raw hit plot" )
         self.raw_hit_plots = self.GetPlots( self.RAWHIT_DIR / "plots" )
