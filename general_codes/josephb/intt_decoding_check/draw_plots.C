@@ -9,6 +9,9 @@ draw_plots (
 	char buff[256];
 
 	for(int i = 0; i < 8; ++i) {
+
+		if(i != 4)continue;
+
 		snprintf(buff, sizeof(buff), format.c_str(), run_num, i);
 		std::cout << buff << std::endl;
 
@@ -20,6 +23,9 @@ draw_plots (
 
 		char buff[256];
 		for(int fee = 0; fee < 14; ++fee) {
+
+			if(fee != 8 && fee != 11)continue;
+
 			snprintf(buff, sizeof(buff), "hitmap_felix_channel_%02d", fee);
 			TH1* hist = (TH1*)file->Get(buff);
 			if(!hist) {
@@ -28,10 +34,12 @@ draw_plots (
 			}
 
 			gStyle->SetOptStat(0);
+			gStyle->SetOptStat(0);
 			snprintf(buff, sizeof(buff), "Run %08d intt%01d felix%02d hitmap", run_num, i, fee);
 			TCanvas* cnvs = new TCanvas(buff, buff, -1, 0, 1920, 1080);
 
 			cnvs->cd();
+			cnvs->SetGrid(1);
 			hist->Draw("COLZ");
 
 			cnvs->Update();
