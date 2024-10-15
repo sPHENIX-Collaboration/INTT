@@ -3,12 +3,14 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
-  -isystem$(ROOTSYS)/include
+  $(shell root-config --cflags)
 
 AM_LDFLAGS = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib \
-  -L$(OFFLINE_MAIN)/lib64
+  -L$(OFFLINE_MAIN)/lib64 \
+  $(shell root-config --evelibs) \
+  -lTMVA -lRooFitMore
 
 pkginclude_HEADERS = \
   TMVAHelper.h
