@@ -24,8 +24,10 @@ public:
 	// For initializing members
 	void read_branches (std::vector<std::string> const&);
 	void read_training (std::vector<std::string> const&);
+	void read_cuts     (std::vector<std::string> const&);
 	int  read_branches (std::string const&);
 	int  read_training (std::string const&);
+	int  read_cuts     (std::string const&);
 
 	// For modifying other objects with class members
 	int  branch (TTree*);
@@ -39,15 +41,19 @@ public:
 private:
 	void init_branches();
 	void init_training();
+	void init_cuts();
 
 	std::vector<std::string> m_branches_names;
 	std::vector<std::string> m_training_names;
+	std::vector<std::string> m_cuts_names;
 
 	std::map<std::string, Float_t> m_branches_map;
 	std::map<std::string, Float_t> m_training_map;
+	std::map<std::string, Float_t> m_cuts_map;
 
 	RooArgSet m_branches_args;
 	RooArgSet m_training_args;
+	RooArgSet m_cuts_args;
 };
 
 #endif// TMVA_HELPER_H

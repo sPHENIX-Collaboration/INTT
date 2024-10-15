@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <boost/format.hpp>
+
 TTree*
 TMVAHelper::get_tree (
 	std::string const& file_name,
@@ -50,7 +52,6 @@ TMVAHelper::read_file (
 		return EXIT_FAILURE;
 	}
 
-	names.clear();
 	for (std::string line; std::getline(file, line);) {
 		for (std::size_t pos; (pos = line.find("#")) != std::string::npos;) {
 			line = line.substr(0, pos);
@@ -68,7 +69,6 @@ void
 TMVAHelper::read_branches (
 	std::vector<std::string> const& branches_names
 ) {
-	m_branches_names.clear();
 	for (auto const& name : branches_names) {
 		m_branches_names.push_back(name);
 	}
@@ -80,12 +80,22 @@ void
 TMVAHelper::read_training (
 	std::vector<std::string> const& training_names
 ) {
-	m_training_names.clear();
 	for (auto const& name : training_names) {
 		m_training_names.push_back(name);
 	}
 
 	init_training();
+}
+
+void
+TMVAHelper::read_cuts (
+	std::vector<std::string> const& cut_names
+) {
+	for (auto const& name : cut_names) {
+		m_cuts_names.push_back(name);
+	}
+
+	init_cuts();
 }
 
 int
@@ -105,6 +115,16 @@ TMVAHelper::read_training (
 	if (read_file(training_file_name, m_training_names)) return EXIT_FAILURE;
 
 	init_training();
+	return EXIT_SUCCESS;
+}
+
+int
+TMVAHelper::read_cuts (
+	std::string const& cuts_file_name
+) {
+	if (read_file(cuts_file_name, m_cuts_names)) return EXIT_FAILURE;
+
+	init_cuts();
 	return EXIT_SUCCESS;
 }
 
@@ -139,6 +159,20 @@ TMVAHelper::init_training (
 	}
 }
 
+void
+TMVAHelper::init_cuts (
+) {
+	m_cuts_map.clear();
+	m_cuts_args.Clear();
+	for (auto const& name : m_cuts_names) {
+		m_cuts_map[name] = 0.0;
+		m_training_args.addOwned ( *new RooFormulaVar (
+			name.c_str(), name.c_str(),
+			m_branches_args, kFALSE
+		) );
+	}
+}
+
 int
 TMVAHelper::branch (
 	TTree* tree
@@ -158,8 +192,21 @@ void
 TMVAHelper::branch (
 	TMVA::DataLoader* dataloader
 ) const {
-	for (auto const& name : m_training_names) {
+	boost::format no_nan("%s == %s");
+	for (auto name : m_training_names) {
 		dataloader->AddVariable(name.c_str());
+
+		if (name.find(":=") != std::string::npos) continue;;
+
+		TCut cut = (no_nan % name % name).str().c_str();
+		dataloader->AddCut(cut, "Signal");
+		dataloader->AddCut(cut, "Background");
+	}
+
+	for (auto const& name : m_cuts_names) {
+		TCut cut = name.c_str();
+		dataloader->AddCut(cut, "Signal");
+		dataloader->AddCut(cut, "Background");
 	}
 }
 
@@ -185,6 +232,11 @@ TMVAHelper::eval (
 		val = dynamic_cast<RooFormulaVar&>(m_training_args[name]).getValV();
 	}
 
+	for (auto& [name, val] : m_cuts_map) {
+		if (!(val == val)) return EXIT_FAILURE; // IEEE NaN filtering
+		val = dynamic_cast<RooFormulaVar&>(m_cuts_args[name]).getValV();
+	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -197,6 +249,11 @@ TMVAHelper::show (
 	std::cout << std::endl;
 
 	for (auto const& [name, val] : m_training_map) {
+		std::cout << "\t" << name << ": " << val << "\t";
+	}
+	std::cout << std::endl;
+
+	for (auto const& [name, val] : m_cuts_map) {
 		std::cout << "\t" << name << ": " << val << "\t";
 	}
 	std::cout << std::endl;
