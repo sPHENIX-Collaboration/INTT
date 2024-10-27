@@ -166,7 +166,7 @@ TMVAHelper::init_cuts (
 	m_cuts_args.Clear();
 	for (auto const& name : m_cuts_names) {
 		m_cuts_map[name] = 0.0;
-		m_training_args.addOwned ( *new RooFormulaVar (
+		m_cuts_args.addOwned ( *new RooFormulaVar (
 			name.c_str(), name.c_str(),
 			m_branches_args, kFALSE
 		) );
@@ -196,7 +196,7 @@ TMVAHelper::branch (
 	for (auto name : m_training_names) {
 		dataloader->AddVariable(name.c_str());
 
-		if (name.find(":=") != std::string::npos) continue;;
+		if (name.find(":=") != std::string::npos) continue;
 
 		TCut cut = (no_nan % name % name).str().c_str();
 		dataloader->AddCut(cut, "Signal");
@@ -214,8 +214,9 @@ void
 TMVAHelper::branch (
 	TMVA::Reader* reader
 ) {
-	for (auto& [name, val] : m_training_map) {
-		reader->AddVariable(name.c_str(), &val);
+	for (auto& name : m_training_names) {
+		if (m_training_map.find(name) == m_training_map.end()) continue;
+		reader->AddVariable(name.c_str(), &(m_training_map[name]));
 	}
 }
 
@@ -228,13 +229,13 @@ TMVAHelper::eval (
 	}
 
 	for (auto& [name, val] : m_training_map) {
-		if (!(val == val)) return EXIT_FAILURE; // IEEE NaN filtering
 		val = dynamic_cast<RooFormulaVar&>(m_training_args[name]).getValV();
+		if (!(val == val)) return EXIT_FAILURE; // IEEE NaN filtering
 	}
 
 	for (auto& [name, val] : m_cuts_map) {
-		if (!(val == val)) return EXIT_FAILURE; // IEEE NaN filtering
 		val = dynamic_cast<RooFormulaVar&>(m_cuts_args[name]).getValV();
+		if (!(val == val)) return EXIT_FAILURE; // IEEE NaN filtering
 	}
 
 	return EXIT_SUCCESS;
