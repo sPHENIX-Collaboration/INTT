@@ -15,9 +15,9 @@
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
-std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
-std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
-std::string cdbttree_path_format = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_survey_cdbttree%s.root";
+std::string sensor_path = "../dat/sensor_survey_data/";
+std::string ladder_path = "../dat/";
+std::string cdbttree_path_format = "../dat/intt_survey_cdbttree%s.root";
 
 struct write_entry_s {
 	CDBTTree* cdbttree = nullptr;
@@ -33,6 +33,7 @@ int main (
 	char* argv[]
 ) {
 	// float GEANT_SHIFT = 0.2282; // mm
+	float GEANT_SHIFT = 0.0; // mm
 	float TOTAL_SHIFT = 0.0; // mm
 	float ENDCAP_SHIFT = 2.395; // mm
 
@@ -136,7 +137,7 @@ int main (
 			for(int i = 0; i < 3; ++i) {
 				// y-axis points radially inward
 				// so += is a radially inward shift
-				// ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
+				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
 				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
 			}
 		}
