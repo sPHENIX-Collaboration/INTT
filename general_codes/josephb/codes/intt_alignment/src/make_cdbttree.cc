@@ -32,9 +32,8 @@ int main (
 	int argc,
 	char* argv[]
 ) {
-	// float GEANT_SHIFT = 0.2282; // mm
-	float GEANT_SHIFT = 0.0; // mm
 	float TOTAL_SHIFT = 0.0; // mm
+	float GEANT_SHIFT = 0.2282; // mm
 	float ENDCAP_SHIFT = 2.395; // mm
 
 	char buff[256];
@@ -113,6 +112,7 @@ int main (
 				// y-axis points radially inward
 				// so += is a radially inward shift
 				ladder_to_global.matrix()(i, 3) += y_axis(i) * TOTAL_SHIFT;
+				ladder_to_global.matrix()(i, 3) += y_axis(i) * GEANT_SHIFT;
 			}
 		}
 		ofl.ladder_z = InttMap::Wildcard;
@@ -127,7 +127,7 @@ int main (
 		// Furthermore, there is an additional shift due to endcap hole thickness
 		//     (Opposite sides were surveyed, for sensor and post-installation)
 		// Undo previous shift and also shift by endcap thickness
-		if(false) {
+		if(true) {
 			Eigen::Vector3d y_axis (
 				ladder_to_global.matrix()(0, 1),
 				ladder_to_global.matrix()(1, 1),
@@ -140,7 +140,7 @@ int main (
 				ladder_to_global.matrix()(i, 3) -= y_axis(i) * GEANT_SHIFT;
 				ladder_to_global.matrix()(i, 3) += y_axis(i) * ENDCAP_SHIFT;
 			}
-		}
+		 }
 
 		snprintf(buff, sizeof(buff), "B%01dL%03d.txt", onl.lyr / 2, (onl.lyr % 2) * 100 + onl.ldr);
 		isr.ReadFile(sensor_path + buff);
