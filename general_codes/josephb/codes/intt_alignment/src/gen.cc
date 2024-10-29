@@ -16,11 +16,11 @@
 
 bool verbose = false;
 
-std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
-std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
+std::string sensor_path = "../dat/sensor_survey_data/";
+std::string ladder_path = "../dat/";
 
-std::string hpp_file = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/InttSurveyMap.h";
-std::string cpp_file = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/InttSurveyMap.cc";
+std::string hpp_file = "../dat/InttSurveyMap.h";
+std::string cpp_file = "../dat/InttSurveyMap.cc";
 
 int MakeCPP();
 int MakeHPP();
