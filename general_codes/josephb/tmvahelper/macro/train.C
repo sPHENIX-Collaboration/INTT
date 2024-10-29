@@ -9,10 +9,10 @@ R__LOAD_LIBRARY(libtmvahelper.so)
 void
 train (
 	std::vector<std::string> const& signal_files = {
-		"outputKFParticle_Lc_pKpi_0.root",
+		"outputKFParticle_D0_Kpi_0.root",
 	},
 	std::vector<std::string> const& background_files = {
-		"outputMinBiasKFParticle_Lc_pKpi_0.root",
+		"outputMinBiasKFParticle_D0_Kpi_0.root",
 	}
 ) {
 	// Helper
