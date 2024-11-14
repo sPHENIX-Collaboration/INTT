@@ -23,10 +23,10 @@ bool verbose = false;
 const float ENDCAP_SHIFT = 2.395; // mm
 const float GEANT_SHIFT = 0.2282; // mm
 
-std::string sensor_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/sensor_survey_data/";
-std::string ladder_path = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/";
+std::string sensor_path = "../dat/sensor_survey_data/";
+std::string ladder_path = "../dat/";
 
-std::string root_file = "/sphenix/u/jbertaux/sphnx_software/INTT/general_codes/josephb/codes/intt_alignment/dat/intt_transforms.root";
+std::string root_file = "../dat/intt_transforms.root";
 
 int main()
 {
