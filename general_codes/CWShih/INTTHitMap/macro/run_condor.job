@@ -12,9 +12,9 @@ input_directory    = /sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/
 job_offset    = 0
 process_shift      = $(Process) + $(job_offset) 
 input_filename     = DST_INTT_EVENT_run2auau_ana441_2024p007-$INT(runnumber,%08d)-$INT(process_shift,%05d).root
-output_directory   = /sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_$(runnumber)/HitMap/HotChMap_Oct31_2024
+output_directory   = /sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_$(runnumber)/HitMap/HotChMap_Oct31_2024_noBCODiff
 Output             = $(output_directory)/cw_log/condor_$INT(process_shift,%05d).out
 Error              = $(output_directory)/cw_log/condor_$INT(process_shift,%05d).err
 Log                = $(output_directory)/cw_log/condor_$INT(process_shift,%05d).log
 Arguments          = "$INT(process_shift) $(runnumber) $(nEvents) $(output_directory) $(input_directory) $(input_filename)"
-Queue 329
+Queue 100

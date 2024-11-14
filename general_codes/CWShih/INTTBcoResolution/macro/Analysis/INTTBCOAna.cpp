@@ -384,13 +384,13 @@ void INTTBCOAna::ProcessEvents()
         }
 
         // note : draw the event by event plot
-        if (event_BCOcut_survival_rate < 0.8 && (i%25 == 0)) {
+        if (event_BCOcut_survival_rate < 0.8 && (i%100 == 0)) {
             PrepareEvtBcoDiffHist(i, total_nHit_post, event_BCOcut_survival_rate);
 
             c1 -> Print(Form("%s/INTT_bco_diff_weird.pdf", output_directory.c_str()));
             c1 -> Clear();
         }
-        else if (event_BCOcut_survival_rate < 0.8 && total_nHit_post > 2000 && (i%5 == 0)){
+        else if (event_BCOcut_survival_rate < 0.8 && total_nHit_post > 2000 && (i%25 == 0)){
             PrepareEvtBcoDiffHist(i, total_nHit_post, event_BCOcut_survival_rate);
 
             c1 -> Print(Form("%s/INTT_bco_diff_weird.pdf", output_directory.c_str()));
