@@ -74,7 +74,8 @@ INTTHitMapEvt::INTTHitMapEvt(
   const bool ApplyBcoDiff_in,
   const int bco_diff_peak_in,
   const bool ApplyHitQA_in,
-  const bool clone_hit_remove_BCO_tag_in
+  const bool clone_hit_remove_BCO_tag_in,
+  const bool setADCinZaxis_tag_in
 ):
   SubsysReco(name),
   process_id(process_id_in),
@@ -85,7 +86,8 @@ INTTHitMapEvt::INTTHitMapEvt(
   ApplyBcoDiff(ApplyBcoDiff_in),
   bco_diff_peak(bco_diff_peak_in),
   ApplyHitQA(ApplyHitQA_in),
-  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in)
+  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in),
+  setADCinZaxis_tag(setADCinZaxis_tag_in)
 
 {
   std::cout << "INTTHitMapEvt::INTTHitMapEvt(const std::string &name) Calling ctor" << std::endl;
@@ -105,6 +107,7 @@ INTTHitMapEvt::INTTHitMapEvt(
   output_filename += (ApplyBcoDiff) ? "_BcoDiffApplied" : "";
   output_filename += (ApplyHitQA) ? "_HitQA" : "";
   output_filename += (clone_hit_remove_BCO_tag) ? "_CloneHitRemovedBCO" : "";
+  output_filename += (setADCinZaxis_tag) ? "_ADCinZaxis" : "";
   output_filename += Form("_%s_%s.root",runnumber_str.c_str(),job_index.c_str());
 
   file_out = new TFile(Form("%s/%s",output_directory.c_str(),output_filename.c_str()),"RECREATE");
@@ -287,7 +290,7 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
 
   for (int felix_i = 0; felix_i < nFelix; felix_i++){
     for (int fch_i = 0; fch_i < nFelix_channel; fch_i++){
-      h2_hitmap_map.insert(std::make_pair(Form("%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), new TH2D(Form("%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), Form("%ld_F%d_Fch%d;Chip ID (12 -> 0);Channel ID",intt_bco,felix_i,fch_i),13,0,13,265,-5,260)));
+      h2_hitmap_map.insert(std::make_pair(Form("bcofull%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), new TH2D(Form("bcofull%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), Form("bcofull%ld_F%d_Fch%d;Chip ID (12 -> 0);Channel ID",intt_bco,felix_i,fch_i),13,0,13,265,-5,260)));
     }
   }
 
@@ -295,7 +298,7 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
   {
     inttHitstr hit = pair.second;
     
-    if(h2_hitmap_map.find(Form("%ld_F%d_Fch%d",intt_bco,hit.hit_server,hit.hit_felix_ch)) == h2_hitmap_map.end())
+    if(h2_hitmap_map.find(Form("bcofull%ld_F%d_Fch%d",intt_bco,hit.hit_server,hit.hit_felix_ch)) == h2_hitmap_map.end())
     {
       std::cout << "eID: "<< eID_count <<" INTTBcoResolution::PrepareINTT - hitmap not found" << std::endl;
       continue;
@@ -330,8 +333,9 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
     // note : 0 - 12 is bottom row, 13 - 25 is top row
     int convert_chipID = -(hit.hit_chip + 1)+ (1 + int((hit.hit_chip + 1) / 14)) * 13;
     int convert_chanID = int((hit.hit_chip + 1) / 14) * 255+ pow(-1, int((hit.hit_chip + 1) / 14)) * hit.hit_channel;
+    int hit_adc = (setADCinZaxis_tag) ? hit.hit_adc : 1;
 
-    h2_hitmap_map[Form("%ld_F%d_Fch%d",intt_bco,hit.hit_server,hit.hit_felix_ch)] -> Fill(convert_chipID,convert_chanID);
+    h2_hitmap_map[Form("bcofull%ld_F%d_Fch%d",intt_bco,hit.hit_server,hit.hit_felix_ch)] -> Fill(convert_chipID,convert_chanID,hit_adc);
   }
 
   eID_count++;

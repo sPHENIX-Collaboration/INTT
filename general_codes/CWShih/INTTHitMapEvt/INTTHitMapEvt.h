@@ -53,7 +53,8 @@ class INTTHitMapEvt : public SubsysReco
     const bool ApplyBcoDiff_in = true,
     const int bco_diff_peak_in = 0,
     const bool ApplyHitQA_in = true,
-    const bool clone_hit_remove_BCO_tag_in = true
+    const bool clone_hit_remove_BCO_tag_in = true,
+    const bool setADCinZaxis_tag_in = false
   );
 
   ~INTTHitMapEvt() override;
@@ -117,6 +118,7 @@ class INTTHitMapEvt : public SubsysReco
     int bco_diff_peak;
     bool ApplyHitQA;
     bool clone_hit_remove_BCO_tag;
+    bool setADCinZaxis_tag;
 
     std::string output_filename;
 
