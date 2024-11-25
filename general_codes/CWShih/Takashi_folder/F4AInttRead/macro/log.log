@@ -1,0 +1,2471 @@
+   ------------------------------------------------------------------
+  | Welcome to ROOT 6.26/06                        https://root.cern |
+  | (c) 1995-2021, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Jul 28 2022, 18:08:51                 |
+  | From tags/v6-26-06@v6-26-06                                      |
+  | With g++ (GCC) 12.1.0                                            |
+  | Try '.help', '.demo', '.license', '.credits', '.quit'/'.q'       |
+   ------------------------------------------------------------------
+
+
+Processing Fun4All_AnaTutorial_InttSim.C...
+PHRandomSeed::GetSeed() seed: 1064795487
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.307      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 25 Feb 2022  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 30 Aug 2023 at 18:22:17    |  | 
+ |  |                                                                              |  | 
+ |  |   Program documentation and an archive of historic versions is found on:     |  | 
+ |  |                                                                              |  | 
+ |  |                               https://pythia.org/                            |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is authored by a collaboration consisting of:                       |  | 
+ |  |                                                                              |  | 
+ |  |   Christian Bierlich, Nishita Desai, Leif Gellersen, Ilkka Helenius, Philip  |  | 
+ |  |   Ilten, Leif Lönnblad, Stephen Mrenna, Stefan Prestel, Christian Preuss,    |  | 
+ |  |   Torbjörn Sjöstrand, Peter Skands, Marius Utheim and Rob Verheyen.          |  | 
+ |  |                                                                              |  | 
+ |  |   The complete list of authors, including contact information and            |  | 
+ |  |   affiliations, can be found on https://pythia.org/.                         |  | 
+ |  |   Problems or bugs should be reported on email at authors@pythia.org.        |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjöstrand et al, Comput. Phys. Commun. 191 (2015) 159                   |  | 
+ |  |   [arXiv:1410.3012 [hep-ph]]                                                 |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjöstrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]  |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is released under the GNU General Public Licence version 2 or later.|  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2022 Torbjörn Sjöstrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+PHRandomSeed::GetSeed() seed: 2694230299
+PHPythia8 random seed: 894230299
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with p+ at a CM energy of 2.000e+02 GeV            |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | g g -> g g                                     111 |   6.989e-03 |
+ | g g -> q qbar (uds)                            112 |   1.747e-04 |
+ | q g -> q g                                     113 |   1.768e-02 |
+ | q q(bar)' -> q q(bar)'                         114 |   7.543e-03 |
+ | q qbar -> g g                                  115 |   7.036e-05 |
+ | q qbar -> q' qbar' (uds)                       116 |   4.246e-05 |
+ | g g -> c cbar                                  121 |   5.485e-05 |
+ | q qbar -> c cbar                               122 |   1.368e-05 |
+ | g g -> b bbar                                  123 |   3.171e-05 |
+ | q qbar -> b bbar                               124 |   1.019e-05 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |                   sigmaNonDiffractive =    28.49 mb              | 
+ |                                                                  | 
+ |    pT0 =  1.06 gives sigmaInteraction =   223.07 mb: accepted    | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings (changes only)  ------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | Beams:eCM                                     |                200.00000 |    14000.000         0.0             | 
+ | HardQCD:all                                   |                       on |          off                         | 
+ | PDF:pSet                                      |                        7 |           13                         | 
+ | PhaseSpace:pTHatMin                           |                 10.00000 |          0.0         0.0             | 
+ | Random:seed                                   |                894230299 |           -1               900000000 | 
+ | Random:setSeed                                |                       on |          off                         | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings  -----------------------------* 
+
+ --------  PYTHIA Particle Data Table (changed only)  ------------------------------------------------------------------------------
+ 
+      id   name            antiName         spn chg col      m0        mWidth      mMin       mMax       tau0    res dec ext vis wid
+             no onMode   bRatio   meMode     products 
+
+ no particle data has been changed from its default value 
+
+ --------  End PYTHIA Particle Data Table  -----------------------------------------------------------------------------------------
+
+PHRandomSeed::GetSeed() seed: 2836201194
+G4_TrkrSimulation::TpcInit
+Intt has 4 layers with layer setup:
+ Intt layer 0 laddertype -2 nladders 12 sensor radius 7.2 offsetphi 15.0
+ Intt layer 1 laddertype -2 nladders 12 sensor radius 7.7 offsetphi 0.0
+ Intt layer 2 laddertype -2 nladders 16 sensor radius 9.7 offsetphi 11.2
+ Intt layer 3 laddertype -2 nladders 16 sensor radius 10.3 offsetphi 0.0
+G4_TrkrSimulation::TPC
+PHRandomSeed::GetSeed() seed: 645221001
+
+**************************************************************
+ Geant4 version Name: geant4-10-07-patch-04    (9-September-2022)
+                       Copyright : Geant4 Collaboration
+                      References : NIM A 506 (2003), 250-303
+                                 : IEEE-TNS 53 (2006), 270-278
+                                 : NIM A 835 (2016), 186-225
+                             WWW : http://geant4.org/
+**************************************************************
+
+<<< Geant4 Physics List simulation engine: FTFP_BERT
+
+Use EvtGen Decayer
+INTT readout window is set to -20 to 80.0
+PHRandomSeed::GetSeed() seed: 3604928295
+PHG4InttDigitizer random seed: 3604928295
+rescale: 1.0
+rescale: -1.0
+Tracking_Reco_TrackSeed - Using stub matching for Si matching 
+PHSiliconTpcTrackMatching pp_mode set to 0
+Tracking_Reco_TrackSeed - Using Micromegas matching 
+Fun4AllServer: Runnumber forced to 1 by RUNNUMBER IntFlag
+Fun4AllServer::setRun(): could not get timestamp for run  1, using tics(0) timestamp: Wed Dec 31 19:00:00 1969
+PHFieldUtility::GetFieldConfigNode - field map with configuration from input default: PHFieldConfigv1::identify - Field type of [3D field map expressed in Cartesian coordinates] from file [/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Field/Map/sphenix3dbigmapxyz_gap_rebuild.root] with a scale factor of 0.0
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Field/Map/sphenix3dbigmapxyz_gap_rebuild.root ... 
+
+================= End Construct Mag Field ======================
+
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/geometry/mvtx_stave.gdml'...
+G4GDML: Reading definitions...
+G4GDML: Reading materials...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading setup...
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/geometry/mvtx_stave.gdml' done!
+Stripping off GDML names of materials, solids and volumes ...
+north copy no: 1
+south copy no: 2
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/simulation/g4simulation/g4tpc/PHG4TpcDetector.cc:534: MaxT 26375.0 NTBins = 498 drift velocity 0.0
+CylinderGeomMicromegas
+layer: 55
+segmentation_type: SEGMENTATION_PHI
+drift_direction: OUTWARD
+radius: 83.3cm
+thickness: 0.3cm
+zmin: -110.0cm
+zmax: 110.0cm
+pitch: 0.1cm
+
+CylinderGeomMicromegas
+layer: 56
+segmentation_type: SEGMENTATION_Z
+drift_direction: INWARD
+radius: 83.9cm
+thickness: 0.3cm
+zmin: -110.0cm
+zmax: 110.0cm
+pitch: 0.2cm
+
+Checking overlaps for volume BH_1 (G4Tubs) ... OK! 
+Checking overlaps for volume BH_FORWARD_PLUS_1 (G4Tubs) ... OK! 
+Checking overlaps for volume BH_FORWARD_NEG_1 (G4Tubs) ... OK! 
+
+ hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
+ for pions :   3 to 6 GeV
+ for kaons :   3 to 6 GeV
+ for proton :  3 to 6 GeV
+ for neutron : 3 to 6 GeV
+
+EvtGen:Defining EvtPhotosEngine using photonType = gamma
+EvtGen:Setting up PHOTOS.
+EvtGen:Using EvtGen random number engine also for Photos++
+Message from PHCORK(MODCOR):: initialization
+MODOP=5 -- corrects Energy from mass+flow
+
+********************************************************************************
+
+                            =========================
+                              PHOTOS, Version:  3.64
+                              Released at:  18/2/20
+                            =========================
+
+                     Photos QED corrections in Particle Decays
+
+           Monte Carlo Program - by E. Barberio, B. van Eijk and Z. Was
+           From version 2.09   - by P. Golonka and Z. Was
+           From version 3.00   - by N. Davidson, T. Przedzinski and Z. Was
+********************************************************************************
+
+                  Internal (default) input parameters: 
+
+                    INTERF= 1 ISEC= 0 ITRE= 0 IEXP= 1 IFTOP= 1 IFW= 1
+                    ALPHA_QED= 7.297350e-03 XPHCUT= 1.000000e-07
+
+                    Option with interference is active
+                    Option with exponentiation is active EPSEXP=1.000000e-04
+                    Emision in t tbar production is active
+                    Correction wt in decay of W is active
+
+          WARNING:  /HEPEVT/ is not anymore used.
+
+********************************************************************************
+MODOP=2 -- blocks emission in Kl  to gamma e+e-: DEFAULT
+MODOP=2 -- blocks emission in pi0 to gamma e+e-: DEFAULT
+ IPHQRK_setQarknoEmission MODOP=1 -- blocks emission from light quarks:  DEFAULT
+Message from PHCORK(MODCOR):: initialization
+MODOP=5 -- corrects Energy from mass+flow
+EvtGen:Defining EvtPythiaEngine: data tables defined in 
+EvtGen:Pythia 8 codes need to be used in decay files
+EvtGen:Using EvtGen random engine for Pythia 8 as well
+EvtGen:Creating generic Pythia generator
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.307      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 25 Feb 2022  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 30 Aug 2023 at 18:22:34    |  | 
+ |  |                                                                              |  | 
+ |  |   Program documentation and an archive of historic versions is found on:     |  | 
+ |  |                                                                              |  | 
+ |  |                               https://pythia.org/                            |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is authored by a collaboration consisting of:                       |  | 
+ |  |                                                                              |  | 
+ |  |   Christian Bierlich, Nishita Desai, Leif Gellersen, Ilkka Helenius, Philip  |  | 
+ |  |   Ilten, Leif Lönnblad, Stephen Mrenna, Stefan Prestel, Christian Preuss,    |  | 
+ |  |   Torbjörn Sjöstrand, Peter Skands, Marius Utheim and Rob Verheyen.          |  | 
+ |  |                                                                              |  | 
+ |  |   The complete list of authors, including contact information and            |  | 
+ |  |   affiliations, can be found on https://pythia.org/.                         |  | 
+ |  |   Problems or bugs should be reported on email at authors@pythia.org.        |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjöstrand et al, Comput. Phys. Commun. 191 (2015) 159                   |  | 
+ |  |   [arXiv:1410.3012 [hep-ph]]                                                 |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjöstrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]  |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is released under the GNU General Public Licence version 2 or later.|  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2022 Torbjörn Sjöstrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+EvtGen:Creating alias Pythia generator
+EvtGen:Defining EvtTauolaEngine.
+EvtGen:Setting up TAUOLA.
+EvtGen:Using EvtGen random number engine also for Tauola++
+
+ *************************************
+ *     TAUOLA C++ Interface v1.1.8   *
+ *-----------------------------------*
+ *                                   *
+ *   (c) Nadia    Davidson,   (1,2)  *
+ *   (c) Gizo     Nanava,     (3)    *
+ *       Tomasz   Przedzinski,(4)    *
+ *       Elzbieta Richter-Was,(2,4)  *
+ *       Zbigniew Was         (2,5)  *
+ *                                   *
+ *  1) Unimelb, Melbourne, Australia *
+ *  2)     INP, Krakow, Poland       *
+ *  3) University Bonn, Germany      *
+ *  4)      UJ, Krakow, Poland       *
+ *  5)    CERN, Geneva, Switzerland  *
+ *************************************
+Reading SANC input files.
+File 'table1-1.txt'  missing... skipped.
+File 'table2-2.txt'  missing... skipped.
+File 'table11-11.txt' missing... skipped.
+
+PHRandomSeed::GetSeed() seed: 1024991824
+EvtGen:Initializing EvtGen
+EvtGen:Storing known decay models
+EvtGen:Defining EvtBcToNPi model: Bc -> V + npi and Bc -> P + npi decays
+from A.V. Berezhnoy, A.K. Likhoded, A.V. Luchinsky: Phys.Rev.D 82, 014012 (2010) and arXiV:1104.0808.
+EvtGen:Main decay file name  :/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/EvtGen/DECAY.DEC
+EvtGen:In readDecayFile, reading:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/EvtGen/DECAY.DEC
+EvtGen:Warning, sum of branching fractions for omega is 0.994
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for phi is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for f_2 is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for chi_c1 is 0.996
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for Upsilon(2S) is 0.992
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for Upsilon(3S) is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Mixing type integer set to 1
+EvtGen:Done initializing EvtGen
+### Birks coefficients used in run time
+   G4_POLYSTYRENE     0.07943 mm/MeV     0.00841958 g/cm^2/MeV  massFactor=  101.167 effCharge= 0.027027
+PHG4Reco::InitRun - export geometry to DST via tmp file /tmp/PHGeomUtility_geom_file_631d28ec-3b3a-4728-806d-369673f50f01.gdml
+PHG4GDML: Writing '/tmp/PHGeomUtility_geom_file_631d28ec-3b3a-4728-806d-369673f50f01.gdml'...
+PHG4GDML: Writing definitions...
+G4GDML: Writing materials...
+PHG4GDML: Writing solids...
+PHG4GDML: Writing structure...
+G4GDML: Writing setup...
+PHG4GDML: Writing surfaces...
+PHG4GDML: Writing '/tmp/PHGeomUtility_geom_file_631d28ec-3b3a-4728-806d-369673f50f01.gdml' done !
+PHRandomSeed::GetSeed() seed: 840449450
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer0/intt_geoparams-0-0-4294967295-1639587811.xml ... Received PdbParameterMap with (Hash = 0x60d324373c487512)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 805 dead channel for layer 3 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer0/. Total dead chan = 805
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer1/intt_geoparams-0-0-4294967295-1639587813.xml ... Received PdbParameterMap with (Hash = 0xace8682906524cdb)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 798 dead channel for layer 4 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer1/. Total dead chan = 1603
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer2/intt_geoparams-0-0-4294967295-1639587814.xml ... Received PdbParameterMap with (Hash = 0xcbde7eea004baa73)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 1143 dead channel for layer 5 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer2/. Total dead chan = 2746
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer3/intt_geoparams-0-0-4294967295-1639587815.xml ... Received PdbParameterMap with (Hash = 0x91aaed1fff5293a1)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 1124 dead channel for layer 6 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Tracking/INTT/DeadMap/intt_layer3/. Total dead chan = 3870
+PHG4InttDigitizer::InitRun: detector = INTT
+MakeActsGeometry::addActsTpcSurfaces - m_nSurfPhi: 12
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/MakeActsGeometry.cc:460: Magnetic field /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Field/Map/sphenix3dtrackingmapxyz_gap_rebuild.root with rescale 1.0
+tgeo-sphenix-mms.json not found locally, use repo version
+sphenix-mm-material.json not found locally, use repo version
+using Acts material file : /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/ACTS/sphenix-mm-material.json
+Using Acts TGeoResponse file : /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/tgeo-sphenix-mms.json
+Mag field now /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAPTRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root with rescale 1.0
+Warning in <TGeoManager::Import>: TGeoMananager in lock mode. NOT IMPORTING new geometry
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+18:22:47    MagneticFiel   INFO      Read magnetic field map from ROOT file '"/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAPTRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root"'
+18:22:47    MagneticFiel   INFO      Use XYZ field map
+AlignmentTransformation: use global translation perturbations = 1
+AlignmentTransformation: Reading alignment parameters from database file: /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/TRACKINGALIGNMENT/8c/7a/8c7a4bd674c9ed3fd85fc5a9e216cf1d_tracking_alignment_parameters_empty.txt
+Called Setup
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Field/Map/sphenix3dtrackingmapxyz.root ... 
+
+================= End Construct Mag Field ======================
+
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/share/calibrations/Field/Map/sphenix3dtrackingmapxyz.root ... 
+
+================= End Construct Mag Field ======================
+
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/PHSiliconTpcTrackMatching.cc:58:  Search windows: phi 0.0 eta 0.0 _pp_mode 0 _use_intt_time 0
+Creating node SvtxTrackSeedContainer
+
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/PHMicromegasTpcTrackMatching.cc:118:  rphi_search_win inner layer 0.2 z_search_win inner layer 26.0 rphi_search_win outer layer 13.0 z_search_win outer layer 0.2
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/PHActsTrackProjection.cc:297: Calo geometry and/or cluster container for CEMCnot found on node tree. Track projections to calos won't be filled.
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/PHActsTrackProjection.cc:297: Calo geometry and/or cluster container for HCALINnot found on node tree. Track projections to calos won't be filled.
+/home/phnxbld/sPHENIX/gcc-12.1.0/new/source/coresoftware/offline/packages/trackreco/PHActsTrackProjection.cc:297: Calo geometry and/or cluster container for HCALOUTnot found on node tree. Track projections to calos won't be filled.
+InttAna::InitRun beamcenter 0.0 0.0
+--------------------------------------
+
+List of Nodes in Fun4AllServer:
+Node Tree under TopNode TOP
+TOP (PHCompositeNode)/
+   DST (PHCompositeNode)/
+      PHHepMCGenEventMap (IO,PHHepMCGenEventMap)
+      PHG4INEVENT (PHDataNode)
+      Sync (IO,SyncObjectv1)
+      EventHeader (IO,EventHeaderv1)
+      PIPE (PHCompositeNode)/
+         G4HIT_PIPE (IO,PHG4HitContainer)
+      MVTX (PHCompositeNode)/
+         G4HIT_MVTX (IO,PHG4HitContainer)
+      INTT (PHCompositeNode)/
+         G4HIT_INTT (IO,PHG4HitContainer)
+      TPC (PHCompositeNode)/
+         G4HIT_ABSORBER_TPC (IO,PHG4HitContainer)
+         G4HIT_TPC (IO,PHG4HitContainer)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4HIT_TPC_ENDCAP (IO,PHG4HitContainer)
+      MICROMEGAS (PHCompositeNode)/
+         G4HIT_MICROMEGAS (IO,PHG4HitContainer)
+      MAGNET (PHCompositeNode)/
+         G4HIT_MAGNET (IO,PHG4HitContainer)
+      G4HIT_BH_1 (IO,PHG4HitContainer)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4HIT_BH_FORWARD_PLUS (IO,PHG4HitContainer)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4HIT_BH_FORWARD_NEG (IO,PHG4HitContainer)
+      G4TruthInfo (IO,PHG4TruthInfoContainer)
+      BBC (PHCompositeNode)/
+         BbcVertexMap (IO,BbcVertexMapv1)
+      TRKR (PHCompositeNode)/
+         TRKR_HITSET (IO,TrkrHitSetContainerv1)
+         TRKR_HITTRUTHASSOC (IO,TrkrHitTruthAssocv1)
+         TRKR_CLUSTER (IO,TrkrClusterContainerv4)
+         TRKR_CLUSTERHITASSOC (IO,TrkrClusterHitAssocv3)
+         TRKR_CLUSTERCROSSINGASSOC (IO,TrkrClusterCrossingAssocv1)
+      TRKR_TRUTHTRACKCONTAINER (IO,TrkrTruthTrackContainerv1)
+      TRKR_TRUTHCLUSTERCONTAINER (IO,TrkrClusterContainerv4)
+      alignmentTransformationContainer (PHDataNode)
+      SVTX (PHCompositeNode)/
+         SiliconTrackSeedContainer (IO,TrackSeedContainer_v1)
+         TpcTrackSeedContainer (IO,TrackSeedContainer_v1)
+         SvtxTrackSeedContainer (IO,TrackSeedContainer_v1)
+         ActsTrajectories (PHDataNode)
+         SvtxTrackMap (IO,SvtxTrackMap_v2)
+         SvtxAlignmentStateMap (PHDataNode)
+         SvtxVertexMap (IO,SvtxVertexMap_v1)
+   RUN (PHCompositeNode)/
+      PHGenIntegral (IO,PHGenIntegralv1)
+      RunHeader (IO,RunHeaderv1)
+      Flags (IO,FlagSavev1)
+      FIELD_CONFIG (IO,PHFieldConfigv1)
+      PIPE (PHCompositeNode)/
+         G4GEOPARAM_PIPE (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_PIPE (IO,PHG4CylinderGeomContainer)
+      MVTX (PHCompositeNode)/
+         G4GEOPARAM_MVTX (IO,PdbParameterMapContainer)
+      INTT (PHCompositeNode)/
+         G4GEOPARAM_INTT (IO,PdbParameterMapContainer)
+         DEADMAP_INTT (IO,InttDeadMapv1)
+         G4CELLPARAM_INTT (IO,PdbParameterMap)
+      TPC (PHCompositeNode)/
+         G4GEOPARAM_TPC (IO,PdbParameterMapContainer)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4GEOPARAM_TPC_ENDCAP (IO,PdbParameterMapContainer)
+      MICROMEGAS (PHCompositeNode)/
+         G4GEOPARAM_MICROMEGAS (IO,PdbParameterMapContainer)
+      MAGNET (PHCompositeNode)/
+         G4GEOPARAM_MAGNET (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_MAGNET (IO,PHG4CylinderGeomContainer)
+      G4GEOPARAM_ForwardBeamLineEnclosure_0 (IO,PdbParameterMapContainer)
+      G4GEOPARAM_BackwardBeamLineEnclosure_0 (IO,PdbParameterMapContainer)
+      BEAMLINEMAGNET (PHCompositeNode)/
+         G4GEOPARAM_BEAMLINEMAGNET (IO,PdbParameterMapContainer)
+      G4GEOPARAM_BH_1 (IO,PdbParameterMapContainer)
+      CYLINDERGEOM_BH_1 (IO,PHG4CylinderGeomContainer)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4GEOPARAM_BH_FORWARD_PLUS (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_BH_FORWARD_PLUS (IO,PHG4CylinderGeomContainer)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4GEOPARAM_BH_FORWARD_NEG (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_BH_FORWARD_NEG (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_MVTX (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_INTT (IO,PHG4CylinderGeomContainer)
+      CYLINDERCELLGEOM_SVTX (IO,PHG4TpcCylinderGeomContainer)
+      CYLINDERGEOM_MICROMEGAS_FULL (IO,PHG4CylinderGeomContainer)
+      GEOMETRY_IO (IO,PHGeomIOTGeo)
+   PAR (PHCompositeNode)/
+      FIELD_MAP (PHDataNode)
+      PIPE (PHCompositeNode)/
+         G4GEO_PIPE (PHDataNode)
+      MVTX (PHCompositeNode)/
+         G4GEO_MVTX (PHDataNode)
+      INTT (PHCompositeNode)/
+         G4GEO_INTT (PHDataNode)
+         CYLINDERGEOM_INTT (PHDataNode)
+         G4CELLGEO_INTT (PHDataNode)
+      TPC (PHCompositeNode)/
+         G4GEO_TPC (PHDataNode)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4GEO_TPC_ENDCAP (PHDataNode)
+      MICROMEGAS (PHCompositeNode)/
+         G4GEO_MICROMEGAS (PHDataNode)
+      MAGNET (PHCompositeNode)/
+         G4GEO_MAGNET (PHDataNode)
+      G4GEO_ForwardBeamLineEnclosure_0 (PHDataNode)
+      G4GEO_BackwardBeamLineEnclosure_0 (PHDataNode)
+      BEAMLINEMAGNET (PHCompositeNode)/
+         G4GEO_BEAMLINEMAGNET (PHDataNode)
+      G4GEO_BH_1 (PHDataNode)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4GEO_BH_FORWARD_PLUS (PHDataNode)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4GEO_BH_FORWARD_NEG (PHDataNode)
+      G4GDML_CONFIG (PHDataNode)
+      GEOMETRY (PHDataNode)
+      SVTX (PHCompositeNode)/
+         ActsGeometry (PHDataNode)
+
+
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  1.000e+02, e =  1.000e+02, m =  9.383e-01.
+ Beam B: id =   2212, pz = -1.000e+02, e =  1.000e+02, m =  9.383e-01.
+
+ In 1: id =    1, x =  1.549e-01, pdf =  3.236e-01 at Q2 =  1.257e+02.
+ In 2: id =   21, x =  1.668e-01, pdf =  4.530e-01 at same Q2.
+
+ Subprocess q g -> q g with code 113 is 2 -> 2.
+ It has sHat =  1.033e+03,    tHat = -1.464e+02,    uHat = -8.868e+02,
+       pTHat =  1.121e+01,   m3Hat =  3.300e-01,   m4Hat =  0.000e+00,
+    thetaHat =  7.719e-01,  phiHat =  3.451e+00.
+     alphaEM =  7.636e-03,  alphaS =  1.948e-01    at Q2 =  1.257e+02.
+
+ Impact parameter b =  4.235e-01 gives enhancement factor =  3.021e+00.
+ Max pT scale for MPI =  1.121e+01, ISR =  1.121e+01, FSR =  1.121e+01.
+ Number of MPI =    16, ISR =     4, FSRproc =    16, FSRreson =     0.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+
+ --------  PYTHIA Event Listing  (hard process)  -----------------------------------------------------------------------------------
+ 
+    no         id  name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0         90  (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000    200.000    200.000
+     1       2212  (p+)               -12     0     0     3     0     0     0      0.000      0.000     99.996    100.000      0.938
+     2       2212  (p+)               -12     0     0     4     0     0     0      0.000      0.000    -99.996    100.000      0.938
+     3          1  (d)                -21     1     0     5     6   101     0      0.000      0.000     15.487     15.487      0.000
+     4         21  (g)                -21     2     0     5     6   102   101      0.000      0.000    -16.678     16.678      0.000
+     5          1  d                   23     3     4     0     0   103     0    -10.676     -3.413     10.928     15.658      0.330
+     6         21  g                   23     3     4     0     0   102   103     10.676      3.413    -12.119     16.508      0.000
+                                   Charge sum: -0.333           Momentum sum:      0.000      0.000     -1.191     32.166     32.144
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+
+ --------  PYTHIA Event Listing  (complete event)  ---------------------------------------------------------------------------------
+ 
+    no         id  name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0         90  (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000    200.000    200.000
+     1       2212  (p+)               -12     0     0   139     0     0     0      0.000      0.000     99.996    100.000      0.938
+     2       2212  (p+)               -12     0     0   140     0     0     0      0.000      0.000    -99.996    100.000      0.938
+     3          1  (d)                -21    55    55     5     6   101     0      0.000      0.000     15.487     15.487      0.000
+     4         21  (g)                -21    56     0     5     6   102   101      0.000      0.000    -16.678     16.678      0.000
+     5          1  (d)                -23     3     4     9     9   103     0    -10.676     -3.413     10.928     15.658      0.330
+     6         21  (g)                -23     3     4     7     8   102   103     10.676      3.413    -12.119     16.508      0.000
+     7         21  (g)                -51     6     0    15    15   102   105      8.974     -1.441     -5.945     10.860      0.000
+     8         21  (g)                -51     6     0    10    11   105   103      0.787      4.561     -5.237      6.989      0.000
+     9          1  (d)                -52     5     5    12    12   103     0     -9.761     -3.120      9.991     14.316      0.330
+    10         21  (g)                -51     8     0    13    14   105   106      0.498      6.121     -1.994      6.457      0.000
+    11         21  (g)                -51     8     0    41    42   106   103     -1.350     -2.085     -1.564      2.935      0.000
+    12          1  (d)                -52     9     9    43    43   103     0     -8.122     -2.596      8.313     11.913      0.330
+    13         21  (g)                -51    10     0    59    59   107   106     -1.086      2.355     -0.021      2.593      0.000
+    14         21  (g)                -51    10     0    61    61   105   107      2.766      3.577     -2.757      5.296      0.000
+    15         21  (g)                -52     7     7    58    58   102   105      7.791     -1.251     -5.161      9.429      0.000
+    16         21  (g)                -31    24     0    18    19   109   108      0.000      0.000      2.691      2.691      0.000
+    17         21  (g)                -31    25    25    18    19   111   110      0.000      0.000     -1.048      1.048      0.000
+    18         21  (g)                -33    16    17    26    26   111   108      1.614      0.371      0.513      1.734      0.000
+    19         21  (g)                -33    16    17    27    27   109   110     -1.614     -0.371      1.131      2.005      0.000
+    20         21  (g)                -31    77     0    22    23   112   113      0.000      0.000      0.785      0.785      0.000
+    21         21  (g)                -31    78    78    22    23   114   115      0.000      0.000     -5.267      5.267      0.000
+    22         21  (g)                -33    20    21    79    79   112   115      1.222     -1.085     -0.440      1.692      0.000
+    23         21  (g)                -33    20    21    80    80   114   113     -1.222      1.085     -4.043      4.360      0.000
+    24         21  (g)                -41   154   154    28    16   109   116      0.000      0.000     12.166     12.166      0.000
+    25         21  (g)                -42   100   100    17    17   111   110      0.000      0.000     -1.048      1.048      0.000
+    26         21  (g)                -44    18    18   156   156   111   108      1.362     -0.221      1.128      1.783      0.000
+    27         21  (g)                -44    19    19    98    99   109   110     -1.966     -1.198      1.379      2.684      0.000
+    28         21  (g)                -43    24     0   158   158   108   116      0.604      1.419      8.611      8.748      0.000
+    29         21  (g)                -31   168   168    31    32   118   117      0.000      0.000      4.879      4.879      0.000
+    30          2  (u)                -31   169   169    31    32   117     0      0.000      0.000     -3.392      3.392      0.000
+    31         21  (g)                -33    29    30   170   170   118   119      1.268     -0.119      4.662      4.833      0.000
+    32          2  (u)                -33    29    30   171   171   119     0     -1.268      0.119     -3.176      3.438      0.330
+    33         21  (g)                -31   172   172    35    36   120   121      0.000      0.000      1.408      1.408      0.000
+    34         21  (g)                -31   173   173    35    36   122   123      0.000      0.000     -1.852      1.852      0.000
+    35         21  (g)                -33    33    34   174   174   120   123     -0.343     -1.179      0.836      1.486      0.000
+    36         21  (g)                -33    33    34   175   175   122   121      0.343      1.179     -1.281      1.774      0.000
+    37          1  (d)                -31   176   176    39    40   124     0      0.000      0.000      0.584      0.584      0.000
+    38         21  (g)                -31   177   177    39    40   125   126      0.000      0.000     -2.043      2.043      0.000
+    39          1  (d)                -33    37    38   178   178   125     0      0.041      1.064     -0.832      1.391      0.330
+    40         21  (g)                -33    37    38   179   179   124   126     -0.041     -1.064     -0.626      1.235      0.000
+    41         21  (g)                -51    11     0    60    60   106   127     -1.255     -0.770     -1.556      2.142      0.000
+    42         21  (g)                -51    11     0    62    62   127   103     -0.939     -1.585      0.857      2.032      0.000
+    43          1  (d)                -52    12    12    57    57   103     0     -7.277     -2.326      7.447     10.674      0.330
+    44         21  (g)                -31   180   180    46    47   129   128      0.000      0.000      0.769      0.769      0.000
+    45         21  (g)                -31   181   181    46    47   128   130      0.000      0.000     -1.309      1.309      0.000
+    46         21  (g)                -33    44    45    48    49   131   130     -0.799     -0.607     -0.291      1.045      0.000
+    47         21  (g)                -33    44    45    50    50   129   131      0.799      0.607     -0.249      1.034      0.000
+    48         21  (g)                -51    46     0   182   182   132   130      0.780      0.447     -0.448      1.004      0.000
+    49         21  (g)                -51    46     0   184   184   131   132     -0.848     -0.499     -0.071      0.986      0.000
+    50         21  (g)                -52    47    47   183   183   129   131      0.068      0.052     -0.021      0.088      0.000
+    51         21  (g)                -31   185   185    53    54   133   134      0.000      0.000      2.868      2.868      0.000
+    52         21  (g)                -31   186   186    53    54   135   136      0.000      0.000     -0.427      0.427      0.000
+    53         21  (g)                -33    51    52   187   187   133   136     -0.223      0.917      0.359      1.009      0.000
+    54         21  (g)                -33    51    52   188   188   135   134      0.223     -0.917      2.081      2.285      0.000
+    55          1  (d)                -42   139   139     3     3   101     0     -0.000     -0.000     15.487     15.487      0.000
+    56         21  (g)                -41   106   106    63     4   137   101      0.000      0.000    -19.198     19.198      0.000
+    57          1  (d)                -44    43    43   141   141   103     0     -7.192     -2.300      7.172     10.420      0.330
+    58         21  (g)                -44    15    15    88    89   102   105      8.173     -1.133     -5.024      9.660      0.000
+    59         21  (g)                -44    13    13    87    87   107   106     -1.017      2.376     -0.046      2.585      0.000
+    60         21  (g)                -44    41    41    85    86   106   127     -1.158     -0.740     -1.607      2.115      0.000
+    61         21  (g)                -44    14    14   103   103   105   107      2.977      3.642     -2.687      5.417      0.000
+    62         21  (g)                -44    42    42   113   114   127   103     -0.909     -1.575      0.808      1.990      0.000
+    63         21  (g)                -43    56     0    90    90   137   102     -0.874     -0.268     -2.326      2.499      0.000
+    64          2  (u)                -31    68    68    66    67   138     0      0.000      0.000     31.096     31.096      0.000
+    65         21  (g)                -31    69     0    66    67   139   140      0.000      0.000     -0.034      0.034      0.000
+    66          2  (u)                -33    64    65    70    70   139     0     -0.425     -0.765      8.645      8.696      0.330
+    67         21  (g)                -33    64    65    71    71   138   140      0.425      0.765     22.417     22.434      0.000
+    68          2  (u)                -42   189   189    64    64   138     0      0.000      0.000     31.096     31.096      0.000
+    69         21  (g)                -41   190   190    72    65   141   140     -0.000     -0.000     -0.107      0.107      0.000
+    70          2  (u)                -44    66    66   107   108   139     0     -0.917     -1.124     17.315     17.379      0.330
+    71         21  (g)                -44    67    67   192   192   138   140      0.259      0.644     11.138     11.160      0.000
+    72         21  (g)                -43    69     0   109   109   141   139      0.659      0.480      2.536      2.663      0.000
+    73         21  (g)                -31   195   195    75    76   143   142      0.000      0.000      0.820      0.820      0.000
+    74         21  (g)                -31   196   196    75    76   145   144      0.000      0.000     -1.917      1.917      0.000
+    75         21  (g)                -33    73    74   197   197   145   142      0.437      0.718     -1.563      1.775      0.000
+    76         21  (g)                -33    73    74   198   198   143   144     -0.437     -0.718      0.467      0.962      0.000
+    77         21  (g)                -41   160   160    81    20   112   146     -0.000     -0.000      2.874      2.874      0.000
+    78         21  (g)                -42   161   161    21    21   114   115      0.000      0.000     -5.267      5.267      0.000
+    79         21  (g)                -44    22    22   162   162   112   115      0.692     -1.457     -0.323      1.645      0.000
+    80         21  (g)                -44    23    23    84    84   114   113     -1.356      0.990     -4.035      4.371      0.000
+    81         21  (g)                -43    77     0    82    83   113   146      0.664      0.467      1.964      2.125      0.000
+    82         21  (g)                -51    81     0   164   164   147   146     -0.046     -0.179      1.561      1.572      0.000
+    83         21  (g)                -51    81     0    93    93   113   147      0.590      0.733      0.044      0.942      0.000
+    84         21  (g)                -52    80    80    91    92   114   113     -1.236      0.902     -3.676      3.982      0.000
+    85         21  (g)                -51    60     0   115   115   148   127     -0.475     -0.809     -1.247      1.561      0.000
+    86         21  (g)                -51    60     0   148   148   106   148     -0.953      0.700     -0.373      1.240      0.000
+    87         21  (g)                -52    59    59   143   143   107   106     -0.747      1.746     -0.034      1.899      0.000
+    88         21  (g)                -51    58     0   101   102   149   105     -0.088     -0.249     -0.167      0.312      0.000
+    89         21  (g)                -51    58     0   118   118   102   149      8.141     -0.921     -5.177      9.692      0.000
+    90         21  (g)                -52    63    63   104   105   137   102     -0.753     -0.231     -2.006      2.156      0.000
+    91         21  (g)                -51    84     0   112   112   114   150     -0.106      1.205     -1.971      2.313      0.000
+    92         21  (g)                -51    84     0   110   111   150   113     -0.957     -0.088     -1.693      1.946      0.000
+    93         21  (g)                -52    83    83   165   165   113   147      0.416      0.518      0.031      0.665      0.000
+    94          2  (u)                -31   199   199    96    97   151     0      0.000      0.000      0.344      0.344      0.000
+    95         21  (g)                -31   200   200    96    97   152   153      0.000      0.000     -6.100      6.100      0.000
+    96          2  (u)                -33    94    95   201   201   152     0      0.620      0.359     -0.165      0.806      0.330
+    97         21  (g)                -33    94    95   202   202   151   153     -0.620     -0.359     -5.592      5.637      0.000
+    98         21  (g)                -51    27     0   157   157   109   154     -1.487     -0.071      0.578      1.597      0.000
+    99         21  (g)                -51    27     0   159   159   154   110     -0.479     -1.126      0.547      1.341      0.000
+   100         21  (g)                -53   155   155    25    25   111   110      0.000      0.000     -1.302      1.302      0.000
+   101         21  (g)                -51    88     0   116   117   149   155     -0.192     -0.169     -0.119      0.282      0.000
+   102         21  (g)                -51    88     0   150   150   155   105      1.531      1.666     -1.336      2.628      0.000
+   103         21  (g)                -52    61    61   145   145   105   107      1.550      1.895     -1.399      2.820      0.000
+   104         21  (g)                -51    90     0   147   147   156   102     -0.742      0.269     -2.288      2.420      0.000
+   105         21  (g)                -51    90     0   151   151   137   156     -0.012     -0.501     -7.377      7.394      0.000
+   106         21  (g)                -53   140   140    56    56   137   101      0.000      0.000    -26.857     26.857      0.000
+   107          2  (u)                -51    70     0   191   191   157     0     -0.174     -1.071     15.120     15.163      0.330
+   108         21  (g)                -51    70     0   194   194   139   157     -0.565      0.077      2.881      2.937      0.000
+   109         21  (g)                -52    72    72   193   193   141   139      0.481      0.350      1.850      1.943      0.000
+   110         21  (g)                -51    92     0   166   166   158   113     -0.777     -0.149     -1.942      2.097      0.000
+   111         21  (g)                -51    92     0   167   167   150   158     -0.259      0.967     -1.231      1.586      0.000
+   112         21  (g)                -52    91    91   163   163   114   150     -0.026      0.300     -0.490      0.575      0.000
+   113         21  (g)                -51    62     0   146   146   159   103     -0.734     -0.155      0.213      0.779      0.000
+   114         21  (g)                -51    62     0   152   152   127   159     -0.334     -1.691      0.178      1.732      0.000
+   115         21  (g)                -52    85    85   144   144   148   127     -0.316     -0.539     -0.830      1.039      0.000
+   116         21  (g)                -51   101     0   142   142   160   155      1.333     -0.604     -0.956      1.747      0.000
+   117         21  (g)                -51   101     0   153   153   149   160     -0.050      0.268     -0.101      0.291      0.000
+   118         21  (g)                -52    89    89   149   149   102   149      6.666     -0.755     -4.239      7.936      0.000
+   119         21  (g)                -31   203   203   121   122   162   161      0.000      0.000      0.291      0.291      0.000
+   120         21  (g)                -31   204   204   121   122   164   163      0.000      0.000     -1.297      1.297      0.000
+   121         21  (g)                -33   119   120   205   205   164   161      0.391      0.303     -0.032      0.496      0.000
+   122         21  (g)                -33   119   120   206   206   162   163     -0.391     -0.303     -0.975      1.093      0.000
+   123         21  (g)                -31   207   207   125   126   166   165      0.000      0.000      0.880      0.880      0.000
+   124         21  (g)                -31   208   208   125   126   167   166      0.000      0.000     -1.795      1.795      0.000
+   125         21  (g)                -33   123   124   209   209   168   165      0.129     -0.429      0.793      0.910      0.000
+   126         21  (g)                -33   123   124   210   210   167   168     -0.129      0.429     -1.708      1.765      0.000
+   127         21  (g)                -31   211   211   129   130   170   169      0.000      0.000      0.126      0.126      0.000
+   128         21  (g)                -31   212   212   129   130   169   171      0.000      0.000     -2.216      2.216      0.000
+   129         21  (g)                -33   127   128   213   213   172   171      0.374     -0.074     -1.856      1.894      0.000
+   130         21  (g)                -33   127   128   214   214   170   172     -0.374      0.074     -0.235      0.448      0.000
+   131         21  (g)                -31   215   215   133   134   174   173      0.000      0.000      0.034      0.034      0.000
+   132         21  (g)                -31   216   216   133   134   176   175      0.000      0.000     -8.290      8.290      0.000
+   133         21  (g)                -33   131   132   217   217   176   173     -0.316      0.006     -7.464      7.470      0.000
+   134         21  (g)                -33   131   132   218   218   174   175      0.316     -0.006     -0.793      0.853      0.000
+   135         21  (g)                -31   219   219   137   138   177   178      0.000      0.000      5.660      5.660      0.000
+   136         21  (g)                -31   220   220   137   138   178   179      0.000      0.000     -0.121      0.121      0.000
+   137         21  (g)                -33   135   136   221   221   177   180     -0.121      0.213      5.530      5.536      0.000
+   138         21  (g)                -33   135   136   222   222   180   179      0.121     -0.213      0.009      0.245      0.000
+   139          1  (d)                -61     1     0    55    55   101     0      0.208      0.433     15.462     15.469      0.000
+   140         21  (g)                -61     2     0   106   106   126   101     -2.010     -0.036    -26.843     26.918      0.000
+   141          1  (d)                -62    57    57   268   268   103     0     -7.191     -2.053      7.510     10.603      0.330
+   142         21  (g)                -62   116   116   279   279   160   132      1.237     -0.595     -1.006      1.701      0.000
+   143         21  (g)                -62    87    87   275   275   107   106     -0.808      1.771     -0.028      1.946      0.000
+   144         21  (g)                -62   115   115   242     0   148   168     -0.384     -0.537     -0.808      1.043      0.000
+   145         21  (g)                -62   103   103   233     0   105   122      1.399      1.912     -1.495      2.801      0.000
+   146         21  (g)                -62   113   113   240     0   159   109     -0.748     -0.142      0.247      0.800      0.000
+   147         21  (g)                -62   104   104   232     0   156   162     -0.917      0.268     -2.258      2.452      0.000
+   148         21  (g)                -62    86    86   274   274   106   170     -1.008      0.711     -0.341      1.280      0.000
+   149         21  (g)                -62   118   118   290   290   102   164      6.232     -0.714     -4.522      7.733      0.000
+   150         21  (g)                -62   102   102   233     0   155   105      1.390      1.681     -1.428      2.607      0.000
+   151         21  (g)                -62   105   105   297   297   137   151     -0.564     -0.510     -7.365      7.405      0.000
+   152         21  (g)                -62   114   114   271   271   127   154     -0.378     -1.665      0.216      1.721      0.000
+   153         21  (g)                -62   117   117   231     0   149   139     -0.063      0.270     -0.103      0.296      0.000
+   154         21  (g)                -61     1     0    24    24   110   110     -0.760     -1.341     11.254     11.359      0.000
+   155         21  (g)                -61     2     0   100   100   116   116     -1.231      2.314      0.023      2.621      0.000
+   156         21  (g)                -62    26    26   284   284   111   180      1.008      0.254      0.605      1.202      0.000
+   157         21  (g)                -62    98    98   269   269   109   103     -2.077      0.688      1.541      2.677      0.000
+   158         21  (g)                -62    28    28   238     0   108   147     -0.028      0.451      9.103      9.114      0.000
+   159         21  (g)                -62    99    99   240     0   154   159     -0.893     -0.419      0.028      0.987      0.000
+   160         21  (g)                -61     1     0    77    77   115   115      0.790      0.602      2.805      2.975      0.000
+   161         21  (g)                -61     2     0    78    78   146   146      0.460     -0.478     -5.229      5.271      0.000
+   162         21  (g)                -62    79    79   243     0   112   124      0.968     -1.396     -0.177      1.708      0.000
+   163         21  (g)                -62   112   112   234     0   114   174      0.032      0.258     -0.530      0.590      0.000
+   164         21  (g)                -62    82    82   230     0   147   141      0.384      0.151      1.555      1.608      0.000
+   165         21  (g)                -62    93    93   228     0   113   133      0.545      0.556     -0.091      0.783      0.000
+   166         21  (g)                -62   110   110   295   295   158   167     -0.589     -0.312     -1.835      1.952      0.000
+   167         21  (g)                -62   111   111   234     0   150   114     -0.090      0.868     -1.346      1.604      0.000
+   168         21  (g)                -61     1     0    29    29   119   101     -1.316      1.420      4.599      4.990      0.000
+   169          2  (u)                -61     2     0    30    30   101     0      0.227     -1.269     -3.099      3.356      0.000
+   170         21  (g)                -62    31    31   287   287   118   138     -0.023      1.275      4.649      4.821      0.000
+   171          2  (u)                -62    32    32   248   248   119     0     -1.066     -1.124     -3.149      3.525      0.330
+   172         21  (g)                -61     1     0    33    33   123   123      1.314     -0.024      1.218      1.792      0.000
+   173         21  (g)                -61     2     0    34    34   121   121      1.544      1.384     -1.841      2.773      0.000
+   174         21  (g)                -62    35    35   281   281   120   112      0.751     -0.989      0.299      1.277      0.000
+   175         21  (g)                -62    36    36   244     0   122   113      2.108      2.349     -0.921      3.288      0.000
+   176          1  (d)                -61     1     0    37    37   126     0      0.457      0.358      0.441      0.729      0.000
+   177         21  (g)                -61     2     0    38    38   101   126      1.165     -0.167     -2.263      2.551      0.000
+   178          1  (d)                -62    39    39   227     0   101     0      1.014      1.118     -1.425      2.102      0.330
+   179         21  (g)                -62    40    40   243     0   124   160      0.609     -0.927     -0.396      1.178      0.000
+   180         21  (g)                -61     1     0    44    44   130   130      1.844      0.333      0.274      1.894      0.000
+   181         21  (g)                -61     2     0    45    45   128   128      0.156     -0.061     -1.040      1.054      0.000
+   182         21  (g)                -62    48    48   229     0   132   129      1.630      0.518     -1.207      2.094      0.000
+   183         21  (g)                -62    50    50   229     0   129   155      0.163      0.062     -0.098      0.200      0.000
+   184         21  (g)                -62    49    49   235     0   131   120      0.207     -0.309      0.538      0.654      0.000
+   185         21  (g)                -61     1     0    51    51   136   136      0.380     -0.143      2.866      2.895      0.000
+   186         21  (g)                -61     2     0    52    52   134   134      0.805     -0.591      0.018      0.999      0.000
+   187         21  (g)                -62    53    53   228     0   133   107      0.387      0.475     -0.057      0.615      0.000
+   188         21  (g)                -62    54    54   235     0   135   131      0.798     -1.209      2.941      3.279      0.000
+   189          2  (u)                -61     1     0    68    68   140     0     -0.565      0.432     29.777     29.786      0.000
+   190         21  (g)                -61     2     0    69    69   157   140      0.414     -0.631      1.285      1.490      0.000
+   191          2  (u)                -62   107   107   254   254   157     0     -0.418     -0.946     17.554     17.588      0.330
+   192         21  (g)                -62    71    71   238     0   138   108      0.123      0.716      9.429      9.457      0.000
+   193         21  (g)                -62   109   109   230     0   141   111      0.628      0.100      2.303      2.389      0.000
+   194         21  (g)                -62   108   108   239     0   139   177     -0.484     -0.068      1.776      1.842      0.000
+   195         21  (g)                -61     1     0    73    73   144   144      0.801     -0.420      0.201      0.927      0.000
+   196         21  (g)                -61     2     0    74    74   142   142     -1.357      0.056     -1.335      1.905      0.000
+   197         21  (g)                -62    75    75   236     0   145   150     -0.741      0.747     -1.321      1.689      0.000
+   198         21  (g)                -62    76    76   241     0   143   127      0.185     -1.111      0.187      1.142      0.000
+   199          2  (u)                -61     1     0    94    94   101     0     -0.383      0.751     -0.511      0.986      0.000
+   200         21  (g)                -61     2     0    95    95   140   101      0.143     -1.673     -5.548      5.797      0.000
+   201          2  (u)                -62    96    96   227     0   140     0      0.286      0.879     -1.067      1.450      0.330
+   202         21  (g)                -62    97    97   296   296   151   158     -0.526     -1.800     -4.993      5.333      0.000
+   203         21  (g)                -61     1     0   119   119   163   163     -0.990      1.618     -0.926      2.111      0.000
+   204         21  (g)                -61     2     0   120   120   161   161     -0.148      0.711     -1.421      1.596      0.000
+   205         21  (g)                -62   121   121   231     0   164   149     -0.487      1.829     -1.031      2.155      0.000
+   206         21  (g)                -62   122   122   236     0   162   145     -0.651      0.499     -1.316      1.551      0.000
+   207         21  (g)                -61     1     0   123   123   166   166      0.138     -0.665      0.775      1.030      0.000
+   208         21  (g)                -61     2     0   124   124   165   165     -0.555     -0.363     -1.775      1.895      0.000
+   209         21  (g)                -62   125   125   241     0   168   143      0.215     -1.110      0.544      1.255      0.000
+   210         21  (g)                -62   126   126   232     0   167   156     -0.632      0.082     -1.544      1.670      0.000
+   211         21  (g)                -61     1     0   127   127   171   171     -0.143     -0.366     -0.253      0.468      0.000
+   212         21  (g)                -61     2     0   128   128   169   169      0.168      0.331     -1.839      1.876      0.000
+   213         21  (g)                -62   129   129   237     0   172   102      0.484      0.128     -1.476      1.558      0.000
+   214         21  (g)                -62   130   130   242     0   170   148     -0.459     -0.163     -0.617      0.786      0.000
+   215         21  (g)                -61     1     0   131   131   175   175     -0.204      0.149     -0.424      0.494      0.000
+   216         21  (g)                -61     2     0   132   132   173   173     -0.160      0.358     -9.168      9.176      0.000
+   217         21  (g)                -62   133   133   298   298   126   137     -0.498      0.382     -9.328      9.349      0.000
+   218         21  (g)                -62   134   134   237     0   174   172      0.134      0.125     -0.265      0.322      0.000
+   219         21  (g)                -61     1     0   135   135   179   179     -0.811     -0.655      5.323      5.424      0.000
+   220         21  (g)                -61     2     0   136   136   178   178      0.503      0.017      0.704      0.866      0.000
+   221         21  (g)                -62   137   137   239     0   177   118     -0.876     -0.405      5.006      5.098      0.000
+   222         21  (g)                -62   138   138   283   283   180   135      0.568     -0.233      1.021      1.192      0.000
+   223          2  (u)                -63     1     0   245   246   181     0     -0.447     -0.952      9.101      9.168      0.330
+   224         -1  (dbar)             -63     1     0   245   246     0   181     -0.457     -0.281      6.823      6.852      0.330
+   225         -2  (ubar)             -63     1     0   299   299     0   126      0.144     -1.248     -0.256      1.324      0.330
+   226       2101  (ud_0)             -63     2     0   255   255     0   157     -0.125      0.098    -29.178     29.184      0.579
+   227       2103  (ud_1)             -74   178   201   247   247     0   119      1.300      1.997     -2.492      3.552      0.852
+   228         21  (g)                -73   165   187   244     0   113   107      0.931      1.030     -0.148      1.398      0.065
+   229         21  (g)                -73   182   183   278   278   132   155      1.793      0.580     -1.305      2.293      0.074
+   230         21  (g)                -73   164   193   285   285   147   111      1.012      0.251      3.858      3.998      0.112
+   231         21  (g)                -73   153   205   289   289   164   139     -0.550      2.099     -1.134      2.451      0.116
+   232         21  (g)                -73   147   210   294   294   167   162     -1.549      0.350     -3.802      4.122      0.122
+   233         21  (g)                -73   145   150   277   277   155   122      2.789      3.592     -2.923      5.409      0.142
+   234         21  (g)                -73   163   167   292   292   150   174     -0.059      1.125     -1.876      2.194      0.158
+   235         21  (g)                -73   184   188   282   282   135   120      1.005     -1.518      3.480      3.933      0.214
+   236         21  (g)                -73   197   206   293   293   162   150     -1.392      1.247     -2.638      3.240      0.225
+   237         21  (g)                -73   213   218   291   291   174   102      0.618      0.253     -1.741      1.880      0.245
+   238         21  (g)                -73   158   192   286   286   138   147      0.095      1.166     18.532     18.571      0.286
+   239         21  (g)                -73   194   221   288   288   139   118     -1.360     -0.473      6.781      6.940      0.312
+   240         21  (g)                -73   146   159   270   270   154   109     -1.640     -0.561      0.274      1.787      0.334
+   241         21  (g)                -73   198   209   272   272   168   127      0.400     -2.222      0.731      2.397      0.339
+   242         21  (g)                -73   144   214   273   273   170   168     -0.843     -0.700     -1.424      1.829      0.339
+   243         21  (g)                -73   162   179   280   280   112   160      1.577     -2.323     -0.573      2.886      0.340
+   244         21  (g)                -73   175   228   276   276   122   107      3.039      3.380     -1.069      4.686      0.399
+   245        111  (pi0)              -82   223   224   411   412     0     0     -0.585     -0.292      8.779      8.804      0.135
+   246        211  pi+                 82   223   224     0     0     0     0     -0.319     -0.942      7.146      7.216      0.140
+   247       2103  (ud_1)             -74   227   227   249   253     0   119      1.300      1.997     -2.492      3.552      0.852
+   248          2  (u)                -71   171   171   249   253   119     0     -1.066     -1.124     -3.149      3.525      0.330
+   249        113  (rho0)             -83   247   248   356   357     0     0      0.698      0.720     -1.300      1.779      0.685
+   250       2112  n0                  88   247   248     0     0     0     0     -0.022     -0.049     -1.257      1.570      0.940
+   251        211  pi+                 84   247   248     0     0     0     0     -0.364      0.184     -0.417      0.600      0.140
+   252       -211  pi-                 84   247   248     0     0     0     0     -0.073      0.181     -2.230      2.242      0.140
+   253        213  (rho+)             -84   247   248   358   359     0     0     -0.004     -0.162     -0.438      0.886      0.753
+   254          2  (u)                -71   191   191   256   267   157     0     -0.418     -0.946     17.554     17.588      0.330
+   255       2101  (ud_0)             -71   226   226   256   267     0   157     -0.125      0.098    -29.178     29.184      0.579
+   256        113  (rho0)             -83   254   255   360   361     0     0     -0.434      0.126      4.940      5.020      0.775
+   257        211  pi+                 83   254   255     0     0     0     0      0.169     -0.717      6.428      6.471      0.140
+   258        113  (rho0)             -83   254   255   362   363     0     0      0.189     -0.239      2.209      2.332      0.685
+   259       -213  (rho-)             -83   254   255   364   365     0     0     -0.189      0.422      2.727      2.859      0.722
+   260        211  pi+                 83   254   255     0     0     0     0     -0.305     -0.754      0.184      0.846      0.140
+   261        313  (K*0)              -84   254   255   366   367     0     0      0.653      0.307     -1.427      1.813      0.854
+   262       -311  (Kbar0)            -84   254   255   368   368     0     0     -0.237      0.022     -0.442      0.707      0.498
+   263       -211  pi-                 84   254   255     0     0     0     0     -0.589      0.135     -1.375      1.509      0.140
+   264        111  (pi0)              -84   254   255   413   414     0     0      0.341      0.004     -0.814      0.893      0.135
+   265        111  (pi0)              -84   254   255   415   416     0     0     -0.584     -0.213     -1.919      2.022      0.135
+   266        323  (K*+)              -84   254   255   369   370     0     0      0.528     -0.148     -4.650      4.779      0.959
+   267       3122  (Lambda0)          -84   254   255   417   418     0     0     -0.086      0.207    -17.483     17.520      1.116
+   268          1  (d)                -71   141   141   300   355   103     0     -7.191     -2.053      7.510     10.603      0.330
+   269         21  (g)                -71   157   157   300   355   109   103     -2.077      0.688      1.541      2.677      0.000
+   270         21  (g)                -71   240   240   300   355   154   109     -1.640     -0.561      0.274      1.787      0.334
+   271         21  (g)                -71   152   152   300   355   127   154     -0.378     -1.665      0.216      1.721      0.000
+   272         21  (g)                -71   241   241   300   355   168   127      0.400     -2.222      0.731      2.397      0.339
+   273         21  (g)                -71   242   242   300   355   170   168     -0.843     -0.700     -1.424      1.829      0.339
+   274         21  (g)                -71   148   148   300   355   106   170     -1.008      0.711     -0.341      1.280      0.000
+   275         21  (g)                -71   143   143   300   355   107   106     -0.808      1.771     -0.028      1.946      0.000
+   276         21  (g)                -71   244   244   300   355   122   107      3.039      3.380     -1.069      4.686      0.399
+   277         21  (g)                -71   233   233   300   355   155   122      2.789      3.592     -2.923      5.409      0.142
+   278         21  (g)                -71   229   229   300   355   132   155      1.793      0.580     -1.305      2.293      0.074
+   279         21  (g)                -71   142   142   300   355   160   132      1.237     -0.595     -1.006      1.701      0.000
+   280         21  (g)                -71   243   243   300   355   112   160      1.577     -2.323     -0.573      2.886      0.340
+   281         21  (g)                -71   174   174   300   355   120   112      0.751     -0.989      0.299      1.277      0.000
+   282         21  (g)                -71   235   235   300   355   135   120      1.005     -1.518      3.480      3.933      0.214
+   283         21  (g)                -71   222   222   300   355   180   135      0.568     -0.233      1.021      1.192      0.000
+   284         21  (g)                -71   156   156   300   355   111   180      1.008      0.254      0.605      1.202      0.000
+   285         21  (g)                -71   230   230   300   355   147   111      1.012      0.251      3.858      3.998      0.112
+   286         21  (g)                -71   238   238   300   355   138   147      0.095      1.166     18.532     18.571      0.286
+   287         21  (g)                -71   170   170   300   355   118   138     -0.023      1.275      4.649      4.821      0.000
+   288         21  (g)                -71   239   239   300   355   139   118     -1.360     -0.473      6.781      6.940      0.312
+   289         21  (g)                -71   231   231   300   355   164   139     -0.550      2.099     -1.134      2.451      0.116
+   290         21  (g)                -71   149   149   300   355   102   164      6.232     -0.714     -4.522      7.733      0.000
+   291         21  (g)                -71   237   237   300   355   174   102      0.618      0.253     -1.741      1.880      0.245
+   292         21  (g)                -71   234   234   300   355   150   174     -0.059      1.125     -1.876      2.194      0.158
+   293         21  (g)                -71   236   236   300   355   162   150     -1.392      1.247     -2.638      3.240      0.225
+   294         21  (g)                -71   232   232   300   355   167   162     -1.549      0.350     -3.802      4.122      0.122
+   295         21  (g)                -71   166   166   300   355   158   167     -0.589     -0.312     -1.835      1.952      0.000
+   296         21  (g)                -71   202   202   300   355   151   158     -0.526     -1.800     -4.993      5.333      0.000
+   297         21  (g)                -71   151   151   300   355   137   151     -0.564     -0.510     -7.365      7.405      0.000
+   298         21  (g)                -71   217   217   300   355   126   137     -0.498      0.382     -9.328      9.349      0.000
+   299         -2  (ubar)             -71   225   225   300   355     0   126      0.144     -1.248     -0.256      1.324      0.330
+   300        113  (rho0)             -83   268   299   371   372     0     0     -4.452     -0.619      4.790      6.612      0.758
+   301        113  (rho0)             -83   268   299   373   374     0     0     -5.269     -1.909      4.093      6.997      0.887
+   302       -213  (rho-)             -83   268   299   375   376     0     0     -0.322      0.404      0.303      0.966      0.758
+   303        323  (K*+)              -83   268   299   377   378     0     0     -0.108     -1.046     -0.010      1.367      0.873
+   304       3222  (Sigma+)           -83   268   299   419   420     0     0     -0.675     -1.628      0.325      2.151      1.189
+   305       -211  pi-                 83   268   299     0     0     0     0     -0.133     -0.319      0.396      0.544      0.140
+   306      -2212  pbar-               83   268   299     0     0     0     0     -1.184     -0.767     -0.971      1.953      0.938
+   307        213  (rho+)             -83   268   299   379   380     0     0     -0.281      0.180      0.636      0.942      0.610
+   308        111  (pi0)              -83   268   299   421   422     0     0      0.366      0.539     -0.682      0.953      0.135
+   309        221  (eta)              -83   268   299   423   424     0     0      0.437      0.879      0.036      1.125      0.548
+   310       -211  pi-                 83   268   299     0     0     0     0      0.091      0.470     -0.904      1.032      0.140
+   311        223  (omega)            -83   268   299   425   427     0     0     -0.060      0.435      0.113      0.907      0.786
+   312        223  (omega)            -83   268   299   428   430     0     0      0.265      1.467     -0.698      1.825      0.787
+   313        211  pi+                 83   268   299     0     0     0     0      0.464      0.264     -0.251      0.606      0.140
+   314       2212  p+                  83   268   299     0     0     0     0      1.402      1.966     -1.571      3.030      0.938
+   315       -321  K-                  83   268   299     0     0     0     0      2.895      2.294     -1.420      3.989      0.494
+   316      -3214  (Sigma*bar0)       -83   268   299   381   382     0     0      0.404      0.223     -0.832      1.657      1.357
+   317        113  (rho0)             -83   268   299   383   384     0     0      1.882     -1.381     -0.663      2.543      0.760
+   318       -211  pi-                 83   268   299     0     0     0     0     -0.092      0.007     -0.122      0.207      0.140
+   319        111  (pi0)              -83   268   299   431   432     0     0      0.247     -0.510     -0.382      0.697      0.135
+   320       2212  p+                  83   268   299     0     0     0     0      1.004     -0.673      1.043      1.852      0.938
+   321      -2212  pbar-               83   268   299     0     0     0     0      0.838     -0.509      0.619      1.491      0.938
+   322        211  pi+                 83   268   299     0     0     0     0      0.098     -1.689      0.787      1.871      0.140
+   323       -211  pi-                 84   268   299     0     0     0     0      1.756     -0.188      1.674      2.437      0.140
+   324        321  K+                  84   268   299     0     0     0     0      1.086      0.432      2.043      2.405      0.494
+   325       -311  (Kbar0)            -84   268   299   385   385     0     0      0.034      0.020      2.336      2.389      0.498
+   326       -213  (rho-)             -84   268   299   386   387     0     0      0.514      0.198      7.483      7.535      0.696
+   327        223  (omega)            -84   268   299   433   435     0     0      0.161      0.796      4.281      4.422      0.756
+   328        221  (eta)              -84   268   299   436   437     0     0     -0.493      0.085      5.042      5.096      0.548
+   329        211  pi+                 84   268   299     0     0     0     0     -0.049      0.158      1.283      1.302      0.140
+   330        223  (omega)            -84   268   299   438   440     0     0     -0.305      0.628      6.396      6.482      0.783
+   331       -211  pi-                 84   268   299     0     0     0     0      0.243      0.157      1.831      1.859      0.140
+   332        213  (rho+)             -84   268   299   388   389     0     0     -0.659      0.904      2.159      2.658      1.072
+   333        311  (K0)               -84   268   299   390   390     0     0     -0.105     -0.451      0.407      0.792      0.498
+   334       -311  (Kbar0)            -84   268   299   391   391     0     0     -0.002      0.731      0.023      0.885      0.498
+   335       -211  pi-                 84   268   299     0     0     0     0      0.119     -0.402      0.064      0.446      0.140
+   336        113  (rho0)             -84   268   299   392   393     0     0      0.135      0.263      0.234      0.922      0.842
+   337        111  (pi0)              -84   268   299   441   442     0     0     -0.199      0.808     -0.234      0.875      0.135
+   338        111  (pi0)              -84   268   299   443   444     0     0      0.528     -0.120     -0.639      0.849      0.135
+   339        211  pi+                 84   268   299     0     0     0     0      1.069     -0.431     -0.544      1.283      0.140
+   340        311  (K0)               -84   268   299   394   394     0     0      1.087      0.544     -1.538      2.023      0.498
+   341       -323  (K*-)              -84   268   299   395   396     0     0      1.759     -0.099     -1.854      2.782      1.096
+   342        213  (rho+)             -84   268   299   397   398     0     0      0.270     -0.075     -1.242      1.536      0.860
+   343       -211  pi-                 84   268   299     0     0     0     0      0.536      1.309     -0.879      1.672      0.140
+   344        111  (pi0)              -84   268   299   445   446     0     0     -0.354     -0.359     -0.832      0.982      0.135
+   345        211  pi+                 84   268   299     0     0     0     0     -0.275      0.017     -1.739      1.766      0.140
+   346        111  (pi0)              -84   268   299   447   448     0     0      0.228      0.162     -1.196      1.236      0.135
+   347        313  (K*0)              -84   268   299   399   400     0     0     -0.996      0.894     -1.872      2.473      0.907
+   348       -311  (Kbar0)            -84   268   299   401   401     0     0     -0.298      0.142     -1.071      1.226      0.498
+   349        311  (K0)               -84   268   299   402   402     0     0     -0.434     -0.501     -3.256      3.360      0.498
+   350       -311  (Kbar0)            -84   268   299   403   403     0     0     -0.561     -0.161     -2.782      2.886      0.498
+   351       -213  (rho-)             -84   268   299   404   405     0     0     -0.914     -0.409     -6.362      6.485      0.759
+   352        113  (rho0)             -84   268   299   406   407     0     0     -0.056     -0.277     -3.333      3.420      0.709
+   353       3222  (Sigma+)           -84   268   299   449   450     0     0     -0.647     -0.755     -5.400      5.618      1.189
+   354      -3322  (Xibar0)           -84   268   299   451   452     0     0      0.030     -0.192     -3.577      3.816      1.315
+   355       -321  K-                  84   268   299     0     0     0     0      0.186     -0.701     -0.199      0.899      0.494
+   356        211  pi+                 91   249     0     0     0     0     0      0.235      0.650     -0.606      0.930      0.140
+   357       -211  pi-                 91   249     0     0     0     0     0      0.463      0.069     -0.694      0.848      0.140
+   358        211  pi+                 91   253     0     0     0     0     0     -0.094     -0.424     -0.207      0.501      0.140
+   359        111  (pi0)              -91   253     0   453   454     0     0      0.090      0.262     -0.231      0.385      0.135
+   360        211  pi+                 91   256     0     0     0     0     0     -0.453      0.165      4.771      4.798      0.140
+   361       -211  pi-                 91   256     0     0     0     0     0      0.019     -0.038      0.168      0.223      0.140
+   362        211  pi+                 91   258     0     0     0     0     0     -0.221     -0.019      0.833      0.873      0.140
+   363       -211  pi-                 91   258     0     0     0     0     0      0.410     -0.220      1.376      1.459      0.140
+   364       -211  pi-                 91   259     0     0     0     0     0     -0.064      0.314      0.442      0.564      0.140
+   365        111  (pi0)              -91   259     0   455   456     0     0     -0.125      0.108      2.285      2.295      0.135
+   366        311  (K0)               -91   261     0   408   408     0     0      0.133      0.204     -0.876      1.036      0.498
+   367        111  (pi0)              -91   261     0   457   458     0     0      0.520      0.103     -0.552      0.777      0.135
+   368        310  (K_S0)             -91   262   262   459   460     0     0     -0.237      0.022     -0.442      0.707      0.498
+   369        311  (K0)               -91   266     0   409   409     0     0      0.546     -0.351     -4.028      4.110      0.498
+   370        211  pi+                 91   266     0     0     0     0     0     -0.019      0.202     -0.622      0.669      0.140
+   371        211  pi+                 91   300     0     0     0     0     0     -1.384      0.130      1.483      2.037      0.140
+   372       -211  pi-                 91   300     0     0     0     0     0     -3.068     -0.749      3.307      4.575      0.140
+   373        211  pi+                 91   301     0     0     0     0     0     -3.791     -1.453      3.392      5.292      0.140
+   374       -211  pi-                 91   301     0     0     0     0     0     -1.478     -0.456      0.702      1.705      0.140
+   375       -211  pi-                 91   302     0     0     0     0     0      0.060      0.299     -0.134      0.361      0.140
+   376        111  (pi0)              -91   302     0   461   462     0     0     -0.382      0.104      0.437      0.605      0.135
+   377        311  (K0)               -91   303     0   410   410     0     0     -0.189     -0.963     -0.183      1.116      0.498
+   378        211  pi+                 91   303     0     0     0     0     0      0.081     -0.083      0.174      0.251      0.140
+   379        211  pi+                 91   307     0     0     0     0     0      0.155      0.103      0.209      0.312      0.140
+   380        111  (pi0)              -91   307     0   463   464     0     0     -0.436      0.078      0.428      0.630      0.135
+   381      -3122  (Lambdabar0)       -91   316     0   465   466     0     0      0.292      0.169     -0.888      1.465      1.116
+   382        111  (pi0)              -91   316     0   467   468     0     0      0.112      0.054      0.056      0.192      0.135
+   383        211  pi+                 91   317     0     0     0     0     0      1.552     -0.766     -0.383      1.778      0.140
+   384       -211  pi-                 91   317     0     0     0     0     0      0.330     -0.615     -0.281      0.765      0.140
+   385        310  (K_S0)             -91   325   325   469   470     0     0      0.034      0.020      2.336      2.389      0.498
+   386       -211  pi-                 91   326     0     0     0     0     0      0.216      0.155      6.303      6.310      0.140
+   387        111  (pi0)              -91   326     0   471   472     0     0      0.298      0.043      1.180      1.225      0.135
+   388        211  pi+                 91   332     0     0     0     0     0     -0.763      0.213      1.416      1.629      0.140
+   389        111  (pi0)              -91   332     0   473   474     0     0      0.105      0.691      0.743      1.029      0.135
+   390        310  (K_S0)             -91   333   333   475   476     0     0     -0.105     -0.451      0.407      0.792      0.498
+   391        130  K_L0                91   334   334     0     0     0     0     -0.002      0.731      0.023      0.885      0.498
+   392        211  pi+                 91   336     0     0     0     0     0      0.326      0.441      0.038      0.567      0.140
+   393       -211  pi-                 91   336     0     0     0     0     0     -0.191     -0.178      0.196      0.355      0.140
+   394        310  (K_S0)             -91   340   340   477   478     0     0      1.087      0.544     -1.538      2.023      0.498
+   395       -321  K-                  91   341     0     0     0     0     0      1.663     -0.339     -1.463      2.295      0.494
+   396        111  (pi0)              -91   341     0   479   480     0     0      0.095      0.240     -0.391      0.487      0.135
+   397        211  pi+                 91   342     0     0     0     0     0     -0.228      0.022     -0.112      0.291      0.140
+   398        111  (pi0)              -91   342     0   481   482     0     0      0.498     -0.098     -1.129      1.245      0.135
+   399        321  K+                  91   347     0     0     0     0     0     -0.322      0.505     -0.623      0.995      0.494
+   400       -211  pi-                 91   347     0     0     0     0     0     -0.674      0.389     -1.249      1.478      0.140
+   401        310  (K_S0)             -91   348   348   483   484     0     0     -0.298      0.142     -1.071      1.226      0.498
+   402        130  K_L0                91   349   349     0     0     0     0     -0.434     -0.501     -3.256      3.360      0.498
+   403        130  K_L0                91   350   350     0     0     0     0     -0.561     -0.161     -2.782      2.886      0.498
+   404       -211  pi-                 91   351     0     0     0     0     0     -0.048     -0.185     -2.794      2.804      0.140
+   405        111  (pi0)              -91   351     0   485   486     0     0     -0.866     -0.224     -3.568      3.680      0.135
+   406        211  pi+                 91   352     0     0     0     0     0     -0.088      0.036     -0.177      0.244      0.140
+   407       -211  pi-                 91   352     0     0     0     0     0      0.032     -0.313     -3.157      3.175      0.140
+   408        310  (K_S0)             -91   366   366   487   488     0     0      0.133      0.204     -0.876      1.036      0.498
+   409        310  (K_S0)             -91   369   369   489   490     0     0      0.546     -0.351     -4.028      4.110      0.498
+   410        310  (K_S0)             -91   377   377   491   492     0     0     -0.189     -0.963     -0.183      1.116      0.498
+   411         22  gamma               91   245     0     0     0     0     0      0.005     -0.004      0.030      0.030      0.000
+   412         22  gamma               91   245     0     0     0     0     0     -0.590     -0.288      8.749      8.774      0.000
+   413         22  gamma               91   264     0     0     0     0     0      0.094      0.063     -0.256      0.279      0.000
+   414         22  gamma               91   264     0     0     0     0     0      0.247     -0.058     -0.558      0.613      0.000
+   415         22  gamma               91   265     0     0     0     0     0     -0.243     -0.158     -0.928      0.972      0.000
+   416         22  gamma               91   265     0     0     0     0     0     -0.341     -0.055     -0.991      1.049      0.000
+   417       2112  n0                  91   267     0     0     0     0     0     -0.144      0.157    -13.712     13.745      0.940
+   418        111  (pi0)              -91   267     0   493   494     0     0      0.058      0.049     -3.772      3.775      0.135
+   419       2212  p+                  91   304     0     0     0     0     0     -0.601     -1.104      0.337      1.604      0.938
+   420        111  (pi0)              -91   304     0   495   496     0     0     -0.074     -0.525     -0.012      0.547      0.135
+   421         22  gamma               91   308     0     0     0     0     0      0.268      0.448     -0.472      0.704      0.000
+   422         22  gamma               91   308     0     0     0     0     0      0.098      0.091     -0.210      0.249      0.000
+   423         22  gamma               91   309     0     0     0     0     0     -0.048      0.497     -0.049      0.501      0.000
+   424         22  gamma               91   309     0     0     0     0     0      0.485      0.382      0.085      0.623      0.000
+   425        211  pi+                 91   311     0     0     0     0     0      0.011      0.390      0.113      0.429      0.140
+   426       -211  pi-                 91   311     0     0     0     0     0      0.155      0.022     -0.032      0.212      0.140
+   427        111  (pi0)              -91   311     0   497   498     0     0     -0.226      0.023      0.032      0.266      0.135
+   428        211  pi+                 91   312     0     0     0     0     0      0.168      0.782     -0.365      0.890      0.140
+   429       -211  pi-                 91   312     0     0     0     0     0      0.240      0.365     -0.044      0.461      0.140
+   430        111  (pi0)              -91   312     0   499   500     0     0     -0.143      0.321     -0.289      0.474      0.135
+   431         22  gamma               91   319     0     0     0     0     0      0.208     -0.277     -0.219      0.410      0.000
+   432         22  gamma               91   319     0     0     0     0     0      0.040     -0.233     -0.163      0.287      0.000
+   433        211  pi+                 91   327     0     0     0     0     0      0.042      0.275      2.219      2.241      0.140
+   434       -211  pi-                 91   327     0     0     0     0     0      0.187      0.504      1.714      1.801      0.140
+   435        111  (pi0)              -91   327     0   501   502     0     0     -0.068      0.016      0.348      0.380      0.135
+   436         22  gamma               91   328     0     0     0     0     0     -0.029      0.072      3.048      3.049      0.000
+   437         22  gamma               91   328     0     0     0     0     0     -0.464      0.013      1.994      2.048      0.000
+   438        211  pi+                 91   330     0     0     0     0     0      0.014     -0.089      0.579      0.602      0.140
+   439       -211  pi-                 91   330     0     0     0     0     0     -0.143      0.238      1.688      1.716      0.140
+   440        111  (pi0)              -91   330     0   503   504     0     0     -0.176      0.480      4.130      4.163      0.135
+   441         22  gamma               91   337     0     0     0     0     0     -0.068      0.137     -0.086      0.176      0.000
+   442         22  gamma               91   337     0     0     0     0     0     -0.130      0.671     -0.148      0.699      0.000
+   443         22  gamma               91   338     0     0     0     0     0      0.405     -0.124     -0.417      0.595      0.000
+   444         22  gamma               91   338     0     0     0     0     0      0.123      0.004     -0.222      0.254      0.000
+   445         22  gamma               91   344     0     0     0     0     0     -0.237     -0.146     -0.418      0.502      0.000
+   446         22  gamma               91   344     0     0     0     0     0     -0.118     -0.213     -0.414      0.480      0.000
+   447         22  gamma               91   346     0     0     0     0     0      0.088      0.092     -0.297      0.323      0.000
+   448         22  gamma               91   346     0     0     0     0     0      0.139      0.070     -0.899      0.913      0.000
+   449       2112  n0                  91   353     0     0     0     0     0     -0.712     -0.705     -4.553      4.756      0.940
+   450        211  pi+                 91   353     0     0     0     0     0      0.065     -0.050     -0.847      0.862      0.140
+   451      -3122  (Lambdabar0)       -91   354     0   505   506     0     0      0.047     -0.180     -3.445      3.626      1.116
+   452        111  (pi0)              -91   354     0   507   508     0     0     -0.017     -0.013     -0.132      0.190      0.135
+   453         22  gamma               91   359     0     0     0     0     0      0.119      0.250     -0.208      0.346      0.000
+   454         22  gamma               91   359     0     0     0     0     0     -0.029      0.011     -0.023      0.039      0.000
+   455         22  gamma               91   365     0     0     0     0     0     -0.102      0.034      1.855      1.858      0.000
+   456         22  gamma               91   365     0     0     0     0     0     -0.023      0.073      0.430      0.437      0.000
+   457         22  gamma               91   367     0     0     0     0     0      0.072      0.028     -0.025      0.081      0.000
+   458         22  gamma               91   367     0     0     0     0     0      0.448      0.075     -0.527      0.696      0.000
+   459        211  pi+                 91   368     0     0     0     0     0     -0.027     -0.047     -0.419      0.445      0.140
+   460       -211  pi-                 91   368     0     0     0     0     0     -0.210      0.068     -0.023      0.262      0.140
+   461         22  gamma               91   376     0     0     0     0     0     -0.072      0.021      0.175      0.190      0.000
+   462         22  gamma               91   376     0     0     0     0     0     -0.310      0.083      0.261      0.414      0.000
+   463         22  gamma               91   380     0     0     0     0     0     -0.357      0.035      0.271      0.450      0.000
+   464         22  gamma               91   380     0     0     0     0     0     -0.078      0.042      0.156      0.180      0.000
+   465      -2212  pbar-               91   381     0     0     0     0     0      0.187      0.222     -0.727      1.222      0.938
+   466        211  pi+                 91   381     0     0     0     0     0      0.105     -0.053     -0.161      0.243      0.140
+   467         22  gamma               91   382     0     0     0     0     0      0.084      0.075      0.089      0.144      0.000
+   468         22  gamma               91   382     0     0     0     0     0      0.028     -0.021     -0.034      0.048      0.000
+   469        211  pi+                 91   385     0     0     0     0     0      0.010      0.200      1.582      1.600      0.140
+   470       -211  pi-                 91   385     0     0     0     0     0      0.024     -0.180      0.755      0.789      0.140
+   471         22  gamma               91   387     0     0     0     0     0      0.003     -0.027      0.087      0.091      0.000
+   472         22  gamma               91   387     0     0     0     0     0      0.295      0.069      1.093      1.134      0.000
+   473         22  gamma               91   389     0     0     0     0     0      0.054      0.346      0.275      0.446      0.000
+   474         22  gamma               91   389     0     0     0     0     0      0.051      0.344      0.468      0.583      0.000
+   475        111  (pi0)              -91   390     0   509   510     0     0      0.027     -0.434      0.393      0.602      0.135
+   476        111  (pi0)              -91   390     0   511   512     0     0     -0.132     -0.016      0.014      0.190      0.135
+   477        211  pi+                 91   394     0     0     0     0     0      0.324      0.138     -0.770      0.858      0.140
+   478       -211  pi-                 91   394     0     0     0     0     0      0.763      0.405     -0.769      1.164      0.140
+   479         22  gamma               91   396     0     0     0     0     0      0.105      0.128     -0.301      0.343      0.000
+   480         22  gamma               91   396     0     0     0     0     0     -0.010      0.112     -0.090      0.144      0.000
+   481         22  gamma               91   398     0     0     0     0     0      0.313     -0.033     -0.830      0.888      0.000
+   482         22  gamma               91   398     0     0     0     0     0      0.185     -0.065     -0.299      0.357      0.000
+   483        211  pi+                 91   401     0     0     0     0     0     -0.282      0.029     -0.305      0.439      0.140
+   484       -211  pi-                 91   401     0     0     0     0     0     -0.016      0.113     -0.766      0.787      0.140
+   485         22  gamma               91   405     0     0     0     0     0     -0.005     -0.001     -0.002      0.005      0.000
+   486         22  gamma               91   405     0     0     0     0     0     -0.861     -0.223     -3.566      3.675      0.000
+   487        211  pi+                 91   408     0     0     0     0     0      0.197      0.261     -0.750      0.830      0.140
+   488       -211  pi-                 91   408     0     0     0     0     0     -0.064     -0.057     -0.125      0.206      0.140
+   489        211  pi+                 91   409     0     0     0     0     0      0.025     -0.166     -1.667      1.682      0.140
+   490       -211  pi-                 91   409     0     0     0     0     0      0.522     -0.185     -2.361      2.429      0.140
+   491        211  pi+                 91   410     0     0     0     0     0     -0.041     -0.791     -0.023      0.805      0.140
+   492       -211  pi-                 91   410     0     0     0     0     0     -0.148     -0.172     -0.160      0.311      0.140
+   493         22  gamma               91   418     0     0     0     0     0     -0.026     -0.025     -0.523      0.524      0.000
+   494         22  gamma               91   418     0     0     0     0     0      0.084      0.075     -3.249      3.251      0.000
+   495         22  gamma               91   420     0     0     0     0     0      0.002     -0.404     -0.008      0.404      0.000
+   496         22  gamma               91   420     0     0     0     0     0     -0.076     -0.121     -0.004      0.143      0.000
+   497         22  gamma               91   427     0     0     0     0     0      0.008      0.025      0.018      0.032      0.000
+   498         22  gamma               91   427     0     0     0     0     0     -0.234     -0.002      0.014      0.234      0.000
+   499         22  gamma               91   430     0     0     0     0     0     -0.121      0.284     -0.299      0.430      0.000
+   500         22  gamma               91   430     0     0     0     0     0     -0.022      0.036      0.011      0.044      0.000
+   501         22  gamma               91   435     0     0     0     0     0     -0.077     -0.043      0.166      0.188      0.000
+   502         22  gamma               91   435     0     0     0     0     0      0.009      0.060      0.182      0.192      0.000
+   503         22  gamma               91   440     0     0     0     0     0     -0.104      0.113      1.328      1.337      0.000
+   504         22  gamma               91   440     0     0     0     0     0     -0.072      0.367      2.802      2.826      0.000
+   505      -2212  pbar-               91   451     0     0     0     0     0      0.129     -0.184     -3.054      3.203      0.938
+   506        211  pi+                 91   451     0     0     0     0     0     -0.082      0.004     -0.391      0.423      0.140
+   507         22  gamma               91   452     0     0     0     0     0     -0.076      0.003     -0.076      0.108      0.000
+   508         22  gamma               91   452     0     0     0     0     0      0.059     -0.016     -0.056      0.082      0.000
+   509         22  gamma               91   475     0     0     0     0     0     -0.005     -0.270      0.157      0.312      0.000
+   510         22  gamma               91   475     0     0     0     0     0      0.033     -0.165      0.236      0.290      0.000
+   511         22  gamma               91   476     0     0     0     0     0     -0.056     -0.047     -0.048      0.087      0.000
+   512         22  gamma               91   476     0     0     0     0     0     -0.077      0.031      0.062      0.103      0.000
+                                   Charge sum:  2.000           Momentum sum:     -0.000      0.000     -0.000    200.000    200.000
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+
+====================================================================
+                  HADRONIC PROCESSES SUMMARY (verbose level 1)
+
+---------------------------------------------------
+                           Hadronic Processes for neutron
+
+  Process: hadElastic
+        Model:             hElasticCHIPS: 0 eV  ---> 100 TeV
+     Cr_sctns:        G4NeutronElasticXS: 0 eV  ---> 100 TeV
+
+  Process: neutronInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:      G4NeutronInelasticXS: 0 eV  ---> 100 TeV
+
+  Process: nCapture
+        Model:               nRadCapture: 0 eV  ---> 100 TeV
+     Cr_sctns:        G4NeutronCaptureXS: 0 eV  ---> 100 TeV
+
+  Process: nKiller
+
+---------------------------------------------------
+                           Hadronic Processes for GenericIon
+
+  Process: ionInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for He3
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: He3Inelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for alpha
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: alphaInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for anti_He3
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_He3Inelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_alpha
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_alphaInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_deuteron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_deuteronInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_lambda
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: anti_lambdaInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_neutron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100.1 MeV
+        Model:              AntiAElastic: 100 MeV ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_neutronInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_proton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100.1 MeV
+        Model:              AntiAElastic: 100 MeV ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_protonInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_triton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_tritonInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for deuteron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: dInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for e+
+
+  Process: electronNuclear
+        Model:   G4ElectroVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:          ElectroNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for e-
+
+  Process: electronNuclear
+        Model:   G4ElectroVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:          ElectroNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for gamma
+
+  Process: photonNuclear
+        Model:               GammaNPreco: 0 eV  ---> 200 MeV
+        Model:            BertiniCascade: 199 MeV ---> 6 GeV
+        Model:           TheoFSGenerator: 3 GeV ---> 100 TeV
+     Cr_sctns:            PhotoNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for kaon+
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: kaon+Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for kaon-
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: kaon-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for lambda
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: lambdaInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for mu+
+
+  Process: muonNuclear
+        Model:      G4MuonVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:     KokoulinMuonNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for mu-
+
+  Process: muonNuclear
+        Model:      G4MuonVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:     KokoulinMuonNuclearXS: 0 eV  ---> 100 TeV
+
+  Process: muMinusCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for pi+
+
+  Process: hadElastic
+        Model:           hElasticGlauber: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: pi+Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for pi-
+
+  Process: hadElastic
+        Model:           hElasticGlauber: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: pi-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for proton
+
+  Process: hadElastic
+        Model:             hElasticCHIPS: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: protonInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for sigma-
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: sigma-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for triton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: tInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+================================================================
+=======================================================================
+======       Pre-compound/De-excitation Physics Parameters     ========
+=======================================================================
+Type of pre-compound inverse x-section              3
+Pre-compound model active                           1
+Pre-compound excitation low energy (MeV)            0.1
+Pre-compound excitation high energy (MeV)           30
+Type of de-excitation inverse x-section             3
+Type of de-excitation factory                       Evaporation+GEM
+Number of de-excitation channels                    68
+Min excitation energy (keV)                         0.01
+Min energy per nucleon for multifragmentation (MeV) 2e+05
+Limit excitation energy for Fermi BreakUp (MeV)     20
+Level density (1/MeV)                               0.075
+Use simple level density model                      1
+Use discrete excitation energy of the residual      0
+Time limit for long lived isomeres (ns)             1
+Isomer production flag                              1
+Internal e- conversion flag                         1
+Store e- internal conversion data                   0
+Electron internal conversion ID                     2
+Correlated gamma emission flag                      0
+Max 2J for sampling of angular correlations         10
+=======================================================================
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 0
+evtCount : 0 -1 0
+xyz : 7.160 1.038 -12.100 :  0 2 0 0 0
+xyz : 7.164 1.023 -2.500 :  0 2 0 0 0
+xyz : 5.668 4.493 -4.100 :  0 1 0 0 1
+xyz : 2.458 6.779 -7.300 :  0 1 0 0 2
+xyz : 2.752 6.700 -5.700 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 116
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 1
+evtCount : 1 -1 0
+xyz : 5.367 4.793 -10.500 :  0 2 0 0 1
+xyz : -6.705 -2.733 -4.100 :  0 2 0 0 6
+xyz : -5.621 -4.540 -5.700 :  0 2 0 0 7
+xyz : -2.278 -6.828 -0.900 :  0 1 0 0 8
+xyz : 5.210 -4.951 -4.100 :  0 1 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 85
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 2
+evtCount : 2 -1 0
+xyz : 5.033 5.127 -2.500 :  0 1 0 0 1
+xyz : 1.569 7.017 -2.500 :  0 1 0 0 2
+xyz : -1.189 7.119 -8.900 :  0 2 0 0 3
+xyz : -6.951 -1.818 -0.900 :  0 1 0 0 6
+xyz : -4.377 -5.783 -2.500 :  0 1 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 183
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 3
+evtCount : 3 -1 0
+xyz : 6.748 2.575 -12.100 :  0 2 0 0 0
+xyz : 6.853 2.183 -10.500 :  0 2 0 0 0
+xyz : 6.874 2.104 -8.900 :  0 1 0 0 0
+xyz : 7.066 1.389 -7.300 :  0 1 0 0 0
+xyz : -1.999 6.902 -4.100 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 113
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 4
+evtCount : 4 -1 0
+xyz : 6.813 2.330 -0.900 :  0 1 0 0 0
+xyz : 0.899 7.197 -8.900 :  0 1 0 0 2
+xyz : -1.916 6.924 -5.700 :  0 1 0 0 3
+xyz : -4.793 5.367 -0.900 :  0 2 0 0 4
+xyz : -7.140 1.110 -5.700 :  0 1 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 93
+ PYTHIA Warning in MultipartonInteractions::pTnext: weight above unity  
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 5
+evtCount : 5 -1 0
+xyz : 5.764 4.396 -5.700 :  0 2 0 0 1
+xyz : 2.104 6.874 -0.900 :  0 1 0 0 2
+xyz : -7.022 -1.551 -12.100 :  0 2 0 0 6
+xyz : -6.716 -2.696 -12.100 :  0 2 0 0 6
+xyz : -7.094 -1.283 -10.500 :  0 1 0 0 6
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 132
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 6
+evtCount : 6 -1 0
+xyz : 5.783 4.377 -10.500 :  0 1 0 0 1
+xyz : 4.868 5.292 -2.500 :  0 1 0 0 1
+xyz : 1.750 6.969 -10.500 :  0 1 0 0 2
+xyz : 1.445 7.051 -2.500 :  0 4 0 0 2
+xyz : -1.596 7.010 -12.100 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 106
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 7
+evtCount : 7 -1 0
+xyz : 6.825 2.289 -10.500 :  0 2 0 0 0
+xyz : 7.173 0.989 -5.700 :  0 1 0 0 0
+xyz : 7.173 0.989 -4.100 :  0 1 0 0 0
+xyz : 5.447 4.713 -5.700 :  0 1 0 0 1
+xyz : -2.511 6.765 -10.500 :  0 3 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 116
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 8
+evtCount : 8 -1 0
+xyz : 5.585 4.575 -12.100 :  0 1 0 0 1
+xyz : 4.962 5.199 -2.500 :  0 1 0 0 1
+xyz : 1.577 -7.015 -12.100 :  0 1 0 0 9
+xyz : 1.848 -6.943 -10.500 :  0 1 0 0 9
+xyz : 5.213 -4.948 -4.100 :  0 2 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 69
+ PYTHIA Error in BeamRemnants::setKinematics: kinematics construction failed  
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 9
+evtCount : 9 -1 0
+xyz : 7.155 1.057 -10.500 :  0 3 0 0 0
+xyz : -1.234 7.107 -12.100 :  0 2 0 0 3
+xyz : -2.575 -6.748 -5.700 :  0 2 0 0 8
+xyz : -2.534 -6.759 -4.100 :  0 1 0 0 8
+xyz : -2.605 -6.740 -2.500 :  0 4 0 0 8
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 86
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 10
+evtCount : 10 -1 0
+xyz : -5.648 4.512 -0.900 :  0 2 0 0 4
+xyz : -6.708 -2.722 -12.100 :  0 1 0 0 6
+xyz : -4.785 -5.375 -0.900 :  0 1 0 0 7
+xyz : -4.769 -5.392 -0.900 :  0 1 0 0 7
+xyz : 6.951 -1.818 -2.500 :  0 1 0 0 11
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 120
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 11
+evtCount : 11 -1 0
+xyz : -6.840 2.232 -7.300 :  0 1 0 0 5
+xyz : 2.097 -6.876 -4.100 :  0 1 0 0 9
+xyz : 5.579 4.581 -22.100 :  0 1 0 1 1
+xyz : -6.759 2.534 -20.100 :  0 1 0 1 5
+xyz : 6.795 2.398 12.100 :  0 1 0 2 0
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 61
+ PYTHIA Warning in StringFragmentation::fragmentToJunction: bad convergence junction rest frame  
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 12
+evtCount : 12 -1 0
+xyz : 5.469 4.691 -10.500 :  0 1 0 0 1
+xyz : 5.541 4.620 -5.700 :  0 7 0 0 1
+xyz : 5.505 4.655 -5.700 :  0 4 0 0 1
+xyz : 5.122 5.039 -4.100 :  0 1 0 0 1
+xyz : 5.152 5.008 -0.900 :  0 2 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 134
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 13
+evtCount : 13 -1 0
+xyz : 7.164 1.023 -7.300 :  0 2 0 0 0
+xyz : 4.840 5.320 -10.500 :  0 1 0 0 1
+xyz : 1.260 7.100 -5.700 :  0 1 0 0 2
+xyz : -1.193 7.118 -7.300 :  0 1 0 0 3
+xyz : -1.008 7.168 -5.700 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 140
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 14
+evtCount : 14 -1 0
+xyz : 6.975 1.728 0.900 :  0 1 0 2 0
+xyz : 1.675 6.989 10.500 :  0 1 0 2 2
+xyz : -2.764 6.697 7.300 :  0 2 0 2 3
+xyz : -4.675 5.486 4.100 :  0 1 0 2 4
+xyz : -5.753 4.407 10.500 :  0 2 0 2 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 47
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 15
+evtCount : 15 -1 0
+xyz : 6.725 2.662 -10.500 :  0 1 0 0 0
+xyz : 2.530 6.760 -7.300 :  0 2 0 0 2
+xyz : -6.993 -1.660 -12.100 :  0 1 0 0 6
+xyz : -6.760 -2.530 -2.500 :  0 2 0 0 6
+xyz : -4.799 -5.361 -4.100 :  0 2 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 54
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 16
+evtCount : 16 -1 0
+xyz : 7.103 1.249 -2.500 :  0 2 0 0 0
+xyz : 2.609 6.739 -8.900 :  0 1 0 0 2
+xyz : 1.306 7.088 -8.900 :  0 1 0 0 2
+xyz : 1.196 7.117 -8.900 :  0 2 0 0 2
+xyz : -4.575 5.585 -5.700 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 98
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 17
+evtCount : 17 -1 0
+xyz : 7.033 1.509 -7.300 :  0 1 0 0 0
+xyz : 6.967 1.758 -2.500 :  0 1 0 0 0
+xyz : 6.956 1.799 -2.500 :  0 2 0 0 0
+xyz : 5.670 4.490 -8.900 :  0 2 0 0 1
+xyz : 5.745 4.416 -4.100 :  0 1 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 86
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 18
+evtCount : 18 -1 0
+xyz : 6.896 2.021 -2.500 :  0 1 0 0 0
+xyz : 5.033 5.127 -8.900 :  0 1 0 0 1
+xyz : 1.908 6.926 -10.500 :  0 1 0 0 2
+xyz : 1.728 6.975 -5.700 :  0 1 0 0 2
+xyz : 1.099 7.143 -2.500 :  0 2 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 130
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 19
+evtCount : 19 -1 0
+xyz : 6.690 2.790 -5.700 :  0 1 0 0 0
+xyz : -4.769 5.392 -0.900 :  0 1 0 0 4
+xyz : -7.157 -1.050 -5.700 :  0 1 0 0 6
+xyz : -4.553 -5.607 -8.900 :  0 1 0 0 7
+xyz : -4.644 -5.516 -7.300 :  0 2 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 101
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 20
+evtCount : 20 -1 0
+xyz : 4.518 5.643 -12.100 :  0 2 0 0 1
+xyz : 5.596 4.564 -7.300 :  0 3 0 0 1
+xyz : 1.287 7.093 -12.100 :  0 2 0 0 2
+xyz : 6.756 2.545 2.500 :  0 2 0 2 0
+xyz : 6.694 2.775 2.500 :  0 1 0 2 0
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 38
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 21
+evtCount : 21 -1 0
+xyz : -1.558 7.020 -4.100 :  0 2 0 0 3
+xyz : -5.033 5.127 -10.500 :  0 1 0 0 4
+xyz : -5.146 5.014 -4.100 :  0 2 0 0 4
+xyz : 6.973 -1.735 -4.100 :  0 3 0 0 11
+xyz : 6.730 -2.643 -0.900 :  0 2 0 0 11
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 80
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 22
+evtCount : 22 -1 0
+xyz : -1.404 7.062 -12.100 :  0 3 0 0 3
+xyz : -4.655 5.505 -5.700 :  0 2 0 0 4
+xyz : 4.438 -5.723 -2.500 :  0 1 0 0 10
+xyz : 5.599 -4.562 -2.500 :  0 2 0 0 10
+xyz : 5.621 -4.540 -2.500 :  0 2 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 85
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 23
+evtCount : 23 -1 0
+xyz : 1.916 6.924 -5.700 :  0 1 0 0 2
+xyz : 1.464 7.046 -4.100 :  0 1 0 0 2
+xyz : -1.991 6.904 -10.500 :  0 1 0 0 3
+xyz : -2.587 6.745 -5.700 :  0 1 0 0 3
+xyz : -5.359 -4.802 -12.100 :  0 5 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 79
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 24
+evtCount : 24 -1 0
+xyz : 5.681 4.479 -2.500 :  0 6 0 0 1
+xyz : -2.195 -6.850 -2.500 :  0 1 0 0 8
+xyz : -2.195 -6.850 -0.900 :  0 1 0 0 8
+xyz : 6.706 -2.730 -5.700 :  0 1 0 0 11
+xyz : 7.131 -1.144 -5.700 :  0 2 0 0 11
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 120
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 25
+evtCount : 25 -1 0
+xyz : 1.795 6.957 -2.500 :  0 1 0 0 2
+xyz : -4.879 -5.281 -4.100 :  0 1 0 0 7
+xyz : -1.479 -7.042 -0.900 :  0 1 0 0 8
+xyz : 2.455 -6.780 -7.300 :  0 2 0 0 9
+xyz : 4.708 -5.452 -8.900 :  0 1 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 66
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 26
+evtCount : 26 -1 0
+xyz : 4.484 5.676 -12.100 :  0 2 0 0 1
+xyz : 2.330 6.813 -20.100 :  0 1 0 1 2
+xyz : 2.263 6.832 -14.100 :  0 1 0 1 2
+xyz : -1.336 7.080 -20.100 :  0 1 0 1 3
+xyz : 7.025 -1.539 -22.100 :  0 1 0 1 11
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 25
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 27
+evtCount : 27 -1 0
+xyz : 7.062 1.404 -8.900 :  0 1 0 0 0
+xyz : 6.691 2.786 -5.700 :  0 2 0 0 0
+xyz : 2.677 6.721 -0.900 :  0 1 0 0 2
+xyz : 2.270 6.830 -0.900 :  0 1 0 0 2
+xyz : -6.872 2.112 -5.700 :  0 1 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 129
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 28
+evtCount : 28 -1 0
+xyz : 2.816 6.683 -18.100 :  0 2 0 1 2
+xyz : 6.799 -2.383 -14.100 :  0 1 0 1 11
+xyz : 6.961 1.780 5.700 :  0 1 0 2 0
+xyz : 6.955 1.803 7.300 :  0 1 0 2 0
+xyz : 6.933 1.886 8.900 :  0 1 0 2 0
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 114
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 29
+evtCount : 29 -1 0
+xyz : 5.155 5.006 -10.500 :  0 1 0 0 1
+xyz : 5.659 4.501 -7.300 :  0 2 0 0 1
+xyz : 4.396 5.764 -2.500 :  0 2 0 0 1
+xyz : 2.594 6.743 -12.100 :  0 1 0 0 2
+xyz : -2.809 6.685 -12.100 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 94
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 30
+evtCount : 30 -1 0
+xyz : 5.315 4.846 -8.900 :  0 1 0 0 1
+xyz : 4.967 5.193 -5.700 :  0 1 0 0 1
+xyz : 5.714 4.446 -4.100 :  0 2 0 0 1
+xyz : 2.745 6.702 -2.500 :  0 1 0 0 2
+xyz : -1.856 6.941 -8.900 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 117
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 31
+evtCount : 31 -1 0
+xyz : 2.654 6.727 -2.500 :  0 1 0 0 2
+xyz : -4.989 -5.171 -8.900 :  0 1 0 0 7
+xyz : 7.128 1.155 -14.100 :  0 1 0 1 0
+xyz : 2.764 6.697 4.100 :  0 2 0 2 2
+xyz : -6.996 1.649 4.100 :  0 2 0 2 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 74
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 32
+evtCount : 32 -1 0
+xyz : 2.421 6.789 -7.300 :  0 1 0 0 2
+xyz : -4.832 5.328 -5.700 :  0 2 0 0 4
+xyz : -6.868 2.127 -5.700 :  0 1 0 0 5
+xyz : 5.466 -4.694 -7.300 :  0 2 0 0 10
+xyz : 5.494 -4.666 -2.500 :  0 2 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 51
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 33
+evtCount : 33 -1 0
+xyz : 5.381 4.780 -8.900 :  0 1 0 0 1
+xyz : 4.989 5.171 -8.900 :  0 1 0 0 1
+xyz : 2.462 6.778 -10.500 :  0 2 0 0 2
+xyz : -1.001 7.170 -10.500 :  0 2 0 0 3
+xyz : -2.801 6.687 -7.300 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 146
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 34
+evtCount : 34 -1 0
+xyz : 7.024 1.543 -7.300 :  0 2 0 0 0
+xyz : 7.034 1.505 -4.100 :  0 2 0 0 0
+xyz : -1.031 7.162 -4.100 :  0 2 0 0 3
+xyz : -1.223 7.110 -4.100 :  0 1 0 0 3
+xyz : -4.995 5.166 -12.100 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 88
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 35
+evtCount : 35 -1 0
+xyz : 4.501 5.659 -5.700 :  0 2 0 0 1
+xyz : -5.681 4.479 -12.100 :  0 2 0 0 4
+xyz : -4.829 5.331 -5.700 :  0 1 0 0 4
+xyz : -5.144 5.017 -5.700 :  0 1 0 0 4
+xyz : 1.720 6.977 -22.100 :  0 3 0 1 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 27
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 36
+evtCount : 36 -1 0
+xyz : -2.413 6.791 -12.100 :  0 1 0 0 3
+xyz : -5.781 4.380 -4.100 :  0 2 0 0 4
+xyz : 2.323 -6.815 -12.100 :  0 1 0 0 9
+xyz : 2.809 -6.685 -0.900 :  0 2 0 0 9
+xyz : 4.970 5.190 -22.100 :  0 2 0 1 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 54
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 37
+evtCount : 37 -1 0
+xyz : 5.053 -5.108 -5.700 :  0 2 0 0 10
+xyz : 7.040 -1.487 -10.500 :  0 5 0 0 11
+xyz : 6.786 -2.432 -8.900 :  0 2 0 0 11
+xyz : 7.058 -1.419 -2.500 :  0 3 0 0 11
+xyz : -1.340 -7.079 -14.100 :  0 4 0 1 8
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 49
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 38
+evtCount : 38 -1 0
+xyz : -4.917 5.243 -8.900 :  0 1 0 0 4
+xyz : -5.166 -4.995 -0.900 :  0 1 0 0 7
+xyz : 1.573 -7.016 -12.100 :  0 2 0 0 9
+xyz : 5.610 4.551 -22.100 :  0 2 0 1 1
+xyz : 2.730 -6.706 -22.100 :  0 1 0 1 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 70
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 39
+evtCount : 39 -1 0
+xyz : 7.114 1.208 -5.700 :  0 1 0 0 0
+xyz : 6.966 1.762 -4.100 :  0 2 0 0 0
+xyz : 4.446 5.714 -0.900 :  0 2 0 0 1
+xyz : 1.279 7.095 -12.100 :  0 2 0 0 2
+xyz : -6.688 2.797 -0.900 :  0 5 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 126
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 40
+evtCount : 40 -1 0
+xyz : 6.888 2.052 -0.900 :  0 1 0 0 0
+xyz : 2.458 6.779 -8.900 :  0 1 0 0 2
+xyz : 2.440 6.784 -8.900 :  0 2 0 0 2
+xyz : 1.404 7.062 -7.300 :  0 1 0 0 2
+xyz : 1.404 7.062 -5.700 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 69
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 41
+evtCount : 41 -1 0
+xyz : 7.024 1.543 -10.500 :  0 2 0 0 0
+xyz : 6.998 1.641 -8.900 :  0 2 0 0 0
+xyz : 1.893 6.931 -7.300 :  0 1 0 0 2
+xyz : -6.859 -2.161 -10.500 :  0 2 0 0 6
+xyz : -5.723 -4.438 -12.100 :  0 1 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 111
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 42
+evtCount : 42 -1 0
+xyz : 7.001 1.630 -5.700 :  0 1 0 0 0
+xyz : 1.509 7.033 -10.500 :  0 1 0 0 2
+xyz : -2.428 6.787 -4.100 :  0 3 0 0 3
+xyz : 4.396 -5.764 -12.100 :  0 2 0 0 10
+xyz : 5.593 -4.567 -8.900 :  0 2 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 67
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 43
+evtCount : 43 -1 0
+xyz : 7.021 -1.554 -10.500 :  0 1 0 0 11
+xyz : 6.891 -2.040 -5.700 :  0 2 0 0 11
+xyz : 7.021 1.554 -18.100 :  0 1 0 1 0
+xyz : -4.526 5.634 -20.100 :  0 3 0 1 4
+xyz : -5.166 4.995 -20.100 :  0 3 0 1 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 86
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 44
+evtCount : 44 -1 0
+xyz : 7.173 0.989 -4.100 :  0 1 0 0 0
+xyz : 5.593 4.567 -10.500 :  0 2 0 0 1
+xyz : 5.028 5.133 -10.500 :  0 1 0 0 1
+xyz : 0.899 7.197 -10.500 :  0 1 0 0 2
+xyz : -0.899 7.197 -5.700 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 46
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 45
+evtCount : 45 -1 0
+xyz : 5.433 4.727 -7.300 :  0 2 0 0 1
+xyz : -6.733 -2.632 -5.700 :  0 1 0 0 6
+xyz : 6.715 -2.700 -4.100 :  0 3 0 0 11
+xyz : 6.910 -1.969 -4.100 :  0 1 0 0 11
+xyz : 2.522 6.762 -16.100 :  0 2 0 1 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 70
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 46
+evtCount : 46 -1 0
+xyz : 7.141 1.106 -0.900 :  0 2 0 0 0
+xyz : 5.563 4.598 -0.900 :  0 1 0 0 1
+xyz : 1.196 7.117 -5.700 :  0 2 0 0 2
+xyz : 2.684 6.719 -2.500 :  0 1 0 0 2
+xyz : -1.430 7.055 -7.300 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 145
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 47
+evtCount : 47 -1 0
+xyz : 6.848 -2.202 -0.900 :  0 1 0 0 11
+xyz : 5.607 4.553 -14.100 :  0 1 0 1 1
+xyz : 0.944 -7.185 -22.100 :  0 1 0 1 9
+xyz : 2.406 -6.793 -18.100 :  0 1 0 1 9
+xyz : 2.458 -6.779 -18.100 :  0 1 0 1 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 53
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 48
+evtCount : 48 -1 0
+xyz : 4.733 5.428 -0.900 :  0 2 0 0 1
+xyz : 2.654 6.727 -12.100 :  0 1 0 0 2
+xyz : 1.038 7.160 -8.900 :  0 2 0 0 2
+xyz : -2.368 6.803 -12.100 :  0 1 0 0 3
+xyz : -7.174 0.985 -0.900 :  0 2 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 118
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 49
+evtCount : 49 -1 0
+xyz : 5.651 4.509 -2.500 :  0 1 0 0 1
+xyz : 5.039 5.122 -0.900 :  0 1 0 0 1
+xyz : 2.605 6.740 -0.900 :  0 2 0 0 2
+xyz : -1.272 7.097 -4.100 :  0 2 0 0 3
+xyz : -1.562 7.019 -4.100 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 131
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 50
+evtCount : 50 -1 0
+xyz : 6.916 1.946 -7.300 :  0 1 0 0 0
+xyz : 6.928 1.901 -2.500 :  0 3 0 0 0
+xyz : 7.197 0.899 -0.900 :  0 1 0 0 0
+xyz : 5.764 4.396 -7.300 :  0 2 0 0 1
+xyz : 5.022 5.138 -2.500 :  0 1 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 61
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 51
+evtCount : 51 -1 0
+xyz : 5.287 4.873 -4.100 :  0 1 0 0 1
+xyz : 5.659 4.501 -0.900 :  0 2 0 0 1
+xyz : 4.650 5.510 -0.900 :  0 2 0 0 1
+xyz : 0.925 7.190 -4.100 :  0 2 0 0 2
+xyz : 1.999 6.902 -2.500 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 109
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 52
+evtCount : 52 -1 0
+xyz : 7.170 -1.001 -5.700 :  0 2 0 0 11
+xyz : -1.121 7.137 -16.100 :  0 2 0 1 3
+xyz : -6.882 -2.074 -18.100 :  0 1 0 1 6
+xyz : 6.916 1.946 0.900 :  0 1 0 2 0
+xyz : 1.404 7.062 4.100 :  0 1 0 2 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 77
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 53
+evtCount : 53 -1 0
+xyz : 5.309 4.851 -8.900 :  0 1 0 0 1
+xyz : 5.292 4.868 -8.900 :  0 1 0 0 1
+xyz : 0.903 7.196 -10.500 :  0 2 0 0 2
+xyz : -1.584 7.013 -4.100 :  0 1 0 0 3
+xyz : 0.974 -7.177 -4.100 :  0 1 0 0 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 55
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 54
+evtCount : 54 -1 0
+xyz : 5.039 5.122 -5.700 :  0 5 0 0 1
+xyz : 4.843 5.317 -5.700 :  0 2 0 0 1
+xyz : 4.821 5.339 -5.700 :  0 2 0 0 1
+xyz : 4.432 5.728 -4.100 :  0 1 0 0 1
+xyz : 2.797 6.688 -4.100 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 112
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 55
+evtCount : 55 -1 0
+xyz : 7.147 1.087 -2.500 :  0 1 0 0 0
+xyz : -4.393 5.767 -10.500 :  0 1 0 0 4
+xyz : 5.017 -5.144 -22.100 :  0 1 0 1 10
+xyz : 5.348 -4.813 -16.100 :  0 1 0 1 10
+xyz : 6.738 2.613 0.900 :  0 2 0 2 0
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 38
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 56
+evtCount : 56 -1 0
+xyz : 6.809 2.345 -10.500 :  0 5 0 0 0
+xyz : 6.787 2.428 -10.500 :  0 1 0 0 0
+xyz : 6.776 2.470 -10.500 :  0 2 0 0 0
+xyz : 7.112 1.215 -7.300 :  0 1 0 0 0
+xyz : 4.617 5.543 -8.900 :  0 2 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 99
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 57
+evtCount : 57 -1 0
+xyz : 6.971 1.743 -5.700 :  0 1 0 0 0
+xyz : 7.141 1.106 -2.500 :  0 2 0 0 0
+xyz : 7.036 1.498 -2.500 :  0 2 0 0 0
+xyz : 4.917 5.243 -10.500 :  0 1 0 0 1
+xyz : -2.609 6.739 -2.500 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 115
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 58
+evtCount : 58 -1 0
+xyz : 7.189 0.929 -0.900 :  0 1 0 0 0
+xyz : 4.482 5.679 -10.500 :  0 1 0 0 1
+xyz : 4.482 5.679 -8.900 :  0 1 0 0 1
+xyz : 2.726 6.707 -10.500 :  0 2 0 0 2
+xyz : 1.577 7.015 -5.700 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 124
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 59
+evtCount : 59 -1 0
+xyz : -1.012 -7.167 -5.700 :  0 3 0 0 8
+xyz : -0.940 -7.186 -5.700 :  0 12 0 0 8
+xyz : 0.921 -7.191 -8.900 :  0 1 0 0 9
+xyz : 1.660 -6.993 -5.700 :  0 1 0 0 9
+xyz : -5.276 4.884 -18.100 :  0 1 0 1 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 73
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 60
+evtCount : 60 -1 0
+xyz : 6.905 1.988 -10.500 :  0 2 0 0 0
+xyz : -5.679 4.482 -12.100 :  0 1 0 0 4
+xyz : -5.654 4.507 -8.900 :  0 8 0 0 4
+xyz : 2.360 6.805 -14.100 :  0 1 0 1 2
+xyz : 1.230 -7.108 -14.100 :  0 1 0 1 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 25
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 61
+evtCount : 61 -1 0
+xyz : 4.669 5.491 -5.700 :  0 1 0 0 1
+xyz : -0.899 7.197 -0.900 :  0 1 0 0 3
+xyz : -1.238 7.106 -0.900 :  0 1 0 0 3
+xyz : -1.253 7.102 -0.900 :  0 1 0 0 3
+xyz : -5.066 5.094 -12.100 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 132
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 62
+evtCount : 62 -1 0
+xyz : 1.068 7.152 -7.300 :  0 2 0 0 2
+xyz : -7.033 1.509 -12.100 :  0 1 0 0 5
+xyz : -6.806 2.357 -7.300 :  0 2 0 0 5
+xyz : -6.906 1.984 -2.500 :  0 1 0 0 5
+xyz : -7.161 -1.034 -4.100 :  0 1 0 0 6
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 89
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 63
+evtCount : 63 -1 0
+xyz : 7.157 1.050 -10.500 :  0 1 0 0 0
+xyz : 7.165 1.019 -7.300 :  0 1 0 0 0
+xyz : 2.285 6.826 -7.300 :  0 1 0 0 2
+xyz : -2.006 -6.900 -4.100 :  0 1 0 0 8
+xyz : 0.944 -7.185 -12.100 :  0 1 0 0 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 112
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 64
+evtCount : 64 -1 0
+xyz : -1.788 6.959 -7.300 :  0 3 0 0 3
+xyz : -1.389 7.066 -4.100 :  0 1 0 0 3
+xyz : -5.425 4.735 -5.700 :  0 1 0 0 4
+xyz : -5.673 4.487 -4.100 :  0 1 0 0 4
+xyz : 4.435 -5.725 -2.500 :  0 2 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 83
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 65
+evtCount : 65 -1 0
+xyz : 7.099 1.264 -12.100 :  0 2 0 0 0
+xyz : 0.899 7.197 -10.500 :  0 1 0 0 2
+xyz : -1.343 7.078 -7.300 :  0 1 0 0 3
+xyz : -1.019 7.165 -4.100 :  0 1 0 0 3
+xyz : -6.727 2.654 -12.100 :  0 1 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 104
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 66
+evtCount : 66 -1 0
+xyz : -1.924 6.922 -7.300 :  0 1 0 0 3
+xyz : -2.142 6.864 -7.300 :  0 1 0 0 3
+xyz : -4.813 -5.348 -2.500 :  0 1 0 0 7
+xyz : 5.681 -4.479 -12.100 :  0 2 0 0 10
+xyz : 4.636 -5.524 -2.500 :  0 1 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 80
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 67
+evtCount : 67 -1 0
+xyz : 1.686 6.986 -4.100 :  0 2 0 0 2
+xyz : 1.441 7.052 -4.100 :  0 1 0 0 2
+xyz : 2.376 6.801 -0.900 :  0 1 0 0 2
+xyz : -4.824 5.337 -0.900 :  0 1 0 0 4
+xyz : -7.052 1.441 -2.500 :  0 1 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 120
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 68
+evtCount : 68 -1 0
+xyz : 5.077 5.083 -7.300 :  0 1 0 0 1
+xyz : 2.214 6.845 -8.900 :  0 2 0 0 2
+xyz : 1.931 6.920 -5.700 :  0 1 0 0 2
+xyz : 1.453 7.049 -4.100 :  0 2 0 0 2
+xyz : 1.065 7.153 -4.100 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 77
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 69
+evtCount : 69 -1 0
+xyz : -1.355 7.075 -5.700 :  0 2 0 0 3
+xyz : -1.502 7.035 -2.500 :  0 1 0 0 3
+xyz : -4.848 5.312 -12.100 :  0 2 0 0 4
+xyz : -5.295 4.865 -12.100 :  0 2 0 0 4
+xyz : -5.701 4.460 -2.500 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 114
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 70
+evtCount : 70 -1 0
+xyz : 6.973 1.735 -7.300 :  0 3 0 0 0
+xyz : 6.792 2.409 -2.500 :  0 2 0 0 0
+xyz : 5.560 4.600 -8.900 :  0 2 0 0 1
+xyz : 4.810 5.350 -8.900 :  0 2 0 0 1
+xyz : 2.805 6.686 -10.500 :  0 1 0 0 2
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 101
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 71
+evtCount : 71 -1 0
+xyz : 6.935 -1.878 -5.700 :  0 1 0 0 11
+xyz : -1.645 -6.997 -22.100 :  0 1 0 1 8
+xyz : 6.979 -1.713 2.500 :  0 1 0 2 11
+xyz : -3.429 6.945 -0.900 :  0 1 1 0 4
+xyz : -6.652 3.935 -2.500 :  0 1 1 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 26
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 72
+evtCount : 72 -1 0
+xyz : 7.060 1.411 -12.100 :  0 1 0 0 0
+xyz : 6.727 2.654 -8.900 :  0 1 0 0 0
+xyz : 7.036 1.498 -5.700 :  0 4 0 0 0
+xyz : 5.094 5.066 -8.900 :  0 1 0 0 1
+xyz : 4.490 5.670 -2.500 :  0 2 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 113
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 73
+evtCount : 73 -1 0
+xyz : 6.788 2.425 -12.100 :  0 2 0 0 0
+xyz : 6.758 2.538 -12.100 :  0 2 0 0 0
+xyz : 7.050 1.449 -10.500 :  0 1 0 0 0
+xyz : -2.549 6.755 -2.500 :  0 1 0 0 3
+xyz : -5.323 4.837 -0.900 :  0 2 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 54
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 74
+evtCount : 74 -1 0
+xyz : 1.728 6.975 -8.900 :  0 1 0 0 2
+xyz : -1.946 6.916 -5.700 :  0 1 0 0 3
+xyz : -1.001 7.170 -4.100 :  0 2 0 0 3
+xyz : -7.149 -1.080 -5.700 :  0 1 0 0 6
+xyz : -1.117 -7.138 -10.500 :  0 3 0 0 8
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 93
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 75
+evtCount : 75 -1 0
+xyz : 6.833 2.259 -0.900 :  0 2 0 0 0
+xyz : -6.898 -2.014 -12.100 :  0 1 0 0 6
+xyz : -6.869 -2.123 -12.100 :  0 2 0 0 6
+xyz : -6.833 -2.259 -2.500 :  0 2 0 0 6
+xyz : -4.716 -5.444 -5.700 :  0 2 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 57
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 76
+evtCount : 76 -1 0
+xyz : 4.473 5.687 -7.300 :  0 2 0 0 1
+xyz : -5.138 5.022 -5.700 :  0 1 0 0 4
+xyz : -5.133 -5.028 -5.700 :  0 1 0 0 7
+xyz : -1.603 -7.008 -0.900 :  0 2 0 0 8
+xyz : 2.534 -6.759 -2.500 :  0 1 0 0 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 96
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 77
+evtCount : 77 -1 0
+xyz : 5.505 4.655 -12.100 :  0 2 0 0 1
+xyz : 4.620 5.541 -10.500 :  0 1 0 0 1
+xyz : 5.588 4.573 -7.300 :  0 2 0 0 1
+xyz : -4.592 5.568 -2.500 :  0 1 0 0 4
+xyz : -5.502 4.658 -2.500 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 121
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 78
+evtCount : 78 -1 0
+xyz : 4.592 5.568 -0.900 :  0 1 0 0 1
+xyz : 1.034 7.161 -8.900 :  0 1 0 0 2
+xyz : 1.038 7.160 -7.300 :  0 2 0 0 2
+xyz : 2.300 6.821 -0.900 :  0 1 0 0 2
+xyz : -6.986 1.686 -10.500 :  0 2 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 121
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 79
+evtCount : 79 -1 0
+xyz : 6.782 2.447 -2.500 :  0 2 0 0 0
+xyz : 6.855 2.176 -0.900 :  0 2 0 0 0
+xyz : 4.802 5.359 -8.900 :  0 1 0 0 1
+xyz : 5.044 5.116 -4.100 :  0 1 0 0 1
+xyz : 5.130 5.030 -2.500 :  0 2 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 105
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 80
+evtCount : 80 -1 0
+xyz : 5.119 5.042 -5.700 :  0 2 0 0 1
+xyz : 1.095 7.145 -4.100 :  0 1 0 0 2
+xyz : 2.240 6.838 -0.900 :  0 1 0 0 2
+xyz : 0.948 7.184 -0.900 :  0 2 0 0 2
+xyz : -6.990 1.671 -5.700 :  0 2 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 95
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 81
+evtCount : 81 -1 0
+xyz : -4.644 5.516 -7.300 :  0 2 0 0 4
+xyz : -5.337 4.824 -5.700 :  0 1 0 0 4
+xyz : -6.918 -1.939 -2.500 :  0 1 0 0 6
+xyz : -1.291 -7.092 -8.900 :  0 1 0 0 8
+xyz : 5.386 -4.774 -12.100 :  0 1 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 63
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 82
+evtCount : 82 -1 0
+xyz : 5.204 4.956 -4.100 :  0 1 0 0 1
+xyz : -1.223 7.110 -12.100 :  0 1 0 0 3
+xyz : -1.897 6.930 -8.900 :  0 2 0 0 3
+xyz : -2.409 6.792 -8.900 :  0 2 0 0 3
+xyz : -5.781 -4.380 -2.500 :  0 2 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 55
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 83
+evtCount : 83 -1 0
+xyz : 1.622 7.003 -0.900 :  0 1 0 0 2
+xyz : -6.821 -2.300 -4.100 :  0 1 0 0 6
+xyz : 1.622 -7.003 -0.900 :  0 1 0 0 9
+xyz : 5.654 -4.507 -8.900 :  0 2 0 0 10
+xyz : 5.122 -5.039 -0.900 :  0 1 0 0 10
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 59
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 84
+evtCount : 84 -1 0
+xyz : 6.779 2.458 -12.100 :  0 1 0 0 0
+xyz : -2.398 6.795 -4.100 :  0 1 0 0 3
+xyz : -5.088 5.072 -8.900 :  0 1 0 0 4
+xyz : -5.292 4.868 -5.700 :  0 1 0 0 4
+xyz : -5.709 4.451 -5.700 :  0 2 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 45
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 85
+evtCount : 85 -1 0
+xyz : 1.871 6.937 -12.100 :  0 1 0 0 2
+xyz : -1.539 7.025 -12.100 :  0 1 0 0 3
+xyz : -2.635 6.732 -2.500 :  0 2 0 0 3
+xyz : -6.721 2.677 -4.100 :  0 1 0 0 5
+xyz : -4.711 -5.450 -7.300 :  0 2 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 39
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 86
+evtCount : 86 -1 0
+xyz : 4.948 5.213 -7.300 :  0 2 0 0 1
+xyz : 5.648 4.512 -0.900 :  0 2 0 0 1
+xyz : 1.690 6.985 -10.500 :  0 1 0 0 2
+xyz : -7.031 -1.517 -2.500 :  0 1 0 0 6
+xyz : -6.900 -2.006 -2.500 :  0 1 0 0 6
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 130
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 87
+evtCount : 87 -1 0
+xyz : 6.997 1.645 -12.100 :  0 1 0 0 0
+xyz : 6.990 1.671 -12.100 :  0 2 0 0 0
+xyz : 6.898 2.014 -10.500 :  0 1 0 0 0
+xyz : 2.217 6.844 -4.100 :  0 1 0 0 2
+xyz : -5.315 4.846 -2.500 :  0 1 0 0 4
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 82
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 88
+evtCount : 88 -1 0
+xyz : 6.800 2.379 -0.900 :  0 2 0 0 0
+xyz : 6.756 2.545 -0.900 :  0 2 0 0 0
+xyz : 0.899 7.197 -4.100 :  0 1 0 0 2
+xyz : -2.500 6.768 -5.700 :  0 2 0 0 3
+xyz : -1.381 7.068 -2.500 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 99
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 89
+evtCount : 89 -1 0
+xyz : 7.090 1.298 -7.300 :  0 1 0 0 0
+xyz : 7.159 1.042 -0.900 :  0 1 0 0 0
+xyz : 1.618 7.004 -7.300 :  0 2 0 0 2
+xyz : 1.374 7.070 -7.300 :  0 3 0 0 2
+xyz : -2.587 6.745 -10.500 :  0 1 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 80
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 90
+evtCount : 90 -1 0
+xyz : 4.995 5.166 -8.900 :  0 1 0 0 1
+xyz : 4.799 5.361 -7.300 :  0 2 0 0 1
+xyz : 5.320 4.840 -4.100 :  0 1 0 0 1
+xyz : 4.686 5.474 -4.100 :  0 1 0 0 1
+xyz : 5.623 4.537 -2.500 :  0 1 0 0 1
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 99
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 91
+evtCount : 91 -1 0
+xyz : 7.101 1.257 -0.900 :  0 2 0 0 0
+xyz : 4.763 5.397 -10.500 :  0 1 0 0 1
+xyz : 1.803 -6.955 -2.500 :  0 1 0 0 9
+xyz : 2.074 -6.882 -0.900 :  0 1 0 0 9
+xyz : 1.163 -7.126 -18.100 :  0 1 0 1 9
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 62
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 92
+evtCount : 92 -1 0
+xyz : 6.965 1.765 -2.500 :  0 1 0 0 0
+xyz : -4.609 5.552 -7.300 :  0 1 0 0 4
+xyz : -6.866 2.134 -7.300 :  0 1 0 0 5
+xyz : -6.931 -1.893 -10.500 :  0 1 0 0 6
+xyz : -4.917 -5.243 -4.100 :  0 1 0 0 7
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 87
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 93
+evtCount : 93 -1 0
+xyz : 7.123 1.174 -8.900 :  0 2 0 0 0
+xyz : -6.834 -2.255 -7.300 :  0 1 0 0 6
+xyz : -4.487 -5.673 -7.300 :  0 1 0 0 7
+xyz : -5.425 -4.735 -5.700 :  0 1 0 0 7
+xyz : -2.112 -6.872 -4.100 :  0 1 0 0 8
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 66
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 94
+evtCount : 94 -1 0
+xyz : 6.697 2.764 -2.500 :  0 2 0 0 0
+xyz : 5.574 4.587 -4.100 :  0 1 0 0 1
+xyz : 1.939 6.918 -8.900 :  0 1 0 0 2
+xyz : 1.641 6.998 -5.700 :  0 2 0 0 2
+xyz : -2.394 6.796 -8.900 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 104
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 95
+evtCount : 95 -1 0
+xyz : -1.377 7.069 -10.500 :  0 2 0 0 3
+xyz : -5.463 4.697 -8.900 :  0 1 0 0 4
+xyz : -2.775 -6.694 -5.700 :  0 1 0 0 8
+xyz : 1.291 -7.092 -8.900 :  0 1 0 0 9
+xyz : 6.734 -2.628 -8.900 :  0 2 0 0 11
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 83
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 96
+evtCount : 96 -1 0
+xyz : 5.229 4.931 -4.100 :  0 4 0 0 1
+xyz : 2.816 6.683 -8.900 :  0 2 0 0 2
+xyz : 1.886 6.933 -4.100 :  0 1 0 0 2
+xyz : -2.240 6.838 -4.100 :  0 1 0 0 3
+xyz : -2.756 6.699 -2.500 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 80
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 97
+evtCount : 97 -1 0
+xyz : 7.157 1.050 -2.500 :  0 1 0 0 0
+xyz : 5.701 4.460 -10.500 :  0 1 0 0 1
+xyz : 5.783 4.377 -7.300 :  0 1 0 0 1
+xyz : 1.065 7.153 -8.900 :  0 1 0 0 2
+xyz : -2.809 6.685 -12.100 :  0 2 0 0 3
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 103
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 98
+evtCount : 98 -1 0
+xyz : 6.826 2.285 -4.100 :  0 1 0 0 0
+xyz : -5.770 4.391 -8.900 :  0 6 0 0 4
+xyz : -4.973 5.188 -4.100 :  0 1 0 0 4
+xyz : -5.039 5.122 -2.500 :  0 1 0 0 4
+xyz : -6.983 1.697 -12.100 :  0 1 0 0 5
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 106
+Missing containers, will not run TPC seed ghost rejection
+InttEvt::process evt : 99
+evtCount : 99 -1 0
+xyz : 6.882 2.074 -4.100 :  0 1 0 0 0
+xyz : 6.906 1.984 -2.500 :  0 1 0 0 0
+xyz : -5.039 5.122 -2.500 :  0 1 0 0 4
+xyz : -7.115 -1.204 -12.100 :  0 2 0 0 6
+xyz : -6.744 -2.590 -4.100 :  0 2 0 0 6
+ exceed : ncluster limit.  no more cluster xyz printed
+nCluster : 146
+identify yourself: I am an FlagSavev1 Object
+Int Flags: 
+RUNNUMBER: 1
+UInt64 Flags: 
+TIMESTAMP: 6
+Float Flags: 
+WorldSizex: 1000.000
+WorldSizey: 1000.000
+WorldSizez: 5170.586
+String Flags: 
+CDB_GLOBALTAG: MDC2
+WorldMaterial: G4_AIR
+WorldShape: G4Tubs
+All done
+
+
+
+ ***************************************************************************
+ *                         *****TAUOLA LIBRARY: VERSION 2.9 ******         *
+ *                         ***********October 2011 ***************         *
+ *                         **AUTHORS: S.JADACH, Z.WAS*************         *
+ *                         **R. DECKER, M. JEZABEK, J.H.KUEHN*****         *
+ *                         **AVAILABLE FROM: www.cern.ch/wasm****          *
+ *                         ***** PUBLISHED IN COMP. PHYS. COMM.***         *
+ *                         0: Physics initialization  CLEO collab          *
+ *                          see Alain Weinstein www home page:             *
+ *                         http://www.cithep.caltech.edu/~ajw/             *
+ *                         /korb_doc.html#files                            *
+ *                         1: Physics initialization RChL of:              *
+ *                          O. Shekhovtsova, T. Przedzinski,               *
+ *                          P. Roig and Z. Was                             *
+ *                          IFJPAN-2013-5, UAB-FT-731                      *
+ *                         *******CPC 76 (1993) 361          *****         *
+ *                         **5 or more pi dec.: precision limited          *
+ *                         ****DEKAY ROUTINE: INITIALIZATION******         *
+ *                   0     JAK1   = DECAY MODE TAU+                        *
+ *                   0     JAK2   = DECAY MODE TAU-                        *
+ ***************************************************************************
+
+ *                   1     IVER   = hadronic current version           *
+  RANMAR INITIALIZED:   54217137           0         0
+
+ ***************************************************************************
+
+  In F3pi: chpt + 1 resonance + 2 resonance (RchT)
+  KORB: rho/rhop -> pi-pi0 mixing:
+  KORB: rho   =  0.769900024      0.151199996    
+  KORB: rhop  =   1.37000000      0.509999990     -0.109999999    
+  KORB: K*/K*prime -> Kpi mixing:
+  KORB: kstp  =   1.70000005      0.234999999      -3.79999988E-02
+  KORB: a1/a1prime -> 3pi, KKpi mixing:
+  KORB: a1    =   1.27499998      0.699999988    
+  KORB: a1prim=   1.46099997      0.250000000       0.00000000    
+  KORB: K1A/K1B -> Kpipi mixing:
+  KORB: K1A   =   1.26999998       9.00000036E-02   1.00000000    
+  KORB: K1B   =   1.40199995      0.173999995      0.800000012    
+  KORB: rho/rhop/rhopp -> 4pi mixing:
+  KORB: rho   =  0.769900024      0.151199996    
+  KORB: rhopp =   1.46500003      0.310000002     -0.109999999    
+  KORB: rhoppp=   1.70000005      0.234999999     -0.109999999    
+  KORB: 3PI-PI0 PARAMS:   0.00000000      0.124200001      0.160400003      0.271100014      0.444299996    
+  KORB: PI-3PI0 PARAMS:   0.00000000       1.00000000    

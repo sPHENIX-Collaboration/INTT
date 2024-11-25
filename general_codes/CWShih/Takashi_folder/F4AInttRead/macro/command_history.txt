@@ -1,0 +1,17 @@
+ 1072  source /opt/sphenix/core/bin/sphenix_setup.sh -n new.3
+ 1073  pwd
+ 1074  ls ../
+ 1075  cd ../
+ 1076  mkdir build
+ 1077  cd build/
+ 1078  pwd
+ 1079  ../src/autogen.sh --prefix=/sphenix/user/ChengWei/INTT/INTT/general_codes/CWShih/Takashi_folder/F4AInttRead/install; make install
+ 1080  cd ../install/
+ 1081  echo $SHELL
+ 1082  source /opt/sphenix/core/bin/setup_local.sh $PWD
+ 1083  echo $ROOT_INCLUDE_PATH 
+ 1084  echo $ROOT_INCLUDE_PATH | tr : '\n' | less
+ 1085  cd ../macro/
+ 1086  ls
+ 1087  vi Fun4All_AnaTutorial_InttSim.C 
+ 1088  root -b -q Fun4All_AnaTutorial_InttSim.C  > & log.log &

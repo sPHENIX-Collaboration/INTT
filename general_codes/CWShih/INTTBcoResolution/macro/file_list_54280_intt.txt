@@ -1,0 +1,9 @@
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00000.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00001.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00002.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00003.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00004.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00005.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00006.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00007.root
+/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/new_2024p007/run_00054200_00054300/DST_STREAMING_EVENT_run2auau_new_2024p007-00054280-00008.root
