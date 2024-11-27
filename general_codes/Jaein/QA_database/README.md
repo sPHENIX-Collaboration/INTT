@@ -1,6 +1,6 @@
 # Database Scripts
 
-This directory contains scripts for processing and analyzing data related to the sPHENIX experiment. Below are descriptions of the main scripts:
+This directory contains scripts for processing and analyzing data related to the sPHENIX psql database especially for INTT QA Database. Below are descriptions of the main scripts:
 
 ## put_in_database.py
 
@@ -10,8 +10,8 @@ This script processes run files and inserts relevant data into the database.
 
 - `get_run_events()`: Queries the database for run events of type 'physics'.
 - `insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak)`: Inserts processed data into the `intt_qa_expert` table.
-- `process_run_file(hot_file_path)`: Processes a run file to count dead, cold, and hot channels.
-- `process_bco_file(bco_file_path)`: Processes a BCO file to calculate the standard deviation and peak of BCO differences.
+- `process_run_file(hot_file_path)`: Processes a BADMAP CDB file to count dead, cold, and hot channels.
+- `process_bco_file(bco_file_path)`: Processes a BCO CDB file to calculate the standard deviation and peak of BCO differences.
 - `calculate_runtime(brtimestamp, ertimestamp)`: Calculates the runtime of a run in minutes.
 - `main()`: Main function that orchestrates the processing of run files and insertion of data into the database.
 
