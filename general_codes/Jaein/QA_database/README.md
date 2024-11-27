@@ -1,7 +1,7 @@
 # Database Scripts
 
 This directory contains scripts for processing and analyzing data related to the sPHENIX psql database especially for INTT QA Database. Below are descriptions of the main scripts:
-
+- main Author : Takahiro Kikuchi(Rikkyo Univ.), Jaein Hwang(Korea Univ.)
 ## put_in_database.py
 
 This script processes run files and inserts relevant data into the database.
