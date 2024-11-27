@@ -29,7 +29,7 @@ create_histograms(): Creates histograms for no hit channels, runtime, BCO peak s
 - `create_tree()`: Creates a ROOT tree and branches for run data.
 - `fill_histograms_and_tree(rows, hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak, tree, _runnum, _runtime, _nohitch, _bco_stdev, _bco_peak): Fills histograms and tree with data from the database.
 - `fill_histo_with_numevents(rows, num_events, hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak)`: Fills histograms with event count data.
--` save_histograms_and_tree(hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak, tree)` : Saves histograms and tree to a ROOT file.
+- ` save_histograms_and_tree(hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak, tree)` : Saves histograms and tree to a ROOT file.
 
 ### Usage
 
