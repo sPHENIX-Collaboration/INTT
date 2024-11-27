@@ -17,7 +17,7 @@ This script processes run files and inserts relevant data into the database.
 
 
 ## make_plots.py
-This script generates various histograms and a tree from the database data related to the sPHENIX experiment.
+This script generates various histograms and a tree from the database data related to INTT QA Database.
  
  ### Functions
 - `get_run_events()`: Queries the database for run events.
