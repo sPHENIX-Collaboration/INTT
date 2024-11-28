@@ -23,7 +23,7 @@ def get_run_events():
         cursor.execute("select * from run where runtype = 'physics' order by runnumber;")
         return cursor.fetchall()
 
-def insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak):
+def insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak,hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7):
     """Insert data into the database"""
     connection_string = (
         'DRIVER={PostgreSQL};'
@@ -34,8 +34,8 @@ def insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak):
     with pyodbc.connect(connection_string) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO intt_qa_expert (runnumber, nohitch, runtime, bco_stdev, bco_peak) VALUES (?, ?, ?, ?, ?);",
-            (runnum, dead_count, runtime, bco_stdev, bco_peak)
+            "INSERT INTO intt_qa_expert (runnumber, deadch, runtime, bco_stddev, bco_peak, hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            (runnum, dead_count, runtime, bco_stdev, bco_peak,hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7)
         )
         conn.commit()
 
@@ -62,7 +62,18 @@ def process_run_file(hot_file_path):
             return None
     if not os.path.isfile(hot_file_path):
         return None
-    return [Dead, Cold, Hot]
+    
+    tree_single = file_hot.Get("Single")
+    tree_single.GetEntry(0)
+    Dmean0 = tree_single.Dmean0    
+    Dmean1 = tree_single.Dmean1    
+    Dmean2 = tree_single.Dmean2
+    Dmean3 = tree_single.Dmean3
+    Dmean4 = tree_single.Dmean4
+    Dmean5 = tree_single.Dmean5
+    Dmean6 = tree_single.Dmean6
+    Dmean7 = tree_single.Dmean7    
+    return [Dead, Cold, Hot, Dmean0, Dmean1, Dmean2, Dmean3, Dmean4, Dmean5, Dmean6, Dmean7]
 
 def process_bco_file(bco_file_path):
     BCO_stdev = 0
@@ -135,10 +146,10 @@ def main():
             result = process_run_file(file_paths)
             bco_result = process_bco_file(bco_file_paths)
             if result and bco_result:
-                Dead, Cold, Hot = result
+                Dead, Cold, Hot, Dmean0 ,Dmean1, Dmean2, Dmean3, Dmean4, Dmean5, Dmean6, Dmean7= result
                 BCO_stdev, BCO_peak = bco_result
-                BCO_stdev = round(BCO_stdev, 4) 
-                insert_data(runnum, Dead, runtime, BCO_stdev, BCO_peak)
+                BCO_stdev = round(BCO_stdev, 4)
+                insert_data(runnum, Dead, runtime, BCO_stdev, BCO_peak,Dmean0,Dmean1,Dmean2,Dmean3,Dmean4,Dmean5,Dmean6,Dmean7) 
                 print(runnum)
                 print(f"Dead: {Dead}, Cold: {Cold}, Hot: {Hot}, Runtime: {runtime} minutes, BCO_stdev: {BCO_stdev}, BCO_peak: {BCO_peak}")
             else:
