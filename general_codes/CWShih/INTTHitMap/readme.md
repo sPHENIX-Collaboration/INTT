@@ -7,11 +7,15 @@
 * If you have the tag of `ApplyBcoDiff_in = true`, it will only accept the hits with the `bco_diff` within `plus and minus 1 bco of bco_diff_peak_in`.
 * You can remove the clone hits by having the `clone_hit_remove_BCO_tag_in = true`.
   * Here the definition of clone hits is, you have at least two hits with the same `FELIX ID`, `FELIX_channel_ID`, `chip_id`, `channel_id`, `hit_bco`.
-
 * You can have the hit quality assurance by having the `ApplyHitQA_in = true`.
   * What it does is, it checks the `FELIX ID`, `FELIX_channel_ID`, `chip_id`, `channel_id`, `hit_bco` and `adc`. They should have to be within the regions we expect.
   * Such as the `hit_bco` should be `0 ~ 127`.
   * Such as the `hit adc` should be `0 ~ 7`  
+
+
+* The module saves the 112 TH2D (the hitmaps) into the root file with the name given by `std::string output_directory_in`.
+  * You can use the `MakePlot.C` in the `./macro/MakePlot/` to make the pdf plots.
+
 
 * The inputs
 ``` C++
