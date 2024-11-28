@@ -1,91 +1,37 @@
-# InttCalib Module
+# Database Scripts
 
-The `InttCalib` class is a main of the calibration module for the INTT detector. It inherits from `SubsysReco` and provides methods for initializing, processing events, and finalizing the calibration process.
+This directory contains scripts for processing and analyzing data related to the sPHENIX experiment. Below are descriptions of the main scripts:
 
-## Class: InttCalib
+## put_in_database.py
 
-### Constructor
-- `InttCalib(std::string const& name = "InttCalib")`
-  - Initializes the `InttCalib` object with the given name.
+This script processes run files and inserts relevant data into the database.
 
-### Destructor
-- `~InttCalib()`
-  - Cleans up dynamically allocated memory.
+### Functions
 
-### Methods
-
-#### Initialization and Run Control
-- `int InitRun(PHCompositeNode* topNode) override`
-  - Initializes the run, setting up necessary data structures and loading maps from the CDB.
-
-- `int process_event(PHCompositeNode* topNode) :woverride`
-  - Processes each event, updating hitmaps and handling BCO offsets.
-
-- `int EndRun(int const run_number) override`
-  - Finalizes the run, generating hot maps and BCO maps.
-
-#### OutPutFile Setup
-- `void SetHotMapCdbFile(std::string const& file)`
-- `void SetHotMapPngFile(std::string const& file)`
-- `void SetBcoMapCdbFile(std::string const& file)`
-- `void SetBcoMapPngFile(std::string const& file)`
-
-#### Configuration
-- `void SetStreamingMode(bool mode)`
-  - Set Streaming mode. Especially important for BCO Calibration in pp runs
-- `void SetBcoMaximumEvent(int mext)`
-  - Set Maxmium event to produce the BCO maps.
-- `void SetRunNumber(int runnum)`
-  - RunNumber Setting
-- `void SetDoFeebyFee(bool in)`
-  - true : Doing fitting fee by fee for accurate cold channel determination  (Default : false)
-- `void SetColdSigmaCut(double in)`
-  - Sigma cut for cold channel
-- `void SetHotSigmaCut(double in)` 
-  - Sigma cut for hot channel
-- `void SetppMode(bool mode)`
-  - Not used. Keeping for possibility of future implementation. 
-
-#### Hot Map Generation / FELIX server by server
-- `int ConfigureHotMap_v3()`
-- `int MakeHotMapCdb_v3()`
-- `int MakeHotMapPng_v3()`
-
-#### Hot Map generation / Fee by fee (fee = 1 half ladder)
-- `int ConfigureHotMap_fee()`
-- `int MakeHotMapCdb_fee()`
-- `int MakeHotMapROOT_fee()`
-
-#### BCO Map Generation
-- `int ConfigureBcoMap()`
-- `int MakeBcoMapCdb()`
-- `int MakeBcoMapPng()`
-
-#### Histogram Configuration
-- `int ConfigureHist_v3(TH1D*& hist, TF1*& fit, double maxbin, std::map<double, int> const& hitrate_map, std::string const& name, std::string const& title)`
-
-#### Old versions (not used)
-- `int ConfigureHotMap_v2()`
-- `int MakeHotMapCdb_v2()`
-- `int MakeHotMapPng_v2()`
-- `int ConfigureHotMap()`
-- `int MakeHotMapCdb()`
-- `int MakeHotMapPng()`
-- `int ConfigureHist(TH1D*& hist, TF1*& fit, std::map<double, int> const& hitrate_map, std::string const& name, std::string const& title)`
-- `int ConfigureHist_v2(TH1D*& hist, TF1*& fit, std::map<double, int> const& hitrate_map, std::string const& name, std::string const& title)`
+- `get_run_events()`: Queries the database for run events of type 'physics'.
+- `insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak)`: Inserts processed data into the `intt_qa_expert` table.
+- `process_run_file(hot_file_path)`: Processes a run file to count dead, cold, and hot channels.
+- `process_bco_file(bco_file_path)`: Processes a BCO file to calculate the standard deviation and peak of BCO differences.
+- `calculate_runtime(brtimestamp, ertimestamp)`: Calculates the runtime of a run in minutes.
+- `main()`: Main function that orchestrates the processing of run files and insertion of data into the database.
 
 
+### make_plots.py
+This script generates various histograms and a tree from the database data related to the sPHENIX experiment.
+ 
+ ## Functions
+- `get_run_events()`: Queries the database for run events.
+get_num_events_from_daq(runnumbers): Queries the database for the number of events from DAQ.
+- `process_run_file(hot_file_path)`: Processes a run file to count dead, cold, and hot channels.
+create_histograms(): Creates histograms for no hit channels, runtime, BCO peak standard deviation, and BCO peak position.
+- `create_histograms_with_event_count()`: Creates histograms with event count for no hit channels, runtime, BCO peak standard deviation, and BCO peak position.
+- `create_canvas()`: Creates canvases for drawing histograms.
+- `create_tree()`: Creates a ROOT tree and branches for run data.
+- `fill_histograms_and_tree(rows, hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak, tree, _runnum, _runtime, _nohitch, _bco_stdev, _bco_peak): Fills histograms and tree with data from the database.
+- `fill_histo_with_numevents(rows, num_events, hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak)`: Fills histograms with event count data.
+-` save_histograms_and_tree(hist_nohitch, hist_nohitch_zoom, hist_runtime, hist_bco_stdev, hist_bco_peak, tree)` : Saves histograms and tree to a ROOT file.
 
-#### Utility Methods
-- `int adjust_hitrate(InttMap::Offline_s const& ofl, double& hitrate) const`
-- `int GetIndex(InttMap::RawData_s const& raw, InttMap::Offline_s const& ofl) const`
-- `int GetFeeIndex(InttMap::RawData_s const& raw, InttMap::Offline_s const& ofl) const`
-- `std::pair<double, double> CalculateStandardDeviation(const std::vector<int>& data)`
-- `Color_t GetFeeColor(int fee) const`
+### Usage
 
-#### Debugging and Data Management
-- `void Debug()`
-- `int SaveHitrates()`
-- `int LoadHitrates()`
-
-This class provides a comprehensive set of methods for calibrating the INTT detector, including handling hot and cold channels, generating maps, and configuring histograms.
+Run the script using Python:
+python3 make_plots.py
