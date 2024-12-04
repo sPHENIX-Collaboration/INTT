@@ -124,6 +124,63 @@ root [2] tree->Print()
 *............................................................................*
 ```
 
+#### Tips for the quick tree analysis
+```
+[nukazuka@sphnx06 05:18:16 mip_bias_dependence] $ root data/run_54688.root
+root [0]
+Attaching file data/run_54688.root as _file0...
+Warning in <TClass::Init>: no dictionary for class InttEvent is available
+Warning in <TClass::Init>: no dictionary for class InttCluster is available
+(TFile *) 0x282d510
+root [1] #include "InttClusterAnalyzer/InttCluster.cc"
+root [2] #include "InttClusterAnalyzer/InttEvent.cc"
+root [3] InttEvent* ev
+(InttEvent *) nullptr
+root [4] .ls
+TFile**		data/run_54688.root
+ TFile*		data/run_54688.root
+  KEY: TTree	tree;49	TTree for INTT cluster analysis [current cycle]
+  KEY: TTree	tree;48	TTree for INTT cluster analysis [backup cycle]
+root [5] tree->SetBranchAddress( "event", &ev )
+(int) 0
+root [6] tree->GetEntry( 3 )
+(int) 450823
+root [7] ev->Print()
+   54688            4 2188 1165 1023 (   -0.092,     0.15,     -7.3)
+root [8] tree->GetEntry( 5 )
+(int) 2361
+root [9] ev->Print()
+   54688            6   11    6    5 (   -0.092,     0.15,   -1e+03)
+root [10] auto clusters = ev->GetClusters()
+(std::vector<InttCluster *, std::allocator<InttCluster *> > &) { @0x48f2e40, @0x48f2e48, @0x48f2e50, @0x48f2e58, @0x48f2e60, @0x48f2e68, @0x48f2e70, @0x48f2e78, @0x48f2e80, @0x48f2e88, @0x48f2e90 }
+root [11] clusters[0]->Print()
+ 0 (   1.174194  7.0553946 -9.3724508  )   35    1  1 0.00709 1.39 5.64
+root [12] for( auto& cluster : clusters ) { cluster->Print(); };
+ 0 (   1.174194  7.0553946 -9.3724508  )   35    1  1 0.00709 1.39 5.64
+ 0 ( -5.5297923 -5.2977052 -9.3724508  )  120    2  1 0.00777 -2.36 5.55
+ 0 (  -2.332273 -7.3081927  8.4275494  )  180    1  1 0.00772 -1.86 5.56
+ 1 ( -6.6923175 -4.8351994 -2.9724505  )  125    2  1 0.00829 -2.5 5.49
+ 1 (  -4.022491    6.62813 -22.572451  )  365    3  1 0.00776 2.12 5.55
+ 1 ( 0.48759404  7.6530151   19.62755  )   60    1  1 0.00739 1.49  5.6
+ 2 ( -8.1179562 -6.0430932 -2.9724505  )   60    1  1 0.0102 -2.48 5.28
+ 2 (  6.2494264  7.4707332   10.02755  )  120    1  1 0.00959 0.857 5.34
+ 2 (  -2.959166 -9.7465467   17.62755  )  390    2  1 0.0101 -1.85 5.29
+ 3 ( -7.3335276 -7.9076204  -10.97245  )  135    2  1 0.011 -2.3 5.21
+ 3 ( -3.2508667 -10.332073   17.62755  )   60    1  1 0.0108 -1.86 5.23
+root [15] tree->GetEntry( 7 ) ; ev->Print()
+   54688            8 1589  813  776 (   -0.092,     0.15,     -9.4)
+root [16] tree->GetEntry( 8 ) ; ev->Print()
+   54688            9 1368  726  642 (   -0.092,     0.15,      4.1)
+root [17] tree->GetEntry( 9 ) ; ev->Print()
+   54688           10 7072 3602 3470 (   -0.092,     0.15,       16)
+root [18] tree->GetEntry( 10 ) ; ev->Print()
+   54688           11    3    2    1 (   -0.092,     0.15,   -1e+03)
+root [19] tree->GetEntry( 10 ) ; ev->Print() ; clusters = ev->GetClusters() ; for( auto& cluster : clusters ) { cluster->Print(); };
+   54688           11    3    2    1 (   -0.092,     0.15,   -1e+03)
+ 0 (   1.174194  7.0553946 -9.3724508  )   35    1  1 0.00709 1.39 5.64
+ 0 ( -7.1430826  1.9178623   17.62755  )  480    9  1 0.00714  2.9 5.63
+ 3 ( -7.1545777 -8.0871735 -4.5724502  )   35    1  1 0.0109 -2.28 5.21
+```
 ## Event class and cluster class
 It may be good to handle all parameters in an event with an event class.
 Cluster information is treated by a cluster class.
