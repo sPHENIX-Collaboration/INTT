@@ -16,7 +16,9 @@ void Fun4All_Intt_ChipOccupancy(
   
   // todo : modify here
   bool hitQA_check = true,
-  bool clone_hit_remove_BCO = true
+  bool clone_hit_remove_BCO = true,
+  bool MBDNS_trigger_require_tag = true,
+  int  trigger_MBDvtxZ_cm = 30 // note : cm
 )
 {
 
@@ -38,7 +40,9 @@ void Fun4All_Intt_ChipOccupancy(
     run_num,
     output_directory,
     hitQA_check,
-    clone_hit_remove_BCO
+    clone_hit_remove_BCO,
+    MBDNS_trigger_require_tag,
+    trigger_MBDvtxZ_cm
   );
   
   string final_output_file_name = ICO->GetOutputFileName();

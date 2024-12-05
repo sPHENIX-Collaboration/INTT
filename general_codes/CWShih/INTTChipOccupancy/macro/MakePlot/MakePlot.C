@@ -1,8 +1,9 @@
 int MakePlot()
 {
     bool is_dark = true;
-    string input_directory = "/sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_54280/HitMap/HotChMap_Nov26_2024/completed";
-    string input_filename = "INTTHitMap_BadChannelMasked_BcoDiffApplied_HitQA_CloneHitRemovedBCO_00054280_merged.root";
+    bool set_logY = true;
+    string input_directory = "/sphenix/user/ChengWei/Data_temp/run_54280/ChipOccupancy_Trig30cm/completed";
+    string input_filename = "ChipOccupancy_HitQA_CloneHitRemovedBCO_MBDNSTrigvtxZ30cm_00054280_merged.root";
     string output_directory = input_directory;
     string final_output_file_name = input_filename.substr(0, input_filename.find(".root"));
     
@@ -13,7 +14,9 @@ int MakePlot()
         final_output_file_name += "_darkPalette";
     }
 
-    std::map<string, TH1D*> data_hist_h2_map; data_hist_h2_map.clear();
+    final_output_file_name += (set_logY) ? "_logY" : "";
+
+    std::map<std::string, TH1D*> data_hist_h1_map; data_hist_h1_map.clear();
 
     TFile * file_in = TFile::Open(Form("%s/%s", input_directory.c_str(), input_filename.c_str()));
     if (file_in == nullptr)
@@ -31,19 +34,23 @@ int MakePlot()
 
         if (class_name == "TH1D")
         {
-            data_hist_h2_map[hist_name.c_str()] = (TH1D*) file_in -> Get( hist_name.c_str() );
+            data_hist_h1_map[hist_name.c_str()] = (TH1D*) file_in -> Get( hist_name.c_str() );
         }
     }
 
-    TCanvas * c1 = new TCanvas("c1", "c1", 1200, 600);
+    TCanvas * c1 = new TCanvas("c1", "c1", 800, 600);
+    c1 -> SetLogy(set_logY);
     c1 -> Print(Form("%s/%s.pdf(", output_directory.c_str(), final_output_file_name.c_str()));
 
-    for (auto &pair : data_hist_h2_map)
+    for (auto &pair : data_hist_h1_map)
     {
+        c1 -> SetLogy(set_logY);
+
         pair.second -> SetTitle(pair.first.c_str());
-        pair.second -> SetStats(0);
-        pair.second -> SetMinimum(0);
-        pair.second -> Draw("colz");
+        pair.second -> GetXaxis() -> SetTitle("nHits (per chip and per HitBco)");
+        // pair.second -> SetStats(0);
+        // pair.second -> SetMinimum(0);
+        pair.second -> Draw("hist");
         c1 -> Print(Form("%s/%s.pdf", output_directory.c_str(), final_output_file_name.c_str()));
         c1 -> Clear();
     }

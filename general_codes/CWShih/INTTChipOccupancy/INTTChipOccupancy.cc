@@ -74,17 +74,27 @@ INTTChipOccupancy::INTTChipOccupancy(
   const int runnumber_in,
   const std::string output_directory_in,
   const bool ApplyHitQA_in,
-  const bool clone_hit_remove_BCO_tag_in
+  const bool clone_hit_remove_BCO_tag_in,
+  const bool MBDNS_trigger_require_tag_in,
+  const int trigger_MBDvtxZ_cm_in
 ):
   SubsysReco(name),
   process_id(process_id_in),
   runnumber(runnumber_in),
   output_directory(output_directory_in),
   ApplyHitQA(ApplyHitQA_in),
-  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in)
+  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in),
+  MBDNS_trigger_require_tag(MBDNS_trigger_require_tag_in),
+  trigger_MBDvtxZ_cm(trigger_MBDvtxZ_cm_in)
 
 {
   std::cout << "INTTChipOccupancy::INTTChipOccupancy(const std::string &name) Calling ctor" << std::endl;
+
+  if (trigger_MBDvtxZ_cm != 10 && trigger_MBDvtxZ_cm != 30) {
+    std::cout<<"INTTChipOccupancy::INTTChipOccupancy - trigger_MBDvtxZ_cm is not 10 or 30, please check the input"<<std::endl;
+    exit(1);
+  }
+
 
   std::string job_index = std::to_string( process_id );
   int job_index_len = 5;
@@ -98,6 +108,8 @@ INTTChipOccupancy::INTTChipOccupancy(
   output_filename = "ChipOccupancy";
   output_filename += (ApplyHitQA) ? "_HitQA" : "";
   output_filename += (clone_hit_remove_BCO_tag) ? "_CloneHitRemovedBCO" : "";
+  output_filename += (MBDNS_trigger_require_tag) ? "_MBDNSTrig" : "";
+  output_filename += (MBDNS_trigger_require_tag) ? Form("vtxZ%dcm",trigger_MBDvtxZ_cm) : "";
   output_filename += Form("_%s_%s.root",runnumber_str.c_str(),job_index.c_str());
 
   file_out = new TFile(Form("%s/%s",output_directory.c_str(),output_filename.c_str()),"RECREATE");
@@ -107,7 +119,7 @@ INTTChipOccupancy::INTTChipOccupancy(
   for (int felix_i = 0; felix_i < nFelix; felix_i++){
     for (int fch_i = 0; fch_i < nFelix_channel; fch_i++){
       for (int chip_i = 0; chip_i < nChip; chip_i++){
-        h1_nChipHit_map.insert(std::make_pair(Form("nChipHit_F%d_Fch%d_Chip%d",felix_i,fch_i,chip_i), new TH1D(Form("nChipHit_F%d_Fch%d_Chip%d",felix_i,fch_i,chip_i), Form("nChipHit_F%d_Fch%d_Chip%d;nHits (per chip and HitBco);Entries",felix_i,fch_i,chip_i), 150, 0, 150)));
+        h1_nChipHit_map.insert(std::make_pair(Form("nChipHit_F%d_Fch%d_Chip%d",felix_i,fch_i,chip_i), new TH1D(Form("nChipHit_F%d_Fch%d_Chip%d",felix_i,fch_i,chip_i), Form("nChipHit_F%d_Fch%d_Chip%d;nHits (per chip and per HitBco);Entries",felix_i,fch_i,chip_i), 150, 0, 150)));
         // for (int hitbco_i = 0; hitbco_i < nHitBco; hitbco_i++){
         //   h1_nChipHit_map.insert(std::make_pair(Form("nChipHit_F%d_Fch%d_Chip%d_HitBco%d",felix_i,fch_i,chip_i,hitbco_i), new TH1D(Form("nChipHit_F%d_Fch%d_Chip%d_HitBco%d",felix_i,fch_i,chip_i,hitbco_i), Form("nChipHit_F%d_Fch%d_Chip%d_HitBco%d;nHits (per chip and HitBco);Entries",felix_i,fch_i,chip_i,hitbco_i), 150, 0, 150)));
         // }
@@ -159,6 +171,22 @@ int INTTChipOccupancy::process_event(PHCompositeNode *topNode)
 
     gSystem->Exit(1);
     exit(1);
+  }
+
+  if (MBDNS_trigger_require_tag)
+  {
+    GetLiveTrigger(topNode);
+
+    if (trigger_MBDvtxZ_cm == 10 && live_trigger_map.find(MBDNS_VtxZ10cm_Id) == live_trigger_map.end()){
+      eID_count++;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+    
+    if (trigger_MBDvtxZ_cm == 30 && live_trigger_map.find(MBDNS_VtxZ30cm_Id) == live_trigger_map.end()){
+      eID_count++;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+
   }
 
   if (inttcont->get_nhits() == 0) {
@@ -312,4 +340,48 @@ int INTTChipOccupancy::Reset(PHCompositeNode *topNode)
 void INTTChipOccupancy::Print(const std::string &what) const
 {
   std::cout << "INTTChipOccupancy::Print(const std::string &what) const Printing info for " << what << std::endl;
+}
+
+void INTTChipOccupancy::GetLiveTrigger(PHCompositeNode *topNode)
+{
+    p_gl1 = findNode::getClass<Gl1Packetv2>(topNode, m_gl1NodeName); // note : for the selfgen DST, it may be the "GL1RAWHIT"
+
+    if (p_gl1)
+    {
+        live_trigger_decimal = p_gl1->lValue(0,"LiveVector");
+        live_trigger_map = INTTChipOccupancy::prepare_trigger_vec(live_trigger_decimal);
+
+        scaled_trigger_decimal = p_gl1->lValue(0,"ScaledVector");
+        scaled_trigger_map = INTTChipOccupancy::prepare_trigger_vec(scaled_trigger_decimal);
+
+    }
+    else
+    {
+        std::cout << "In INTTChipOccupancy::GetLiveTrigger, No GL1RAWHIT node found" << std::endl;
+        exit(1);
+    }
+}
+
+std::map<int,int> INTTChipOccupancy::prepare_trigger_vec(long long trigger_input)
+{
+    std::bitset<64> trigger_input_bitset(trigger_input);
+    std::vector<int> output_vec; output_vec.clear();
+    std::map<int,int> output_map; output_map.clear();
+
+    for (unsigned int i=0; i<64; i++)
+	{
+	    if (trigger_input_bitset.test(i))
+	    {
+            output_vec.push_back(i);
+	    }
+	}
+
+  for (int ele : output_vec){
+    output_map[ele] = ele;
+  }
+
+
+
+    return output_map;
+
 }
