@@ -1,10 +1,8 @@
 int MakePlot()
 {
-    bool is_dark = false;
-    bool fixed_range = true;
-    std::pair<double,double> Zrange = std::make_pair(0, 15000);
-    string input_directory = "/sphenix/user/ChengWei/Data_temp/run_54280/INTTHitMap_HotChMap_Nov26_2024_Trig30cm/completed";
-    string input_filename = "INTTHitMap_BadChannelMasked_BcoDiffApplied_HitQA_CloneHitRemovedBCO_MBDNSTrigvtxZ30cm_00054280_merged.root";
+    bool is_dark = true;
+    string input_directory = "/sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_54280/HitMap/HotChMap_Nov26_2024/completed";
+    string input_filename = "INTTHitMap_BadChannelMasked_BcoDiffApplied_HitQA_CloneHitRemovedBCO_00054280_merged.root";
     string output_directory = input_directory;
     string final_output_file_name = input_filename.substr(0, input_filename.find(".root"));
     
@@ -14,9 +12,6 @@ int MakePlot()
 
         final_output_file_name += "_darkPalette";
     }
-
-    final_output_file_name += (fixed_range) ? "_fixedRange" : "";
-    final_output_file_name += (fixed_range) ? Form("_Zrange_%.0f_%.0f", Zrange.first, Zrange.second) : "";
 
     std::map<string, TH2D*> data_hist_h2_map; data_hist_h2_map.clear();
 
@@ -48,12 +43,6 @@ int MakePlot()
         pair.second -> SetTitle(pair.first.c_str());
         pair.second -> SetStats(0);
         pair.second -> SetMinimum(0);
-
-        if (fixed_range){
-            pair.second -> SetMinimum(Zrange.first);
-            pair.second -> SetMaximum(Zrange.second);
-        }
-
         pair.second -> Draw("colz");
         c1 -> Print(Form("%s/%s.pdf", output_directory.c_str(), final_output_file_name.c_str()));
         c1 -> Clear();

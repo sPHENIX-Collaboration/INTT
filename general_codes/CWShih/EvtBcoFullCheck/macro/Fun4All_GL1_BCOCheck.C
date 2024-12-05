@@ -1,11 +1,12 @@
-#include "Fun4All_Intt_HitMap.hh"
+#include "Fun4All_GL1_BCOCheck.hh"
 
-R__LOAD_LIBRARY(libINTTHitMap.so)
+R__LOAD_LIBRARY(libEvtBcoFullCheck.so)
+// R__LOAD_LIBRARY(libINTTHitMap.so)
 // R__LOAD_LIBRARY(libdNdEtaINTT.so)
 // R__LOAD_LIBRARY(libmbd.so)
 // R__LOAD_LIBRARY(libEvtIDReporter.so)
 
-void Fun4All_Intt_HitMap(
+void Fun4All_GL1_BCOCheck(
   int process_id = 0,
   int run_num = 54280,
   int nevents = -1,
@@ -13,14 +14,7 @@ void Fun4All_Intt_HitMap(
   string input_directory = "/sphenix/user/ChengWei/INTT/INTT/general_codes/CWShih/INTTBcoResolution/macro",
   string input_filename = "file_list_54280_intt.txt",
   
-  // todo : modify here
-  string hot_channel_full_file_directory = "/sphenix/user/jaein213/macros/inttcalib_fee/hotmap_cdb/hotmap_cdb_54280_100000_DST_1114.root",
-  int bco_diff_peak = 55,
-  
-  bool apply_hot_channel = true,
-  bool apply_bco_diff = true,
-  bool hitQA_check = true,
-  bool clone_hit_remove_BCO = true,
+  // todo : modify here  
   bool MBDNS_trigger_require_tag = true,
   int  trigger_MBDvtxZ_cm = 30 // note : cm
 
@@ -39,28 +33,22 @@ void Fun4All_Intt_HitMap(
   // in->AddListFile( input_directory + "/" + input_filename );
   se->registerInputManager(in);
 
-  INTTHitMap * IHM = new INTTHitMap (
-    "INTTHitMap",
+  EvtBcoFullCheck * EBC = new EvtBcoFullCheck (
+    "EvtBcoFullCheck",
     process_id,
     run_num,
     output_directory,
-    apply_hot_channel,
-    hot_channel_full_file_directory,
-    apply_bco_diff,
-    bco_diff_peak,
-    hitQA_check,
-    clone_hit_remove_BCO,
     MBDNS_trigger_require_tag,
     trigger_MBDvtxZ_cm
   );
   
-  string final_output_file_name = IHM->GetOutputFileName();
+  string final_output_file_name = EBC->GetOutputFileName();
 
   cout<<"final_output_file_name: "<<final_output_file_name<<endl;
 
   system(Form("if [ -f %s/completed/%s ]; then rm %s/completed/%s; fi;", output_directory.c_str(), final_output_file_name.c_str(), output_directory.c_str(), final_output_file_name.c_str()));  
 
-  se->registerSubsystem(IHM);
+  se->registerSubsystem(EBC);
 
   se->run(nevents);
   se->End();
