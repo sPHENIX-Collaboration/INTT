@@ -1,0 +1,14 @@
+EventCounter/aclocal.m4
+EventCounter/config.guess
+EventCounter/config.sub
+EventCounter/depcomp
+EventCounter/install-sh
+EventCounter/ltmain.sh
+EventCounter/Makefile.in
+EventCounter/missing
+EventCounter/autom4te.cache:
+EventCounter/output.0
+EventCounter/output.1
+EventCounter/requests
+EventCounter/traces.0
+EventCounter/traces.1
