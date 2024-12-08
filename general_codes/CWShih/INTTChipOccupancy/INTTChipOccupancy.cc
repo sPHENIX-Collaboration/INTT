@@ -76,7 +76,8 @@ INTTChipOccupancy::INTTChipOccupancy(
   const bool ApplyHitQA_in,
   const bool clone_hit_remove_BCO_tag_in,
   const bool MBDNS_trigger_require_tag_in,
-  const int trigger_MBDvtxZ_cm_in
+  const int trigger_MBDvtxZ_cm_in,
+  const std::vector<int> adc_conversion_vec_in
 ):
   SubsysReco(name),
   process_id(process_id_in),
@@ -85,7 +86,8 @@ INTTChipOccupancy::INTTChipOccupancy(
   ApplyHitQA(ApplyHitQA_in),
   clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in),
   MBDNS_trigger_require_tag(MBDNS_trigger_require_tag_in),
-  trigger_MBDvtxZ_cm(trigger_MBDvtxZ_cm_in)
+  trigger_MBDvtxZ_cm(trigger_MBDvtxZ_cm_in),
+  adc_conversion_vec(adc_conversion_vec_in)
 
 {
   std::cout << "INTTChipOccupancy::INTTChipOccupancy(const std::string &name) Calling ctor" << std::endl;
@@ -113,6 +115,19 @@ INTTChipOccupancy::INTTChipOccupancy(
   output_filename += Form("_%s_%s.root",runnumber_str.c_str(),job_index.c_str());
 
   file_out = new TFile(Form("%s/%s",output_directory.c_str(),output_filename.c_str()),"RECREATE");
+  SaturationChip_tree_out = new TTree("tree","saturation chip");
+  SaturationChip_tree_out -> Branch("INTT_bco_full", &out_INTT_bco_full);
+  SaturationChip_tree_out -> Branch("FELIX", &out_FELIX);
+  SaturationChip_tree_out -> Branch("FELIX_ch", &out_FELIX_ch);
+  SaturationChip_tree_out -> Branch("chip_id", &out_chip_id);
+  SaturationChip_tree_out -> Branch("nHits", &out_nHits);
+
+  SaturationChip_tree_out -> Branch("adc_vec", &out_adc_vec);
+  SaturationChip_tree_out -> Branch("size_vec", &out_size_vec);
+  SaturationChip_tree_out -> Branch("edge_l_vec", &out_edge_l_vec);
+  SaturationChip_tree_out -> Branch("edge_r_vec", &out_edge_r_vec);
+  SaturationChip_tree_out -> Branch("pos_vec", &out_pos_vec);
+  SaturationChip_tree_out -> Branch("largest_size", &out_largest_size);
 
   h1_nChipHit_map.clear();
 
@@ -127,6 +142,14 @@ INTTChipOccupancy::INTTChipOccupancy(
       
     }
   }
+
+  h2_nINTTRawHit_nSaturation = new TH2D("h2_nINTTRawHit_nSaturation", "h2_nINTTRawHit_nSaturation;nINTTRawHits;nSaturationChip", 400,0,40000, 500,0,500);
+  h2_Saturation_ChipMap = new TH2D("h2_Saturation_ChipMap", Form("h2_Saturation_ChipMap;FELIX x %d + FELIX_ch;chip_id", FELIXId_factor), 128,0,128, 26,0,26);
+
+  h1_chip_hit_container = new TH1D("","",128,0,128);
+
+  h1_ClusSize_SaturatedChip_normal = new TH1D("h1_ClusSize_SaturatedChip_normal","h1_ClusSize_SaturatedChip_normal;ClusPhiSize (Single chip, normal);Entries", 128,0,128);
+  h1_ClusSize_SaturatedChip_halfentry = new TH1D("h1_ClusSize_SaturatedChip_halfentry","h1_ClusSize_SaturatedChip_halfentry;ClusPhiSize (Single chip, Half);Entries", 128,0,128);
 
   eID_count = 0;
 
@@ -199,6 +222,8 @@ int INTTChipOccupancy::process_event(PHCompositeNode *topNode)
   {
     InttRawHit* intthit = inttcont->get_hit(i);
 
+    if (i == 0) {evt_INTT_bco_full = intthit->get_bco();}
+
     int bco_full = intthit->get_bco();
 
     int server = intthit->get_packetid() - Felix_offset; // note : the felix server ID
@@ -254,12 +279,12 @@ int INTTChipOccupancy::process_event(PHCompositeNode *topNode)
     {
       if (evt_inttHits_map.find(Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)) == evt_inttHits_map.end()) // note : if it's not found, we just add it
       {
-        evt_inttHits_map[Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)] = {server,felix_ch,chip,channel,adc,bco, bco_diff};
+        evt_inttHits_map[Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)] = {server,felix_ch,chip,channel,adc_conversion_vec[adc],bco, bco_diff};
       }
     }
     else // note : if we don't want to remove the clone hits
     {
-      evt_inttHits_map[Form("%d",i)] = {server,felix_ch,chip,channel,adc,bco, bco_diff}; // note : only index i to make the key unique
+      evt_inttHits_map[Form("%d",i)] = {server,felix_ch,chip,channel,adc_conversion_vec[adc],bco, bco_diff}; // note : only index i to make the key unique
     }
 
   } // note : end of INTT raw hit loop
@@ -279,19 +304,78 @@ int INTTChipOccupancy::process_event(PHCompositeNode *topNode)
     }
   }
 
+  int nSaturationChip = 0;
+
   for (auto &pair : evt_ChipHit_count_map)
   {
     std::string evt_ChipHit_count_map_key = pair.first;
     std::string bco_removed_key = evt_ChipHit_count_map_key.substr(0,evt_ChipHit_count_map_key.find("_HitBco"));
 
-    if (h1_nChipHit_map.find(bco_removed_key) == h1_nChipHit_map.end()) // note : if it's not found, we just add it
+    int felix_id = std::stoi( bco_removed_key.substr(bco_removed_key.find("_F")+2,bco_removed_key.find("_Fch") - bco_removed_key.find("_F")-2) );
+    int felix_ch = std::stoi( bco_removed_key.substr(bco_removed_key.find("_Fch")+4,bco_removed_key.find("_Chip") - bco_removed_key.find("_Fch")-4) );
+    int chip_id = std::stoi( bco_removed_key.substr(bco_removed_key.find("_Chip")+5,bco_removed_key.size() - bco_removed_key.find("_Chip")-5) );
+
+    if (h1_nChipHit_map.find(bco_removed_key) == h1_nChipHit_map.end())
     {
       std::cout << "eID: "<< eID_count <<" INTTChipOccupancy::process_event - h1_nChipHit_map key not found, this key is : "<< bco_removed_key << std::endl;
       continue;
     }
 
     h1_nChipHit_map[bco_removed_key]->Fill(pair.second);
+
+    if (normal_chip_map.find(bco_removed_key) != normal_chip_map.end() && pair.second > normal_threshold){
+      nSaturationChip += 1;
+      h2_Saturation_ChipMap->Fill(felix_id * FELIXId_factor + felix_ch, chip_id);
+
+      out_INTT_bco_full = evt_INTT_bco_full;
+      out_FELIX = felix_id;
+      out_FELIX_ch = felix_ch;
+      out_chip_id = chip_id;
+      out_nHits = pair.second;
+
+      INTTChipOccupancy::chip_clu_info clusters = SemiChipClustering(felix_id, felix_ch, chip_id);
+      out_adc_vec = clusters.adc_vec;
+      out_size_vec = clusters.size_vec;
+      out_edge_l_vec = clusters.edge_l_vec;
+      out_edge_r_vec = clusters.edge_r_vec;
+      out_pos_vec = clusters.pos_vec;
+      out_largest_size = clusters.largest_size;
+
+      for(auto &size : out_size_vec){
+        h1_ClusSize_SaturatedChip_normal -> Fill(size);
+      }
+
+      SaturationChip_tree_out -> Fill();
+
+    }
+    if (halfentry_chip_map.find(bco_removed_key) != halfentry_chip_map.end() && pair.second > halfentry_threshold){
+      nSaturationChip += 1;
+      h2_Saturation_ChipMap->Fill(felix_id * FELIXId_factor + felix_ch, chip_id);
+
+      out_INTT_bco_full = evt_INTT_bco_full;
+      out_FELIX = felix_id;
+      out_FELIX_ch = felix_ch;
+      out_chip_id = chip_id;
+      out_nHits = pair.second;
+
+      INTTChipOccupancy::chip_clu_info clusters = SemiChipClustering(felix_id, felix_ch, chip_id);
+      out_adc_vec = clusters.adc_vec;
+      out_size_vec = clusters.size_vec;
+      out_edge_l_vec = clusters.edge_l_vec;
+      out_edge_r_vec = clusters.edge_r_vec;
+      out_pos_vec = clusters.pos_vec;
+      out_largest_size = clusters.largest_size;
+
+      for(auto &size : out_size_vec){
+        h1_ClusSize_SaturatedChip_halfentry -> Fill(size);
+      }
+
+      SaturationChip_tree_out -> Fill();
+    }
+    
   }
+
+  h2_nINTTRawHit_nSaturation->Fill(evt_inttHits_map.size(), nSaturationChip);
 
   eID_count++;
 
@@ -310,6 +394,14 @@ int INTTChipOccupancy::EndRun(const int runnumber)
 {
 
   file_out->cd();
+  
+  SaturationChip_tree_out->Write();
+
+  h1_ClusSize_SaturatedChip_normal->Write();
+  h1_ClusSize_SaturatedChip_halfentry->Write();
+
+  h2_nINTTRawHit_nSaturation->Write();
+  h2_Saturation_ChipMap->Write();
 
   for (auto &pair : h1_nChipHit_map)
   {
@@ -384,4 +476,133 @@ std::map<int,int> INTTChipOccupancy::prepare_trigger_vec(long long trigger_input
 
     return output_map;
 
+}
+
+INTTChipOccupancy::chip_clu_info INTTChipOccupancy::SemiChipClustering(int FELIX_in, int FELIX_ch_in, int chip_in)
+{
+  h1_chip_hit_container->Reset("ICESM");
+
+  std::map<double,int> channel_id_map; channel_id_map.clear();
+  for (auto &pair : evt_inttHits_map){
+    inttHitstr hit = pair.second;
+    if (hit.hit_server == FELIX_in && hit.hit_felix_ch == FELIX_ch_in && hit.hit_chip == chip_in){
+      channel_id_map.insert(std::make_pair(double(hit.hit_channel), hit.hit_adc));
+    }
+  }
+
+  for (auto &pair : channel_id_map){
+    h1_chip_hit_container->Fill(pair.first, pair.second);
+  }
+
+  return find_Ngroup(h1_chip_hit_container);
+}
+
+INTTChipOccupancy::chip_clu_info INTTChipOccupancy::find_Ngroup(TH1D * hist_in)
+{
+    double Highest_bin_Content __attribute__((unused)) = hist_in -> GetBinContent(hist_in -> GetMaximumBin());
+    double Highest_bin_Center   = hist_in -> GetBinCenter(hist_in -> GetMaximumBin());
+
+    int group_Nbin = 0;
+    int peak_group_ID = -9999;
+    double group_entry = 0;
+    double peak_group_ratio __attribute__((unused));
+    std::vector<int> group_Nbin_vec; group_Nbin_vec.clear();
+    std::vector<double> group_entry_vec; group_entry_vec.clear();
+    std::vector<double> group_widthL_vec; group_widthL_vec.clear();
+    std::vector<double> group_widthR_vec; group_widthR_vec.clear();
+    std::vector<double> clu_pos_vec; clu_pos_vec.clear();
+
+    for (int i = 0; i < hist_in -> GetNbinsX(); i++){
+        // todo : the background rejection is here : Highest_bin_Content/2. for the time being
+        // double bin_content = ( hist_in -> GetBinContent(i+1) <= Highest_bin_Content/2.) ? 0. : ( hist_in -> GetBinContent(i+1) - Highest_bin_Content/2. );
+
+        double bin_content = hist_in -> GetBinContent(i+1);
+
+        if (bin_content != 0){
+            
+            if (group_Nbin == 0) {
+                group_widthL_vec.push_back(hist_in -> GetBinCenter(i+1) - (hist_in -> GetBinWidth(i+1)/2.));
+            }
+
+            group_Nbin += 1; 
+            group_entry += bin_content;
+        }
+        else if (bin_content == 0 && group_Nbin != 0){
+            group_widthR_vec.push_back(hist_in -> GetBinCenter(i+1) - (hist_in -> GetBinWidth(i+1)/2.));
+            group_Nbin_vec.push_back(group_Nbin);
+            group_entry_vec.push_back(group_entry);
+            group_Nbin = 0;
+            group_entry = 0;
+        }
+    }
+    if (group_Nbin != 0) {
+        group_Nbin_vec.push_back(group_Nbin);
+        group_entry_vec.push_back(group_entry);
+        group_widthR_vec.push_back(hist_in -> GetXaxis()->GetXmax());
+    } // note : the last group at the edge
+
+    // note : find the peak group
+    for (int i = 0; i < int(group_Nbin_vec.size()); i++){
+        if (group_widthL_vec[i] < Highest_bin_Center && Highest_bin_Center < group_widthR_vec[i]){
+            peak_group_ID = i;
+            break;
+        }
+    }
+    
+    // note : On Nov 6, 2024, we no longer need to calculate the ratio of the peak group
+    // double denominator = (accumulate( group_entry_vec.begin(), group_entry_vec.end(), 0.0 ));
+    // denominator = (denominator <= 0) ? 1. : denominator;
+    // peak_group_ratio = group_entry_vec[peak_group_ID] / denominator;
+    peak_group_ratio = -999;
+
+    double peak_group_left __attribute__((unused))  = (double(group_Nbin_vec.size()) == 0) ? -999 : group_widthL_vec[peak_group_ID];
+    double peak_group_right __attribute__((unused)) = (double(group_Nbin_vec.size()) == 0) ? 999  : group_widthR_vec[peak_group_ID];
+
+    for (int i = 0; i < int(group_Nbin_vec.size()); i++){
+        clu_pos_vec.push_back( CoM_cluster_pos(hist_in, group_widthL_vec[i], group_widthR_vec[i]) );
+    }
+
+    INTTChipOccupancy::chip_clu_info out_str;
+
+    out_str.adc_vec = group_entry_vec;
+    out_str.size_vec = group_Nbin_vec;
+    out_str.edge_l_vec = group_widthL_vec;
+    out_str.edge_r_vec = group_widthR_vec;
+    out_str.pos_vec = clu_pos_vec;
+    out_str.largest_size = *(std::max_element(group_Nbin_vec.begin(), group_Nbin_vec.end()));
+
+    // for (int i = 0; i < group_Nbin_vec.size(); i++)
+    // {
+    //     std::cout<<" "<<std::endl;
+    //     std::cout<<"group width : "<<group_Nbin_vec[i]<<std::endl;
+    //     std::cout<<"group adc : "<<group_entry_vec[i]<<std::endl;
+    //     std::cout<<group_widthL_vec[i]<<" "<<group_widthR_vec[i]<<std::endl;
+    // }
+
+    // cout<<" "<<endl;
+    // cout<<"N group : "<<group_Nbin_vec.size()<<endl;
+    // cout<<"Peak group ID : "<<peak_group_ID<<endl;
+    // cout<<"peak group width : "<<group_widthL_vec[peak_group_ID]<<" "<<group_widthR_vec[peak_group_ID]<<endl;
+    // cout<<"ratio : "<<peak_group_ratio<<endl;
+    
+    // note : {N_group, ratio (if two), peak widthL, peak widthR}
+    return out_str;
+}
+
+double INTTChipOccupancy::CoM_cluster_pos(TH1D * hist_in, double edge_l, double edge_r)
+{
+    double sum = 0;
+    double sum_weight = 0;
+
+    for (int i = 0; i < hist_in -> GetNbinsX(); i++){
+        double bin_content = hist_in -> GetBinContent(i+1);
+        double bin_center = hist_in -> GetBinCenter(i+1);
+
+        if (edge_l < bin_center && bin_center < edge_r){
+            sum += bin_content * bin_center;
+            sum_weight += bin_content;
+        }
+    }
+
+    return (sum_weight == 0) ? -999 : (sum / sum_weight) - hist_in -> GetBinWidth(1)/2.;
 }

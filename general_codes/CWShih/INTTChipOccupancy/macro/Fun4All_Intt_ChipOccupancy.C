@@ -15,6 +15,7 @@ void Fun4All_Intt_ChipOccupancy(
   string input_filename = "file_list_54280_intt.txt",
   
   // todo : modify here
+  std::vector<int> adc_conversion_vec = {35, 45, 60, 90, 120, 150, 180, 210},
   bool hitQA_check = true,
   bool clone_hit_remove_BCO = true,
   bool MBDNS_trigger_require_tag = true,
@@ -42,7 +43,8 @@ void Fun4All_Intt_ChipOccupancy(
     hitQA_check,
     clone_hit_remove_BCO,
     MBDNS_trigger_require_tag,
-    trigger_MBDvtxZ_cm
+    trigger_MBDvtxZ_cm,
+    adc_conversion_vec
   );
   
   string final_output_file_name = ICO->GetOutputFileName();
