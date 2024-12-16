@@ -54,7 +54,8 @@ class INTTHitMapEvt : public SubsysReco
     const int bco_diff_peak_in = 0,
     const bool ApplyHitQA_in = true,
     const bool clone_hit_remove_BCO_tag_in = true,
-    const bool setADCinZaxis_tag_in = false
+    const bool setADCinZaxis_tag_in = false,
+    const std::vector<int> adc_conversion_vec_in = {35, 45, 60, 90, 120, 150, 180, 210}
   );
 
   ~INTTHitMapEvt() override;
@@ -95,6 +96,8 @@ class INTTHitMapEvt : public SubsysReco
   std::string GetOutputFileName() {return output_filename;}
 
   int SetCheckEventBCOFULLs(std::vector<long long> input_bcofull_vec);
+  
+  int SetCheckEventBCOFULLsHalfLadder(std::vector<std::tuple<long long, int, int>> input_bcofull_halfladder_vec); // note : {BCOFULL, FELIX, FELIX_ch}
 
  private:
     struct inttHitstr{
@@ -119,6 +122,7 @@ class INTTHitMapEvt : public SubsysReco
     bool ApplyHitQA;
     bool clone_hit_remove_BCO_tag;
     bool setADCinZaxis_tag;
+    std::vector<int> adc_conversion_vec;
 
     std::string output_filename;
 
@@ -132,6 +136,10 @@ class INTTHitMapEvt : public SubsysReco
     std::map<std::string, TH2D*> h2_hitmap_map;
 
     long long eID_count;
+
+    // note : -------------------------------- for selecting the event ------------------------------
+    bool halfladder_specified;
+    std::map<long long, std::map<std::string, int>> check_event_bcofull_map_map;
 
     // note : -------------------------------- The constant values ------------------------------
     const int nFelix = 8;
@@ -164,8 +172,6 @@ class INTTHitMapEvt : public SubsysReco
 
     std::map<std::string,std::string> hot_channel_map;
     std::map<std::string, inttHitstr> evt_inttHits_map;
-
-    std::map<long long, int> check_event_bcofull_map;
 
 };
 

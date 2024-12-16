@@ -3,7 +3,7 @@
 # export LOGNAME=${USER}
 # export HOME=/sphenix/u/${LOGNAME}
 
-source /opt/sphenix/core/bin/sphenix_setup.sh -n ana.439
+source /opt/sphenix/core/bin/sphenix_setup.sh -n ana.441
 
 # export MYINSTALL1=/sphenix/user/ChengWei/build_sPH_coresoftware/EvtIDReporter/install
 export MYINSTALL=/sphenix/user/ChengWei/INTT/INTT/general_codes/CWShih/INTTHitMap/build/install

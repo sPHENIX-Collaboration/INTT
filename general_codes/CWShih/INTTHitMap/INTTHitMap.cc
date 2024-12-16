@@ -74,7 +74,9 @@ INTTHitMap::INTTHitMap(
   const bool ApplyBcoDiff_in,
   const int bco_diff_peak_in,
   const bool ApplyHitQA_in,
-  const bool clone_hit_remove_BCO_tag_in
+  const bool clone_hit_remove_BCO_tag_in,
+  const bool MBDNS_trigger_require_tag_in,
+  const int trigger_MBDvtxZ_cm_in
 ):
   SubsysReco(name),
   process_id(process_id_in),
@@ -85,11 +87,17 @@ INTTHitMap::INTTHitMap(
   ApplyBcoDiff(ApplyBcoDiff_in),
   bco_diff_peak(bco_diff_peak_in),
   ApplyHitQA(ApplyHitQA_in),
-  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in)
+  clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in),
+  MBDNS_trigger_require_tag(MBDNS_trigger_require_tag_in),
+  trigger_MBDvtxZ_cm(trigger_MBDvtxZ_cm_in)
 
 {
   std::cout << "INTTHitMap::INTTHitMap(const std::string &name) Calling ctor" << std::endl;
 
+  if (trigger_MBDvtxZ_cm != 10 && trigger_MBDvtxZ_cm != 30) {
+    std::cout<<"INTTHitMap::INTTHitMap - trigger_MBDvtxZ_cm is not 10 or 30, please check the input"<<std::endl;
+    exit(1);
+  }
 
   std::string job_index = std::to_string( process_id );
   int job_index_len = 5;
@@ -105,6 +113,8 @@ INTTHitMap::INTTHitMap(
   output_filename += (ApplyBcoDiff) ? "_BcoDiffApplied" : "";
   output_filename += (ApplyHitQA) ? "_HitQA" : "";
   output_filename += (clone_hit_remove_BCO_tag) ? "_CloneHitRemovedBCO" : "";
+  output_filename += (MBDNS_trigger_require_tag) ? "_MBDNSTrig" : "";
+  output_filename += (MBDNS_trigger_require_tag) ? Form("vtxZ%dcm",trigger_MBDvtxZ_cm) : "";
   output_filename += Form("_%s_%s.root",runnumber_str.c_str(),job_index.c_str());
 
   file_out = new TFile(Form("%s/%s",output_directory.c_str(),output_filename.c_str()),"RECREATE");
@@ -162,9 +172,26 @@ int INTTHitMap::process_event(PHCompositeNode *topNode)
     gSystem->Exit(1);
     exit(1);
   }
+  
+  if (MBDNS_trigger_require_tag)
+  {
+    GetLiveTrigger(topNode);
+
+    if (trigger_MBDvtxZ_cm == 10 && live_trigger_map.find(MBDNS_VtxZ10cm_Id) == live_trigger_map.end()){
+      eID_count++;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+    
+    if (trigger_MBDvtxZ_cm == 30 && live_trigger_map.find(MBDNS_VtxZ30cm_Id) == live_trigger_map.end()){
+      eID_count++;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+
+  }
 
   if (inttcont->get_nhits() == 0) {
     std::cout << "eID: "<< eID_count <<" INTTBcoResolution::PrepareINTT - no INTT hit found" << std::endl;
+    eID_count++;
     return Fun4AllReturnCodes::EVENT_OK;
   }
 
@@ -375,4 +402,48 @@ int INTTHitMap::PrepareHotChannel()
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void INTTHitMap::GetLiveTrigger(PHCompositeNode *topNode)
+{
+    p_gl1 = findNode::getClass<Gl1Packetv2>(topNode, m_gl1NodeName); // note : for the selfgen DST, it may be the "GL1RAWHIT"
+
+    if (p_gl1)
+    {
+        live_trigger_decimal = p_gl1->lValue(0,"LiveVector");
+        live_trigger_map = INTTHitMap::prepare_trigger_vec(live_trigger_decimal);
+
+        scaled_trigger_decimal = p_gl1->lValue(0,"ScaledVector");
+        scaled_trigger_map = INTTHitMap::prepare_trigger_vec(scaled_trigger_decimal);
+
+    }
+    else
+    {
+        std::cout << "In INTTHitMap::GetLiveTrigger, No GL1RAWHIT node found" << std::endl;
+        exit(1);
+    }
+}
+
+std::map<int,int> INTTHitMap::prepare_trigger_vec(long long trigger_input)
+{
+    std::bitset<64> trigger_input_bitset(trigger_input);
+    std::vector<int> output_vec; output_vec.clear();
+    std::map<int,int> output_map; output_map.clear();
+
+    for (unsigned int i=0; i<64; i++)
+	{
+	    if (trigger_input_bitset.test(i))
+	    {
+            output_vec.push_back(i);
+	    }
+	}
+
+  for (int ele : output_vec){
+    output_map[ele] = ele;
+  }
+
+
+
+    return output_map;
+
 }
