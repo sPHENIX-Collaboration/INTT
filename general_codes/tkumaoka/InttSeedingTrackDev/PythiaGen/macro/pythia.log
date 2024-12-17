@@ -1,0 +1,1751 @@
+OOT 6.26/06                        https://root.cern |
+  | (c) 1995-2021, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Jul 28 2022, 18:08:51                 |
+  | From tags/v6-26-06@v6-26-06                                      |
+  | With g++ (GCC) 12.1.0                                            |
+  | Try '.help', '.demo', '.license', '.credits', '.quit'/'.q'       |
+   ------------------------------------------------------------------
+
+
+Processing Fun4All_physiTuto.C...
+PHRandomSeed::GetSeed() seed: 2252418374
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.307      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 25 Feb 2022  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 14 Dec 2024 at 09:35:45    |  | 
+ |  |                                                                              |  | 
+ |  |   Program documentation and an archive of historic versions is found on:     |  | 
+ |  |                                                                              |  | 
+ |  |                               https://pythia.org/                            |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is authored by a collaboration consisting of:                       |  | 
+ |  |                                                                              |  | 
+ |  |   Christian Bierlich, Nishita Desai, Leif Gellersen, Ilkka Helenius, Philip  |  | 
+ |  |   Ilten, Leif Lönnblad, Stephen Mrenna, Stefan Prestel, Christian Preuss,    |  | 
+ |  |   Torbjörn Sjöstrand, Peter Skands, Marius Utheim and Rob Verheyen.          |  | 
+ |  |                                                                              |  | 
+ |  |   The complete list of authors, including contact information and            |  | 
+ |  |   affiliations, can be found on https://pythia.org/.                         |  | 
+ |  |   Problems or bugs should be reported on email at authors@pythia.org.        |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjöstrand et al, Comput. Phys. Commun. 191 (2015) 159                   |  | 
+ |  |   [arXiv:1410.3012 [hep-ph]]                                                 |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjöstrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]  |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is released under the GNU General Public Licence version 2 or later.|  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2022 Torbjörn Sjöstrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+PHRandomSeed::GetSeed() seed: 112629048
+PHRandomSeed::GetSeed() seed: 346309012
+PHPythia8 random seed: 346309012
+
+ *-------  PYTHIA Process Initialization  --------------------------*
+ |                                                                  |
+ | We collide p+ with p+ at a CM energy of 2.000e+02 GeV            |
+ |                                                                  |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | Subprocess                                    Code |   Estimated |
+ |                                                    |    max (mb) |
+ |                                                    |             |
+ |------------------------------------------------------------------|
+ |                                                    |             |
+ | g g -> g g                                     111 |   6.989e-03 |
+ | g g -> q qbar (uds)                            112 |   1.747e-04 |
+ | q g -> q g                                     113 |   1.768e-02 |
+ | q q(bar)' -> q q(bar)'                         114 |   7.543e-03 |
+ | q qbar -> g g                                  115 |   7.036e-05 |
+ | q qbar -> q' qbar' (uds)                       116 |   4.246e-05 |
+ | g g -> c cbar                                  121 |   5.485e-05 |
+ | q qbar -> c cbar                               122 |   1.368e-05 |
+ | g g -> b bbar                                  123 |   3.171e-05 |
+ | q qbar -> b bbar                               124 |   1.019e-05 |
+ |                                                                  |
+ *-------  End PYTHIA Process Initialization -----------------------*
+
+ *-------  PYTHIA Multiparton Interactions Initialization  ---------* 
+ |                                                                  | 
+ |                   sigmaNonDiffractive =    28.49 mb              | 
+ |                                                                  | 
+ |    pT0 =  1.06 gives sigmaInteraction =   223.29 mb: accepted    | 
+ |                                                                  | 
+ *-------  End PYTHIA Multiparton Interactions Initialization  -----* 
+
+ *-------  PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings (changes only)  ------------------* 
+ |                                                                                                                 | 
+ | Name                                          |                      Now |      Default         Min         Max | 
+ |                                               |                          |                                      | 
+ | Beams:eCM                                     |                200.00000 |    14000.000         0.0             | 
+ | HardQCD:all                                   |                       on |          off                         | 
+ | PDF:pSet                                      |                        7 |           13                         | 
+ | PhaseSpace:pTHatMin                           |                 10.00000 |          0.0         0.0             | 
+ | Random:seed                                   |                346309012 |           -1               900000000 | 
+ | Random:setSeed                                |                       on |          off                         | 
+ |                                                                                                                 | 
+ *-------  End PYTHIA Flag + Mode + Parm + Word + FVec + MVec + PVec + WVec Settings  -----------------------------* 
+
+ --------  PYTHIA Particle Data Table (changed only)  ------------------------------------------------------------------------------
+ 
+      id   name            antiName         spn chg col      m0        mWidth      mMin       mMax       tau0    res dec ext vis wid
+             no onMode   bRatio   meMode     products 
+
+ no particle data has been changed from its default value 
+
+ --------  End PYTHIA Particle Data Table  -----------------------------------------------------------------------------------------
+
+PHRandomSeed::GetSeed() seed: 3156115740
+G4_TrkrSimulation::TpcInit
+PHG4Reco::Registering Pipe Subsystems, PIPE_MISALIGNMENT = 0
+ pipe is shifted by (x,y,z) = (0.5, 0.0, 0.1) cm
+PHG4MvtxSubsystem: Apply misalignment? Enable::MVTX_APPLYMISALIGNMENT=0
+G4_TrkrSimulation::Intt
+PHG4InttSubsystem: Use survey geometry? Enable::INTT_USEG4SURVEYGEOM=1
+Intt has 4 layers with layer setup:
+ Intt layer 0 laddertype -2 nladders 12 sensor radius 7.5
+ Intt layer 1 laddertype -2 nladders 12 sensor radius 8.0
+ Intt layer 2 laddertype -2 nladders 16 sensor radius 9.9
+ Intt layer 3 laddertype -2 nladders 16 sensor radius 10.6
+G4_TrkrSimulation::TPC
+PHRandomSeed::GetSeed() seed: 3297948673
+
+**************************************************************
+ Geant4 version Name: geant4-10-07-patch-04    (9-September-2022)
+                       Copyright : Geant4 Collaboration
+                      References : NIM A 506 (2003), 250-303
+                                 : IEEE-TNS 53 (2006), 270-278
+                                 : NIM A 835 (2016), 186-225
+                             WWW : http://geant4.org/
+**************************************************************
+
+<<< Geant4 Physics List simulation engine: FTFP_BERT
+
+Use EvtGen Decayer
+PHRandomSeed::GetSeed() seed: 4189358769
+PHG4MvtxHitReco: readout window is from -9900.0 to 9900.0
+PHRandomSeed::GetSeed() seed: 2330069844
+PHG4MvtxDigitizer random seed: 2330069844
+INTT readout window is set to -20 to 80.0
+PHRandomSeed::GetSeed() seed: 1346742821
+PHG4InttDigitizer random seed: 1346742821
+PHRandomSeed::GetSeed() seed: 3217501504
+PHRandomSeed::GetSeed() seed: 1335839800
+Warning from RawClusterBuilderTemplate::Detector(): no detector specific class HcalInRawClusterBuilderTemplate defined for detector HCALIN. Default BEmcRec will be used
+PHRandomSeed::GetSeed() seed: 2240114433
+Warning from RawClusterBuilderTemplate::Detector(): no detector specific class HcalOutRawClusterBuilderTemplate defined for detector HCALOUT. Default BEmcRec will be used
+ActsGeomInit: Mvtx apply misalignment? ACTSGEOM::mvtx_applymisalignment=0
+ActsGeomInit: Use survey geometry? ACTSGEOM::inttsurvey=1
+PHCASeeding::set_field_dir rescale: -1.0
+Tracking_Reco_TrackSeed - Using stub matching for Si matching 
+PHSiliconTpcTrackMatching pp_mode set to 0
+Tracking_Reco_TrackSeed - Using Micromegas matching 
+tutorial::tutorial(const std::string &name) Calling ctor
+tutorial::Init(PHCompositeNode *topNode) Initializing
+SysError in <TFile::TFile>: file /sphenix/tg/tg01/commissioning/INTT/work/tkumaoka/InttSeedingTrackDev/PythiaGen/output/ can not be opened Is a directory
+tutorial::Init(PHCompositeNode *topNode) Initializing
+SysError in <TFile::TFile>: file /sphenix/tg/tg01/commissioning/INTT/work/tkumaoka/InttSeedingTrackDev/PythiaGen/output//results.root can not be opened No such file or directory
+Fun4AllServer::setRun(): run 0 uses CDB TIMESTAMP 6
+PHFieldUtility::GetFieldConfigNode - field map with configuration from input default: PHFieldConfigv1::identify - Field type of [3D field map expressed in Cartesian coordinates] from file [/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_GAP/65/a9/65a930ed6de9c0e049cd0f3ef226e6b4_sphenix3dbigmapxyz_gap_rebuild_v2.root] with a scale factor of 1.0
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_GAP/65/a9/65a930ed6de9c0e049cd0f3ef226e6b4_sphenix3dbigmapxyz_gap_rebuild_v2.root ... 
+
+================= End Construct Mag Field ======================
+
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/CEMC/Geometry_2023ProjTilted/cemc_geoparams-0-0-4294967295-1673617702.xml ... Received PdbParameterMapContainer Detector Id 0 with (Hash = 0x105780da82dd75bf)
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_STEEL/ea/f0/eaf07c2a2def280428b9aeea99d14fd1_sphenix3dbigmapxyz_steel_rebuild_v2.root ... 
+
+================= End Construct Mag Field ======================
+
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/geometry/mvtx_stave.gdml'...
+G4GDML: Reading definitions...
+G4GDML: Reading materials...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading setup...
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/geometry/mvtx_stave.gdml' done!
+Stripping off GDML names of materials, solids and volumes ...
+SetDisplayProperty - AV[0] = av_1_impr_1_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[1] = av_1_impr_1_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[2] = av_1_impr_2_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[3] = av_1_impr_2_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[4] = av_1_impr_3_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[5] = av_1_impr_3_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[6] = av_1_impr_4_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[7] = av_1_impr_4_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[8] = av_1_impr_5_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[9] = av_1_impr_5_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[10] = av_1_impr_6_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[11] = av_1_impr_6_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[12] = av_1_impr_7_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[13] = av_1_impr_7_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[14] = av_1_impr_8_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[15] = av_1_impr_8_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[16] = av_1_impr_9_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[17] = av_1_impr_9_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[18] = av_1_impr_10_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[19] = av_1_impr_10_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[20] = av_1_impr_11_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[21] = av_1_impr_11_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[22] = av_1_impr_12_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[23] = av_1_impr_12_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[24] = av_1_impr_13_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[25] = av_1_impr_13_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[26] = av_1_impr_14_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[27] = av_1_impr_14_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[28] = av_1_impr_15_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[29] = av_1_impr_15_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[30] = av_1_impr_16_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[31] = av_1_impr_16_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[32] = av_1_impr_17_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[33] = av_1_impr_17_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[34] = av_1_impr_18_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[35] = av_1_impr_18_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[36] = av_1_impr_19_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[37] = av_1_impr_19_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[38] = av_1_impr_20_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[39] = av_1_impr_20_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[40] = av_1_impr_21_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[41] = av_1_impr_21_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[42] = av_1_impr_22_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[43] = av_1_impr_22_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[44] = av_1_impr_23_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[45] = av_1_impr_23_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[46] = av_1_impr_24_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[47] = av_1_impr_24_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[48] = av_1_impr_25_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[49] = av_1_impr_25_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[50] = av_1_impr_26_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[51] = av_1_impr_26_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[52] = av_1_impr_27_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[53] = av_1_impr_27_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[54] = av_1_impr_28_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[55] = av_1_impr_28_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[56] = av_1_impr_29_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[57] = av_1_impr_29_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[58] = av_1_impr_30_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[59] = av_1_impr_30_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[60] = av_1_impr_31_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[61] = av_1_impr_31_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[62] = av_1_impr_32_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[63] = av_1_impr_32_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[64] = av_1_impr_33_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[65] = av_1_impr_33_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[66] = av_1_impr_34_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[67] = av_1_impr_34_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[68] = av_1_impr_35_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[69] = av_1_impr_35_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[70] = av_1_impr_36_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[71] = av_1_impr_36_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[72] = av_1_impr_37_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[73] = av_1_impr_37_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[74] = av_1_impr_38_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[75] = av_1_impr_38_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[76] = av_1_impr_39_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[77] = av_1_impr_39_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[78] = av_1_impr_40_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[79] = av_1_impr_40_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[80] = av_1_impr_41_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[81] = av_1_impr_41_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[82] = av_1_impr_42_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[83] = av_1_impr_42_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[84] = av_1_impr_43_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[85] = av_1_impr_43_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[86] = av_1_impr_44_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[87] = av_1_impr_44_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[88] = av_1_impr_45_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[89] = av_1_impr_45_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[90] = av_1_impr_46_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[91] = av_1_impr_46_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[92] = av_1_impr_47_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[93] = av_1_impr_47_MVTXStave_StaveStruct_pv_1
+SetDisplayProperty - AV[94] = av_1_impr_48_MVTXHalfStave_pv_0
+SetDisplayProperty - AV[95] = av_1_impr_48_MVTXStave_StaveStruct_pv_1
+/home/phnxbld/sPHENIX/gcc-12.1.0/ana/source/coresoftware/simulation/g4simulation/g4intt/PHG4InttDetector.cc:145: Use the INTT survey geometry. Get the survey map from /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/InttSurveyMap/13/de/13deb02a5cb09c589184c1cfefc5aee6_intt_survey_cdbttree.root
+G4Material WARNING: duplicate name of material CF4
+/home/phnxbld/sPHENIX/gcc-12.1.0/ana/source/coresoftware/simulation/g4simulation/g4tpc/PHG4TpcDetector.cc:566: MaxT 26375.0 TBinWidth 53.0 extended readout time 0.0 NTBins = 498 drift velocity 0.0
+PHG4MicromegasDetector::construct_micromegas - apply_survey: 1
+CylinderGeomMicromegas
+layer: 55
+segmentation_type: SEGMENTATION_PHI
+drift_direction: OUTWARD
+radius: 83.3cm
+thickness: 0.3cm
+zmin: -110.0cm
+zmax: 110.0cm
+pitch: 0.1cm
+
+CylinderGeomMicromegas
+layer: 56
+segmentation_type: SEGMENTATION_Z
+drift_direction: INWARD
+radius: 83.9cm
+thickness: 0.3cm
+zmin: -110.0cm
+zmax: 110.0cm
+pitch: 0.2cm
+
+PHG4FullProjTiltedSpacalDetector::Construct_AzimuthalSeg::CEMC_0 - constructed 192 unique towers
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/HCALIN_GDML/cd/b9/cdb9c86fa4083999d15117ab4a627c18_InnerHCalAbsorberTiles_merged.gdml'...
+G4GDML: Reading definitions...
+G4GDML: Reading materials...
+G4GDML: Reading solids...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading structure...
+Unsupported GDML tag 'materialref' for Geant4 assembly structure !
+G4GDML: Reading setup...
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/HCALIN_GDML/cd/b9/cdb9c86fa4083999d15117ab4a627c18_InnerHCalAbsorberTiles_merged.gdml' done!
+Stripping off GDML names of materials, solids and volumes ...
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/HCALOUT_GDML/72/0f/720f7accdc7a868568882dc360d58e88_OuterHCalAbsorberTiles_merged_v3.gdml'...
+G4GDML: Reading definitions...
+G4GDML: Reading materials...
+G4GDML: Reading solids...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading definitions...
+G4GDML: Reading solids...
+G4GDML: Reading structure...
+G4GDML: Reading setup...
+G4GDML: Reading '/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/HCALOUT_GDML/72/0f/720f7accdc7a868568882dc360d58e88_OuterHCalAbsorberTiles_merged_v3.gdml' done!
+Stripping off GDML names of materials, solids and volumes ...
+Checking overlaps for volume BH_1 (G4Tubs) ... OK! 
+Checking overlaps for volume BH_FORWARD_PLUS_1 (G4Tubs) ... OK! 
+Checking overlaps for volume BH_FORWARD_NEG_1 (G4Tubs) ... OK! 
+
+ hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
+ for pions :   3 to 6 GeV
+ for kaons :   3 to 6 GeV
+ for proton :  3 to 6 GeV
+ for neutron : 3 to 6 GeV
+
+EvtGen:Defining EvtPhotosEngine using photonType = gamma
+EvtGen:Setting up PHOTOS.
+EvtGen:Using EvtGen random number engine also for Photos++
+Message from PHCORK(MODCOR):: initialization
+MODOP=5 -- corrects Energy from mass+flow
+
+********************************************************************************
+
+                            =========================
+                              PHOTOS, Version:  3.64
+                              Released at:  18/2/20
+                            =========================
+
+                     Photos QED corrections in Particle Decays
+
+           Monte Carlo Program - by E. Barberio, B. van Eijk and Z. Was
+           From version 2.09   - by P. Golonka and Z. Was
+           From version 3.00   - by N. Davidson, T. Przedzinski and Z. Was
+********************************************************************************
+
+                  Internal (default) input parameters: 
+
+                    INTERF= 1 ISEC= 0 ITRE= 0 IEXP= 1 IFTOP= 1 IFW= 1
+                    ALPHA_QED= 7.297350e-03 XPHCUT= 1.000000e-07
+
+                    Option with interference is active
+                    Option with exponentiation is active EPSEXP=1.000000e-04
+                    Emision in t tbar production is active
+                    Correction wt in decay of W is active
+
+          WARNING:  /HEPEVT/ is not anymore used.
+
+********************************************************************************
+MODOP=2 -- blocks emission in Kl  to gamma e+e-: DEFAULT
+MODOP=2 -- blocks emission in pi0 to gamma e+e-: DEFAULT
+ IPHQRK_setQarknoEmission MODOP=1 -- blocks emission from light quarks:  DEFAULT
+Message from PHCORK(MODCOR):: initialization
+MODOP=5 -- corrects Energy from mass+flow
+EvtGen:Defining EvtPythiaEngine: data tables defined in 
+EvtGen:Pythia 8 codes need to be used in decay files
+EvtGen:Using EvtGen random engine for Pythia 8 as well
+EvtGen:Creating generic Pythia generator
+
+ *------------------------------------------------------------------------------------* 
+ |                                                                                    | 
+ |  *------------------------------------------------------------------------------*  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  |   PPP   Y   Y  TTTTT  H   H  III    A      Welcome to the Lund Monte Carlo!  |  | 
+ |  |   P  P   Y Y     T    H   H   I    A A     This is PYTHIA version 8.307      |  | 
+ |  |   PPP     Y      T    HHHHH   I   AAAAA    Last date of change: 25 Feb 2022  |  | 
+ |  |   P       Y      T    H   H   I   A   A                                      |  | 
+ |  |   P       Y      T    H   H  III  A   A    Now is 14 Dec 2024 at 09:38:10    |  | 
+ |  |                                                                              |  | 
+ |  |   Program documentation and an archive of historic versions is found on:     |  | 
+ |  |                                                                              |  | 
+ |  |                               https://pythia.org/                            |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is authored by a collaboration consisting of:                       |  | 
+ |  |                                                                              |  | 
+ |  |   Christian Bierlich, Nishita Desai, Leif Gellersen, Ilkka Helenius, Philip  |  | 
+ |  |   Ilten, Leif Lönnblad, Stephen Mrenna, Stefan Prestel, Christian Preuss,    |  | 
+ |  |   Torbjörn Sjöstrand, Peter Skands, Marius Utheim and Rob Verheyen.          |  | 
+ |  |                                                                              |  | 
+ |  |   The complete list of authors, including contact information and            |  | 
+ |  |   affiliations, can be found on https://pythia.org/.                         |  | 
+ |  |   Problems or bugs should be reported on email at authors@pythia.org.        |  | 
+ |  |                                                                              |  | 
+ |  |   The main program reference is 'An Introduction to PYTHIA 8.2',             |  | 
+ |  |   T. Sjöstrand et al, Comput. Phys. Commun. 191 (2015) 159                   |  | 
+ |  |   [arXiv:1410.3012 [hep-ph]]                                                 |  | 
+ |  |                                                                              |  | 
+ |  |   The main physics reference is the 'PYTHIA 6.4 Physics and Manual',         |  | 
+ |  |   T. Sjöstrand, S. Mrenna and P. Skands, JHEP05 (2006) 026 [hep-ph/0603175]  |  | 
+ |  |                                                                              |  | 
+ |  |   PYTHIA is released under the GNU General Public Licence version 2 or later.|  | 
+ |  |   Please respect the MCnet Guidelines for Event Generator Authors and Users. |  | 
+ |  |                                                                              |  | 
+ |  |   Disclaimer: this program comes without any guarantees.                     |  | 
+ |  |   Beware of errors and use common sense when interpreting results.           |  | 
+ |  |                                                                              |  | 
+ |  |   Copyright (C) 2022 Torbjörn Sjöstrand                                      |  | 
+ |  |                                                                              |  | 
+ |  |                                                                              |  | 
+ |  *------------------------------------------------------------------------------*  | 
+ |                                                                                    | 
+ *------------------------------------------------------------------------------------* 
+
+EvtGen:Creating alias Pythia generator
+EvtGen:Defining EvtTauolaEngine.
+EvtGen:Setting up TAUOLA.
+EvtGen:Using EvtGen random number engine also for Tauola++
+
+ *************************************
+ *     TAUOLA C++ Interface v1.1.8   *
+ *-----------------------------------*
+ *                                   *
+ *   (c) Nadia    Davidson,   (1,2)  *
+ *   (c) Gizo     Nanava,     (3)    *
+ *       Tomasz   Przedzinski,(4)    *
+ *       Elzbieta Richter-Was,(2,4)  *
+ *       Zbigniew Was         (2,5)  *
+ *                                   *
+ *  1) Unimelb, Melbourne, Australia *
+ *  2)     INP, Krakow, Poland       *
+ *  3) University Bonn, Germany      *
+ *  4)      UJ, Krakow, Poland       *
+ *  5)    CERN, Geneva, Switzerland  *
+ *************************************
+
+
+
+ ***************************************************************************
+ *                         *****TAUOLA LIBRARY: VERSION 2.9 ******         *
+ *                         ***********October 2011 ***************         *
+ *                         **AUTHORS: S.JADACH, Z.WAS*************         *
+ *                         **R. DECKER, M. JEZABEK, J.H.KUEHN*****         *
+ *                         **AVAILABLE FROM: www.cern.ch/wasm****          *
+ *                         ***** PUBLISHED IN COMP. PHYS. COMM.***         *
+ *                         0: Physics initialization  CLEO collab          *
+ *                          see Alain Weinstein www home page:             *
+ *                         http://www.cithep.caltech.edu/~ajw/             *
+ *                         /korb_doc.html#files                            *
+ *                         1: Physics initialization RChL of:              *
+ *                          O. Shekhovtsova, T. Przedzinski,               *
+ *                          P. Roig and Z. Was                             *
+ *                          IFJPAN-2013-5, UAB-FT-731                      *
+ *                         *******CPC 76 (1993) 361          *****         *
+ *                         **5 or more pi dec.: precision limited          *
+ *                         ****DEKAY ROUTINE: INITIALIZATION******         *
+ *                   0     JAK1   = DECAY MODE TAU+                        *
+ *                   0     JAK2   = DECAY MODE TAU-                        *
+ ***************************************************************************
+
+ *                   1     IVER   = hadronic current version           *
+  RANMAR INITIALIZED:   54217137           0         0
+  In F3pi: chpt + 1 resonance + 2 resonance (RchT)
+  KORB: rho/rhop -> pi-pi0 mixing:
+  KORB: rho   =  0.769900024      0.151199996    
+  KORB: rhop  =   1.37000000      0.509999990     -0.109999999    
+  KORB: K*/K*prime -> Kpi mixing:
+  KORB: kstp  =   1.70000005      0.234999999      -3.79999988E-02
+  KORB: a1/a1prime -> 3pi, KKpi mixing:
+  KORB: a1    =   1.27499998      0.699999988    
+  KORB: a1prim=   1.46099997      0.250000000       0.00000000    
+  KORB: K1A/K1B -> Kpipi mixing:
+  KORB: K1A   =   1.26999998       9.00000036E-02   1.00000000    
+  KORB: K1B   =   1.40199995      0.173999995      0.800000012    
+  KORB: rho/rhop/rhopp -> 4pi mixing:
+  KORB: rho   =  0.769900024      0.151199996    
+  KORB: rhopp =   1.46500003      0.310000002     -0.109999999    
+  KORB: rhoppp=   1.70000005      0.234999999     -0.109999999    
+  KORB: 3PI-PI0 PARAMS:   0.00000000      0.124200001      0.160400003      0.271100014      0.444299996    
+  KORB: PI-3PI0 PARAMS:   0.00000000       1.00000000    
+
+ ***************************************************************************
+
+Reading SANC input files.
+File 'table1-1.txt'  missing... skipped.
+File 'table2-2.txt'  missing... skipped.
+File 'table11-11.txt' missing... skipped.
+
+PHRandomSeed::GetSeed() seed: 471764741
+EvtGen:Initializing EvtGen
+EvtGen:Storing known decay models
+EvtGen:Defining EvtBcToNPi model: Bc -> V + npi and Bc -> P + npi decays
+from A.V. Berezhnoy, A.K. Likhoded, A.V. Luchinsky: Phys.Rev.D 82, 014012 (2010) and arXiV:1104.0808.
+EvtGen:Main decay file name  :/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/EvtGen/DECAY.DEC
+EvtGen:In readDecayFile, reading:/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/EvtGen/DECAY.DEC
+EvtGen:Warning, sum of branching fractions for omega is 0.994
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for phi is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for f_2 is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for chi_c1 is 0.996
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for Upsilon(2S) is 0.992
+EvtGen:rescaled to one! 
+EvtGen:Warning, sum of branching fractions for Upsilon(3S) is 0.999
+EvtGen:rescaled to one! 
+EvtGen:Mixing type integer set to 1
+EvtGen:Done initializing EvtGen
+### Birks coefficients used in run time
+   G4_POLYSTYRENE     0.07943 mm/MeV     0.00841958 g/cm^2/MeV  massFactor=  101.167 effCharge= 0.027027
+   Uniplast_scintillator     0.07943 mm/MeV     0.00841958 g/cm^2/MeV  massFactor=  101.167 effCharge= 0.027027
+PHG4Reco::InitRun - export geometry to DST via tmp file /tmp/PHGeomUtility_geom_file_dbc6e31b-fd28-4469-9aa2-1511434a2930.gdml
+PHG4GDML: Writing '/tmp/PHGeomUtility_geom_file_dbc6e31b-fd28-4469-9aa2-1511434a2930.gdml'...
+PHG4GDML: Writing definitions...
+G4GDML: Writing materials...
+PHG4GDML: Writing solids...
+PHG4GDML: Writing structure...
+G4GDML: Writing setup...
+PHG4GDML: Writing surfaces...
+PHG4GDML: Writing '/tmp/PHGeomUtility_geom_file_dbc6e31b-fd28-4469-9aa2-1511434a2930.gdml' done !
+PHG4MvtxHitReco::InitRun
+ m_tmin: -9900.0ns, m_tmax: 9900.0ns
+ m_strobe_width: 5000.0
+ m_strobe_separation: 0.0
+ m_extended_readout_time: 4900.0
+ m_in_sphenix_srdo: false
+
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer0/intt_geoparams-0-0-4294967295-1639587811.xml ... Received PdbParameterMap with (Hash = 0x60d324373c487512)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 805 dead channel for layer 3 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer0/. Total dead chan = 805
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer1/intt_geoparams-0-0-4294967295-1639587813.xml ... Received PdbParameterMap with (Hash = 0xace8682906524cdb)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 798 dead channel for layer 4 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer1/. Total dead chan = 1603
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer2/intt_geoparams-0-0-4294967295-1639587814.xml ... Received PdbParameterMap with (Hash = 0xcbde7eea004baa73)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 1143 dead channel for layer 5 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer2/. Total dead chan = 2746
+PHParameters::ReadFromFile - Reading from File: /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer3/intt_geoparams-0-0-4294967295-1639587815.xml ... Received PdbParameterMap with (Hash = 0x91aaed1fff5293a1)
+PHG4InttDeadMapLoader::INTT::InitRun - loading 1124 dead channel for layer 6 from /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/Tracking/INTT/DeadMap/intt_layer3/. Total dead chan = 3870
+PHG4InttHitReco::InitRun - Use local hot channel map file: 0
+PHG4InttHitReco::InitRun - Hot channel map file: /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/INTT_HotMap/bd/c2/bdc264b674111287866570ff70e626d5_intt_cdb-00025952.root
+PHG4InttDigitizer::InitRun: detector = INTT
+MakeActsGeometry::addActsTpcSurfaces - m_nSurfPhi: 12
+/home/phnxbld/sPHENIX/gcc-12.1.0/ana/source/coresoftware/offline/packages/trackreco/MakeActsGeometry.cc:505: Magnetic field FIELDMAP_TRACKING with rescale 1.0
+tgeo-sphenix-mms.json not found locally, use repo version
+sphenix-mm-material.json not found locally, use repo version
+using Acts material file : /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/calibrations/ACTS/sphenix-mm-material.json
+Using Acts TGeoResponse file : /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.453/share/tgeo-sphenix-mms.json
+Mag field now /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_TRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root with rescale 1.0
+Warning in <TGeoManager::Import>: TGeoMananager in lock mode. NOT IMPORTING new geometry
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+Warning in <TGeoMatrix::dtor>: Registered matrix ID was removed
+09:38:27    MagneticFiel   INFO      Read magnetic field map from ROOT file '"/cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_TRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root"'
+09:38:27    MagneticFiel   INFO      Use XYZ field map
+MakeActsGeometry::makeMvtxMapPairs - Apply misalignment: 0; Global displacement: (0.0, 0.0, 0.0)
+MakeActsGeometry::makeMvtxMapPairs - Apply misalignment: 0; Global displacement: (0.0, 0.0, 0.0)
+MakeActsGeometry::makeMvtxMapPairs - Apply misalignment: 0; Global displacement: (0.0, 0.0, 0.0)
+Use Intt survey geometry? m_inttSurvey =1
+AlignmentTransformation: use INTT survey geometry = 0
+AlignmentTransformation: localVerbosity = 0
+AlignmentTransformation: Reading alignment parameters from database file: /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/TRACKINGALIGNMENT/8c/7a/8c7a4bd674c9ed3fd85fc5a9e216cf1d_tracking_alignment_parameters_empty.txt
+Called Setup
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_TRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root ... 
+
+================= End Construct Mag Field ======================
+
+
+================ Begin Construct Mag Field =====================
+
+-----------------------------------------------------------
+      Magnetic field Module - Verbosity:
+-----------------------------------------------------------
+ ---> Reading the field grid from /cvmfs/sphenix.sdcc.bnl.gov/calibrations/sphnxpro/cdb/FIELDMAP_TRACKING/8e/4d/8e4d6c3b1660540a658da3a275af2bde_sphenix3dtrackingmapxyz.root ... 
+
+================= End Construct Mag Field ======================
+
+/home/phnxbld/sPHENIX/gcc-12.1.0/ana/source/coresoftware/offline/packages/trackreco/PHSiliconTpcTrackMatching.cc:65:  Search windows: phi 0.0 eta 0.0 _pp_mode 0 _use_intt_crossing 1
+Creating node SvtxTrackSeedContainer
+
+/home/phnxbld/sPHENIX/gcc-12.1.0/ana/source/coresoftware/offline/packages/trackreco/PHMicromegasTpcTrackMatching.cc:129:  rphi_search_win inner layer 0.2 z_search_win inner layer 26.0 rphi_search_win outer layer 13.0 z_search_win outer layer 0.2
+tutorial::InitRun(PHCompositeNode *topNode) Initializing for Run XXX
+--------------------------------------
+
+List of Nodes in Fun4AllServer:
+Node Tree under TopNode TOP
+TOP (PHCompositeNode)/
+   DST (PHCompositeNode)/
+      PHHepMCGenEventMap (IO,PHHepMCGenEventMap)
+      PHG4INEVENT (PHDataNode)
+      PIPE (PHCompositeNode)/
+         G4HIT_PIPE (IO,PHG4HitContainer)
+      MVTX (PHCompositeNode)/
+         G4HIT_MVTX (IO,PHG4HitContainer)
+      INTT (PHCompositeNode)/
+         G4HIT_INTT (IO,PHG4HitContainer)
+      TPC (PHCompositeNode)/
+         G4HIT_ABSORBER_TPC (IO,PHG4HitContainer)
+         G4HIT_TPC (IO,PHG4HitContainer)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4HIT_TPC_ENDCAP (IO,PHG4HitContainer)
+      MICROMEGAS (PHCompositeNode)/
+         G4HIT_MICROMEGAS (IO,PHG4HitContainer)
+      CEMC_ELECTRONICS (PHCompositeNode)/
+         G4HIT_CEMC_ELECTRONICS (IO,PHG4HitContainer)
+      CEMC_SPT (PHCompositeNode)/
+         G4HIT_CEMC_SPT (IO,PHG4HitContainer)
+      CEMC (PHCompositeNode)/
+         G4HIT_ABSORBER_CEMC (IO,PHG4HitContainer)
+         G4HIT_CEMC (IO,PHG4HitContainer)
+         G4CELL_CEMC (IO,PHG4CellContainer)
+         TOWER_SIM_CEMC (IO,RawTowerContainer)
+         TOWERINFO_SIM_CEMC (IO,TowerInfoContainerv1)
+         TOWER_RAW_CEMC (IO,RawTowerContainer)
+         TOWERINFO_RAW_CEMC (IO,TowerInfoContainerv1)
+         TOWER_CALIB_CEMC (IO,RawTowerContainer)
+         TOWERINFO_CALIB_CEMC (IO,TowerInfoContainerv2)
+         CLUSTER_CEMC (IO,RawClusterContainer)
+         CLUSTER_POS_COR_CEMC (IO,RawClusterContainer)
+      HCALIN (PHCompositeNode)/
+         G4HIT_ABSORBER_HCALIN (IO,PHG4HitContainer)
+         G4HIT_HCALIN (IO,PHG4HitContainer)
+         G4CELL_HCALIN (IO,PHG4CellContainer)
+         TOWER_SIM_HCALIN (IO,RawTowerContainer)
+         TOWERINFO_SIM_HCALIN (IO,TowerInfoContainerv1)
+         TOWER_RAW_HCALIN (IO,RawTowerContainer)
+         TOWERINFO_RAW_HCALIN (IO,TowerInfoContainerv1)
+         TOWER_CALIB_HCALIN (IO,RawTowerContainer)
+         TOWERINFO_CALIB_HCALIN (IO,TowerInfoContainerv2)
+         CLUSTER_HCALIN (IO,RawClusterContainer)
+      MAGNET (PHCompositeNode)/
+         G4HIT_MAGNET (IO,PHG4HitContainer)
+      HCALOUT (PHCompositeNode)/
+         G4HIT_ABSORBER_HCALOUT (IO,PHG4HitContainer)
+         G4HIT_HCALOUT (IO,PHG4HitContainer)
+         G4CELL_HCALOUT (IO,PHG4CellContainer)
+         TOWER_SIM_HCALOUT (IO,RawTowerContainer)
+         TOWERINFO_SIM_HCALOUT (IO,TowerInfoContainerv1)
+         TOWER_RAW_HCALOUT (IO,RawTowerContainer)
+         TOWERINFO_RAW_HCALOUT (IO,TowerInfoContainerv1)
+         TOWER_CALIB_HCALOUT (IO,RawTowerContainer)
+         TOWERINFO_CALIB_HCALOUT (IO,TowerInfoContainerv2)
+         CLUSTER_HCALOUT (IO,RawClusterContainer)
+      HCALIN_SPT (PHCompositeNode)/
+         G4HIT_HCALIN_SPT (IO,PHG4HitContainer)
+      G4HIT_BH_1 (IO,PHG4HitContainer)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4HIT_BH_FORWARD_PLUS (IO,PHG4HitContainer)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4HIT_BH_FORWARD_NEG (IO,PHG4HitContainer)
+      G4TruthInfo (IO,PHG4TruthInfoContainer)
+      TRKR (PHCompositeNode)/
+         TRKR_HITSET (IO,TrkrHitSetContainerv1)
+         TRKR_HITTRUTHASSOC (IO,TrkrHitTruthAssocv1)
+         TRKR_CLUSTER (IO,TrkrClusterContainerv4)
+         TRKR_CLUSTERHITASSOC (IO,TrkrClusterHitAssocv3)
+         TRKR_CLUSTERCROSSINGASSOC (IO,TrkrClusterCrossingAssocv1)
+      TRKR_TRUTHTRACKCONTAINER (IO,TrkrTruthTrackContainerv1)
+      TRKR_TRUTHCLUSTERCONTAINER (IO,TrkrClusterContainerv4)
+      alignmentTransformationContainer (PHDataNode)
+      alignmentTransformationContainerTransient (PHDataNode)
+      SVTX (PHCompositeNode)/
+         SiliconTrackSeedContainer (IO,TrackSeedContainer_v1)
+         TpcTrackSeedContainer (IO,TrackSeedContainer_v1)
+         SvtxTrackSeedContainer (IO,TrackSeedContainer_v1)
+         ActsTrajectories (PHDataNode)
+         SvtxTrackMap (IO,SvtxTrackMap_v2)
+         SvtxAlignmentStateMap (PHDataNode)
+         SvtxVertexMap (IO,SvtxVertexMap_v1)
+         TrackVertexCrossingAssocMap (IO,TrackVertexCrossingAssoc_v1)
+   RUN (PHCompositeNode)/
+      PHGenIntegral (IO,PHGenIntegralv1)
+      Flags (IO,FlagSavev1)
+      FIELD_CONFIG (IO,PHFieldConfigv1)
+      PIPE (PHCompositeNode)/
+         G4GEOPARAM_PIPE (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_PIPE (IO,PHG4CylinderGeomContainer)
+      MVTX (PHCompositeNode)/
+         G4GEOPARAM_MVTX (IO,PdbParameterMapContainer)
+         G4CELLPARAM_MVTX (IO,PdbParameterMap)
+      INTT (PHCompositeNode)/
+         G4GEOPARAM_INTT (IO,PdbParameterMapContainer)
+         DEADMAP_INTT (IO,InttDeadMapv1)
+         G4CELLPARAM_INTT (IO,PdbParameterMap)
+      TPC (PHCompositeNode)/
+         G4GEOPARAM_TPC (IO,PdbParameterMapContainer)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4GEOPARAM_TPC_ENDCAP (IO,PdbParameterMapContainer)
+      MICROMEGAS (PHCompositeNode)/
+         G4GEOPARAM_MICROMEGAS (IO,PdbParameterMapContainer)
+      CEMC_ELECTRONICS (PHCompositeNode)/
+         G4GEOPARAM_CEMC_ELECTRONICS (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_CEMC_ELECTRONICS (IO,PHG4CylinderGeomContainer)
+      CEMC_SPT (PHCompositeNode)/
+         G4GEOPARAM_CEMC_SPT (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_CEMC_SPT (IO,PHG4CylinderGeomContainer)
+      CEMC (PHCompositeNode)/
+         G4GEOPARAM_CEMC (IO,PdbParameterMapContainer)
+         G4CELLPARAM_CEMC (IO,PdbParameterMap)
+         TOWERGEOM_CEMC (IO,RawTowerGeomContainer_Cylinderv1)
+      HCALIN (PHCompositeNode)/
+         G4GEOPARAM_HCALIN (IO,PdbParameterMapContainer)
+         G4CELLPARAM_HCALIN (IO,PdbParameterMap)
+         TOWERPARAM_HCALIN (IO,PdbParameterMap)
+         TOWERGEOM_HCALIN (IO,RawTowerGeomContainer_Cylinderv1)
+      MAGNET (PHCompositeNode)/
+         G4GEOPARAM_MAGNET (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_MAGNET (IO,PHG4CylinderGeomContainer)
+      HCALOUT (PHCompositeNode)/
+         G4GEOPARAM_HCALOUT (IO,PdbParameterMapContainer)
+         G4CELLPARAM_HCALOUT (IO,PdbParameterMap)
+         TOWERPARAM_HCALOUT (IO,PdbParameterMap)
+         TOWERGEOM_HCALOUT (IO,RawTowerGeomContainer_Cylinderv1)
+      HCALIN_SPT (PHCompositeNode)/
+         G4GEOPARAM_HCALIN_SPT (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_HCALIN_SPT (IO,PHG4CylinderGeomContainer)
+      G4GEOPARAM_BH_1 (IO,PdbParameterMapContainer)
+      CYLINDERGEOM_BH_1 (IO,PHG4CylinderGeomContainer)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4GEOPARAM_BH_FORWARD_PLUS (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_BH_FORWARD_PLUS (IO,PHG4CylinderGeomContainer)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4GEOPARAM_BH_FORWARD_NEG (IO,PdbParameterMapContainer)
+         CYLINDERGEOM_BH_FORWARD_NEG (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_MVTX (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_INTT (IO,PHG4CylinderGeomContainer)
+      CYLINDERCELLGEOM_SVTX (IO,PHG4TpcCylinderGeomContainer)
+      CYLINDERGEOM_MICROMEGAS_FULL (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_CEMC (IO,PHG4CylinderGeomContainer)
+      CYLINDERGEOM_ABSORBER_CEMC (IO,PHG4CylinderGeomContainer)
+      GEOMETRY_IO (IO,PHGeomIOTGeo)
+      CYLINDERCELLGEOM_CEMC (IO,PHG4CylinderCellGeomContainer)
+   PAR (PHCompositeNode)/
+      FIELD_MAP (PHDataNode)
+      PIPE (PHCompositeNode)/
+         G4GEO_PIPE (PHDataNode)
+      MVTX (PHCompositeNode)/
+         G4GEO_MVTX (PHDataNode)
+      INTT (PHCompositeNode)/
+         G4GEO_INTT (PHDataNode)
+         CYLINDERGEOM_INTT (PHDataNode)
+         G4CELLGEO_INTT (PHDataNode)
+      TPC (PHCompositeNode)/
+         G4GEO_TPC (PHDataNode)
+      TPC_ENDCAP (PHCompositeNode)/
+         G4GEO_TPC_ENDCAP (PHDataNode)
+      MICROMEGAS (PHCompositeNode)/
+         G4GEO_MICROMEGAS (PHDataNode)
+      CEMC_ELECTRONICS (PHCompositeNode)/
+         G4GEO_CEMC_ELECTRONICS (PHDataNode)
+      CEMC_SPT (PHCompositeNode)/
+         G4GEO_CEMC_SPT (PHDataNode)
+      CEMC (PHCompositeNode)/
+         G4GEO_CEMC (PHDataNode)
+         G4CELLGEO_CEMC (PHDataNode)
+      G4GDML_CONFIG (PHDataNode)
+      HCALIN (PHCompositeNode)/
+         G4GEO_HCALIN (PHDataNode)
+         G4CELLGEO_HCALIN (PHDataNode)
+         TOWERGEO_HCALIN (PHDataNode)
+      MAGNET (PHCompositeNode)/
+         G4GEO_MAGNET (PHDataNode)
+      HCALOUT (PHCompositeNode)/
+         G4GEO_HCALOUT (PHDataNode)
+         G4CELLGEO_HCALOUT (PHDataNode)
+         TOWERGEO_HCALOUT (PHDataNode)
+      HCALIN_SPT (PHCompositeNode)/
+         G4GEO_HCALIN_SPT (PHDataNode)
+      G4GEO_BH_1 (PHDataNode)
+      BH_FORWARD_PLUS (PHCompositeNode)/
+         G4GEO_BH_FORWARD_PLUS (PHDataNode)
+      BH_FORWARD_NEG (PHCompositeNode)/
+         G4GEO_BH_FORWARD_NEG (PHDataNode)
+      GEOMETRY (PHDataNode)
+      SVTX (PHCompositeNode)/
+         ActsGeometry (PHDataNode)
+
+
+
+ --------  PYTHIA Info Listing  ---------------------------------------- 
+ 
+ Beam A: id =   2212, pz =  1.000e+02, e =  1.000e+02, m =  9.383e-01.
+ Beam B: id =   2212, pz = -1.000e+02, e =  1.000e+02, m =  9.383e-01.
+
+ In 1: id =   21, x =  3.046e-02, pdf =  3.661e+00 at Q2 =  1.101e+02.
+ In 2: id =   21, x =  4.392e-01, pdf =  2.162e-02 at same Q2.
+
+ Subprocess g g -> g g with code 111 is 2 -> 2.
+ It has sHat =  5.352e+02,    tHat = -1.550e+02,    uHat = -3.802e+02,
+       pTHat =  1.049e+01,   m3Hat =  0.000e+00,   m4Hat =  0.000e+00,
+    thetaHat =  1.136e+00,  phiHat =  9.897e-01.
+     alphaEM =  7.630e-03,  alphaS =  1.979e-01    at Q2 =  1.101e+02.
+
+ Impact parameter b =  7.941e-01 gives enhancement factor =  1.171e+00.
+ Max pT scale for MPI =  1.049e+01, ISR =  1.049e+01, FSR =  1.049e+01.
+ Number of MPI =     4, ISR =     3, FSRproc =     6, FSRreson =     0.
+
+ --------  End PYTHIA Info Listing  ------------------------------------
+
+ --------  PYTHIA Event Listing  (hard process)  -----------------------------------------------------------------------------------
+ 
+    no         id  name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0         90  (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000    200.000    200.000
+     1       2212  (p+)               -12     0     0     3     0     0     0      0.000      0.000     99.996    100.000      0.938
+     2       2212  (p+)               -12     0     0     4     0     0     0      0.000      0.000    -99.996    100.000      0.938
+     3         21  (g)                -21     1     0     5     6   102   101      0.000      0.000      3.046      3.046      0.000
+     4         21  (g)                -21     2     0     5     6   104   103      0.000      0.000    -43.921     43.921      0.000
+     5         21  g                   23     3     4     0     0   104   101      5.759      8.770    -10.553     14.881      0.000
+     6         21  g                   23     3     4     0     0   102   103     -5.759     -8.770    -30.322     32.086      0.000
+                                   Charge sum:  0.000           Momentum sum:      0.000      0.000    -40.875     46.967     23.134
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+
+ --------  PYTHIA Event Listing  (complete event)  ---------------------------------------------------------------------------------
+ 
+    no         id  name            status     mothers   daughters     colours      p_x        p_y        p_z         e          m 
+     0         90  (system)           -11     0     0     0     0     0     0      0.000      0.000      0.000    200.000    200.000
+     1       2212  (p+)               -12     0     0    53     0     0     0      0.000      0.000     99.996    100.000      0.938
+     2       2212  (p+)               -12     0     0    54     0     0     0      0.000      0.000    -99.996    100.000      0.938
+     3         21  (g)                -21     7     0     5     6   102   101      0.000      0.000      3.046      3.046      0.000
+     4         21  (g)                -21     8     8     5     6   104   103      0.000      0.000    -43.921     43.921      0.000
+     5         21  (g)                -23     3     4     9     9   104   101      5.759      8.770    -10.553     14.881      0.000
+     6         21  (g)                -23     3     4    10    10   102   103     -5.759     -8.770    -30.322     32.086      0.000
+     7         21  (g)                -41    53    53    11     3   102   105     -0.000     -0.000      6.802      6.802      0.000
+     8         21  (g)                -42    26    26     4     4   104   103     -0.000     -0.000    -43.921     43.921      0.000
+     9         21  (g)                -44     5     5    21    22   104   101      6.747      9.314    -12.967     17.333      0.000
+    10         21  (g)                -44     6     6    56    56   102   103     -5.357     -8.549    -27.713     29.492      0.000
+    11         21  (g)                -43     7     0    23    23   101   105     -1.390     -0.765      3.561      3.899      0.000
+    12         21  (g)                -31    16     0    14    15   106   107      0.000      0.000      1.025      1.025      0.000
+    13         21  (g)                -31    17    17    14    15   108   106      0.000      0.000     -2.643      2.643      0.000
+    14         21  (g)                -33    12    13    18    18   108   109      0.695      1.240      0.116      1.426      0.000
+    15         21  (g)                -33    12    13    19    19   109   107     -0.695     -1.240     -1.735      2.242      0.000
+    16         21  (g)                -41    27    27    20    12   110   107      0.000     -0.000      4.191      4.191      0.000
+    17         21  (g)                -42    28     0    13    13   108   106     -0.000     -0.000     -2.643      2.643      0.000
+    18         21  (g)                -44    14    14    29    29   108   109     -0.071      0.899      0.667      1.122      0.000
+    19         21  (g)                -44    15    15    30    30   109   107     -0.947     -1.352     -2.018      2.607      0.000
+    20         21  (g)                -43    16     0    31    31   110   106      1.018      0.453      2.899      3.106      0.000
+    21         21  (g)                -51     9     0    24    25   104   111      3.112      2.494     -4.659      6.133      0.000
+    22         21  (g)                -51     9     0    35    35   111   101      3.607      6.805     -8.238     11.277      0.000
+    23         21  (g)                -52    11    11    38    38   101   105     -1.363     -0.750      3.490      3.821      0.000
+    24         21  (g)                -51    21     0    33    34   112   111      2.830      1.447     -3.307      4.586      0.000
+    25         21  (g)                -51    21     0    59    59   104   112      0.283      1.047     -2.931      3.126      0.000
+    26         21  (g)                -53    54    54     8     8   104   103      0.000     -0.000    -45.500     45.500      0.000
+    27         21  (g)                -42    64    64    16    16   110   107      0.000      0.000      4.191      4.191      0.000
+    28         21  (g)                -41    65    65    32    17   113   106     -0.000     -0.000     -3.097      3.097      0.000
+    29         21  (g)                -44    18    18    66    66   108   109     -0.113      0.881      0.547      1.044      0.000
+    30         21  (g)                -44    19    19    67    67   109   107     -1.373     -1.527     -2.110      2.944      0.000
+    31         21  (g)                -44    20    20    68    68   110   106      0.999      0.446      2.534      2.760      0.000
+    32         21  (g)                -43    28     0    69    69   113   108      0.487      0.200      0.123      0.541      0.000
+    33         21  (g)                -51    24     0    55    55   112   114      2.478      2.046     -2.441      4.035      0.000
+    34         21  (g)                -51    24     0    60    60   114   111      1.237      1.071     -2.887      3.319      0.000
+    35         21  (g)                -52    22    22    36    37   111   101      2.722      5.135     -6.216      8.510      0.000
+    36         21  (g)                -51    35     0    58    58   111   115      2.538      4.235     -5.932      7.718      0.000
+    37         21  (g)                -51    35     0    39    40   115   101      0.143      0.877     -0.179      0.906      0.000
+    38         21  (g)                -52    23    23    41    41   101   105     -1.322     -0.728      3.385      3.706      0.000
+    39         21  (g)                -51    37     0    61    61   115   116     -0.503      0.488     -0.112      0.709      0.000
+    40         21  (g)                -51    37     0    42    43   116   101      0.477      0.296      0.364      0.669      0.000
+    41         21  (g)                -52    38    38    44    44   101   105     -1.153     -0.635      2.954      3.234      0.000
+    42          3  (s)                -51    40     0    62    62   116     0      0.049     -0.030      1.075      1.187      0.500
+    43         -3  (sbar)             -51    40     0    63    63     0   101      0.030      0.108      0.308      0.598      0.500
+    44         21  (g)                -52    41    41    57    57   101   105     -0.756     -0.416      1.935      2.118      0.000
+    45         21  (g)                -31    70    70    47    48   118   117      0.000      0.000     27.230     27.230      0.000
+    46         21  (g)                -31    71    71    47    48   117   119      0.000      0.000     -0.055      0.055      0.000
+    47         21  (g)                -33    45    46    72    72   120   119      0.238     -0.140      0.300      0.407      0.000
+    48         21  (g)                -33    45    46    73    73   118   120     -0.238      0.140     26.875     26.877      0.000
+    49         21  (g)                -31    74    74    51    52   122   121      0.000      0.000      0.013      0.013      0.000
+    50         21  (g)                -31    75    75    51    52   124   123      0.000      0.000     -4.356      4.356      0.000
+    51         21  (g)                -33    49    50    76    76   124   121     -0.147      0.137     -1.031      1.051      0.000
+    52         21  (g)                -33    49    50    77    77   122   123      0.147     -0.137     -3.312      3.318      0.000
+    53         21  (g)                -61     1     0     7     7   109   105     -0.295     -1.311      6.741      6.874      0.000
+    54         21  (g)                -61     2     0    26    26   124   103     -0.282     -0.025    -45.472     45.473      0.000
+    55         21  (g)                -62    33    33   117   117   112   114      2.424      1.891     -2.204      3.783      0.000
+    56         21  (g)                -62    10    10    94    94   102   122     -5.577     -8.737    -28.623     30.442      0.000
+    57         21  (g)                -62    44    44    86    86   101   105     -0.844     -0.806      1.863      2.198      0.000
+    58         21  (g)                -62    36    36   115   115   111   115      2.459      4.060     -5.482      7.252      0.000
+    59         21  (g)                -62    25    25    84     0   104   112      0.260      1.027     -2.825      3.017      0.000
+    60         21  (g)                -62    34    34   116   116   114   111      1.210      1.028     -2.761      3.185      0.000
+    61         21  (g)                -62    39    39   114   114   115   108     -0.518      0.430     -0.077      0.677      0.000
+    62          3  (s)                -62    42    42   109   109   116     0     -0.000     -0.248      1.063      1.201      0.500
+    63         -3  (sbar)             -62    43    43    87    87     0   101      0.010      0.020      0.315      0.591      0.500
+    64         21  (g)                -61     1     0    27    27   106   106     -0.841      0.112      4.136      4.222      0.000
+    65         21  (g)                -61     2     0    28    28   107   107     -0.055      1.173     -3.016      3.237      0.000
+    66         21  (g)                -62    29    29   113   113   108   113     -0.296      1.003      0.687      1.251      0.000
+    67         21  (g)                -62    30    30    95    95   109   102     -1.473     -0.542     -2.443      2.904      0.000
+    68         21  (g)                -62    31    31   111   111   110   118      0.458      0.543      2.672      2.765      0.000
+    69         21  (g)                -62    32    32    83     0   113   120      0.414      0.280      0.204      0.540      0.000
+    70         21  (g)                -61     1     0    45    45   119   119      0.373      0.206     27.605     27.608      0.000
+    71         21  (g)                -61     2     0    46    46   117   117     -0.031      0.378      0.599      0.709      0.000
+    72         21  (g)                -62    47    47    83     0   120   110      0.204      0.232      0.377      0.488      0.000
+    73         21  (g)                -62    48    48   110   110   118   116      0.138      0.352     27.827     27.829      0.000
+    74         21  (g)                -61     1     0    49    49   123   123      0.078     -0.118     -0.361      0.387      0.000
+    75         21  (g)                -61     2     0    50    50   121   121      0.121     -0.283     -5.630      5.638      0.000
+    76         21  (g)                -62    51    51    84     0   124   104     -0.085      0.040     -0.414      0.425      0.000
+    77         21  (g)                -62    52    52    82     0   122   103      0.284     -0.440     -5.576      5.601      0.000
+    78       2101  (ud_0)             -63     1     0    96    96     0   109     -0.033      0.436      7.407      7.443      0.579
+    79          2  (u)                -63     1     0    85    85   105     0      0.718      0.675     53.170     53.181      0.330
+    80       2203  (uu_1)             -63     2     0   119   119     0   124     -0.059     -0.613    -36.881     36.894      0.771
+    81          1  (d)                -63     2     0    82     0   103     0      0.306     -0.630     -8.298      8.334      0.330
+    82          1  (d)                -73    81    77    93    93   122     0      0.590     -1.071    -13.875     13.935      0.438
+    83         21  (g)                -73    69    72   112   112   113   110      0.618      0.512      0.581      1.027      0.271
+    84         21  (g)                -73    59    76   118   118   124   112      0.175      1.067     -3.239      3.442      0.429
+    85          2  (u)                -71    79    79    88    92   105     0      0.718      0.675     53.170     53.181      0.330
+    86         21  (g)                -71    57    57    88    92   101   105     -0.844     -0.806      1.863      2.198      0.000
+    87         -3  (sbar)             -71    63    63    88    92     0   101      0.010      0.020      0.315      0.591      0.500
+    88        223  (omega)            -83    85    87   163   165     0     0     -0.231      0.698     22.576     22.602      0.805
+    89        211  pi+                 83    85    87     0     0     0     0      0.921     -0.009     19.783     19.805      0.140
+    90        111  (pi0)              -83    85    87   166   168     0     0     -0.823     -0.798     10.372     10.436      0.135
+    91       -213  (rho-)             -83    85    87   140   141     0     0     -0.196      0.105      2.372      2.527      0.844
+    92        321  K+                  84    85    87     0     0     0     0      0.211     -0.107      0.245      0.600      0.494
+    93          1  (d)                -71    82    82    97   108   122     0      0.590     -1.071    -13.875     13.935      0.438
+    94         21  (g)                -71    56    56    97   108   102   122     -5.577     -8.737    -28.623     30.442      0.000
+    95         21  (g)                -71    67    67    97   108   109   102     -1.473     -0.542     -2.443      2.904      0.000
+    96       2101  (ud_0)             -71    78    78    97   108     0   109     -0.033      0.436      7.407      7.443      0.579
+    97       3122  (Lambda0)          -83    93    96   169   170     0     0      0.326     -1.082    -10.279     10.401      1.116
+    98      -3212  (Sigmabar0)        -83    93    96   171   172     0     0     -0.771     -1.630     -7.737      8.033      1.193
+    99       -211  pi-                 83    93    96     0     0     0     0     -0.726     -1.238     -3.525      3.808      0.140
+   100        223  (omega)            -83    93    96   173   175     0     0     -1.487     -1.826     -6.935      7.365      0.777
+   101        111  (pi0)              -83    93    96   176   177     0     0     -1.333     -3.050    -10.330     10.854      0.135
+   102        211  pi+                 84    93    96     0     0     0     0     -0.364      0.042     -0.695      0.798      0.140
+   103       -213  (rho-)             -84    93    96   142   143     0     0     -1.755     -1.252     -4.527      5.095      0.905
+   104        111  (pi0)              -84    93    96   178   179     0     0      0.115     -0.187     -0.141      0.294      0.135
+   105        113  (rho0)             -84    93    96   144   145     0     0     -0.634      0.745      1.322      1.807      0.748
+   106        213  (rho+)             -84    93    96   146   147     0     0     -0.002     -0.764      0.500      1.178      0.745
+   107       2114  (Delta0)           -84    93    96   148   149     0     0      0.016      0.069      4.359      4.537      1.255
+   108        111  (pi0)              -84    93    96   180   181     0     0      0.121      0.259      0.454      0.553      0.135
+   109          3  (s)                -71    62    62   120   139   116     0     -0.000     -0.248      1.063      1.201      0.500
+   110         21  (g)                -71    73    73   120   139   118   116      0.138      0.352     27.827     27.829      0.000
+   111         21  (g)                -71    68    68   120   139   110   118      0.458      0.543      2.672      2.765      0.000
+   112         21  (g)                -71    83    83   120   139   113   110      0.618      0.512      0.581      1.027      0.271
+   113         21  (g)                -71    66    66   120   139   108   113     -0.296      1.003      0.687      1.251      0.000
+   114         21  (g)                -71    61    61   120   139   115   108     -0.518      0.430     -0.077      0.677      0.000
+   115         21  (g)                -71    58    58   120   139   111   115      2.459      4.060     -5.482      7.252      0.000
+   116         21  (g)                -71    60    60   120   139   114   111      1.210      1.028     -2.761      3.185      0.000
+   117         21  (g)                -71    55    55   120   139   112   114      2.424      1.891     -2.204      3.783      0.000
+   118         21  (g)                -71    84    84   120   139   124   112      0.175      1.067     -3.239      3.442      0.429
+   119       2203  (uu_1)             -71    80    80   120   139     0   124     -0.059     -0.613    -36.881     36.894      0.771
+   120       -321  K-                  83   109   119     0     0     0     0     -0.223     -0.337      2.783      2.855      0.494
+   121       2212  p+                  83   109   119     0     0     0     0      0.871      0.404     13.449     13.516      0.938
+   122        223  (omega)            -83   109   119   182   184     0     0     -0.261     -0.170      2.799      2.923      0.781
+   123      -2214  (Deltabar-)        -83   109   119   150   151     0     0      0.422      0.502      9.143      9.272      1.392
+   124        111  (pi0)              -83   109   119   185   186     0     0      0.310      0.126      0.914      0.983      0.135
+   125        211  pi+                 83   109   119     0     0     0     0     -0.359      0.351      0.951      1.084      0.140
+   126        111  (pi0)              -83   109   119   187   188     0     0     -0.311      0.075      0.388      0.521      0.135
+   127        111  (pi0)              -83   109   119   189   190     0     0      0.252      0.774      2.075      2.233      0.135
+   128        111  (pi0)              -84   109   119   191   192     0     0      0.313      0.092     -0.377      0.516      0.135
+   129        311  (K0)               -84   109   119   152   152     0     0      0.455      1.604     -0.547      1.824      0.498
+   130       3314  (Xi*-)             -84   109   119   193   194     0     0      0.768      1.371     -2.200      3.108      1.533
+   131        213  (rho+)             -84   109   119   153   154     0     0      0.255      0.558     -0.924      1.357      0.781
+   132      -3224  (Sigma*bar-)       -84   109   119   155   156     0     0      1.517      2.375     -2.774      4.193      1.395
+   133        113  (rho0)             -84   109   119   157   158     0     0      2.172      2.118     -6.156      7.003      1.394
+   134        211  pi+                 84   109   119     0     0     0     0      0.050      0.354     -0.075      0.391      0.140
+   135       -211  pi-                 84   109   119     0     0     0     0      0.399      0.215     -0.625      0.785      0.140
+   136        111  (pi0)              -84   109   119   195   196     0     0      0.031     -0.125     -5.217      5.220      0.135
+   137        213  (rho+)             -84   109   119   159   160     0     0     -0.228     -0.493    -12.175     12.205      0.660
+   138       2114  (Delta0)           -84   109   119   161   162     0     0      0.439      0.268    -16.182     16.234      1.201
+   139        211  pi+                 84   109   119     0     0     0     0     -0.264     -0.036     -3.067      3.081      0.140
+   140       -211  pi-                 91    91     0     0     0     0     0      0.091      0.003      0.039      0.171      0.140
+   141        111  (pi0)              -91    91     0   197   198     0     0     -0.286      0.102      2.332      2.356      0.135
+   142       -211  pi-                 91   103     0     0     0     0     0     -0.660     -0.832     -1.475      1.823      0.140
+   143        111  (pi0)              -91   103     0   199   200     0     0     -1.095     -0.421     -3.052      3.272      0.135
+   144        211  pi+                 91   105     0     0     0     0     0     -0.456      0.365      0.256      0.652      0.140
+   145       -211  pi-                 91   105     0     0     0     0     0     -0.178      0.381      1.066      1.154      0.140
+   146        211  pi+                 91   106     0     0     0     0     0     -0.223     -0.075     -0.024      0.275      0.140
+   147        111  (pi0)              -91   106     0   201   202     0     0      0.222     -0.689      0.524      0.904      0.135
+   148       2112  n0                  91   107     0     0     0     0     0      0.227      0.160      3.160      3.309      0.940
+   149        111  (pi0)              -91   107     0   203   204     0     0     -0.210     -0.091      1.199      1.228      0.135
+   150      -2112  nbar0               91   123     0     0     0     0     0      0.598      0.566      6.553      6.671      0.940
+   151       -211  pi-                 91   123     0     0     0     0     0     -0.176     -0.065      2.590      2.601      0.140
+   152        130  K_L0                91   129   129     0     0     0     0      0.455      1.604     -0.547      1.824      0.498
+   153        211  pi+                 91   131     0     0     0     0     0     -0.166      0.501     -0.554      0.778      0.140
+   154        111  (pi0)              -91   131     0   205   206     0     0      0.420      0.057     -0.370      0.579      0.135
+   155      -3122  (Lambdabar0)       -91   132     0   207   208     0     0      1.455      1.900     -2.418      3.580      1.116
+   156       -211  pi-                 91   132     0     0     0     0     0      0.062      0.474     -0.356      0.612      0.140
+   157        211  pi+                 91   133     0     0     0     0     0      1.300      1.588     -2.684      3.382      0.140
+   158       -211  pi-                 91   133     0     0     0     0     0      0.872      0.530     -3.472      3.621      0.140
+   159        211  pi+                 91   137     0     0     0     0     0      0.021     -0.092     -0.721      0.740      0.140
+   160        111  (pi0)              -91   137     0   209   210     0     0     -0.249     -0.401    -11.454     11.464      0.135
+   161       2112  n0                  91   138     0     0     0     0     0      0.311      0.381    -11.893     11.940      0.940
+   162        111  (pi0)              -91   138     0   211   212     0     0      0.128     -0.112     -4.289      4.294      0.135
+   163        211  pi+                 91    88     0     0     0     0     0     -0.049      0.107      8.116      8.118      0.140
+   164       -211  pi-                 91    88     0     0     0     0     0      0.081      0.419     10.491     10.501      0.140
+   165        111  (pi0)              -91    88     0   213   214     0     0     -0.262      0.172      3.969      3.983      0.135
+   166         22  gamma               91    90     0     0     0     0     0     -0.571     -0.587      6.897      6.945      0.000
+   167         11  e-                  91    90     0     0     0     0     0     -0.072     -0.069      0.970      0.975      0.001
+   168        -11  e+                  91    90     0     0     0     0     0     -0.180     -0.142      2.506      2.516      0.001
+   169       2212  p+                  91    97     0     0     0     0     0      0.279     -0.824     -7.808      7.912      0.938
+   170       -211  pi-                 91    97     0     0     0     0     0      0.047     -0.258     -2.471      2.489      0.140
+   171      -3122  (Lambdabar0)       -91    98     0   215   216     0     0     -0.721     -1.494     -6.894      7.178      1.116
+   172         22  gamma               91    98     0     0     0     0     0     -0.050     -0.136     -0.843      0.856      0.000
+   173        211  pi+                 91   100     0     0     0     0     0     -0.323     -0.721     -2.604      2.725      0.140
+   174       -211  pi-                 91   100     0     0     0     0     0     -0.504     -0.390     -2.180      2.276      0.140
+   175        111  (pi0)              -91   100     0   217   218     0     0     -0.660     -0.715     -2.150      2.364      0.135
+   176         22  gamma               91   101     0     0     0     0     0     -0.479     -1.195     -3.826      4.037      0.000
+   177         22  gamma               91   101     0     0     0     0     0     -0.854     -1.855     -6.505      6.818      0.000
+   178         22  gamma               91   104     0     0     0     0     0      0.048     -0.155     -0.038      0.167      0.000
+   179         22  gamma               91   104     0     0     0     0     0      0.066     -0.032     -0.104      0.127      0.000
+   180         22  gamma               91   108     0     0     0     0     0      0.085      0.055      0.211      0.234      0.000
+   181         22  gamma               91   108     0     0     0     0     0      0.036      0.203      0.243      0.319      0.000
+   182        211  pi+                 91   122     0     0     0     0     0      0.108     -0.014      0.835      0.853      0.140
+   183       -211  pi-                 91   122     0     0     0     0     0     -0.392     -0.193      1.772      1.830      0.140
+   184        111  (pi0)              -91   122     0   219   220     0     0      0.022      0.038      0.193      0.239      0.135
+   185         22  gamma               91   124     0     0     0     0     0      0.106      0.114      0.363      0.395      0.000
+   186         22  gamma               91   124     0     0     0     0     0      0.204      0.012      0.551      0.588      0.000
+   187         22  gamma               91   126     0     0     0     0     0     -0.227      0.086      0.354      0.429      0.000
+   188         22  gamma               91   126     0     0     0     0     0     -0.084     -0.011      0.034      0.091      0.000
+   189         22  gamma               91   127     0     0     0     0     0      0.006      0.005      0.002      0.009      0.000
+   190         22  gamma               91   127     0     0     0     0     0      0.246      0.769      2.073      2.225      0.000
+   191         22  gamma               91   128     0     0     0     0     0      0.199      0.112     -0.191      0.298      0.000
+   192         22  gamma               91   128     0     0     0     0     0      0.114     -0.020     -0.185      0.218      0.000
+   193       3322  (Xi0)              -91   130     0   221   222     0     0      0.594      0.982     -1.795      2.503      1.315
+   194       -211  pi-                 91   130     0     0     0     0     0      0.174      0.389     -0.406      0.605      0.140
+   195         22  gamma               91   136     0     0     0     0     0      0.031     -0.064     -4.547      4.548      0.000
+   196         22  gamma               91   136     0     0     0     0     0     -0.000     -0.061     -0.670      0.673      0.000
+   197         22  gamma               91   141     0     0     0     0     0     -0.172      0.128      1.432      1.448      0.000
+   198         22  gamma               91   141     0     0     0     0     0     -0.114     -0.026      0.901      0.908      0.000
+   199         22  gamma               91   143     0     0     0     0     0     -0.798     -0.349     -2.132      2.303      0.000
+   200         22  gamma               91   143     0     0     0     0     0     -0.297     -0.072     -0.920      0.970      0.000
+   201         22  gamma               91   147     0     0     0     0     0      0.219     -0.645      0.446      0.814      0.000
+   202         22  gamma               91   147     0     0     0     0     0      0.002     -0.045      0.078      0.090      0.000
+   203         22  gamma               91   149     0     0     0     0     0     -0.039     -0.005      0.551      0.552      0.000
+   204         22  gamma               91   149     0     0     0     0     0     -0.171     -0.086      0.648      0.676      0.000
+   205         22  gamma               91   154     0     0     0     0     0      0.355      0.039     -0.366      0.511      0.000
+   206         22  gamma               91   154     0     0     0     0     0      0.065      0.019     -0.005      0.068      0.000
+   207      -2212  pbar-               91   155     0     0     0     0     0      1.217      1.624     -1.916      2.945      0.938
+   208        211  pi+                 91   155     0     0     0     0     0      0.238      0.276     -0.502      0.636      0.140
+   209         22  gamma               91   160     0     0     0     0     0     -0.117     -0.262     -5.570      5.578      0.000
+   210         22  gamma               91   160     0     0     0     0     0     -0.132     -0.139     -5.884      5.887      0.000
+   211         22  gamma               91   162     0     0     0     0     0     -0.005     -0.064     -2.082      2.083      0.000
+   212         22  gamma               91   162     0     0     0     0     0      0.132     -0.048     -2.206      2.211      0.000
+   213         22  gamma               91   165     0     0     0     0     0     -0.250      0.167      3.101      3.116      0.000
+   214         22  gamma               91   165     0     0     0     0     0     -0.012      0.004      0.868      0.868      0.000
+   215      -2112  nbar0               91   171     0     0     0     0     0     -0.558     -1.122     -5.197      5.428      0.940
+   216        111  (pi0)              -91   171     0   223   224     0     0     -0.163     -0.371     -1.697      1.750      0.135
+   217         22  gamma               91   175     0     0     0     0     0     -0.427     -0.431     -1.186      1.332      0.000
+   218         22  gamma               91   175     0     0     0     0     0     -0.233     -0.284     -0.964      1.031      0.000
+   219         22  gamma               91   184     0     0     0     0     0      0.002     -0.049      0.047      0.068      0.000
+   220         22  gamma               91   184     0     0     0     0     0      0.020      0.087      0.146      0.171      0.000
+   221       3122  (Lambda0)          -91   193     0   225   226     0     0      0.562      0.727     -1.389      2.005      1.116
+   222        111  (pi0)              -91   193     0   227   228     0     0      0.032      0.255     -0.405      0.499      0.135
+   223         22  gamma               91   216     0     0     0     0     0     -0.079     -0.114     -0.358      0.383      0.000
+   224         22  gamma               91   216     0     0     0     0     0     -0.084     -0.258     -1.339      1.366      0.000
+   225       2112  n0                  91   221     0     0     0     0     0      0.507      0.709     -1.140      1.716      0.940
+   226        111  (pi0)              -91   221     0   229   230     0     0      0.054      0.017     -0.249      0.289      0.135
+   227         22  gamma               91   222     0     0     0     0     0      0.031      0.272     -0.382      0.470      0.000
+   228         22  gamma               91   222     0     0     0     0     0      0.001     -0.017     -0.024      0.029      0.000
+   229         22  gamma               91   226     0     0     0     0     0     -0.035     -0.017     -0.028      0.048      0.000
+   230         22  gamma               91   226     0     0     0     0     0      0.090      0.034     -0.221      0.241      0.000
+                                   Charge sum:  2.000           Momentum sum:      0.000      0.000     -0.000    200.000    200.000
+
+ --------  End PYTHIA Event Listing  -----------------------------------------------------------------------------------------------
+
+====================================================================
+                  HADRONIC PROCESSES SUMMARY (verbose level 1)
+
+---------------------------------------------------
+                           Hadronic Processes for neutron
+
+  Process: hadElastic
+        Model:             hElasticCHIPS: 0 eV  ---> 100 TeV
+     Cr_sctns:        G4NeutronElasticXS: 0 eV  ---> 100 TeV
+
+  Process: neutronInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:      G4NeutronInelasticXS: 0 eV  ---> 100 TeV
+
+  Process: nCapture
+        Model:               nRadCapture: 0 eV  ---> 100 TeV
+     Cr_sctns:        G4NeutronCaptureXS: 0 eV  ---> 100 TeV
+
+  Process: nKiller
+
+---------------------------------------------------
+                           Hadronic Processes for GenericIon
+
+  Process: ionInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for He3
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: He3Inelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for alpha
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: alphaInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for anti_He3
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_He3Inelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_alpha
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_alphaInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_deuteron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_deuteronInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_lambda
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: anti_lambdaInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_neutron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100.1 MeV
+        Model:              AntiAElastic: 100 MeV ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_neutronInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_proton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100.1 MeV
+        Model:              AntiAElastic: 100 MeV ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_protonInelastic
+        Model:                      FTFP: 0 eV  ---> 100 TeV
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for anti_triton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100.1 MeV/n
+        Model:              AntiAElastic: 100 MeV/n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: anti_tritonInelastic
+        Model:                      FTFP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:              AntiAGlauber: 0 eV  ---> 25.6 PeV
+
+  Process: hFritiofCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for deuteron
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: dInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+---------------------------------------------------
+                           Hadronic Processes for e+
+
+  Process: electronNuclear
+        Model:   G4ElectroVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:          ElectroNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for e-
+
+  Process: electronNuclear
+        Model:   G4ElectroVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:          ElectroNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for gamma
+
+  Process: photonNuclear
+        Model:               GammaNPreco: 0 eV  ---> 200 MeV
+        Model:            BertiniCascade: 199 MeV ---> 6 GeV
+        Model:           TheoFSGenerator: 3 GeV ---> 100 TeV
+     Cr_sctns:            PhotoNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for kaon+
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: kaon+Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for kaon-
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: kaon-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for lambda
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: lambdaInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for mu+
+
+  Process: muonNuclear
+        Model:      G4MuonVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:     KokoulinMuonNuclearXS: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for mu-
+
+  Process: muonNuclear
+        Model:      G4MuonVDNuclearModel: 0 eV  ---> 1 PeV
+     Cr_sctns:     KokoulinMuonNuclearXS: 0 eV  ---> 100 TeV
+
+  Process: muMinusCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for pi+
+
+  Process: hadElastic
+        Model:           hElasticGlauber: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: pi+Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for pi-
+
+  Process: hadElastic
+        Model:           hElasticGlauber: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: pi-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for proton
+
+  Process: hadElastic
+        Model:             hElasticCHIPS: 0 eV  ---> 100 TeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+  Process: protonInelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
+
+---------------------------------------------------
+                           Hadronic Processes for sigma-
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV  ---> 100 TeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: sigma-Inelastic
+        Model:                      FTFP: 3 GeV ---> 100 TeV
+        Model:            BertiniCascade: 0 eV  ---> 6 GeV
+     Cr_sctns:            Glauber-Gribov: 0 eV  ---> 100 TeV
+
+  Process: hBertiniCaptureAtRest
+
+---------------------------------------------------
+                           Hadronic Processes for triton
+
+  Process: hadElastic
+        Model:              hElasticLHEP: 0 eV /n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+  Process: tInelastic
+        Model:  Binary Light Ion Cascade: 0 eV /n ---> 6 GeV/n
+        Model:                      FTFP: 3 GeV/n ---> 100 TeV/n
+     Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+
+================================================================
+=======================================================================
+======       Pre-compound/De-excitation Physics Parameters     ========
+=======================================================================
+Type of pre-compound inverse x-section              3
+Pre-compound model active                           1
+Pre-compound excitation low energy (MeV)            0.1
+Pre-compound excitation high energy (MeV)           30
+Type of de-excitation inverse x-section             3
+Type of de-excitation factory                       Evaporation+GEM
+Number of de-excitation channels                    68
+Min excitation energy (keV)                         0.01
+Min energy per nucleon for multifragmentation (MeV) 2e+05
+Limit excitation energy for Fermi BreakUp (MeV)     20
+Level density (1/MeV)                               0.075
+Use simple level density model                      1
+Use discrete excitation energy of the residual      0
+Time limit for long lived isomeres (ns)             1
+Isomer production flag                              1
+Internal e- conversion flag                         1
+Store e- internal conversion data                   0
+Electron internal conversion ID                     2
+Correlated gamma emission flag                      0
+Max 2J for sampling of angular correlations         10
+=======================================================================
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 51
+N intt cluster : 27
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 152
+N intt cluster : 140
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 29
+N intt cluster : 71
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 123
+N intt cluster : 81
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 36
+N intt cluster : 38
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 243
+N intt cluster : 173
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 148
+N intt cluster : 86
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 119
+N intt cluster : 107
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 225
+N intt cluster : 144
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+tutorial::process_event(PHCompositeNode *topNode) Processing Event
+N mvtx cluster : 205
+N intt cluster : 106
+N tpc cluster : 0
+Get PHG4 info.: truth primary vertex
+Get PHG4 info.: truth primary G4Particle
+tutorial::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event
+identify yourself: I am an FlagSavev1 Object
+Int Flags: 
+RUNNUMBER: 0
+UInt64 Flags: 
+TIMESTAMP: 6
+Float Flags: 
+WorldSizex: 1000.000
+WorldSizey: 1000.000
+WorldSizez: 1100.000
+String Flags: 
+CDB_GLOBALTAG: MDC2
+WorldMaterial: G4_AIR
+WorldShape: G4Tubs
+tutorial::End(PHCompositeNode *topNode) This is the End...
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranch::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TBranchElement::WriteBasketImpl>: basket's WriteBuffer failed.
+Error in <TFile::WriteTObject>: Directory /sphenix/tg/tg01/commissioning/INTT/work/tkumaoka/InttSeedingTrackDev/PythiaGen/output//results.root is not writable
+tutorial::Reset(PHCompositeNode *topNode) being Reset
+tutorial::~tutorial() Calling dtor
