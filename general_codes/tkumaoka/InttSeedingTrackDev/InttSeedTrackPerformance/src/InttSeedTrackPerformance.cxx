@@ -10,7 +10,7 @@
 
 #include "SPHTracKuma.h"
 
-bool bCaloClu = false;
+bool bCaloClu = true;
 Int_t strockEvents = 1;
 
 void InttSeedTrackPerformance::Loop(Int_t runNum)
@@ -23,12 +23,10 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
 
    bool bTargetEV = false;
    std::vector<Int_t > vTargetEvents = {};
-   // 9, 13, 17, 19, 29, 53, 73, 84, 92
-   // 72, 78, 108, 117, 125, 126, 171, 197, 263, 308, 327, 358, 369, 428, 446, 461, 497, 504, 519, 533, 567, 584, 597, 603, 649, 704, 710, 738, 767, 794, 814, 838, 883
    // == s0 == Event Loop 000000000000000000000000000000000000000000000000000000
    // for (Long64_t jentry=0; jentry<100;jentry++) {
    // for (Long64_t jentry=0; jentry< vTargetEvents.size();jentry++) {
-   for (Long64_t jentry=(1000*runNum); jentry<(1000*runNum + 1000); jentry++) {
+   for (Long64_t jentry=(1000*runNum+1); jentry<(1000*runNum + 1000); jentry++) {
    // for (Long64_t jentry=0; jentry<nentries;jentry++) {
 
       Long64_t tempJEntry = jentry;
@@ -54,19 +52,30 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
       m_vTruthParticle.push_back(m_TruthParticle);
       m_viInttHits.push_back(m_iInttHits);
       m_voInttHits.push_back(m_oInttHits);
+      m_vTpcHits.push_back(m_TpcHits);
       m_vemcalHits.push_back(m_emcalHits);
       m_viHCalHits.push_back(m_iHCalHits);
       m_voHCalHits.push_back(m_oHCalHits);   
-
       if(jentry%strockEvents == 0){
          for(Int_t iEvent = 0; iEvent < strockEvents; iEvent++){
+            m_iInttHits = m_viInttHits.at(iEvent);
+            m_oInttHits = m_voInttHits.at(iEvent);
+            m_TpcHits = m_vTpcHits.at(iEvent);
+            m_emcalHits = m_vemcalHits.at(iEvent);
             InttSeedTracking *TracKumaContainer = new InttSeedTracking(m_tracks, m_fMvtxHits, m_sMvtxHits, m_tMvtxHits, m_viInttHits.at(iEvent), m_voInttHits.at(iEvent),\
                m_vemcalHits.at(iEvent), m_viHCalHits.at(iEvent), m_voHCalHits.at(iEvent));
+            CaloEnergyQA(0, m_vemcalHits.at(iEvent));
+            CaloEnergyQA(1, m_viHCalHits.at(iEvent));
+            CaloEnergyQA(2, m_voHCalHits.at(iEvent));
             
-            TrackQA(m_vTruthParticle.at(iEvent), m_emcalHits, m_iHCalHits, m_oHCalHits);
+            TrackQA(m_vTruthParticle.at(iEvent), m_vemcalHits.at(iEvent));
+            
+            m_bDecayEvent = false;
+            // ShowEventInfo();
          }
          AllResetValuesForEvent();
       }
+      
       PartResetValuesForEvent();
 
       if(bTargetEV) jentry = tempJEntry;
@@ -127,10 +136,29 @@ void InttSeedTrackPerformance::HistInit(){
       "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
 		150, 0., 15., 250, -2., 2., 20, -1., 1);
 
-   m_HTruthPtVsFitFuncPt = new TH3D( "m_HTruthPtVsFitFuncPt", \
+   m_HTruthPtVsFitFuncPt_IInttOInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_IInttOInttEmcal", \
       "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
 		150, 0., 15., 250, -2., 2., 20, -1., 1);
 
+   m_HTruthPtVsFitFuncPt_VtxIInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_VtxIInttEmcal", \
+      "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+		150, 0., 15., 250, -2., 2., 20, -1., 1);
+   m_HTruthPtVsFitFuncPt_VtxOInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_VtxOInttEmcal", \
+   "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+	150, 0., 15., 250, -2., 2., 20, -1., 1);
+   m_HTruthPtVsFitFuncPt_VtxInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_VtxInttEmcal", \
+   "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+	150, 0., 15., 250, -2., 2., 20, -1., 1);
+
+   m_HTruthPtVsFitFuncPt_MvtxIInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_MVtxIInttEmcal", \
+   "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+	150, 0., 15., 250, -2., 2., 20, -1., 1);
+   m_HTruthPtVsFitFuncPt_MvtxOInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_MVtxOInttEmcal", \
+   "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+	150, 0., 15., 250, -2., 2., 20, -1., 1);
+   m_HTruthPtVsFitFuncPt_MvtxInttEmcal = new TH3D( "m_HTruthPtVsFitFuncPt_MVtxInttEmcal", \
+   "truth pT vs delta pt;#it{p}_{T} [GeV/#it{c}];#it{#delta}#it{p}_{T}/#it{p}_{T};#eta",
+	150, 0., 15., 250, -2., 2., 20, -1., 1);
 
 
    // === theta resolution histograms  ==========
@@ -149,11 +177,29 @@ void InttSeedTrackPerformance::HistInit(){
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{#delta}#it{#phi}",
 		150, 0., 15., 100, -0.5, 0.5 );
 
+   // === dp histograms  ==========
+   m_HTruthPVsRecoP_InttEmcal = new TH2D( "m_HTruthPVsRecoP_InttEmcal", \
+      "truth p vs delta p;#it{p} [GeV/#it{c}];#it{#delta}#it{p}/#it{p}",
+		150, 0., 15., 50, -2.5, 2.5 );
+   m_HTruthPVsRecoP_MvtxInttEmcal = new TH2D( "m_HTruthPVsRecoP_MvtxInttEmcal", \
+      "truth p vs delta p;#it{p} [GeV/#it{c}];#it{#delta}#it{p}/#it{p}",
+		150, 0., 15., 50, -2.5, 2.5 );
+   m_HTruthPVsRecoP_FitFunc = new TH2D( "m_HTruthPVsRecoP_FitFunc", \
+      "truth p vs delta p;#it{p} [GeV/#it{c}];#it{#delta}#it{p}/#it{p}",
+		150, 0., 15., 50, -2.5, 2.5 );
+
+   // === dE histograms  ==========
+   m_HDE = new TH3D( "m_HDE", "truth E vs Reco E;#it{E} [MeV];#it{#delta}#it{E}/#it{E};#eta",
+	200, 0., 20., 50, -2.5, 2.5, 20, -1., 1);
+
    // === E/p histograms  ==========
    m_HTruthPVsEOverP_InttEmcal = new TH2D( "m_HTruthPVsEOverP_InttEmcal", \
       "truth p vs delta pt;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
 		150, 0., 15., 60, 0., 3. );
    m_HTruthPVsEOverP_MvtxInttEmcal = new TH2D( "m_HTruthPVsEOverP_MvtxInttEmcal", \
+      "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
+		150, 0., 15., 60, 0., 3. );
+   m_HTruthPVsEOverP_FitFunc = new TH2D( "m_HTruthPVsEOverP_FitFunc", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
 		150, 0., 15., 60, 0., 3. );
 
@@ -216,6 +262,10 @@ void InttSeedTrackPerformance::HistInit(){
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
 
 
+   m_HDPhiVsTruthPtVsEta_IInttOInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_IInttOInttEmcal", \
+      "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
+		200, -1., 1., 150, 0., 15., 10, -1., 1);
+
    m_HDPhiVsTruthPtVsEta_VtxIInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_VtxIInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
@@ -226,17 +276,18 @@ void InttSeedTrackPerformance::HistInit(){
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
 
-   m_HDPhiVsTruthPtVsEta_MVtxIInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MVtxIInttEmcal", \
+   m_HDPhiVsTruthPtVsEta_MvtxIInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MvtxIInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
-   m_HDPhiVsTruthPtVsEta_MVtxOInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MVtxOInttEmcal", \
+   m_HDPhiVsTruthPtVsEta_MvtxOInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MvtxOInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
-   m_HDPhiVsTruthPtVsEta_MVtxInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MVtxInttEmcal", \
+   m_HDPhiVsTruthPtVsEta_MvtxInttEmcal = new TH3D( "m_HDPhiVsTruthPtVsEta_MvtxInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];#eta",
 		200, -1., 1., 150, 0., 15., 10, -1., 1);
 
-
+   m_HDPhiVsTruthPtProf_IInttOInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_IInttOInttEmcal", \
+      "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];", 200, -1., 1.);
    m_HDPhiVsTruthPtProf_VtxIIntt = new TProfile( "m_HDPhiVsTruthPtProf_VtxIIntt", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}];", 200, -1., 1.);
    m_HDPhiVsTruthPtProf_IInttOIntt = new TProfile( "m_HDPhiVsTruthPtProf_IInttOIntt", \
@@ -251,13 +302,18 @@ void InttSeedTrackPerformance::HistInit(){
    m_HDPhiVsTruthPtProf_VtxInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_VtxInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}]", 200, -1., 1.);
 
-   m_HDPhiVsTruthPtProf_MVtxIInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MVtxIInttEmcal", \
+   m_HDPhiVsTruthPtProf_MvtxIInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MvtxIInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}]",200, -1., 1.);
-   m_HDPhiVsTruthPtProf_MVtxOInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MVtxOInttEmcal", \
+   m_HDPhiVsTruthPtProf_MvtxOInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MvtxOInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}]", 200, -1., 1.);
-   m_HDPhiVsTruthPtProf_MVtxInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MVtxInttEmcal", \
+   m_HDPhiVsTruthPtProf_MvtxInttEmcal = new TProfile( "m_HDPhiVsTruthPtProf_MvtxInttEmcal", \
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}]", 200, -1., 1.);
 
+
+  m_HPtEfficiency = new TH1D( "m_HPtEfficiency", \
+      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];Efficiency [%]", 150, 0., 15);
+  m_HTruTrackNum = new TH1D( "m_HTruTrackNum", \
+      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];Efficiency [%]", 150, 0., 15);
 }
 
 
@@ -304,7 +360,7 @@ void InttSeedTrackPerformance::ReadInttHitting(std::vector<hitStruct >& vFMvtxHi
       else if((CluPhi > 0)&&(CluX < 0)) CluPhi -= TMath::Pi();
 
       Double_t CluTheta = std::atan(CluR/CluZ);// -pi - pi
-      Double_t CluEta = - log(std::tan(CluTheta/2));
+      Double_t CluEta = (CluZ/std::abs(CluZ)) * (- log(std::abs(std::tan(CluTheta/2))));
 
       CluX = CluR*std::cos(CluPhi);
       CluY = CluR*std::sin(CluPhi);
@@ -356,7 +412,7 @@ void InttSeedTrackPerformance::ReadCalHitting(std::vector<hitStruct >& vEmcalHit
       if(calId == 0) vEmcalHits.push_back(caloHit);
       else if(calId == 1) vIHCalHits.push_back(caloHit);
       else if(calId == 2) vOHcalHits.push_back(caloHit);
-
+      
       // if(caloE > 0.1){
       //    std::cout << "calE = " << caloE << ", bin(phi, eta) = " << tower_Phi_bin->at(iCalTower) << ", " << tower_Eta_bin->at(iCalTower) << std::endl;
       // }
@@ -385,7 +441,7 @@ void InttSeedTrackPerformance::ReadCalCluHitting(std::vector<hitStruct >& vEmcal
       caloHit.phi = caloPhi;
 
       Double_t caloTheta = std::atan(caloHit.r/caloHit.z);
-      Double_t caloEta = - log(std::tan(caloTheta/2));
+      Double_t caloEta = (caloZ/std::abs(caloZ)) * (- log(std::abs(std::tan(caloTheta/2))));
       caloHit.eta = caloEta;
       caloHit.energy = caloE;
 
@@ -397,24 +453,55 @@ void InttSeedTrackPerformance::ReadCalCluHitting(std::vector<hitStruct >& vEmcal
 
 
 // == s == Track QA Functions  ###############################################
-void InttSeedTrackPerformance::TrackQA(std::vector<hitStruct > vTruthPs, std::vector<hitStruct > vEmcalHits,\
-   std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits){
+void InttSeedTrackPerformance::TrackQA(std::vector<hitStruct > vTruthPs, std::vector<hitStruct > vEmcalHits){
+   std::vector<Int_t > matchiedRecoTrkId = {};
    Int_t numOfP = PrimaryG4P_PID->size();
    for(Int_t iP = 0; iP < numOfP; iP++){
-      //Int_t trkId = TruRecoMatching(vTruthPs.at(iP));
-      Int_t trkId = 0;
+      m_HTruTrackNum->Fill(vTruthPs.at(iP).pt);
       if(m_tracks.size() == 0) continue;
+      Int_t trkId = TruRecoMatching(vTruthPs.at(iP), m_tracks, matchiedRecoTrkId);
+      if(trkId == 9999) continue;
+      // Int_t trkId = 0;
+      
+      // m_bDecayEvent = ParticleDecayCheck(m_tracks.at(trkId), vEmcalHits);
+
       DeltaPtPerform(vTruthPs.at(iP), m_tracks.at(trkId));
       EstimateMagneticShift(vTruthPs.at(iP), m_tracks.at(trkId));
+      Double_t truE = vTruthPs.at(iP).energy;
+      Double_t recoE = m_tracks.at(trkId).getTrackE();
+      m_HDE->Fill(truE, (recoE - truE)/truE, vTruthPs.at(iP).eta);
+      m_HPtEfficiency->Fill(vTruthPs.at(iP).pt);
    }
-   CaloEnergyQA(0, vEmcalHits);
-   CaloEnergyQA(1, vIHCalHits);
-   CaloEnergyQA(2, vOHcalHits);
 }
 
-Int_t InttSeedTrackPerformance::TruRecoMatching(hitStruct truthP){
-   int a = 0;
-   return a;
+Int_t InttSeedTrackPerformance::TruRecoMatching(hitStruct truthP, std::vector<tracKuma > vRecoTrk,\
+   std::vector<Int_t > vMatchiedRecoTrkId){
+   Int_t matchiedRecoTrkId = 9999;
+   Double_t closestDPt = 9999.;
+   for(Int_t iRecoTrk = 0; iRecoTrk < vRecoTrk.size(); iRecoTrk++){
+      Double_t tempTruTheta = 2*atan(std::exp(-truthP.eta));
+      Double_t tempRecoTheta = vRecoTrk.at(iRecoTrk).getTrackTheta();
+      Double_t tempRecoPhi = 0.;
+      if(vRecoTrk.at(iRecoTrk).getHitIs(4)) tempRecoPhi = vRecoTrk.at(iRecoTrk).getHitPhi(4);
+      else if(vRecoTrk.at(iRecoTrk).getHitIs(5)) tempRecoPhi = vRecoTrk.at(iRecoTrk).getHitPhi(5);
+      // std::cout << "recoTheta, truTheta, dTheta = " << tempRecoTheta << ", " << tempTruTheta << ", " << std::abs(tempRecoTheta - tempTruTheta) << std::endl;
+      if((std::abs(tempRecoTheta - tempTruTheta) < 0.1)){
+         // std::cout << "dPhi = " << std::abs(tempRecoPhi - truthP.phi) << std::endl;
+         if((std::abs(tempRecoPhi - truthP.phi) < 0.3)){
+            // std::cout << "dPt = " << std::abs(vRecoTrk.at(iRecoTrk).getTrackPt() - truthP.pt) << std::endl;
+            if(closestDPt > std::abs(vRecoTrk.at(iRecoTrk).getTrackPt() - truthP.pt)){
+               bool matchedIs = std::find( vMatchiedRecoTrkId.begin(),  vMatchiedRecoTrkId.end(), \
+                  iRecoTrk) !=  vMatchiedRecoTrkId.end();
+               if(matchedIs) continue;
+               closestDPt = std::abs(vRecoTrk.at(iRecoTrk).getTrackPt() - truthP.pt);
+               matchiedRecoTrkId = matchedIs;
+            }
+         }
+      }
+   }
+   vMatchiedRecoTrkId.push_back(matchiedRecoTrkId);
+   
+   return matchiedRecoTrkId;
 }
 
 void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
@@ -462,7 +549,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
       m_HTruthPtVsSagittaPt_InttEmcal->Fill(truthPt, dPt, truthEta);
 
       TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
-         m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsEOverP_InttEmcal,\
+         m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsRecoP_InttEmcal, m_HTruthPVsEOverP_InttEmcal,\
             m_dVtxXY_InttEmcal, m_dVtxR_InttEmcal, m_dVtxZ_InttEmcal);
    }
    
@@ -493,7 +580,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
 
       TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
          m_HTruthPVsTheta_MvtxInttEmcal, m_HTruthPVsPhi_MvtxInttEmcal,\
-         m_HTruthPVsEOverP_MvtxInttEmcal,\
+         m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal,\
          m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
 
       // std::cout << "dPt = " << dPt << std::endl;
@@ -517,14 +604,47 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
    Double_t dPhiOInttEmcal = truckF.dPhiOInttEmcalEsti(trk);
    Double_t OriFunTrackPt = truckF.FitFunctionPt(dPhiOInttEmcal);
    Double_t dPtOriFun = (OriFunTrackPt - truthPt)/truthPt;
-   m_HTruthPtVsFitFuncPt->Fill(truthPt, dPtOriFun, truthEta);
+   m_HTruthPtVsFitFuncPt_IInttOInttEmcal->Fill(truthPt, dPtOriFun, truthEta);
+   EventJudge(pubEvNum, dPtOriFun ,-2, -1, true);
+   // std::cout << "111 dPt = " << dPtOriFun << std::endl;
+   // CheckumaDaYo!! oooooooo
+
+   Double_t dPhiVtxIInttEmcal = truckF.dPhiVtxIInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_VtxIInttEmcal = truckF.FitFunctionPt_VtxIInttEmcal(dPhiOInttEmcal);
+   Double_t dPtOriFun_VtxIInttEmcal = (OriFunTrackPt_VtxIInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_VtxIInttEmcal->Fill(truthPt, dPtOriFun_VtxIInttEmcal, truthEta);
+
+   Double_t dPhiVtxOInttEmcal = truckF.dPhiVtxOInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_VtxOInttEmcal = truckF.FitFunctionPt_VtxOInttEmcal(dPhiVtxOInttEmcal);
+   Double_t dPtOriFun_VtxOInttEmcal = (OriFunTrackPt_VtxOInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_VtxOInttEmcal->Fill(truthPt, dPtOriFun_VtxOInttEmcal, truthEta);
+
+   Double_t dPhiVtxInttEmcal = truckF.dPhiVtxInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_VtxInttEmcal = truckF.FitFunctionPt_VtxInttEmcal(dPhiVtxInttEmcal);
+   Double_t dPtOriFun_VtxInttEmcal = (OriFunTrackPt_VtxInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_VtxInttEmcal->Fill(truthPt, dPtOriFun_VtxInttEmcal, truthEta);
+
+   Double_t dPhiMvtxIInttEmcal = truckF.dPhiMvtxIInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_MvtxIInttEmcal = truckF.FitFunctionPt_MVtxIInttEmcal(dPhiMvtxIInttEmcal);
+   Double_t dPtOriFun_MvtxIInttEmcal = (OriFunTrackPt_MvtxIInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_MvtxIInttEmcal->Fill(truthPt, dPtOriFun_MvtxIInttEmcal, truthEta);
+
+   Double_t dPhiMvtxOInttEmcal = truckF.dPhiMvtxOInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_MvtxOInttEmcal = truckF.FitFunctionPt_MVtxInttEmcal(dPhiMvtxOInttEmcal);
+   Double_t dPtOriFun_MvtxOInttEmcal = (OriFunTrackPt_MvtxOInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_MvtxOInttEmcal->Fill(truthPt, dPtOriFun_MvtxOInttEmcal, truthEta);
+
+   Double_t dPhiMvtxInttEmcal = truckF.dPhiMvtxInttEmcalEsti(trk);
+   Double_t OriFunTrackPt_MvtxInttEmcal = truckF.FitFunctionPt_MVtxInttEmcal(dPhiMvtxInttEmcal);
+   Double_t dPtOriFun_MvtxInttEmcal = (OriFunTrackPt_MvtxInttEmcal - truthPt)/truthPt;
+   m_HTruthPtVsFitFuncPt_MvtxInttEmcal->Fill(truthPt, dPtOriFun_MvtxInttEmcal, truthEta);
 }
 
 
 
 void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, tracKuma trk,\
    Double_t sagittaR, Double_t centerX, Double_t centerY, Double_t recoPt,\
-   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi,TH2D* hTruthPVsEOverP,\
+   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP,TH2D* hTruthPVsEOverP,\
    TH2D* hDVtxXY, TH1D* hDVtxR, TH1D* hDVtxZ){
    InttSeedTracking truckF;
 
@@ -542,16 +662,18 @@ void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, trac
 
    Double_t vtxX = 0.;
    Double_t vtxY = 0.;
-   truckF.EstiVertex(vtxX, vtxY, sagittaR, centerX, centerY);
-
+   truckF.CrossLineCircle(vtxX, vtxY, centerX, centerY, sagittaR);
    Double_t vtxR = std::sqrt(vtxX*vtxX + vtxY*vtxY);
    Double_t vtxPhi = atan(vtxY/vtxX);
    if((vtxPhi < 0)&&(vtxX < 0)) vtxPhi += TMath::Pi();
    else if((vtxPhi > 0)&&(vtxY < 0)) vtxPhi -= TMath::Pi();
-   Double_t trkPhi = -1/std::tan(vtxPhi);
 
+   Double_t trkPhi = -1/std::tan(vtxPhi);
    Double_t vtxZ = 0.;
-   if(trk.getHitIs(6)) vtxZ = trk.getHitZ(6) - trk.getHitZ(6)/std::tan(recoTheta);
+   if(trk.getHitIs(6)){
+      vtxZ = trk.getHitZ(6) - trk.getHitZ(6)/std::tan(recoTheta);
+   }
+
 
    Double_t dVtxX = 9999.;
    Double_t dVtxY = 9999.;
@@ -564,8 +686,11 @@ void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, trac
    // std::cout << "dvtx r = " << dVtxR << std::endl;
 
    hTruthPVsTheta->Fill(truthPt, recoTheta - truthTheta);
+
+   // hTruthPVsRecoP->Fill(recoP, (recoP - )/recoP);
    hTruthPVsEOverP->Fill(truthPt, trackE/recoP);
    hTruthPVsPhi->Fill(truthPt, trkPhi - truthPhi);
+
    hDVtxXY->Fill(dVtxX, dVtxY);
    hDVtxR->Fill(dVtxR);
    hDVtxZ->Fill(dVtxZ);
@@ -677,14 +802,6 @@ void InttSeedTrackPerformance::EstimateMagneticShift(hitStruct truthP, tracKuma 
    m_HDLVsTruthPtVsEta_OInttEmcal->Fill(dShiftL_OInttEmcal, truthPt, truthEta);
    m_HDL1D_OInttEmcal->Fill(dShiftL_OInttEmcal);
 
-   m_HDPhiVsTruthPtVsEta_VtxIIntt->Fill(dPhi_VtxIIntt, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_IInttOIntt->Fill(dPhi_IInttOIntt, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_OInttEmcal->Fill(dPhi_OInttEmcal, truthPt, truthEta);
-
-   m_HDPhiVsTruthPtProf_VtxIIntt->Fill(dPhi_VtxIIntt, truthPt);
-   m_HDPhiVsTruthPtProf_IInttOIntt->Fill(dPhi_IInttOIntt, truthPt);
-   m_HDPhiVsTruthPtProf_OInttEmcal->Fill(dPhi_OInttEmcal, truthPt);
-
    Double_t tempMvtxX = MvtxHitR*std::cos(MvtxHitPhi);
    Double_t tempMvtxY = MvtxHitR*std::sin(MvtxHitPhi);
    Double_t tempIInttX = iInttHitR*std::cos(iInttHitPhi);
@@ -708,38 +825,68 @@ void InttSeedTrackPerformance::EstimateMagneticShift(hitStruct truthP, tracKuma 
    if(dPhiMvtxIntt < 0) dPhiMvtxIntt += TMath::Pi();
    Double_t dPhiVtxMvtxIntt = dPhiMvtxIntt - MvtxHitPhi;
 
+   
+   // Double_t tempHitsXY[3][2];
+   // truckF.Set3PointsXY(tempHitsXY, trk, 3);
+   // Double_t tempR = 0.;
+   // Double_t tempXc = 0.;
+   // Double_t tempYc = 0.;
+   // truckF.RoughEstiSagittaCenter3Point(tempR, tempXc, tempYc, tempHitsXY);
+   // Double_t crossXcal = 0.;
+   // Double_t crossYcal = 0.;
+   // Double_t calPhi = truckF.CrossCircleCircle(crossXcal, crossYcal, tempXc, tempYc, tempR, trk.getHitPhi(5));
 
-   Double_t dPhiIInttEmcal = std::atan((tempEmcalY - tempIInttY)/(tempEmcalX - tempIInttX));
-   if(dPhiIInttEmcal < 0) dPhiIInttEmcal += TMath::Pi();
-   Double_t dPhiVtxIInttEmcal = dPhiIInttEmcal - iInttHitPhi;
-   Double_t dPhiMvtxIInttEmcal = dPhiIInttEmcal - dPhiMvtxIIntt;
+   // if(std::abs(trk.getHitPhi(6) - calPhi) > 0.3) bDecayEvent = true;
+   // std::cout << "x, y = " << crossXcal << ",  " << crossYcal << std::endl;
+   // std::cout << "dPhi = " << std::abs(trk.getHitPhi(6) - calPhi) << std::endl;
+   if(!m_bDecayEvent){
+      Double_t dPhiIInttEmcal = std::atan((tempEmcalY - tempIInttY)/(tempEmcalX - tempIInttX));
+      if(dPhiIInttEmcal < 0) dPhiIInttEmcal += TMath::Pi();
+      Double_t dPhiVtxIInttEmcal = dPhiIInttEmcal - iInttHitPhi;
+      Double_t dPhiMvtxIInttEmcal = dPhiIInttEmcal - dPhiMvtxIIntt;
 
-   Double_t dPhiOInttEmcal = std::atan((tempEmcalY - tempOInttY)/(tempEmcalX - tempOInttX));
-   if(dPhiOInttEmcal < 0) dPhiOInttEmcal += TMath::Pi();
-   Double_t dPhiVtxOInttEmcal = dPhiOInttEmcal - oInttHitPhi;
-   Double_t dPhiMvtxOInttEmcal = dPhiOInttEmcal - dPhiMvtxOIntt;
+      Double_t dPhiOInttEmcal = std::atan((tempEmcalY - tempOInttY)/(tempEmcalX - tempOInttX));
+      if(dPhiOInttEmcal < 0) dPhiOInttEmcal += TMath::Pi();
+      Double_t dPhiVtxOInttEmcal = dPhiOInttEmcal - oInttHitPhi;
+      Double_t dPhiMvtxOInttEmcal = dPhiOInttEmcal - dPhiMvtxOIntt;
 
-   Double_t dPhiInttEmcal = std::atan((tempEmcalY - tempInttY)/(tempEmcalX - tempInttX));
-   if(dPhiInttEmcal < 0) dPhiInttEmcal += TMath::Pi();
-   Double_t dPhiVtxInttEmcal = dPhiInttEmcal - InttHitPhi;
-   Double_t dPhiMvtxInttEmcal = dPhiInttEmcal - dPhiMvtxIntt;
+      Double_t dPhiInttEmcal = std::atan((tempEmcalY - tempInttY)/(tempEmcalX - tempInttX));
+      if(dPhiInttEmcal < 0) dPhiInttEmcal += TMath::Pi();
+      Double_t dPhiVtxInttEmcal = dPhiInttEmcal - InttHitPhi;
+      Double_t dPhiMvtxInttEmcal = dPhiInttEmcal - dPhiMvtxIntt;
 
+      Double_t dPhiIInttOIntt = std::atan((tempOInttY - tempIInttY)/(tempOInttX - tempIInttX));
+      if(dPhiIInttOIntt < 0) dPhiIInttOIntt += TMath::Pi();
+      Double_t dPhi_IInttOInttEmcal = dPhiOInttEmcal - dPhiIInttOIntt;
 
-   m_HDPhiVsTruthPtVsEta_VtxIInttEmcal->Fill(dPhiVtxIInttEmcal, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_VtxOInttEmcal->Fill(dPhiVtxOInttEmcal, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_VtxInttEmcal->Fill(dPhiVtxInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_VtxIIntt->Fill(dPhi_VtxIIntt, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_IInttOIntt->Fill(dPhi_IInttOIntt, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_OInttEmcal->Fill(dPhi_OInttEmcal, truthPt, truthEta);
 
-   m_HDPhiVsTruthPtVsEta_MVtxIInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_MVtxOInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt, truthEta);
-   m_HDPhiVsTruthPtVsEta_MVtxInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtProf_VtxIIntt->Fill(dPhi_VtxIIntt, truthPt);
+      m_HDPhiVsTruthPtProf_IInttOIntt->Fill(dPhi_IInttOIntt, truthPt);
+      m_HDPhiVsTruthPtProf_OInttEmcal->Fill(dPhi_OInttEmcal, truthPt);
 
-   m_HDPhiVsTruthPtProf_VtxIInttEmcal->Fill(dPhiVtxIInttEmcal, truthPt);
-   m_HDPhiVsTruthPtProf_VtxOInttEmcal->Fill(dPhiVtxOInttEmcal, truthPt);
-   m_HDPhiVsTruthPtProf_VtxInttEmcal->Fill(dPhiVtxInttEmcal, truthPt);
+      m_HDPhiVsTruthPtVsEta_IInttOInttEmcal->Fill(dPhi_IInttOInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtProf_IInttOInttEmcal->Fill(dPhi_IInttOInttEmcal, truthPt);
 
-   m_HDPhiVsTruthPtProf_MVtxIInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt);
-   m_HDPhiVsTruthPtProf_MVtxOInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt);
-   m_HDPhiVsTruthPtProf_MVtxInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt);
+      m_HDPhiVsTruthPtVsEta_VtxIInttEmcal->Fill(dPhiVtxIInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_VtxOInttEmcal->Fill(dPhiVtxOInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_VtxInttEmcal->Fill(dPhiVtxInttEmcal, truthPt, truthEta);
+
+      m_HDPhiVsTruthPtVsEta_MvtxIInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_MvtxOInttEmcal->Fill(dPhiMvtxOInttEmcal, truthPt, truthEta);
+      m_HDPhiVsTruthPtVsEta_MvtxInttEmcal->Fill(dPhiMvtxInttEmcal, truthPt, truthEta);
+
+      m_HDPhiVsTruthPtProf_VtxIInttEmcal->Fill(dPhiVtxIInttEmcal, truthPt);
+      m_HDPhiVsTruthPtProf_VtxOInttEmcal->Fill(dPhiVtxOInttEmcal, truthPt);
+      m_HDPhiVsTruthPtProf_VtxInttEmcal->Fill(dPhiVtxInttEmcal, truthPt);
+
+      m_HDPhiVsTruthPtProf_MvtxIInttEmcal->Fill(dPhiMvtxIInttEmcal, truthPt);
+      m_HDPhiVsTruthPtProf_MvtxOInttEmcal->Fill(dPhiMvtxOInttEmcal, truthPt);
+      m_HDPhiVsTruthPtProf_MvtxInttEmcal->Fill(dPhiMvtxInttEmcal, truthPt);
+   }
+   
 
 }
 
@@ -766,6 +913,20 @@ void InttSeedTrackPerformance::CaloEnergyQA(Int_t CalId, std::vector<hitStruct >
    }
 }
 
+
+bool InttSeedTrackPerformance::ParticleDecayCheck(tracKuma trk, std::vector<hitStruct > vEmcalHits){
+   bool bIsDecay = false;
+
+   Int_t numOfCal = vEmcalHits.size();
+   for(Int_t iCal = 0; iCal < numOfCal; iCal++){
+      if((vEmcalHits.at(iCal).energy > 0.1)\
+         && (std::abs(vEmcalHits.at(iCal).phi - trk.getHitPhi(6)) > 0.04)){
+         bIsDecay = true;
+      }
+   }
+
+   return bIsDecay;
+}
 // == e == Track QA Functions  ###############################################
 
 
@@ -908,10 +1069,23 @@ void InttSeedTrackPerformance::WrightHists(){
    m_HTruthPtVsSagittaPt_MvtxInttEmcal->Write();
    m_HTruthPtVsSagittaPt_VtxMvtxInttEmcal->Write();
 
-   m_HTruthPtVsFitFuncPt->Write();
+   m_HTruthPtVsFitFuncPt_IInttOInttEmcal->Write();
+
+   m_HTruthPtVsFitFuncPt_VtxIInttEmcal->Write();
+   m_HTruthPtVsFitFuncPt_VtxOInttEmcal->Write();
+   m_HTruthPtVsFitFuncPt_VtxInttEmcal->Write();
+
+   m_HTruthPtVsFitFuncPt_MvtxIInttEmcal->Write();
+   m_HTruthPtVsFitFuncPt_MvtxOInttEmcal->Write();
+   m_HTruthPtVsFitFuncPt_MvtxInttEmcal->Write();
+
+   m_HTruthPVsRecoP_InttEmcal->Write();
+   m_HTruthPVsRecoP_MvtxInttEmcal->Write();
+   m_HTruthPVsRecoP_FitFunc->Write();
 
    m_HTruthPVsEOverP_InttEmcal->Write();
-   m_HTruthPVsEOverP_MvtxInttEmcal->Write();;
+   m_HTruthPVsEOverP_MvtxInttEmcal->Write();
+   m_HTruthPVsEOverP_FitFunc->Write();
 
    m_HTruthPVsTheta_InttEmcal->Write();
    m_HTruthPVsTheta_MvtxInttEmcal->Write();
@@ -929,6 +1103,7 @@ void InttSeedTrackPerformance::WrightHists(){
    m_dVtxZ_InttEmcal->Write();
    m_dVtxZ_MvtxInttEmcal->Write();
 
+   m_HDE->Write();
 
    m_HDPhiVsDStraightVsTruPt->Write();
 
@@ -952,23 +1127,29 @@ void InttSeedTrackPerformance::WrightHists(){
    m_HDPhiVsTruthPtVsEta_IInttOIntt->Write();
    m_HDPhiVsTruthPtVsEta_OInttEmcal->Write();
    
-   
+   m_HDPhiVsTruthPtVsEta_IInttOInttEmcal->Write();
+
    m_HDPhiVsTruthPtVsEta_VtxIInttEmcal->Write();
    m_HDPhiVsTruthPtVsEta_VtxOInttEmcal->Write();
    m_HDPhiVsTruthPtVsEta_VtxInttEmcal->Write();
-   m_HDPhiVsTruthPtVsEta_MVtxIInttEmcal->Write();
-   m_HDPhiVsTruthPtVsEta_MVtxOInttEmcal->Write();
-   m_HDPhiVsTruthPtVsEta_MVtxInttEmcal->Write();
+   m_HDPhiVsTruthPtVsEta_MvtxIInttEmcal->Write();
+   m_HDPhiVsTruthPtVsEta_MvtxOInttEmcal->Write();
+   m_HDPhiVsTruthPtVsEta_MvtxInttEmcal->Write();
    m_HDPhiVsTruthPtProf_VtxIIntt->Write();
 
+   m_HDPhiVsTruthPtProf_IInttOInttEmcal->Write();
    m_HDPhiVsTruthPtProf_IInttOIntt->Write();
    m_HDPhiVsTruthPtProf_OInttEmcal->Write();
    m_HDPhiVsTruthPtProf_VtxIInttEmcal->Write();
    m_HDPhiVsTruthPtProf_VtxOInttEmcal->Write();
    m_HDPhiVsTruthPtProf_VtxInttEmcal->Write();
-   m_HDPhiVsTruthPtProf_MVtxIInttEmcal->Write();
-   m_HDPhiVsTruthPtProf_MVtxOInttEmcal->Write();
-   m_HDPhiVsTruthPtProf_MVtxInttEmcal->Write();
+   m_HDPhiVsTruthPtProf_MvtxIInttEmcal->Write();
+   m_HDPhiVsTruthPtProf_MvtxOInttEmcal->Write();
+   m_HDPhiVsTruthPtProf_MvtxInttEmcal->Write();
+
+   m_HPtEfficiency->Divide(m_HPtEfficiency, m_HTruTrackNum, 1.0, 1.0, "b");
+   m_HPtEfficiency->Write();
+   m_HTruTrackNum->Write();
 
    oFile->Close();
 
@@ -1308,8 +1489,5 @@ void InttSeedTrackPerformance::ChecKuma(std::string checkNo){
 
 
 #endif // #ifdef InttSeedTrackPerformance_cxx
-
-
-
 
 
