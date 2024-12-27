@@ -91,62 +91,10 @@ int tutorial::Init(PHCompositeNode *topNode)
   ////////////////////////////////////////////////////////
   // Initialization of the member                       //
   ////////////////////////////////////////////////////////
-  output = new TFile( output_path.c_str(), "RECREATE" );
+//   output = new TFile( output_path.c_str(), "RECREATE" );
   
     std::cout << "tutorial::Init(PHCompositeNode *topNode) Initializing" << std::endl;
-
-    eventID = 0;
-    NClus = 0;
-    clus_system.clear();
-    clus_layer.clear();
-    clus_adc.clear();
-    clus_X.clear();
-    clus_Y.clear();
-    clus_Z.clear();
-    clus_size.clear();
-    clus_phi_size.clear();
-    clus_z_size.clear();
-
-    nTowers = 0;
-    tower_X.clear();
-    tower_Y.clear();
-    tower_Z.clear();
-    tower_Eta.clear();
-    tower_Phi.clear();
-    tower_Eta_test.clear();
-    tower_Phi_test.clear();
-    tower_Eta_bin.clear();
-    tower_Phi_bin.clear();
-    tower_edep.clear();
-    tower_system.clear();
-
-    nCaloClus = 0;
-    caloClus_X.clear();
-    caloClus_Y.clear();
-    caloClus_Z.clear();
-    caloClus_R.clear();
-    caloClus_Phi.clear();
-    caloClus_edep.clear();
-    caloClus_system.clear();
-
-    // note : Truth primary vertex information
-    TruthPV_trig_x_ = -999;
-    TruthPV_trig_y_ = -999;
-    TruthPV_trig_z_ = -999;
-    NTruthVtx_ = 0;
-
-    // note : PHG4 information (from all PHG4Particles)
-    NPrimaryG4P_ = 0;
-    NPrimaryG4P_promptChargeHadron_ = 0;
-    PrimaryG4P_Pt_.clear();
-    PrimaryG4P_Eta_.clear();
-    PrimaryG4P_Phi_.clear();
-    PrimaryG4P_E_.clear();
-    PrimaryG4P_PID_.clear();
-    PrimaryG4P_ParticleClass_.clear();
-    PrimaryG4P_isStable_.clear();
-    PrimaryG4P_Charge_.clear();
-    PrimaryG4P_isChargeHadron_.clear();
+    ResetEvent(topNode);
 
     ////////////////////////////////////////////////////////
     // Initialization of the member                       //
@@ -761,10 +709,6 @@ int tutorial::process_event(PHCompositeNode * topNode) {
     
     prepareG4Turth(topNode);
 
-
-    nTowers = tower_system.size();
-    
-    
     tree_out -> Fill();
 
     return Fun4AllReturnCodes::EVENT_OK;

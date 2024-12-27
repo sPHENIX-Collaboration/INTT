@@ -51,8 +51,8 @@ public :
    Double_t AddHCalE(Double_t emcalPhi, Double_t emcalE,\
       std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits);
 
-   void AddMvtxHits(tracKuma& trk, std::vector<hitStruct > vFMvtxHits,\
-      std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits);
+   void AddMvtxHits(tracKuma& trk, std::vector<hitStruct > vFMvtxHits, \
+      std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits, Double_t dRThre);
 
 
    void TrackPropertiesEstimation(tracKuma& trk, std::vector<hitStruct > vFMvtxHits,\
@@ -67,23 +67,24 @@ public :
    Double_t AccuratePtEstimation(Double_t sagittaR, Double_t centerX, Double_t centerY, tracKuma& trk, std::vector<hitStruct > vFMvtxHits,\
       std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits);
 
-   Int_t TempINTTIOMatching(Double_t oINTTPhi, Double_t refPhi, std::vector<hitStruct > vIInttHits); //????
-   Double_t TempCalcdPhidR(Int_t iInttID, Int_t oInttID, Double_t refPhi,\
+   Int_t TempINTTIOMatching(Double_t oINTTPhi, std::vector<hitStruct > vIInttHits); //????
+   Double_t TempCalcdPhidR(Int_t iInttID, Int_t oInttID, \
       std::vector<hitStruct > vIInttHits, std::vector<hitStruct > vOInttHits); //????
-   Int_t TempInttCalMatch(Int_t iInttID, Int_t oInttID, Double_t refPhi,\
+   Int_t TempInttCalMatch(Int_t iInttID, Int_t oInttID,\
       std::vector<hitStruct > vIInttHits, std::vector<hitStruct > vOInttHits,\
       std::vector<hitStruct > vEmcalHits); //????
 
    void SagittaRByCircleFit(Double_t& cernterX, Double_t& centerY, Double_t& sagittaR,
       std::vector<Double_t > r, std::vector<Double_t > phi , Double_t oInttPhi, Double_t emcalPhi);
 
-   bool MatchingMvtxHits(Int_t& mvtxMatchId, Double_t& mvtxClusX, Double_t& mvtxClusY,\
-      Double_t sagittaR, Double_t centerX, Double_t centerY, std::vector<hitStruct > vMvtxHits);
-
+   bool FindHitsOnCircle(Int_t& hitMatchId, Double_t& hitX, Double_t& hitY, Double_t sagittaR, \
+      Double_t centerX, Double_t centerY, std::vector<hitStruct > vHits, Double_t dRThre);
 
    Double_t EstimateRecoTheta(tracKuma trk, Int_t type);
-   void EstiVertex(Double_t& vX, Double_t& vY, Double_t sagittaR, Double_t centerX, Double_t centerY);
-   
+   void EstiVertex(tracKuma trk);
+
+   void ParticleIdentify(tracKuma trk);
+
    bool ReturnHitsRPhiVect(std::vector<Double_t >& hitR, std::vector<Double_t >& hitPhi,\
    std::vector<Int_t > subDetSet, tracKuma trk);
 
@@ -111,43 +112,207 @@ public :
       return dPhiOInttEmcal;
    }
 
+   inline Double_t dPhiVtxIInttEmcalEsti(tracKuma trk){
+      Double_t xVtx = trk.getHitR(0)*std::cos(trk.getHitPhi(0));
+      Double_t yVtx = trk.getHitR(0)*std::sin(trk.getHitPhi(0));
+      Double_t xIIntt = trk.getHitR(4)*std::cos(trk.getHitPhi(4));
+      Double_t yIIntt = trk.getHitR(4)*std::sin(trk.getHitPhi(4));
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiVtxIIntt = std::atan((yIIntt-yVtx)/(xIIntt-xVtx));
+      Double_t phiIInttEmcal = std::atan((yEmcal-yIIntt)/(xEmcal-xIIntt));
+
+      Double_t dPhiIInttEmcal = phiIInttEmcal - phiVtxIIntt;
+      
+      return dPhiIInttEmcal;
+   }
+
+   inline Double_t dPhiVtxOInttEmcalEsti(tracKuma trk){
+      Double_t xVtx = trk.getHitR(0)*std::cos(trk.getHitPhi(0));
+      Double_t yVtx = trk.getHitR(0)*std::sin(trk.getHitPhi(0));
+      Double_t xOIntt = trk.getHitR(5)*std::cos(trk.getHitPhi(5));
+      Double_t yOIntt = trk.getHitR(5)*std::sin(trk.getHitPhi(5));
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiVtxOIntt = std::atan((yOIntt-yVtx)/(xOIntt-xVtx));
+      Double_t phiOInttEmcal = std::atan((yEmcal-yOIntt)/(xEmcal-xOIntt));
+
+      Double_t dPhiOInttEmcal = phiOInttEmcal - phiVtxOIntt;
+      
+      return dPhiOInttEmcal;
+   }
+
+   inline Double_t dPhiVtxInttEmcalEsti(tracKuma trk){
+      Double_t xVtx = trk.getHitR(0)*std::cos(trk.getHitPhi(0));
+      Double_t yVtx = trk.getHitR(0)*std::sin(trk.getHitPhi(0));
+      Double_t xIIntt = trk.getHitR(4)*std::cos(trk.getHitPhi(4));
+      Double_t yIIntt = trk.getHitR(4)*std::sin(trk.getHitPhi(4));
+      Double_t xOIntt = trk.getHitR(5)*std::cos(trk.getHitPhi(5));
+      Double_t yOIntt = trk.getHitR(5)*std::sin(trk.getHitPhi(5));
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiVtxIIntt = std::atan((yIIntt-yVtx)/(xIIntt-xVtx));
+      Double_t phiVtxOIntt = std::atan((yOIntt-yVtx)/(xOIntt-xVtx));
+      Double_t phiVtxIntt = (phiVtxOIntt - phiVtxIIntt)/2; 
+      Double_t phiInttEmcal = std::atan((yEmcal-yOIntt)/(xEmcal-xOIntt));
+
+      Double_t dPhiInttEmcal = phiInttEmcal - phiVtxIntt;
+      
+      return dPhiInttEmcal;
+   }
+
+
+   inline Double_t dPhiMvtxIInttEmcalEsti(tracKuma trk){
+      Int_t numOfMvtx = 0;
+      Double_t xMvtx = 0.;
+      Double_t yMvtx = 0.;
+      for(Int_t i = 1; i < 4; i++){
+         if(trk.getHitIs(i)){
+            xMvtx += trk.getHitR(i)*std::cos(trk.getHitPhi(i));
+            yMvtx += trk.getHitR(i)*std::sin(trk.getHitPhi(i));
+            numOfMvtx++;
+         }
+      }
+      xMvtx /= numOfMvtx;
+      yMvtx /= numOfMvtx;
+
+      Double_t xIIntt = trk.getHitR(4)*std::cos(trk.getHitPhi(4));
+      Double_t yIIntt = trk.getHitR(4)*std::sin(trk.getHitPhi(4));
+
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiMvtxIntt = std::atan((yIIntt-yMvtx)/(xIIntt-xMvtx));
+      Double_t phiInttEmcal = std::atan((yEmcal-yIIntt)/(xEmcal-xIIntt));
+
+      Double_t dPhiIInttEmcal = phiInttEmcal - phiMvtxIntt;
+      
+      return dPhiIInttEmcal;
+   }
+
+   inline Double_t dPhiMvtxOInttEmcalEsti(tracKuma trk){
+      Int_t numOfMvtx = 0;
+      Double_t xMvtx = 0.;
+      Double_t yMvtx = 0.;
+      for(Int_t i = 1; i < 4; i++){
+         if(trk.getHitIs(i)){
+            xMvtx += trk.getHitR(i)*std::cos(trk.getHitPhi(i));
+            yMvtx += trk.getHitR(i)*std::sin(trk.getHitPhi(i));
+            numOfMvtx++;
+         }
+      }
+      xMvtx /= numOfMvtx;
+      yMvtx /= numOfMvtx;
+
+      Double_t xOIntt = trk.getHitR(5)*std::cos(trk.getHitPhi(5));
+      Double_t yOIntt = trk.getHitR(5)*std::sin(trk.getHitPhi(5));
+
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiMvtxOIntt = std::atan((yOIntt-yMvtx)/(xOIntt-xMvtx));
+      Double_t phiOInttEmcal = std::atan((yEmcal-yOIntt)/(xEmcal-xOIntt));
+
+      Double_t dPhiOInttEmcal = phiOInttEmcal - phiMvtxOIntt;
+      
+      return dPhiOInttEmcal;
+   }
+
+   inline Double_t dPhiMvtxInttEmcalEsti(tracKuma trk){
+      Int_t numOfMvtx = 0;
+      Double_t xMvtx = 0.;
+      Double_t yMvtx = 0.;
+      for(Int_t i = 1; i < 4; i++){
+         if(trk.getHitIs(i)){
+            xMvtx += trk.getHitR(i)*std::cos(trk.getHitPhi(i));
+            yMvtx += trk.getHitR(i)*std::sin(trk.getHitPhi(i));
+            numOfMvtx++;
+         }
+      }
+      xMvtx /= numOfMvtx;
+      yMvtx /= numOfMvtx;
+
+      Double_t xIIntt = trk.getHitR(4)*std::cos(trk.getHitPhi(4));
+      Double_t yIIntt = trk.getHitR(4)*std::sin(trk.getHitPhi(4));
+      Double_t xOIntt = trk.getHitR(5)*std::cos(trk.getHitPhi(5));
+      Double_t yOIntt = trk.getHitR(5)*std::sin(trk.getHitPhi(5));
+      Double_t xIntt = (xIIntt + xOIntt)/2;
+      Double_t yIntt = (yIIntt + yOIntt)/2;
+
+      Double_t xEmcal = trk.getHitR(6)*std::cos(trk.getHitPhi(6));
+      Double_t yEmcal = trk.getHitR(6)*std::sin(trk.getHitPhi(6));
+
+      Double_t phiMvtxIntt = std::atan((yIntt-yMvtx)/(xIntt-xMvtx));
+      Double_t phiInttEmcal = std::atan((yEmcal-yIntt)/(xEmcal-xIntt));
+
+      Double_t dPhiInttEmcal = phiInttEmcal - phiMvtxIntt;
+      
+      return dPhiInttEmcal;
+   }
+
+
    inline Double_t FitFunctionPt(Double_t dPhi){
-      Double_t pT = -0.00192479 -0.259884/dPhi  -0.0853628/(dPhi*dPhi);
+      Double_t pT = 0.0249291 + 0.232799/dPhi -0.000752825/(dPhi*dPhi);
       return pT;
    }
 
+   inline Double_t FitFunctionPt_VtxIInttEmcal(Double_t dPhi){
+      Double_t pT = -0.075123 + 0.241657 /dPhi + 7.81643e-05/(dPhi*dPhi);
+      return pT;
+   }
+   
+   inline Double_t FitFunctionPt_VtxOInttEmcal(Double_t dPhi){
+      Double_t pT = 0.0592938 + 0.210859/dPhi - 0.00157569/(dPhi*dPhi);
+      return pT;
+   }
+
+   inline Double_t FitFunctionPt_VtxInttEmcal(Double_t dPhi){
+      Double_t pT = 0.089305 + 0.202456/dPhi + 0.0018411/(dPhi*dPhi);
+      return pT;
+   }
+
+   inline Double_t FitFunctionPt_MVtxIInttEmcal(Double_t dPhi){
+      Double_t pT = -0.125412 + 0.293345/dPhi - 0.00233657/(dPhi*dPhi);
+      return pT;
+   }
+
+   inline Double_t FitFunctionPt_MVtxOInttEmcal(Double_t dPhi){
+      Double_t pT = -0.0708943 + 0.269396/dPhi - 0.00158606/(dPhi*dPhi);
+      return pT;
+   }
+
+   inline Double_t FitFunctionPt_MVtxInttEmcal(Double_t dPhi){
+      Double_t pT = -0.0645267 + 0.268115/dPhi -0.00156531/(dPhi*dPhi);
+      return pT;
+   }
+
+
    inline void Set3PointsXY(Double_t (&HitXY)[3][2], tracKuma trk, Int_t type){
-      Double_t iInttR = trk.getHitR(4);
-      Double_t iInttPhi = trk.getHitPhi(4);
-
-      Double_t oInttR = trk.getHitR(5);
-      Double_t oInttPhi = trk.getHitPhi(5);
-      
-      Double_t emcalR = trk.getHitR(6);
-      Double_t emcalPhi = trk.getHitPhi(6);
-
       if(type==0){
          HitXY[0][0] = 0.;
          HitXY[0][1] = 0.;
-         HitXY[1][0] = iInttR*cos(iInttPhi);
-         HitXY[1][1] = iInttR*sin(iInttPhi);
-         HitXY[2][0] = oInttR*cos(oInttPhi);
-         HitXY[2][1] = oInttR*sin(oInttPhi);
+         HitXY[1][0] = trk.getHitR(4)*cos(trk.getHitPhi(4));
+         HitXY[1][1] = trk.getHitR(4)*sin(trk.getHitPhi(4));
+         HitXY[2][0] = trk.getHitR(5)*cos(trk.getHitPhi(5));
+         HitXY[2][1] = trk.getHitR(5)*sin(trk.getHitPhi(5));
 
       }else if(type==1){
-         HitXY[0][0] = iInttR*cos(iInttPhi);
-         HitXY[0][1] = iInttR*sin(iInttPhi);
-         HitXY[1][0] = oInttR*cos(oInttPhi);
-         HitXY[1][1] = oInttR*sin(oInttPhi);
-         HitXY[2][0] = m_ECalR*cos(emcalPhi);
-         HitXY[2][1] = m_ECalR*sin(emcalPhi);
+         HitXY[0][0] = trk.getHitR(4)*cos(trk.getHitPhi(4));
+         HitXY[0][1] = trk.getHitR(4)*sin(trk.getHitPhi(4));
+         HitXY[1][0] = trk.getHitR(5)*cos(trk.getHitPhi(5));
+         HitXY[1][1] = trk.getHitR(5)*sin(trk.getHitPhi(5));
+         HitXY[2][0] = trk.getHitR(6)*cos(trk.getHitPhi(6));
+         HitXY[2][1] = trk.getHitR(6)*sin(trk.getHitPhi(6));
       }else if(type==2){
          HitXY[0][0] = 0.;
          HitXY[0][1] = 0.;
-         HitXY[1][0] = oInttR*cos(oInttPhi);
-         HitXY[1][1] = oInttR*sin(oInttPhi);
-         HitXY[2][0] = m_ECalR*cos(emcalPhi);
-         HitXY[2][1] = m_ECalR*sin(emcalPhi);
+         HitXY[1][0] = trk.getHitR(5)*cos(trk.getHitPhi(5));
+         HitXY[1][1] = trk.getHitR(5)*sin(trk.getHitPhi(5));
+         HitXY[2][0] = trk.getHitR(6)*cos(trk.getHitPhi(6));
+         HitXY[2][1] = trk.getHitR(6)*sin(trk.getHitPhi(6));
       }
 
    }
@@ -209,6 +374,43 @@ public :
 
       return;
    }
+
+   inline Double_t CrossCircleCircle(Double_t& xcal, Double_t& ycal,\
+      Double_t xc, Double_t yc, Double_t R, Double_t phiIntt){
+
+      Double_t slope = -1*(xc/yc);
+      Double_t section = (xc*xc+yc*yc-R*R)/(2*yc);
+
+      Double_t coeff1 = (slope*section)/(slope*slope + 1);
+      Double_t coeff2 = (section*section - m_ECalR*m_ECalR)/(slope*slope + 1);
+
+      Double_t x1 = -1 * coeff1 + std::sqrt(coeff1*coeff1 - coeff2);
+      Double_t x2 = -1 * coeff1 - std::sqrt(coeff1*coeff1 - coeff2);
+
+      Double_t y1 = slope*x1 + section;
+      Double_t y2 = slope*x2 + section;
+
+      Double_t phi1 = std::atan(y1/x1);
+      if((phi1 < 0)&&(x1 < 0)) phi1 += TMath::Pi();
+      else if((phi1 > 0)&&(x1 < 0)) phi1 -= TMath::Pi();
+
+      Double_t phi2 = std::atan(y2/x2);
+      if((phi2 < 0)&&(x2 < 0)) phi2 += TMath::Pi();
+      else if((phi2 > 0)&&(x2 < 0)) phi2 -= TMath::Pi();
+
+      Double_t calPhi = 0.;
+      if((std::abs(phi1-phiIntt)) < (std::abs(phi2-phiIntt))){
+         xcal = x1;
+         ycal = y1;
+         calPhi = phi1;
+      }else{
+         xcal = x2;
+         ycal = y2;
+         calPhi = phi2;
+      }
+
+      return calPhi;
+   }
    // == e == Simple math equations  ##############################################
 
 private:
@@ -227,6 +429,8 @@ private:
    Double_t m_EcalSearchPhiMin = 0.;
    Double_t m_EcalSearchPhiMax = 0.;
 
+   Double_t m_EOverPElectron = 0.2; // CheckumaDayo!! not be optimize
+
    std::vector<hitStruct > m_fMvtxHits;
    std::vector<hitStruct > m_sMvtxHits;
    std::vector<hitStruct > m_tMvtxHits;
@@ -243,11 +447,5 @@ private:
 
 
 #endif
-
-
-
-
-
-
 
 
