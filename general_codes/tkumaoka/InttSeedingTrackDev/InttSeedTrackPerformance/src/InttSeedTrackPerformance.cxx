@@ -10,7 +10,7 @@
 
 #include "SPHTracKuma.h"
 
-bool bCaloClu = true;
+bool bCaloClu = false;
 Int_t strockEvents = 1;
 
 void InttSeedTrackPerformance::Loop(Int_t runNum)
@@ -21,8 +21,19 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
 
+   // Using the EventJudge function, you can get the event IDs finally.
+   // ex) If you want to searching for the event -2 < dpt < -1, 
+   // you need to set EventJudge(dpt, -2, -1, true);
+   // The target event IDs are straged in the vector m_vTargetEvents, and finally they are shown.
+   // You can run only target events using bTargetEV.
+   // (1) Turn on the bTargetEV to truth.
+   // (2) Set the events in vTargetEvents.
+   // (3) Change the loop the second one ("jentry< vTargetEvents.size()")
    bool bTargetEV = false;
    std::vector<Int_t > vTargetEvents = {};
+   // 9, 13, 17, 19, 29, 53, 73, 84, 92, 367
+   // 35, 102, 108, 192, 213, 272, 283, 315, 324, 327, 341, 350
+
    // == s0 == Event Loop 000000000000000000000000000000000000000000000000000000
    // for (Long64_t jentry=0; jentry<100;jentry++) {
    // for (Long64_t jentry=0; jentry< vTargetEvents.size();jentry++) {
@@ -42,6 +53,7 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
       CheckPrimP(m_TruthParticle);
       // std::cout << "truth size = " << m_TruthParticle.size() << std::endl;
       
+      // MVTX f: first, s: second, t: third
       ReadInttHitting(m_fMvtxHits, m_sMvtxHits, m_tMvtxHits, m_iInttHits, m_oInttHits, m_TpcHits);
       if(bCaloClu) ReadCalCluHitting(m_emcalHits, m_iHCalHits, m_oHCalHits);
       else ReadCalHitting(m_emcalHits, m_iHCalHits, m_oHCalHits);
@@ -67,11 +79,8 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
             CaloEnergyQA(0, m_vemcalHits.at(iEvent));
             CaloEnergyQA(1, m_viHCalHits.at(iEvent));
             CaloEnergyQA(2, m_voHCalHits.at(iEvent));
-            
             TrackQA(m_vTruthParticle.at(iEvent), m_vemcalHits.at(iEvent));
-            
             m_bDecayEvent = false;
-            // ShowEventInfo();
          }
          AllResetValuesForEvent();
       }
@@ -379,9 +388,7 @@ void InttSeedTrackPerformance::ReadInttHitting(std::vector<hitStruct >& vFMvtxHi
       }else if(CluSysId == 1){
          if((CluLayId == 3) || (CluLayId == 4)) vIInttHits.push_back(cluHit);
          else if((CluLayId == 5) || (CluLayId == 6)) vOInttHits.push_back(cluHit);
-      }else{
-         vTpcHits.push_back(cluHit);
-      }
+      }else vTpcHits.push_back(cluHit);
 
    }
 }
@@ -418,7 +425,6 @@ void InttSeedTrackPerformance::ReadCalHitting(std::vector<hitStruct >& vEmcalHit
       // }
    }
 }
-
 
 void InttSeedTrackPerformance::ReadCalCluHitting(std::vector<hitStruct >& vEmcalHits,\
    std::vector<hitStruct >& vIHCalHits, std::vector<hitStruct >& vOHcalHits){
@@ -472,6 +478,8 @@ void InttSeedTrackPerformance::TrackQA(std::vector<hitStruct > vTruthPs, std::ve
       m_HDE->Fill(truE, (recoE - truE)/truE, vTruthPs.at(iP).eta);
       m_HPtEfficiency->Fill(vTruthPs.at(iP).pt);
    }
+
+   // std::cout << "size tru, reco = " << vTruthPs.size() << ", " << m_tracks.size() << std::endl;
 }
 
 Int_t InttSeedTrackPerformance::TruRecoMatching(hitStruct truthP, std::vector<tracKuma > vRecoTrk,\
@@ -584,9 +592,8 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
          m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
 
       // std::cout << "dPt = " << dPt << std::endl;
-      // CheckumaDaYo!! oooooooo
+      // CheckumaDaYo!!!
       // ShowTrackInfo(trk, dPt, centerX, centerY, sagittaR);
-            
    }
 
    std::vector<Int_t > subDetIds_VtxMvtxInttEmcal = {0, 1, 2, 3, 4, 5, 6};
@@ -1437,36 +1444,24 @@ void InttSeedTrackPerformance::ShowTrackInfo(tracKuma trk, Double_t dPt, Double_
    std::cout << "arc->Draw(\"only\");" << std::endl;
 
 
-   std::cout << "TH2D* hHitMapMvtxTrk = new TH2D( \"hHitMapMvtxTrk\", \"hHitMap\", 2000, -100, 100, 2000, -100, 100);" << std::endl;
-   std::cout << "TH2D* hHitMapInttTrk = new TH2D( \"hHitMapInttTrk\", \"hHitMap\", 2000, -100, 100, 2000, -100, 100);" << std::endl;
-   std::cout << "TH2D* hHitMapTpcTrk = new TH2D( \"hHitMapTpcTrk\", \"hHitMap\", 2000, -100, 100, 2000, -100, 100);" << std::endl;
-   std::cout << "TH2D* hHitMapEmcalTrk = new TH2D( \"hHitMapEmcalTrk\", \"hHitMap\", 2000, -100, 100, 2000, -100, 100);" << std::endl;
-   std::cout << "hHitMapMvtxTrk->SetLineWidth(3);" << std::endl;
-   std::cout << "hHitMapInttTrk->SetLineWidth(3);" << std::endl;
-   std::cout << "hHitMapTpcTrk->SetLineWidth(3);" << std::endl;
-   std::cout << "hHitMapEmcalTrk->SetLineWidth(3);" << std::endl;
-   std::cout << "hHitMapMvtxTrk->SetLineColor(632);" << std::endl;
-   std::cout << "hHitMapInttTrk->SetLineColor(632);" << std::endl;
-   std::cout << "hHitMapTpcTrk->SetLineColor(632);" << std::endl;
-   std::cout << "hHitMapEmcalTrk->SetLineColor(632);" << std::endl;
+   std::cout << "TH2D* hHitMapTrk = new TH2D( \"hHitMapTrk\", \"hHitMapTrk\", 2000, -100, 100, 2000, -100, 100);" << std::endl;
+   std::cout << "hHitMapTrk->SetLineWidth(3);" << std::endl;
+   std::cout << "hHitMapTrk->SetLineColor(632);" << std::endl;
 
-   std::cout << "hHitMapMvtxTrk->Fill(" << trk.getHitR(1)*std::cos(trk.getHitPhi(1)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(1)*std::cos(trk.getHitPhi(1)) \
             << ", " << trk.getHitR(1)*std::sin(trk.getHitPhi(1)) << ");" << std::endl;
-   std::cout << "hHitMapMvtxTrk->Fill(" << trk.getHitR(2)*std::cos(trk.getHitPhi(2)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(2)*std::cos(trk.getHitPhi(2)) \
             << ", " << trk.getHitR(2)*std::sin(trk.getHitPhi(2)) << ");" << std::endl;
-   std::cout << "hHitMapMvtxTrk->Fill(" << trk.getHitR(3)*std::cos(trk.getHitPhi(3)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(3)*std::cos(trk.getHitPhi(3)) \
             << ", " << trk.getHitR(3)*std::sin(trk.getHitPhi(3)) << ");" << std::endl;
-   std::cout << "hHitMapInttTrk->Fill(" << trk.getHitR(4)*std::cos(trk.getHitPhi(4)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(4)*std::cos(trk.getHitPhi(4)) \
             << ", " << trk.getHitR(4)*std::sin(trk.getHitPhi(4)) << ");" << std::endl;
-   std::cout << "hHitMapInttTrk->Fill(" << trk.getHitR(5)*std::cos(trk.getHitPhi(5)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(5)*std::cos(trk.getHitPhi(5)) \
             << ", " << trk.getHitR(5)*std::sin(trk.getHitPhi(5)) << ");" << std::endl;
-   std::cout << "hHitMapEmcalTrk->Fill(" << trk.getHitR(6)*std::cos(trk.getHitPhi(6)) \
+   std::cout << "hHitMapTrk->Fill(" << trk.getHitR(6)*std::cos(trk.getHitPhi(6)) \
             << ", " << trk.getHitR(6)*std::sin(trk.getHitPhi(6)) << ");" << std::endl;
 
-   std::cout << "hHitMapMvtxTrk->Draw(\"BOX same\");" << std::endl;
-   std::cout << "hHitMapInttTrk->Draw(\"BOX same\");" << std::endl;
-   std::cout << "hHitMapTpcTrk->Draw(\"BOX same\");" << std::endl;
-   std::cout << "hHitMapEmcalTrk->Draw(\"BOX same\");" << std::endl;
+   std::cout << "hHitMapTrk->Draw(\"BOX same\");" << std::endl;
 }
 
 void InttSeedTrackPerformance::EventJudge(Int_t eventNum, Double_t targetVal, Double_t minLim, Double_t maxLim, bool bIn){

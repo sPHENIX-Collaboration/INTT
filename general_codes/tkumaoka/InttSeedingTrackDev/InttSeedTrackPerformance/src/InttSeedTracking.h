@@ -23,8 +23,6 @@
 
 #include "TArc.h"
 
-
-
 #include "SPHTracKuma.h"
 
 
@@ -52,7 +50,7 @@ public :
       std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits);
 
    void AddMvtxHits(tracKuma& trk, std::vector<hitStruct > vFMvtxHits, \
-      std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits, Double_t dRThre);
+      std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits, Double_t dRThre, Int_t& seleFMvtxId, Int_t& seleSMvtxId, Int_t& seleTMvtxId);
 
 
    void TrackPropertiesEstimation(tracKuma& trk, std::vector<hitStruct > vFMvtxHits,\
@@ -66,6 +64,26 @@ public :
 
    Double_t AccuratePtEstimation(Double_t sagittaR, Double_t centerX, Double_t centerY, tracKuma& trk, std::vector<hitStruct > vFMvtxHits,\
       std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits);
+
+   bool RecoTracksInttSeed2(std::vector<tracKuma>& tracks, std::vector<hitStruct > vFMvtxHits,\
+      std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits,\
+      std::vector<hitStruct > vIInttHits, std::vector<hitStruct > vOInttHits,\
+      std::vector<hitStruct > vEmcalHits,\
+      std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits);
+   bool InttSeedMatching(std::vector<tracKuma>& tracks, Int_t inttId,\
+      hitStruct baseInttHit,\
+      std::vector<hitStruct >& vFMvtxHits,\
+      std::vector<hitStruct >& vSMvtxHits, std::vector<hitStruct >& vTMvtxHits,\
+      std::vector<hitStruct >& vIInttHits,\
+      std::vector<hitStruct > vEmcalHits,\
+      std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHCalHits);
+   Double_t EstiChiTrkOnCircle(tracKuma trk, Double_t cX, Double_t cY, Double_t sagittaR);
+   bool CheckTrkRequirements(tracKuma trk);
+   void  RefindCalHit(tracKuma trk, std::vector<hitStruct > vEmcalHits,\
+      std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits);
+   void CalESumAndCorrPosi(tracKuma trk, std::vector<hitStruct > vEmcalHits,\
+      std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHcalHits);
+   void TrackPropertiesEstimation2(tracKuma& trk);
 
    Int_t TempINTTIOMatching(Double_t oINTTPhi, std::vector<hitStruct > vIInttHits); //????
    Double_t TempCalcdPhidR(Int_t iInttID, Int_t oInttID, \
@@ -88,6 +106,7 @@ public :
    bool ReturnHitsRPhiVect(std::vector<Double_t >& hitR, std::vector<Double_t >& hitPhi,\
    std::vector<Int_t > subDetSet, tracKuma trk);
 
+   void SetHitParaInTrack(tracKuma& trk, Int_t detId, hitStruct hitSt);
 
    // == s == Simple math equations  ##############################################
 
