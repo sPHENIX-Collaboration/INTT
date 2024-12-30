@@ -168,12 +168,12 @@ private:
 };	
 
 struct hitStruct{
-	Double_t r;
-   Double_t z;
+    Double_t r;
+    Double_t z;
 	Double_t phi;
-   Double_t eta;
-   Double_t pt;
-   Double_t energy;
+    Double_t eta;
+    Double_t pt;
+    Double_t energy;
 };
 
 // -----------------------------------------------------------------------
