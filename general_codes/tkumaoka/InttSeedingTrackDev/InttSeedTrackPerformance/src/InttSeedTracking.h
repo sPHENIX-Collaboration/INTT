@@ -40,6 +40,8 @@ public :
    InttSeedTracking(){};
    virtual ~InttSeedTracking();
 
+   void SetVCalHitsOverThre(std::vector<hitStruct >& vSeedCalHits, std::vector<hitStruct > vEmcalHits);
+
    void HitMatching(std::vector<tracKuma>& tracks, std::vector<hitStruct > vFMvtxHits,\
    std::vector<hitStruct > vSMvtxHits, std::vector<hitStruct > vTMvtxHits,\
    std::vector<hitStruct > vIInttHits, std::vector<hitStruct > vOInttHits,\
@@ -325,7 +327,14 @@ public :
          HitXY[1][1] = trk.getHitR(5)*sin(trk.getHitPhi(5));
          HitXY[2][0] = trk.getHitR(6)*cos(trk.getHitPhi(6));
          HitXY[2][1] = trk.getHitR(6)*sin(trk.getHitPhi(6));
-      }else if(type==2){
+      }else if(type==4){
+         HitXY[0][0] = 0.;
+         HitXY[0][1] = 0.;
+         HitXY[1][0] = trk.getHitR(4)*cos(trk.getHitPhi(4));
+         HitXY[1][1] = trk.getHitR(4)*sin(trk.getHitPhi(4));
+         HitXY[2][0] = trk.getHitR(6)*cos(trk.getHitPhi(6));
+         HitXY[2][1] = trk.getHitR(6)*sin(trk.getHitPhi(6));
+      }else if(type==5){
          HitXY[0][0] = 0.;
          HitXY[0][1] = 0.;
          HitXY[1][0] = trk.getHitR(5)*cos(trk.getHitPhi(5));
@@ -466,5 +475,8 @@ private:
 
 
 #endif
+
+
+
 
 

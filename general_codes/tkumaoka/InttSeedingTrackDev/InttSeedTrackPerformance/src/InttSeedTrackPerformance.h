@@ -297,9 +297,10 @@ public :
    TProfile* m_HDPhiVsTruthPtProf_MvtxOInttEmcal;
    TProfile* m_HDPhiVsTruthPtProf_MvtxInttEmcal;
 
-   TH1D* m_HPtEfficiency;
-   TH1D* m_HTruTrackNum;
-
+   TH2D* m_HPtEfficiency;
+   TH2D* m_HTruTrackNum;
+   TH2D* m_HTruTrackMatchedNum;
+   
    // == member functions == 
    void HistInit();
 
@@ -359,6 +360,9 @@ public :
 
 
 #endif
+
+
+
 
 
 

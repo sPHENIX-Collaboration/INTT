@@ -57,6 +57,21 @@ InttSeedTracking::~InttSeedTracking()
    m_oHCalHits.shrink_to_fit();
 }
 
+void InttSeedTracking::SetVCalHitsOverThre(std::vector<hitStruct >& vSeedCalHits, std::vector<hitStruct > vEmcalHits){
+   for(Int_t iECal = 0; iECal < vEmcalHits.size(); iECal++){
+      Double_t ecalE = vEmcalHits.at(iECal).energy;
+      if(ecalE < m_EcalEThre) continue;
+
+      hitStruct seedCaloHit;
+      seedCaloHit.r = vEmcalHits.at(iECal).r;
+      seedCaloHit.z = vEmcalHits.at(iECal).z;
+      seedCaloHit.phi = vEmcalHits.at(iECal).phi;
+      seedCaloHit.eta = vEmcalHits.at(iECal).eta;
+      seedCaloHit.energy = vEmcalHits.at(iECal).energy;
+
+      vSeedCalHits.push_back(seedCaloHit);
+   }
+}
 
 void InttSeedTracking::HitMatching(std::vector<tracKuma>& tracks,\
    std::vector<hitStruct > vFMvtxHits,\
@@ -131,10 +146,13 @@ bool InttSeedTracking::RecoTracksInttSeed2(std::vector<tracKuma>& tracks,\
    std::copy(vTMvtxHits.begin(), vTMvtxHits.end(), std::back_inserter(vRemainTMvtxHits));
    std::copy(vIInttHits.begin(), vIInttHits.end(), std::back_inserter(vRemainIInttHits));
    
+   std::vector<hitStruct > vRemainEMCalHits;
+   SetVCalHitsOverThre(vRemainEMCalHits, vEmcalHits);
+   
    for(Int_t iOInttClus = 0; iOInttClus < vOInttHits.size(); iOInttClus++){
       InttSeedMatching(tracks, 5, vOInttHits.at(iOInttClus),\
          vRemainFMvtxHits, vRemainSMvtxHits, vRemainTMvtxHits, vRemainIInttHits,\
-            vEmcalHits, vIHCalHits, vOHCalHits);
+            vRemainEMCalHits, vIHCalHits, vOHCalHits);
    }// == e == oIntt Loop
    
    // ChecKumaDaYo!!!! I cannot use this function because it makes too many tracks.
@@ -144,7 +162,7 @@ bool InttSeedTracking::RecoTracksInttSeed2(std::vector<tracKuma>& tracks,\
    for(Int_t iIInttClus = 0; iIInttClus < vRemainIInttHits.size(); iIInttClus++){
       InttSeedMatching(tracks, 4, vRemainIInttHits.at(iIInttClus),\
          vRemainFMvtxHits, vRemainSMvtxHits, vRemainTMvtxHits,\
-            vRemainIInttHits, vEmcalHits, vIHCalHits, vOHCalHits);
+            vRemainIInttHits, vRemainEMCalHits, vIHCalHits, vOHCalHits);
    }
 
    return true;
@@ -168,7 +186,7 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
    Int_t matchTMvtxId = 99999;
    Int_t matchIInttId = 99999;
    Double_t smallestChi = 9999.;
-   Int_t matchiECalID = 9999;
+   Int_t matchiECalID = 99999;
    for(Int_t iECalT = 0; iECalT < vEmcalHits.size(); iECalT++){
       Double_t ecalE = vEmcalHits.at(iECalT).energy;
       if(ecalE < m_EcalEThre) continue;
@@ -176,10 +194,12 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
       Double_t ecalTheta = 2*atan(std::exp(-vEmcalHits.at(iECalT).eta));
       // ChecKumaDaYo!!! you need to optimize the search range
       if((inttTheta - TMath::Pi()/10 < ecalTheta)&&(ecalTheta < inttTheta + TMath::Pi()/10)){
-         Int_t minChiSqrtEMCalTrkId = 9999;
+         
          Double_t minChiSqrt = 9999.;
          Double_t ecalPhi = vEmcalHits.at(iECalT).phi;
          // ChecKumaDaYo!!! you need to optimize the search range
+         if(((inttPhi - TMath::Pi()/10) < - TMath::Pi())&&(ecalPhi > 0)) ecalPhi -= 2*TMath::Pi();
+         else if(((inttPhi + TMath::Pi()/10) > TMath::Pi())&&(ecalPhi < 0)) ecalPhi += 2*TMath::Pi();
          if((inttPhi - TMath::Pi()/10 < ecalPhi)&&(ecalPhi < inttPhi + TMath::Pi()/10)){
             tracKuma tempTrack;
 
@@ -188,12 +208,13 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
             tempTrack.setHitZ(0, 0.);
             tempTrack.setHitPhi(0, 0.);
             tempTrack.setHitTheta(0, 0.);
-
+            
             SetHitParaInTrack(tempTrack, inttId, baseInttHit); // set INTT parameters
             SetHitParaInTrack(tempTrack, 6, vEmcalHits.at(iECalT)); // set ECal parameters
 
             Double_t HitsXY[3][2];
-            Set3PointsXY(HitsXY, tempTrack, 2); // convert r, phi -> x, y for the three points.
+            Set3PointsXY(HitsXY, tempTrack, inttId); // convert r, phi -> x, y for the three points.
+
             Double_t sagittaR = 9999.;
             Double_t cX = 0.;
             Double_t cY = 0.;
@@ -213,7 +234,7 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
                if(FindHitsOnCircle(iInttMatchId, iInttClusX, iInttClusY, \
                   sagittaR, cX, cY, vIInttHits, iInttDRThre)){         
                   SetHitParaInTrack(tempTrack, 4, vIInttHits.at(iInttMatchId));
-               }      
+               }
             }
             
             // searching for the best MVTX hits satisfying dR threshold
@@ -232,6 +253,7 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
                matchSMvtxId = seleSMvtxId;
                matchTMvtxId = seleTMvtxId;
                matchIInttId = iInttMatchId;
+               matchiECalID = iECalT;
             }
          }// == e == Ecal Phi range if
       }// == e == Ecal Theta range if
@@ -248,6 +270,7 @@ bool InttSeedTracking::InttSeedMatching(std::vector<tracKuma>& tracks, Int_t int
    if(matchSMvtxId!=99999) vSMvtxHits.erase(vSMvtxHits.begin() + matchSMvtxId);
    if(matchTMvtxId!=99999) vTMvtxHits.erase(vTMvtxHits.begin() + matchTMvtxId);
    if((inttId == 5)&&(matchIInttId!=9999)) vIInttHits.erase(vIInttHits.begin() + matchIInttId);
+   if(matchiECalID!=99999) vEmcalHits.erase(vEmcalHits.begin() + matchiECalID);
 
    return true;
 }
@@ -274,7 +297,6 @@ bool InttSeedTracking::CheckTrkRequirements(tracKuma trk){
    if(trk.getHitIs(4)) return true;
    Int_t numMvtx = 0;
    for(Int_t iMvtx = 1; iMvtx < 4; iMvtx++) if(trk.getHitIs(iMvtx)) numMvtx += 1;
-
    if(numMvtx > 1) return true;
    else return false; 
 }
@@ -290,7 +312,7 @@ void InttSeedTracking::RefindCalHit(tracKuma trk, std::vector<hitStruct > vEmcal
    Double_t sagittaR = 0.;
    Double_t tempHitIInttPhi = trk.getHitPhi(4);
    Double_t tempHitEmcalPhi = trk.getHitPhi(6);
-   // ChecKumaDaYo!!! it does not work in only sPHENIX server?????
+   // ChecKuma!!! it does not work only sPHENIX server, but I do not know why
    // SagittaRByCircleFit(cX, cY, sagittaR, vHitR, vHitsPhi, trk.getHitPhi(4), trk.getHitPhi(6));
 
    Double_t targetCalX = 0.;
@@ -324,10 +346,10 @@ void InttSeedTracking::RefindCalHit(tracKuma trk, std::vector<hitStruct > vEmcal
    // ChecKumaDaYo!!!
    CalESumAndCorrPosi(trk, vEmcalHits, vIHCalHits, vOHcalHits);
 
-   // Double_t calE = vEmcalHits.at(highestECalId).energy;
+   Double_t calE = vEmcalHits.at(highestECalId).energy;
    // // ChecKumaDaYo!!!
-   // calE = AddHCalE(vEmcalHits.at(highestECalId).phi, calE, vIHCalHits, vOHcalHits);
-   // trk.setTrackE(calE);
+   calE = AddHCalE(vEmcalHits.at(highestECalId).phi, calE, vIHCalHits, vOHcalHits);
+   trk.setTrackE(calE);
 
 }
 
@@ -561,7 +583,7 @@ Double_t InttSeedTracking::TrackPtEstimation(tracKuma& trk, std::vector<hitStruc
    Double_t sagittaCenterX = 0.;
    Double_t sagittaCenterY = 0.;
    Double_t HitsXY[3][2];
-   Set3PointsXY(HitsXY, trk, 2);
+   Set3PointsXY(HitsXY, trk, 5);
    RoughEstiSagittaCenter3Point(sagittaR, sagittaCenterX, sagittaCenterY, HitsXY);
 
    Double_t trackPt = AccuratePtEstimation(sagittaR, sagittaCenterX, sagittaCenterY, trk, \
@@ -589,7 +611,6 @@ void InttSeedTracking::RoughEstiSagittaCenter3Point(Double_t& sagittaR,\
 
    sagittaR = std::sqrt((HitsXY[0][0] - sagittaCenterX)*(HitsXY[0][0] - sagittaCenterX) \
       + (HitsXY[0][1] - sagittaCenterY)*(HitsXY[0][1] - sagittaCenterY));
-
 }
 
 Double_t InttSeedTracking::AccuratePtEstimation(\
@@ -648,7 +669,7 @@ void InttSeedTracking::SagittaRByCircleFit(Double_t& centerX, Double_t& centerY,
    
    TH2D* hHitMap = new TH2D("hHitMap", "hHitMap; x [cm]; y [cm]",\
       2000, -100., 100., 2000, -100., 100.);
-
+   
    Int_t numOfHits = r.size();
    for(Int_t iHit = 0; iHit < numOfHits; iHit++){
       Double_t tempPhi = phi.at(iHit) + basePhi;
@@ -695,7 +716,6 @@ bool InttSeedTracking::FindHitsOnCircle(Int_t& hitMatchId,\
    Double_t sagittaR, Double_t centerX, Double_t centerY, std::vector<hitStruct > vHits,\
    Double_t dRThre){
    Double_t minDeltaR = 99999.;
-
    if(vHits.size() == 0) return false;
    for(Int_t iHit=0; iHit< vHits.size(); iHit++){
       Double_t tempHitX = vHits.at(iHit).r*std::cos(vHits.at(iHit).phi);
@@ -847,8 +867,5 @@ void InttSeedTracking::SetHitParaInTrack(tracKuma& trk, Int_t detId, hitStruct h
 }
 
 #endif // #ifdef InttSeedTracking_cxx
-
-
-
 
 
