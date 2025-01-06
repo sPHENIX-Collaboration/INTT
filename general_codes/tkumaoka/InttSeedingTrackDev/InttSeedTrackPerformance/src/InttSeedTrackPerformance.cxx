@@ -31,6 +31,7 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
    // (3) Change the loop the second one ("jentry< vTargetEvents.size()")
    bool bTargetEV = false;
    std::vector<Int_t > vTargetEvents = {};
+   // 35, 102, 108, 192, 213, 272, 283, 315, 324, 327, 341, 350
    // 9, 13, 17, 19, 29, 53, 73, 84, 92, 367
    // 35, 102, 108, 192, 213, 272, 283, 315, 324, 327, 341, 350
 
@@ -52,7 +53,7 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
       
       CheckPrimP(m_TruthParticle);
       // std::cout << "truth size = " << m_TruthParticle.size() << std::endl;
-      
+
       // MVTX f: first, s: second, t: third
       ReadInttHitting(m_fMvtxHits, m_sMvtxHits, m_tMvtxHits, m_iInttHits, m_oInttHits, m_TpcHits);
       if(bCaloClu) ReadCalCluHitting(m_emcalHits, m_iHCalHits, m_oHCalHits);
@@ -93,9 +94,9 @@ void InttSeedTrackPerformance::Loop(Int_t runNum)
 
    WrightHists();
 
-   std::cout << "std::vector<Int_t > vTargetEvents = {";
-   for(Int_t i = 0; i < m_vTargetEvents.size(); i++) std::cout << m_vTargetEvents.at(i) << ", ";
-   std::cout << "};" << std::endl;
+   // std::cout << "std::vector<Int_t > vTargetEvents = {";
+   // for(Int_t i = 0; i < m_vTargetEvents.size(); i++) std::cout << m_vTargetEvents.at(i) << ", ";
+   // std::cout << "};" << std::endl;
 }
 
 void InttSeedTrackPerformance::HistInit(){
@@ -319,10 +320,12 @@ void InttSeedTrackPerformance::HistInit(){
       "truth pT vs shift distanse (L);#phi [rad];#it{p}_{T} [GeV/#it{c}]", 200, -1., 1.);
 
 
-  m_HPtEfficiency = new TH1D( "m_HPtEfficiency", \
-      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];Efficiency [%]", 150, 0., 15);
-  m_HTruTrackNum = new TH1D( "m_HTruTrackNum", \
-      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];Efficiency [%]", 150, 0., 15);
+  m_HPtEfficiency = new TH2D( "m_HPtEfficiency", \
+      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];#eta;Efficiency [%]", 150, 0., 15, 200, -1, 1);
+  m_HTruTrackNum = new TH2D( "m_HTruTrackNum", \
+      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}];#eta;Efficiency [%]", 150, 0., 15, 200, -1, 1);
+   m_HTruTrackMatchedNum = new TH2D( "m_HTruTrackMatchedNum", \
+      "reconstrucntion efficinecy for pT;#it{p}_{T} [GeV/#it{c}]; #eta;Efficiency [%]", 150, 0., 15, 200, -1, 1);
 }
 
 
@@ -370,7 +373,8 @@ void InttSeedTrackPerformance::ReadInttHitting(std::vector<hitStruct >& vFMvtxHi
 
       Double_t CluTheta = std::atan(CluR/CluZ);// -pi - pi
       Double_t CluEta = (CluZ/std::abs(CluZ)) * (- log(std::abs(std::tan(CluTheta/2))));
-
+      if(std::abs(CluTheta - TMath::Pi()/2) < 0.00001) CluEta = 0.;
+      
       CluX = CluR*std::cos(CluPhi);
       CluY = CluR*std::sin(CluPhi);
       m_HINTTHitMap->Fill(CluX, CluY);
@@ -463,9 +467,15 @@ void InttSeedTrackPerformance::TrackQA(std::vector<hitStruct > vTruthPs, std::ve
    std::vector<Int_t > matchiedRecoTrkId = {};
    Int_t numOfP = PrimaryG4P_PID->size();
    for(Int_t iP = 0; iP < numOfP; iP++){
-      m_HTruTrackNum->Fill(vTruthPs.at(iP).pt);
-      if(m_tracks.size() == 0) continue;
+      // if(std::abs(vTruthPs.at(iP).eta) < 0.001) continue;
+      m_HTruTrackNum->Fill(vTruthPs.at(iP).pt, vTruthPs.at(iP).eta);
+      if(m_tracks.size() == 0)continue;
+      
       Int_t trkId = TruRecoMatching(vTruthPs.at(iP), m_tracks, matchiedRecoTrkId);
+      if(trkId == 9999){
+         m_vTargetEvents.push_back(pubEvNum);
+         std::cout << "1 pubEvNum = " << pubEvNum << std::endl;
+      }
       if(trkId == 9999) continue;
       // Int_t trkId = 0;
       
@@ -476,7 +486,9 @@ void InttSeedTrackPerformance::TrackQA(std::vector<hitStruct > vTruthPs, std::ve
       Double_t truE = vTruthPs.at(iP).energy;
       Double_t recoE = m_tracks.at(trkId).getTrackE();
       m_HDE->Fill(truE, (recoE - truE)/truE, vTruthPs.at(iP).eta);
-      m_HPtEfficiency->Fill(vTruthPs.at(iP).pt);
+      
+      m_HTruTrackMatchedNum->Fill(vTruthPs.at(iP).pt,vTruthPs.at(iP).eta);
+      m_HPtEfficiency->Fill(vTruthPs.at(iP).pt,vTruthPs.at(iP).eta);
    }
 
    // std::cout << "size tru, reco = " << vTruthPs.size() << ", " << m_tracks.size() << std::endl;
@@ -493,10 +505,9 @@ Int_t InttSeedTrackPerformance::TruRecoMatching(hitStruct truthP, std::vector<tr
       if(vRecoTrk.at(iRecoTrk).getHitIs(4)) tempRecoPhi = vRecoTrk.at(iRecoTrk).getHitPhi(4);
       else if(vRecoTrk.at(iRecoTrk).getHitIs(5)) tempRecoPhi = vRecoTrk.at(iRecoTrk).getHitPhi(5);
       // std::cout << "recoTheta, truTheta, dTheta = " << tempRecoTheta << ", " << tempTruTheta << ", " << std::abs(tempRecoTheta - tempTruTheta) << std::endl;
-      if((std::abs(tempRecoTheta - tempTruTheta) < 0.1)){
+      if((std::abs(tempRecoTheta - tempTruTheta) < 0.5)){
          // std::cout << "dPhi = " << std::abs(tempRecoPhi - truthP.phi) << std::endl;
          if((std::abs(tempRecoPhi - truthP.phi) < 0.3)){
-            // std::cout << "dPt = " << std::abs(vRecoTrk.at(iRecoTrk).getTrackPt() - truthP.pt) << std::endl;
             if(closestDPt > std::abs(vRecoTrk.at(iRecoTrk).getTrackPt() - truthP.pt)){
                bool matchedIs = std::find( vMatchiedRecoTrkId.begin(),  vMatchiedRecoTrkId.end(), \
                   iRecoTrk) !=  vMatchiedRecoTrkId.end();
@@ -522,8 +533,11 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
    Double_t centerX = 9999.;
    Double_t centerY = 9999.;
 
+   Int_t tempInttId = 0;
+   if(trk.getHitIs(5)) tempInttId = 5;
+   else if(trk.getHitIs(4)) tempInttId = 4;
    Double_t HitsXY[3][2];
-   truckF.Set3PointsXY(HitsXY, trk, 0);
+   truckF.Set3PointsXY(HitsXY, trk, tempInttId);
    truckF.RoughEstiSagittaCenter3Point(sagittaR, centerX, centerY, HitsXY);
    Double_t sagittaPt = truckF.CalcSagittaPt(sagittaR);
    Double_t tempdPt = (sagittaPt - truthPt)/truthPt;
@@ -544,7 +558,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
    // Double_t HitsXY2[3][2];
    // truckF.Set3PointsXY(HitsXY2, trk, 0);
    // truckF.RoughEstiSagittaCenter3Point(sagittaR, centerX, centerY, HitsXY);
-
+   
    std::vector<Int_t > subDetIds_InttEmcal = {4, 5, 6};
    std::vector<Double_t > hitsR_InttEmcal = {};
    std::vector<Double_t > hitsPhi_InttEmcal = {};
@@ -583,7 +597,6 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
       Double_t recoPt = truckF.CalcSagittaPt(sagittaR);
       Double_t dPt = (recoPt - truthPt)/truthPt;
       m_HTruthPtVsSagittaPt_MvtxInttEmcal->Fill(truthPt, dPt, truthEta);
-      // std::cout << "pubEvNum = " << pubEvNum << std::endl;
       // EventJudge(pubEvNum, dPt, -2., 2., false); //CheckumaDaYo!!!
 
       TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
@@ -591,7 +604,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
          m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal,\
          m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
 
-      // std::cout << "dPt = " << dPt << std::endl;
+      // std::cout << "recoPt, truthPt, dPt = " << recoPt << ", " << truthPt << ", " << dPt << std::endl;
       // CheckumaDaYo!!!
       // ShowTrackInfo(trk, dPt, centerX, centerY, sagittaR);
    }
@@ -612,7 +625,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
    Double_t OriFunTrackPt = truckF.FitFunctionPt(dPhiOInttEmcal);
    Double_t dPtOriFun = (OriFunTrackPt - truthPt)/truthPt;
    m_HTruthPtVsFitFuncPt_IInttOInttEmcal->Fill(truthPt, dPtOriFun, truthEta);
-   EventJudge(pubEvNum, dPtOriFun ,-2, -1, true);
+   // EventJudge(pubEvNum, dPtOriFun ,-2, -1, true);
    // std::cout << "111 dPt = " << dPtOriFun << std::endl;
    // CheckumaDaYo!! oooooooo
 
@@ -1157,6 +1170,7 @@ void InttSeedTrackPerformance::WrightHists(){
    m_HPtEfficiency->Divide(m_HPtEfficiency, m_HTruTrackNum, 1.0, 1.0, "b");
    m_HPtEfficiency->Write();
    m_HTruTrackNum->Write();
+   m_HTruTrackMatchedNum->Write();
 
    oFile->Close();
 
