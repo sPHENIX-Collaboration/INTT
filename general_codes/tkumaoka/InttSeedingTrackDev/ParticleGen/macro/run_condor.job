@@ -1,0 +1,23 @@
+Universe           = vanilla
+Initialdir         = /sphenix/tg/tg01/commissioning/INTT/work/tkumaoka/InttSeedingTrackDev/ParticleGen/macro
+Executable         = run_job.sh
+PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
+concurrency_limits = CONCURRENCY_LIMIT_DEFAULT:100
+request_memory     = 8GB
+Priority           = 20
+job_lease_duration = 86400
+
+ANA_build          = 452
+Nevents            = 100
+particle_pT        = 5
+energy_range       = 5.
+particle_species   = Electron
+output_directory   = /sphenix/tg/tg01/commissioning/INTT/work/tkumaoka/InttSeedingTrackDev/ParticleGen/output/electron/PtFull/
+output_filename    = ana$(ANA_build)_$(particle_species)_$(particle_pT)GeV_$INT(process,%05d).root
+
+log_filename       = ana$(ANA_build)_$(particle_species)_$(particle_pT)GeV_$INT(process,%05d)
+Output             = $(output_directory)/TK_log/$(log_filename).out
+Error              = $(output_directory)/TK_log/$(log_filename).err
+Log                = $(output_directory)/TK_log/$(log_filename).log
+Arguments          = "$(Nevents) $(particle_pT) $(energy_range) $(particle_species) $(output_directory) $(output_filename) $(ANA_build)"
+Queue 200
