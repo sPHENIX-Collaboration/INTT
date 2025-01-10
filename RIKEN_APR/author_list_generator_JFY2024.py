@@ -79,7 +79,7 @@ class People:
         self.persons_.append( Person( first="C.~W.", family="Shih",       affiliations=["RIKEN", "NCU"    ] , mail="cwshih0812@gmail.com" ) )
         self.persons_.append( Person( first="M.",    family="Shimomura",  affiliations=["NWU"             ] , mail="maya@cc.nara-wu.ac.jp" ) )
         self.persons_.append( Person( first="R.",    family="Shishikura", affiliations=["RIKEN", "Rikkyo" ] , mail="23la005r@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="W.~C.", family="Tang",       affiliations=["NCU"             ] , mail="amos.107202519@g.ncu.edu.tw" ) )
+        self.persons_.append( Person( first="W.~C.", family="Tang",       affiliations=["NCU"             ] , mail="leventseleve.amos@gmail.com" ) )
         self.persons_.append( Person( first="H.",    family="Tsujibata",  affiliations=["NWU"             ] , mail="bounitti@icloud.com" ) )
         self.persons_.append( Person( first="X.",    family="Wei",        affiliations=["Purdue"          ] , mail="wxie@purdue.edu" ) )
         self.persons_.append( Person( first="H.",    family="Yanagawa",   affiliations=["RIKEN", "Rikkyo" ] , mail="21cb015t@rikkyo.ac.jp" ) )
