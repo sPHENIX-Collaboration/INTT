@@ -70,11 +70,4 @@ then the author list for you is shown on your terminal:
 The origian author list is in the script.
 You can change it if needed.
 
-#### ver JFY2024
-The authors' e-mail addresses are printed at the bottom of the output. Please use it to circulate your draft. 
-You can execute author_list_generator_JFY2024.py like a shell script file:
-```
-./author_list_generator_JFY2024.py
-```
-
 * Author: Genki Nukazuka (RIKEN), 12/25/2023.
