@@ -53,7 +53,7 @@ class Person :
                 
             print( "*" + str(affiliation), end="" )
 
-        print( "}," )
+        print( "}" )
 
 class People:
     def __init__( self ) :
