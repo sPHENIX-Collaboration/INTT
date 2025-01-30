@@ -77,6 +77,7 @@ class People:
         self.persons_.append( Person( first="T.",    family="Kikuchi",    affiliations=["Rikkyo", "RIKEN" ] ) )
         self.persons_.append( Person( first="T.",    family="Kondo",      affiliations=["TIRI"            ] ) )
         self.persons_.append( Person( first="C.~M.", family="Kuo",        affiliations=["NCU"             ] ) )
+        self.persons_.append( Person( first="T.",    family="Kumaoka",    affiliations=["RIKEN"           ] ) ) 	
         self.persons_.append( Person( first="R.~S.", family="Lu",         affiliations=["NTU"             ] ) )
         self.persons_.append( Person( first="N.",    family="Morimoto",   affiliations=["NWU", "RIKEN"    ] ) )
         self.persons_.append( Person( first="I.",    family="Nakagawa",   affiliations=["RIKEN"           ] ) ) 
@@ -90,7 +91,7 @@ class People:
         self.persons_.append( Person( first="R.",    family="Shishikura", affiliations=["Rikkyo", "RIKEN" ] ) )
         self.persons_.append( Person( first="W.~C.", family="Tang",       affiliations=["NCU", "RIKEN"    ] ) )
         self.persons_.append( Person( first="H.",    family="Tsujibata",  affiliations=["NWU", "RIKEN"    ] ) )
-        self.persons_.append( Person( first="X.",    family="Wei",        affiliations=["Purdue"          ] ) )
+        self.persons_.append( Person( first="W.",    family="Xie",        affiliations=["Purdue"          ] ) )
         self.persons_.append( Person( first="H.",    family="Yanagawa",   affiliations=["Rikkyo", "RIKEN" ] ) )
 
         self.sorted_persons_ = []
