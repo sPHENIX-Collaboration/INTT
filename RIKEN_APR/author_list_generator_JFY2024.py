@@ -36,13 +36,24 @@ class Person :
 
         print( "", end=end )
             
-
+    """
     # Printing institution list in RIKEN APR format
     def PrintInstitutions( self ) :
         for affiliation in self.affiliation_numbers_ :
-            print( "\\institute{" + str(affiliation) + "}", end="" )
+            print( "\\institute*{" + "*" + str(affiliation) + "}", end="," )
 
         print()
+    """
+
+    def PrintInstitutions( self ) :
+        print( "\\institute*{", end="" )
+        for affiliation in self.affiliation_numbers_ :
+            if affiliation != self.affiliation_numbers_[0] :
+                print( ", ", end="" )
+                
+            print( "*" + str(affiliation), end="" )
+
+        print( "}," )
 
 class People:
     def __init__( self ) :
@@ -146,7 +157,7 @@ class People:
                     # if this affiliation is found, just give the index of it in the list
                     numbers.append( index+1 )
 
-                person.affiliation_numbers_ = numbers
+                person.affiliation_numbers_ = sorted( numbers, reverse=False )
             # end of for affiliation in person.affiliations_ :
         # end of for person in self.sorted_persons_ :
 
