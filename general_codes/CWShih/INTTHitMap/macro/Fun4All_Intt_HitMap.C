@@ -14,13 +14,16 @@ void Fun4All_Intt_HitMap(
   string input_filename = "file_list_54280_intt.txt",
   
   // todo : modify here
-  string hot_channel_full_file_directory = "/sphenix/user/jaein213/macros/inttcalib/hotmap_cdb_1031/hotmap_run_00054280.root",
+  string hot_channel_full_file_directory = "/sphenix/user/jaein213/macros/inttcalib_fee/hotmap_cdb/hotmap_cdb_54280_100000_DST_1114.root",
   int bco_diff_peak = 55,
   
   bool apply_hot_channel = true,
   bool apply_bco_diff = true,
   bool hitQA_check = true,
-  bool clone_hit_remove_BCO = true
+  bool clone_hit_remove_BCO = true,
+  bool MBDNS_trigger_require_tag = true,
+  int  trigger_MBDvtxZ_cm = 30 // note : cm
+
 )
 {
 
@@ -46,7 +49,9 @@ void Fun4All_Intt_HitMap(
     apply_bco_diff,
     bco_diff_peak,
     hitQA_check,
-    clone_hit_remove_BCO
+    clone_hit_remove_BCO,
+    MBDNS_trigger_require_tag,
+    trigger_MBDvtxZ_cm
   );
   
   string final_output_file_name = IHM->GetOutputFileName();

@@ -75,7 +75,8 @@ INTTHitMapEvt::INTTHitMapEvt(
   const int bco_diff_peak_in,
   const bool ApplyHitQA_in,
   const bool clone_hit_remove_BCO_tag_in,
-  const bool setADCinZaxis_tag_in
+  const bool setADCinZaxis_tag_in,
+  const std::vector<int> adc_conversion_vec_in
 ):
   SubsysReco(name),
   process_id(process_id_in),
@@ -87,7 +88,8 @@ INTTHitMapEvt::INTTHitMapEvt(
   bco_diff_peak(bco_diff_peak_in),
   ApplyHitQA(ApplyHitQA_in),
   clone_hit_remove_BCO_tag(clone_hit_remove_BCO_tag_in),
-  setADCinZaxis_tag(setADCinZaxis_tag_in)
+  setADCinZaxis_tag(setADCinZaxis_tag_in),
+  adc_conversion_vec(adc_conversion_vec_in)
 
 {
   std::cout << "INTTHitMapEvt::INTTHitMapEvt(const std::string &name) Calling ctor" << std::endl;
@@ -124,17 +126,53 @@ INTTHitMapEvt::INTTHitMapEvt(
 
   PrepareHotChannel();
 
-  check_event_bcofull_map.clear();
+  check_event_bcofull_map_map.clear();
 
+}
+
+int INTTHitMapEvt::SetCheckEventBCOFULLsHalfLadder(std::vector<std::tuple<long long, int, int>> input_bcofull_halfladder_vec)
+{
+  check_event_bcofull_map_map.clear();
+
+  for (auto &bcofull_halfladder : input_bcofull_halfladder_vec)
+  {
+    long long bco_full = std::get<0>(bcofull_halfladder);
+    int FELIX          = std::get<1>(bcofull_halfladder);
+    int FELIX_ch       = std::get<2>(bcofull_halfladder);
+    
+    if (check_event_bcofull_map_map.find(bco_full) == check_event_bcofull_map_map.end())
+    {
+      check_event_bcofull_map_map.insert(
+        std::make_pair(
+          bco_full, 
+          std::map<std::string, int>{ { Form("%d_%d",FELIX,FELIX_ch), 1 } }
+        )
+      );
+    }
+    else {
+      check_event_bcofull_map_map[bco_full].insert(
+        std::make_pair(
+          Form("%d_%d",FELIX,FELIX_ch), 1
+        )
+      );
+    }
+    
+  }
+
+  halfladder_specified = true;
+
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int INTTHitMapEvt::SetCheckEventBCOFULLs(std::vector<long long> input_bcofull_vec)
 {
-  check_event_bcofull_map.clear();
+  check_event_bcofull_map_map.clear();
   for (auto &bcofull : input_bcofull_vec)
   {
-    check_event_bcofull_map.insert(std::make_pair(bcofull,1));
+    check_event_bcofull_map_map.insert(std::make_pair(bcofull, std::map<std::string, int>{}));
   }
+
+  halfladder_specified = false;
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -198,10 +236,11 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
   InttRawHit* intthit = inttcont->get_hit(0);
   intt_bco = intthit->get_bco();
 
-  if (check_event_bcofull_map.find(intt_bco) == check_event_bcofull_map.end())
+  if (check_event_bcofull_map_map.size() != 0 && check_event_bcofull_map_map.find(intt_bco) == check_event_bcofull_map_map.end())
   {
     return Fun4AllReturnCodes::EVENT_OK;
   }
+  
 
   for (unsigned int i = 0; i < inttcont->get_nhits(); i++)
   {
@@ -278,18 +317,24 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
     {
       if (evt_inttHits_map.find(Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)) == evt_inttHits_map.end()) // note : if it's not found, we just add it
       {
-        evt_inttHits_map[Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)] = {server,felix_ch,chip,channel,adc,bco, bco_diff};
+        evt_inttHits_map[Form("%d_%d_%d_%d_%d",server,felix_ch,chip,channel,bco)] = {server,felix_ch,chip,channel,adc_conversion_vec[adc],bco, bco_diff};
       }
     }
     else // note : if we don't want to remove the clone hits
     {
-      evt_inttHits_map[Form("%d",i)] = {server,felix_ch,chip,channel,adc,bco, bco_diff}; // note : only index i to make the key unique
+      evt_inttHits_map[Form("%d",i)] = {server,felix_ch,chip,channel,adc_conversion_vec[adc],bco, bco_diff}; // note : only index i to make the key unique
     }
 
   } // note : end of INTT raw hit loop
 
   for (int felix_i = 0; felix_i < nFelix; felix_i++){
     for (int fch_i = 0; fch_i < nFelix_channel; fch_i++){
+      
+      if (check_event_bcofull_map_map[intt_bco].size() != 0 && check_event_bcofull_map_map[intt_bco].find(Form("%d_%d",felix_i,fch_i)) == check_event_bcofull_map_map[intt_bco].end())
+      {
+        continue;
+      }
+
       h2_hitmap_map.insert(std::make_pair(Form("bcofull%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), new TH2D(Form("bcofull%ld_F%d_Fch%d",intt_bco,felix_i,fch_i), Form("bcofull%ld_F%d_Fch%d;Chip ID (12 -> 0);Channel ID",intt_bco,felix_i,fch_i),13,0,13,265,-5,260)));
     }
   }
@@ -300,7 +345,7 @@ int INTTHitMapEvt::process_event(PHCompositeNode *topNode)
     
     if(h2_hitmap_map.find(Form("bcofull%ld_F%d_Fch%d",intt_bco,hit.hit_server,hit.hit_felix_ch)) == h2_hitmap_map.end())
     {
-      std::cout << "eID: "<< eID_count <<" INTTBcoResolution::PrepareINTT - hitmap not found" << std::endl;
+      if (!halfladder_specified) {std::cout << "eID: "<< eID_count <<" INTTBcoResolution::PrepareINTT - hitmap not found" << std::endl;}
       continue;
     }
 

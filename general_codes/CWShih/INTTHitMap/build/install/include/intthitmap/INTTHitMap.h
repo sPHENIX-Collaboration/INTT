@@ -16,13 +16,16 @@
 
 #include <ffarawobjects/InttRawHit.h>
 #include <ffarawobjects/InttRawHitContainer.h>
+#include <ffarawobjects/Gl1Packetv2.h>
 
 
-
+#include <limits>
+#include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <map>
+#include <bitset>
 
 #include <TSystem.h>
 #include <TFile.h>
@@ -32,6 +35,7 @@
 
 class PHCompositeNode;
 class InttRawHitContainer;
+class Gl1Packet;
 
 class TH2;
 class TFile;
@@ -51,7 +55,9 @@ class INTTHitMap : public SubsysReco
     const bool ApplyBcoDiff_in = true,
     const int bco_diff_peak_in = 0,
     const bool ApplyHitQA_in = true,
-    const bool clone_hit_remove_BCO_tag_in = true
+    const bool clone_hit_remove_BCO_tag_in = true,
+    const bool MBDNS_trigger_require_tag_in = true,
+    const int  trigger_MBDvtxZ_cm_in = 10 // note : cm
   );
 
   ~INTTHitMap() override;
@@ -113,6 +119,8 @@ class INTTHitMap : public SubsysReco
     int bco_diff_peak;
     bool ApplyHitQA;
     bool clone_hit_remove_BCO_tag;
+    bool MBDNS_trigger_require_tag;
+    int trigger_MBDvtxZ_cm; 
 
     std::string output_filename;
 
@@ -123,6 +131,23 @@ class INTTHitMap : public SubsysReco
     std::map<std::string, TH2D*> h2_hitmap_map;
 
     long long eID_count;
+
+    // note : -------------------------------- for gl1 and trigger selection ------------------------------
+    Gl1Packet * p_gl1;
+    std::string m_gl1NodeName = "GL1RAWHIT";
+
+    long long live_trigger_decimal; 
+    std::map<int,int>  live_trigger_map;
+
+    long long scaled_trigger_decimal; 
+    std::map<int,int>  scaled_trigger_map;
+ 
+    void GetLiveTrigger(PHCompositeNode *topNode); 
+    static std::map<int, int> prepare_trigger_vec(long long trigger_input); 
+
+
+    const int MBDNS_VtxZ10cm_Id = 12;
+    const int MBDNS_VtxZ30cm_Id = 13;
 
     // note : -------------------------------- The constant values ------------------------------
     const int nFelix = 8;
