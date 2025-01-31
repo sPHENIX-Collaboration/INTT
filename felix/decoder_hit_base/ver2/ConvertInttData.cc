@@ -1,4 +1,3 @@
-
 #include "InttEvent.h"
 #include "ConvertInttData.h"
 #include "InttDecode.h"
@@ -87,7 +86,7 @@ int Init(const char* outRootfile)
   return 0;
 }
 
-int Process_event (InttPacket * p)
+int Process_event( InttPacket * p )
 {
   if(module_map_flag)
     {
@@ -164,6 +163,7 @@ int Process_event (InttPacket * p)
 	delete p;
       }
   }
+  
   //inttEvt->show();
   //  inttEvt->sort();
   //inttEvt->show();
@@ -171,12 +171,12 @@ int Process_event (InttPacket * p)
   return 0;
 }
 
-int Run(const char *evtFile){
+int Run(const char *evtFile, ULong64_t hit_num_limit ){
 
   for(int id = 3001; id < 3009; ++id)
     //for(int id = 3002; id < 3003; ++id)
     {
-      cout << "packet = " << id << endl;
+      cout << "+packet = " << id << endl;
       fileEventiterator *evtItr = new fileEventiterator(evtFile);
 
       InttDecode decode(evtItr, id);
@@ -186,15 +186,23 @@ int Run(const char *evtFile){
       InttPacket *p=nullptr;
       while( p=decode.getNextPacket() )
 	{
-	  if( (nevt%10000)==0 )
+	  //	  if( (nevt%10000)==0 )
 	    cout << "nevt : " << nevt << endl;
 	    
 	  if( debug )
 	    p->dump();
 	    
-	  Process_event(p);
-	  nevt++;
+	  Process_event( p );
+	  if( hit_num_limit > 0 )
+	    if( hit_num_limit < tree->GetEntries() )
+	      {
 
+		cout << "Only " << tree->GetEntries() << " were processed as processing " << hit_num_limit << " was required." << endl;
+		cout << "To proess all data, give -1 to int Run(const char *evtFile, ULong64_t hit_num_limit )" << endl;
+		break;
+	      }
+		
+	  nevt++;
         }
 
       cout << "    " << nevt << endl;
@@ -208,7 +216,7 @@ int Run(const char *evtFile){
                    << ", nbad "  << setw(20) << decode.getNBadHits(ilad) << endl;
 	    }
         }
-
+      
       delete evtItr;
     }
 
