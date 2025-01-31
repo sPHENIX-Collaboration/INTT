@@ -10,6 +10,7 @@ import sys
 import time
 import pprint
 import pathlib
+import traceback
 
 import Printer
         
@@ -95,6 +96,9 @@ class Information() :
         else:
             self.chunk = None
 
+        # For run-by-run root, png files location
+        self.ROOT_FILE_RUN_DIR = self.DATA_ROOT_DIR / "root_files" / str( self.year ) / str( int(self.run) )
+
         #############################################################################
         # Some more processes...                                                    #
         #############################################################################
@@ -123,6 +127,7 @@ class Information() :
         #if args.only is True :
         #    print( "Only ..." , flush=True )
 
+
     def InitFlags( self ) :
         if self.plot_file is not None :
             ############################################################
@@ -143,6 +148,7 @@ class Information() :
                 self.plot_mode = False
                 self.printer.Print( color="Red" )
                 self.printer.Clear()
+                traceback.print_stack()
 
             # for run type
             if self.run_type is None :
@@ -185,6 +191,7 @@ class Information() :
             self.plot_mode = False
             self.printer.Print( color="Red" )
             self.printer.Clear()
+            traceback.print_stack()
 
     def GetPlots( self, dir, suffix=".pdf" ) :
         """
@@ -200,7 +207,9 @@ class Information() :
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_adc.png
         # <class 'pathlib.PosixPath'> beam_intt0-00023726-0000_entryvschan.png
         self.homepage_plots = sorted( list(self.ROOT_FILE_DIR.glob( "*" + str(self.run) + "*.png" ) ) )
-        
+        if not self.homepage_plots:
+            self.homepage_plots = sorted( list(self.ROOT_FILE_RUN_DIR.glob( "*" + str(self.run) + "*.png" ) ) )
+
     def GetHotChannelPlots( self ) :
         # For example:
         path = self.HOTMAP_DIR / "plots" / str( self.year )

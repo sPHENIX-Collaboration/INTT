@@ -107,23 +107,30 @@ class Homepage() :
         # Make directory for the run if it's not found
         if self.RUN_DIR.exists() is False : 
             self.RUN_DIR.mkdir()
-            
+            # Make the directory group executable
+            os.chmod( self.RUN_DIR , 0o775 )            
+
         elif os.access( self.RUN_DIR, os.W_OK ) is False :
-            print( self.RUN_DIR, "is not writable for you. Ask the owner")
-            print( "\t", self.RUN_DIR.owner())
-            print( "to change the access mode. Maybe" )
-            print( "\t chmod g+w", self.RUN_DIR)
-            print( "is OK to try." )
-            return None
-            
-        elif self.info.homepage_run_clean is True :
-            try :
-                shutil.rmtree( self.RUN_DIR )
-            except PermissionError:
-                print( self.RUN_DIR, "cannot be deleted. The directory is not cleaned, and go on!" )
-            
-            os.mkdir( self.RUN_DIR )
-        
+#            print( self.RUN_DIR, "is not writable for you. Ask the owner")
+#            print( "\t", self.RUN_DIR.owner())
+#            print( "to change the access mode. Maybe" )
+#            print( "\t chmod g+w", self.RUN_DIR)
+#            print( "is OK to try." )
+#            return None
+            # Make the directory group executable to remove the file
+            os.chmod( self.RUN_DIR , 0o775 )            
+
+#        elif self.info.homepage_run_clean is True :
+        try :
+             shutil.rmtree( self.RUN_DIR )
+        except PermissionError:
+            print( self.RUN_DIR, "cannot be deleted. The directory is not cleaned, and go on!" )
+
+        os.mkdir( self.RUN_DIR )
+        # Make the directory group executable
+        os.chmod( self.RUN_DIR , 0o775 )       
+        print( self.RUN_DIR, " is created!" )         
+
         # Copy the template of index.html
         index_template = self.COMMISSIONING_DIR / "index_template.html"
         self.index_html = self.RUN_DIR / "index.html"
