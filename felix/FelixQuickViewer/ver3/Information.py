@@ -97,7 +97,10 @@ class Information() :
             self.chunk = None
 
         # For run-by-run root, png files location
-        self.ROOT_FILE_RUN_DIR = self.DATA_ROOT_DIR / "root_files" / str( self.year ) / str( int(self.run) )
+        if self.run is not None :
+            self.ROOT_FILE_RUN_DIR = self.DATA_ROOT_DIR / "root_files" / str( self.year ) / str( int(self.run) )
+        else :
+            self.ROOT_FILE_RUN_DIR = self.DATA_ROOT_DIR / "root_files" / str( self.year ) / "000000"
 
         #############################################################################
         # Some more processes...                                                    #
