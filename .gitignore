@@ -90,3 +90,8 @@ general_codes/josephb/*/bld/*
 general_codes/josephb/*/job/*
 general_codes/josephb/*/out/*
 general_codes/josephb/*/err/*
+
+# Python files
+*.pyc
+*.pcm
+

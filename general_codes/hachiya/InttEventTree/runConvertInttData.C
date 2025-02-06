@@ -6,8 +6,9 @@ void runConvertInttData(const char * filename)
 {
   //std::string save_dir = "/home/phnxrc/INTT/commissioning/hit_files/";
   //std::string save_dir = "./";
-  std::string save_dir = "/bbox/commissioning/INTT/commissioning/hit_files/";
-
+  //std::string save_dir = "/bbox/commissioning/INTT/data/root_files/2024/";
+  std::string save_dir = "/sphenix/tg/tg01/commissioning/INTT/data/root_files/2024/";
+  
   std::string tree_file_name = filename;
   while(tree_file_name.find("/") != std::string::npos)
   {

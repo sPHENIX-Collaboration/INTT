@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-
 class Person :
-    def __init__( self, first="", family="", middle="", affiliations=[], mail="", priority=0 ) :
+    def __init__( self, first="", family="", middle="", affiliations=[], priority=0 ) :
         self.first_name_ = first
         self.middle_name_ = middle
-        self.family_name_ = family        
+        self.family_name_ = family
         self.affiliations_ = affiliations
         self.affiliation_numbers_ = []
-        self.mail = mail
         self.priority_ = priority
 
     #operator for sort
@@ -38,51 +36,63 @@ class Person :
 
         print( "", end=end )
             
-
+    """
     # Printing institution list in RIKEN APR format
     def PrintInstitutions( self ) :
         for affiliation in self.affiliation_numbers_ :
-            print( "\\institute{" + str(affiliation) + "}", end="" )
+            print( "\\institute*{" + "*" + str(affiliation) + "}", end="," )
 
         print()
+    """
+
+    def PrintInstitutions( self ) :
+        print( "\\institute*{", end="" )
+        for affiliation in self.affiliation_numbers_ :
+            if affiliation != self.affiliation_numbers_[0] :
+                print( ", ", end="" )
+                
+            print( "*" + str(affiliation), end="" )
+
+        print( "}" )
 
 class People:
     def __init__( self ) :
         self.persons_ = []
-        self.persons_.append( Person( first="Y.",    family="Akiba",      affiliations=["RIKEN"           ] , mail="akiba@rcf.rhic.bnl.gov" ) ) 	
-        self.persons_.append( Person( first="J.",    family="Bertaux",    affiliations=["Purdue"          ] , mail="jbertau@purdue.edu" ) )
-        self.persons_.append( Person( first="D.",    family="Cacace",     affiliations=["BNL"             ] , mail="dcacace@bnl.gov" ) )
-        self.persons_.append( Person( first="R.",    family="Cecato",     affiliations=["BNL_Instr"       ], middle="G." , mail="rguidolin@bnl.gov" ) )
-        self.persons_.append( Person( first="A.",    family="Enokizono",  affiliations=["RIKEN"           ] , mail="enoki@ribf.riken.jp" ) ) 
-        self.persons_.append( Person( first="Y.",    family="Fujino",     affiliations=["RIKEN", "Rikkyo" ] , mail="21cb022z@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="M.",    family="Fujiwara",   affiliations=["NWU"             ] , mail="xam_fujiwara@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="T.",    family="Hachiya",    affiliations=["RIKEN", "NWU"    ] , mail="hachiya@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="T.",    family="Harada",     affiliations=["RIKEN", "Rikkyo" ] , mail="21cb001t@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="S.",    family="Hasegawa",   affiliations=["RIKEN", "JAEA"   ] , mail="shoichi.hasegawa@j-parc.jp" ) )
-        self.persons_.append( Person( first="B.",    family="Hong",       affiliations=["Korea"           ] , mail="bhong@korea.ac.kr" ) )
-        self.persons_.append( Person( first="J.",    family="Hwang",      affiliations=["Korea"           ] , mail="jaeinhwang213@gmail.com" ) )
-        self.persons_.append( Person( first="M.",    family="Ikemoto",    affiliations=["NWU"             ] , mail="mahiro.i.72727@gmail.com" ) )
-        self.persons_.append( Person( first="Y.",    family="Ishigaki",   affiliations=["NWU"             ] , mail="yay_ishigaki@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="M.",    family="Kano",       affiliations=["NWU"             ] , mail="xam_kano@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="T.",    family="Kato",       affiliations=["RIKEN", "Rikkyo" ] , mail="23la008z@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="T.",    family="Kikuchi",    affiliations=["RIKEN", "Rikkyo" ] , mail="takahiro.kikuchi@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="T.",    family="Kondo",      affiliations=["TIRI"            ] , mail="kondo.takashi@iri-tokyo.jp" ) )
-        self.persons_.append( Person( first="C.~M.", family="Kuo",        affiliations=["NCU"             ] , mail="cmkuo@phy.ncu.edu.tw" ) )
-        self.persons_.append( Person( first="R.~S.", family="Lu",         affiliations=["NTU"             ] , mail="rslu@phys.ntu.edu.tw" ) )
-        self.persons_.append( Person( first="N.",    family="Morimoto",   affiliations=["NWU"             ] , mail="yan_morimoto@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="I.",    family="Nakagawa",   affiliations=["RIKEN"           ] , mail="itaru@riken.jp" ) ) 
-        self.persons_.append( Person( first="G.",    family="Nukazuka",   affiliations=["RIKEN"           ] , mail="genki.nukazuka@riken.jp" ) )
-        self.persons_.append( Person( first="R.",    family="Nouicer",    affiliations=["BNL"             ] , mail="rachid.nouicer@bnl.gov" ) )
-        self.persons_.append( Person( first="I.",    family="Omae",       affiliations=["NWU"             ] , mail="miniyukiberurara@gmail.com" ) )
-        self.persons_.append( Person( first="R.",    family="Pisani",     affiliations=["BNL"             ] , mail="pisani@bnl.gov" ) )
-        self.persons_.append( Person( first="Y.",    family="Sekiguchi",  affiliations=["RIKEN"           ] , mail="yuko.sekiguchi@riken.jp" ) )
-        self.persons_.append( Person( first="C.~W.", family="Shih",       affiliations=["RIKEN", "NCU"    ] , mail="cwshih0812@gmail.com" ) )
-        self.persons_.append( Person( first="M.",    family="Shimomura",  affiliations=["NWU"             ] , mail="maya@cc.nara-wu.ac.jp" ) )
-        self.persons_.append( Person( first="R.",    family="Shishikura", affiliations=["RIKEN", "Rikkyo" ] , mail="23la005r@rikkyo.ac.jp" ) )
-        self.persons_.append( Person( first="W.~C.", family="Tang",       affiliations=["NCU"             ] , mail="leventseleve.amos@gmail.com" ) )
-        self.persons_.append( Person( first="H.",    family="Tsujibata",  affiliations=["NWU"             ] , mail="bounitti@icloud.com" ) )
-        self.persons_.append( Person( first="X.",    family="Wei",        affiliations=["Purdue"          ] , mail="wxie@purdue.edu" ) )
-        self.persons_.append( Person( first="H.",    family="Yanagawa",   affiliations=["RIKEN", "Rikkyo" ] , mail="21cb015t@rikkyo.ac.jp" ) )
+        self.persons_.append( Person( first="Y.",    family="Akiba",      affiliations=["RIKEN"           ] ) ) 	
+        self.persons_.append( Person( first="J.",    family="Bertaux",    affiliations=["Purdue", "RIKEN" ] ) )
+        self.persons_.append( Person( first="D.",    family="Cacace",     affiliations=["BNL"             ] ) )
+        self.persons_.append( Person( first="R.",    family="Cecato",     affiliations=["BNL_Instr"       ], middle="G." ) )
+        self.persons_.append( Person( first="A.",    family="Enokizono",  affiliations=["RIKEN"           ] ) ) 
+        self.persons_.append( Person( first="Y.",    family="Fujino",     affiliations=["Rikkyo", "RIKEN" ] ) )
+        self.persons_.append( Person( first="M.",    family="Fujiwara",   affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="T.",    family="Hachiya",    affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="T.",    family="Harada",     affiliations=["Rikkyo", "RIKEN" ] ) )
+        self.persons_.append( Person( first="S.",    family="Hasegawa",   affiliations=["JAEA"            ] ) )
+        self.persons_.append( Person( first="B.",    family="Hong",       affiliations=["Korea"           ] ) )
+        self.persons_.append( Person( first="J.",    family="Hwang",      affiliations=["Korea", "RIKEN"  ] ) )
+        self.persons_.append( Person( first="M.",    family="Ikemoto",    affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="Y.",    family="Ishigaki",   affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="M.",    family="Kano",       affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="T.",    family="Kato",       affiliations=["Rikkyo", "RIKEN" ] ) )
+        self.persons_.append( Person( first="T.",    family="Kikuchi",    affiliations=["Rikkyo", "RIKEN" ] ) )
+        self.persons_.append( Person( first="T.",    family="Kondo",      affiliations=["TIRI"            ] ) )
+        self.persons_.append( Person( first="C.~M.", family="Kuo",        affiliations=["NCU"             ] ) )
+        self.persons_.append( Person( first="T.",    family="Kumaoka",    affiliations=["RIKEN"           ] ) ) 	
+        self.persons_.append( Person( first="R.~S.", family="Lu",         affiliations=["NTU"             ] ) )
+        self.persons_.append( Person( first="N.",    family="Morimoto",   affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="I.",    family="Nakagawa",   affiliations=["RIKEN"           ] ) ) 
+        self.persons_.append( Person( first="G.",    family="Nukazuka",   affiliations=["RIKEN"           ] ) )
+        self.persons_.append( Person( first="R.",    family="Nouicer",    affiliations=["BNL"             ] ) )
+        self.persons_.append( Person( first="I.",    family="Omae",       affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="R.",    family="Pisani",     affiliations=["BNL"             ] ) )
+        self.persons_.append( Person( first="Y.",    family="Sekiguchi",  affiliations=["RIKEN"           ] ) )
+        self.persons_.append( Person( first="C.~W.", family="Shih",       affiliations=["NCU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="M.",    family="Shimomura",  affiliations=["NWU"             ] ) )
+        self.persons_.append( Person( first="R.",    family="Shishikura", affiliations=["Rikkyo", "RIKEN" ] ) )
+        self.persons_.append( Person( first="W.~C.", family="Tang",       affiliations=["NCU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="H.",    family="Tsujibata",  affiliations=["NWU", "RIKEN"    ] ) )
+        self.persons_.append( Person( first="W.",    family="Xie",        affiliations=["Purdue"          ] ) )
+        self.persons_.append( Person( first="H.",    family="Yanagawa",   affiliations=["Rikkyo", "RIKEN" ] ) )
 
         self.sorted_persons_ = []
 
@@ -148,7 +158,7 @@ class People:
                     # if this affiliation is found, just give the index of it in the list
                     numbers.append( index+1 )
 
-                person.affiliation_numbers_ = numbers
+                person.affiliation_numbers_ = sorted( numbers, reverse=False )
             # end of for affiliation in person.affiliations_ :
         # end of for person in self.sorted_persons_ :
 
@@ -207,15 +217,7 @@ class People:
         
         for i, institution in enumerate( self.sorted_affiliations_ ) :
             print( "\\INSTITUTE{" + str(i+1) + "}{" + institution + "}" )
-
-    def PrintAddresses( self ) :
-        for guy in self.persons_ :
-            if guy.mail != "" : # only guys with an e-mail address
-                if guy != self.persons_[-1] : 
-                    print( guy.mail, ", ", end="" ) # address , 
-                else:
-                    print( guy.mail ) # address
-
+    
 if __name__ == "__main__" :
     print( "Who are you?" )
     family_name = input( "Type your family name (eg. Nukazuka) > " )
@@ -223,6 +225,7 @@ if __name__ == "__main__" :
     # it's for debugging
     if family_name == "" : 
         family_name = "Nukazuka"
+
     
     people = People()
     found = people.SetPriority( family_name, 1 )
@@ -231,7 +234,3 @@ if __name__ == "__main__" :
     # Here, I assumed that each has unique family name. If not, change the order of self.persons_.append( .... ). in this code.
     if found is True :
         people.PrintForAPR()
-
-    print( "\n", "-" * 100 )
-    print( "Please circulate your draft to the auhors. Just copy and paste following list of addresses:\n" )
-    people.PrintAddresses()

@@ -250,10 +250,10 @@ namespace {
 nullptr
     };
     static const char* includePaths[] = {
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.382/include",
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_ana/ana.382/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.6/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.6/include",
 "/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/include/",
-"/direct/sphenix+tg+tg01/commissioning/INTT/work/genki/repos/INTT/felix/decoder_hit_base/ver2/",
+"/direct/sphenix+tg+tg01/commissioning/INTT/repositories/INTT/felix/decoder_hit_base/ver2/",
 nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
