@@ -499,7 +499,7 @@ int InttRawHitQA::InitRun(PHCompositeNode *topNode)
 	  string title = name + ";Chip;Channel;Entries/event";
 	  //hist_hitmap_[ felix ][ ladder ] = new TH2I( name.c_str(), title.c_str(),
 	  hist_hitmap_[ felix ][ ladder ] = new TProfile2D( name.c_str(), title.c_str(),
-							    InttQa::kChip_num, 1, InttQa::kChip_num,
+							    InttQa::kChip_num, 1, InttQa::kChip_num + 1,
 							    InttQa::kChan_num, 0, InttQa::kChan_num );
 	}
     }
