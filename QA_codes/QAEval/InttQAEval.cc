@@ -3,11 +3,18 @@
 #include <TFile.h>
 #include <TH3D.h>
 #include <TH2D.h>
-
+#include <TTree.h>
 #include <filesystem>
 #include <regex>
 #include <iostream>
 #include <vector>
+
+#include <odbc++/connection.h>
+#include <odbc++/drivermanager.h>
+#include <odbc++/resultset.h>
+#include <odbc++/resultsetmetadata.h>
+
+#include <boost/format.hpp>
 
 #include <cdbobjects/CDBTTree.h>
 #include <ffamodules/CDBInterface.h>
@@ -15,15 +22,22 @@
 #include <phool/phool.h>
 #include <phool/recoConsts.h>
 
-
 //____________________________________________________________________________..
 InttQAEval::InttQAEval()
 {
+    tree = new TTree("tree", "tree");
+    tree->Branch("runnumber", &_runnumber, "runnumber/I");
+    tree->Branch("runtime", &_runtime, "runtime/D");
+    tree->Branch("runmode", &_runmode, "runmode/I");
+    tree->Branch("goodchanratio", &_goodchanratio, "goodchanratio/D");
+    tree->Branch("intt_bco_diff_qa", &_intt_bco_diff_qa, "intt_bco_diff_qa/I");
+    GetConnection();
 }
 
 //____________________________________________________________________________..
 InttQAEval::~InttQAEval()
 {
+    delete tree;
     if (_file)
     {
         _file->Close();
@@ -40,11 +54,15 @@ InttQAEval::~InttQAEval()
             }
         }
     }
+
+    if (con)
+    {
+        delete con;
+    }
 }
 
-void InttQAEval::LoadQAFileFromhtml(int runnumber)
+void InttQAEval::LoadQAFileFromhtml()
 {
-    _runnumber = runnumber;
     if (_file)
     {
         _file->Close();
@@ -52,7 +70,7 @@ void InttQAEval::LoadQAFileFromhtml(int runnumber)
         _file = nullptr;
     }
 
-    std::string runnumber_str = std::to_string(runnumber);
+    std::string runnumber_str = std::to_string(_runnumber);
     std::regex file_pattern(_inputbasefile + "_.*" + runnumber_str + ".*\\.root");
 
     for (const auto& entry : std::filesystem::directory_iterator(_inputdir))
@@ -80,17 +98,45 @@ void InttQAEval::LoadQAFileFromhtml(int runnumber)
         }
     }
 }
-void InttQAEval::DoInttQA()
+int InttQAEval::DoInttQA()
 {
-    if (!_file || !_hasValidHist3D)
+    if (_runnumber < 0)
     {
-        std::cout << "no INTT run" << std::endl;
-        return;
+        std::cout << "No run number is set for INTT QA" << std::endl;
+        std::cout << "Set Runnumber with SetRunNumber(int runnumber)" << std::endl;
+        return -999;
     }
-
+    
+    if (_useHtml)
+    {
+        if (!_file)
+        {
+            std::cout << "No html file is used for INTT QA" << std::endl;
+            return -999;
+        }
+        if (!_hasValidHist3D)
+        {
+            std::cout << "No INTT html QA histograms in the File" << std::endl;
+            return -999;
+        }
+    }
+    int ODBCflag = FetchODBCInfo();
+    if(ODBCflag != 1) 
+    {
+        std::cout << "No ODBC info for Run " << _runnumber << std::endl;
+        return -999;
+    }
+    _goodchanratio = DoGoodChanQA();
+    std::cout << "Run number: " << _runnumber << std::endl;
+    std::cout << "Good channel ratio: " << _goodchanratio << std::endl;
+    if (_goodchanratio < 0)
+    {
+        std::cout << "No INTT GOODCHAN for Run " << _runnumber << std::endl;
+        return -999;
+    }
     // BCO QA
-    bool intt_bco_diff_qa = DoBcoQA();
-    if (intt_bco_diff_qa)
+    _intt_bco_diff_qa = DoBcoQA();
+    if (_intt_bco_diff_qa==1)
     {
         std::cout << "INTT BCO diff QA passed for Run " << _runnumber << std::endl;
     }
@@ -98,14 +144,16 @@ void InttQAEval::DoInttQA()
     {
         std::cout << "INTT BCO diff QA failed for Run " << _runnumber << std::endl;
     }
-    double goodchanratio = DoGoodChanQA();
-    std::cout << "Good channel ratio: " << goodchanratio << std::endl;
+
+    tree->Fill();
+
+    return 0;
 }
 
-bool InttQAEval::DoBcoQA()
+int InttQAEval::DoBcoQA()
 {
     // get bco diff qa from cdb (must be 23 for INTT streaming mode)
-    bool intt_bco_diff_qa = true;
+    int intt_bco_diff_qa = 1;
 
     auto rc = recoConsts::instance();
     rc->set_IntFlag("RUNNUMBER", _runnumber);
@@ -116,26 +164,30 @@ bool InttQAEval::DoBcoQA()
     if (intt_bco_calib_dir.empty())
     {
         std::cout << "No INTT BCOMAP for Run " << _runnumber << std::endl;
-        intt_bco_diff_qa = false;
+        intt_bco_diff_qa = 0;
     }
     else
     {
+        if(_debug)
+        {
+            std::cout<<"INTT BCO MAP : "<<intt_bco_calib_dir<<std::endl;
+        }
         CDBTTree *cdbttree = new CDBTTree(intt_bco_calib_dir);
         cdbttree->LoadCalibrations();
         uint64_t N = cdbttree->GetSingleIntValue("size");
         // CDBTTree has the branch for telling you the runmode. 0 : Trigger, 1 : Streaming
-        int runmode = cdbttree->GetSingleIntValue("runmode");
+        _runmode = cdbttree->GetSingleIntValue("runmode");
         // Stdandard deviation of all fees' BCO diff. should be 0 if all felixs are properly aligned.
         // Masking or dead fees are excluded in the calculation
         double StdDev = cdbttree->GetSingleDoubleValue("StdDev");
-        if (runmode == 1)
+        if (_runmode == 1)
         {
             for (uint64_t n = 0; n < N; ++n)
             {
                 int bco_diff = cdbttree->GetIntValue(n, "bco_diff");
                 if (!(bco_diff == _streaming_bco || bco_diff == -1))
                 {
-                    intt_bco_diff_qa = false;
+                    intt_bco_diff_qa = 0;
                     break;
                 }
             }
@@ -143,8 +195,9 @@ bool InttQAEval::DoBcoQA()
         else
         {
             if (StdDev != 0)
-                intt_bco_diff_qa = false;
+                intt_bco_diff_qa = 0;
         }
+        delete cdbttree; 
     }
     return intt_bco_diff_qa;
 }
@@ -152,7 +205,6 @@ bool InttQAEval::DoBcoQA()
 double InttQAEval::DoGoodChanQA()
 {
     // get good channel QA from cdb
-    // bool intt_good_chan_qa = true;
     double goodchanratio = 0.;
     auto rc = recoConsts::instance();
     rc->set_IntFlag("RUNNUMBER", _runnumber);
@@ -163,11 +215,21 @@ double InttQAEval::DoGoodChanQA()
     if (intt_good_chan_dir.empty())
     {
         std::cout << "No INTT GOODCHAN for Run " << _runnumber << std::endl;
-        // intt_good_chan_qa = false;
+        return -1;
     }
     else
     {
+        // Check if the directory contains 'run'
+        if (intt_good_chan_dir.find("run") == std::string::npos)
+        {
+            if (_debug)
+                std::cerr << "File is not run by run calibration : " << intt_good_chan_dir << std::endl;
+            return -1;
+        }
+
         CDBTTree *cdbttree = new CDBTTree(intt_good_chan_dir);
+        if (_debug)
+            std::cout << intt_good_chan_dir << std::endl;
         cdbttree->LoadCalibrations();
         N = cdbttree->GetSingleIntValue("size");
         // for (uint64_t n = 0; n < N; ++n)
@@ -177,12 +239,11 @@ double InttQAEval::DoGoodChanQA()
         //     int status = cdbttree->GetIntValue(n, "status");
         //     if (status != 1)
         //     {
-        //         intt_good_chan_qa = false;
-        //         break;
+        //         // Handle non-good channels
         //     }
         // }
+        delete cdbttree;
     }
-    std::cout<<"Number of bad channel : "<<N<<std::endl;
     goodchanratio = (1.0 - (double)N / (128 * 26 * 14 * 8)) * 100;
     return goodchanratio;
 }
@@ -270,4 +331,95 @@ void InttQAEval::CreateTH2DFromTH3D(TH3D* hist3D, int intt_index)
 
         delete tempYZ;
     }
+}
+
+int InttQAEval::GetConnection()
+{
+  if (con)
+  {
+    return 0;
+  }
+  try
+  {
+    con = odbc::DriverManager::getConnection(dbname.c_str(), dbowner.c_str(), dbpasswd.c_str());
+  }
+  catch (odbc::SQLException &e)
+  {
+    std::cout << " Exception caught during DriverManager::getConnection" << std::endl;
+    std::cout << "Message: " << e.getMessage() << std::endl;
+    if (con)
+    {
+      delete con;
+      con = nullptr;
+    }
+    return -1;
+  }
+  std::cout << "opened DB connection" << std::endl;
+  return 0;
+}
+
+int InttQAEval::FetchODBCInfo()
+{
+    if (GetConnection() != 0)
+    {
+        return -1;
+    }
+
+    std::stringstream cmd;
+    cmd << "SELECT * FROM " << table << " WHERE runnumber = " << _runnumber << ";";
+    odbc::Statement *stmt = con->createStatement();
+    odbc::ResultSet *rs = nullptr;
+
+    try
+    {
+        rs = stmt->executeQuery(cmd.str());
+    }
+    catch (odbc::SQLException &e)
+    {
+        std::cout << (boost::format("Error: %s.\n") % e.getMessage().c_str()).str();
+        delete rs;
+        delete stmt;
+        return -999;
+    }
+
+    if (rs->next() == 0)
+    {
+        std::cout << (boost::format("Error : Can't find data for run %d \n") % _runnumber).str();
+        delete rs;
+        delete stmt;
+        return -999;
+    }
+
+    int ncol = rs->getMetaData()->getColumnCount();
+    for (int icol = 0; icol < ncol; icol++)
+    {
+        std::string col_name = rs->getMetaData()->getColumnName(icol + 1);
+        std::string cont = rs->getString(col_name);
+        std::cout << (boost::format("%2d : %s = %s\n") % icol % col_name % cont).str();
+
+        if (col_name == "runtime")
+        {
+            _runtime = std::stod(cont);
+        }
+    }
+
+    std::cout << "Runtime value: " << _runtime << std::endl;
+
+    delete rs;
+    delete stmt;
+    return 1;
+}
+
+void InttQAEval::SaveTreeToFile(const std::string& filename)
+{
+    TFile* outputFile = TFile::Open(filename.c_str(), "RECREATE");
+    if (!outputFile || !outputFile->IsOpen())
+    {
+        std::cerr << "Failed to create output file for TTree." << std::endl;
+        return;
+    }
+
+    tree->Write();
+    outputFile->Close();
+    delete outputFile;
 }

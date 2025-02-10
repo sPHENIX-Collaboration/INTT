@@ -1,37 +1,42 @@
 AUTOMAKE_OPTIONS = foreign
 
-AM_CPPFLAGS = \
-  -I$(includedir) \
-  -I$(OFFLINE_MAIN)/include \
-  -isystem$(ROOTSYS)/include
+lib_LTLIBRARIES = \
+  libInttQAEval.la
 
 AM_LDFLAGS = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib \
-  -L$(OFFLINE_MAIN)/lib64
+  -L$(OPT_SPHENIX)/lib
+
+AM_CPPFLAGS = \
+  -I$(includedir) \
+  -isystem$(OFFLINE_MAIN)/include \
+  -isystem$(OPT_SPHENIX)/include \
+  -isystem$(ROOTSYS)/include
 
 pkginclude_HEADERS = \
   InttQAEval.h
 
-lib_LTLIBRARIES = \
-  libInttQAEval.la
-
 libInttQAEval_la_SOURCES = \
   InttQAEval.cc
 
-libInttQAEval_la_LIBADD = \
+libInttQAEval_la_LDFLAGS = \
+  -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib \
   -L$(OPT_SPHENIX)/lib \
   -lffamodules \
   -lphool \
-  -lcdbobjects
+  -lcdbobjects \
+  -lodbc++
 
+# linking tests
 BUILT_SOURCES = testexternals.cc
 
 noinst_PROGRAMS = \
   testexternals
 
 testexternals_SOURCES = testexternals.cc
-testexternals_LDADD   = libInttQAEval.la
+testexternals_LDADD = libInttQAEval.la
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@
