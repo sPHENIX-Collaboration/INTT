@@ -64,6 +64,8 @@ void drawplot()
     Long64_t Bad_num = 0;
     int N_QRun = 0;
     Long64_t Q_num = 0;
+    int N_QRun2 = 0;
+    Long64_t Q_num2 = 0;
     Long64_t nentries = tree->GetEntries();
     for (Long64_t i = 0; i < nentries; ++i)
     {
@@ -78,11 +80,17 @@ void drawplot()
                 N_QRun++;
                 Q_num += nevents;
             }
-            if(runtime>=300 && intt_bco_diff_qa == 1 && goodchanratio >= 80.0)
+            if(runtime>=300 && intt_bco_diff_qa == 1 && goodchanratio >= 90.0)
             {
                 N_GoodRun++;
                 Good_num += nevents;
             }
+            if(runtime>=300 && intt_bco_diff_qa == 1 && goodchanratio  < 90.0 && goodchanratio >= 80.0)
+            {
+                N_QRun2++;
+                Q_num2 += nevents;
+            }
+            
             if (runtime >= 300 && (intt_bco_diff_qa == 0 || goodchanratio < 80.0))
             {
                 N_BadRun++;
@@ -174,13 +182,11 @@ void drawplot()
     hist2->Draw();
     can3->SaveAs("runtime_bcocut.png");
 
-    // Golden Runs 히스토그램 그리기
     auto can4 = new TCanvas("canvas4", "Golden Runs", 1500, 1500);
     can4->cd();
     hist3->Draw();
     can4->SaveAs("golden_runs.png");
 
-    // TGraph 생성 및 그리기
     TGraph* graph_mode0 = new TGraph(runnumbers_mode0.size(), &runnumbers_mode0[0], &goodchanratios_mode0[0]);
     graph_mode0->SetTitle("Good Channel Ratio vs Runnumber (runmode = 0)");
     graph_mode0->GetXaxis()->SetTitle("Runnumber");
@@ -282,6 +288,7 @@ void drawplot()
     std::cout<<"total Run and events : " << N_totalRun << " " << total_num << std::endl; 
     std::cout<<"GOOD Run and events : " << N_GoodRun << " " << Good_num << std::endl; 
     std::cout<<"Q Runs : " << N_QRun << " " << Q_num << std::endl;  
+    std::cout<<"Q2 Runs : " << N_QRun2 << " " << Q_num2 << std::endl;  
     std::cout<<"BAD Runs : " << N_BadRun << " " << Bad_num << std::endl; 
   
     delete hist1;
