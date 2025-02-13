@@ -8,6 +8,7 @@
 #include <regex>
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 #include <odbc++/connection.h>
 #include <odbc++/drivermanager.h>
@@ -27,8 +28,9 @@ InttQAEval::InttQAEval()
 {
     tree = new TTree("tree", "tree");
     tree->Branch("runnumber", &_runnumber, "runnumber/I");
-    tree->Branch("runtime", &_runtime, "runtime/D");
+    tree->Branch("runtime", &_runtime, "runtime/I");
     tree->Branch("runmode", &_runmode, "runmode/I");
+    tree->Branch("nevents", &_nevents, "nevents/I");
     tree->Branch("goodchanratio", &_goodchanratio, "goodchanratio/D");
     tree->Branch("intt_bco_diff_qa", &_intt_bco_diff_qa, "intt_bco_diff_qa/I");
     GetConnection();
@@ -123,7 +125,7 @@ int InttQAEval::DoInttQA()
     int ODBCflag = FetchODBCInfo();
     if(ODBCflag != 1) 
     {
-        std::cout << "No ODBC info for Run " << _runnumber << std::endl;
+        std::cout << "No Physics or no info for Run " << _runnumber << std::endl;
         return -999;
     }
     _goodchanratio = DoGoodChanQA();
@@ -131,7 +133,7 @@ int InttQAEval::DoInttQA()
     std::cout << "Good channel ratio: " << _goodchanratio << std::endl;
     if (_goodchanratio < 0)
     {
-        std::cout << "No INTT GOODCHAN for Run " << _runnumber << std::endl;
+        std::cout << "Not INTT Run : " << _runnumber << std::endl;
         return -999;
     }
     // BCO QA
@@ -243,6 +245,11 @@ double InttQAEval::DoGoodChanQA()
         //     }
         // }
         delete cdbttree;
+    }
+    if(N==0)
+    {
+        std::cout<<"Not INTT runs" << std::endl;
+        return -1;
     }
     goodchanratio = (1.0 - (double)N / (128 * 26 * 14 * 8)) * 100;
     return goodchanratio;
@@ -389,26 +396,61 @@ int InttQAEval::FetchODBCInfo()
         delete stmt;
         return -999;
     }
-
     int ncol = rs->getMetaData()->getColumnCount();
+    std::string brtimestamp_str;
+    std::string ertimestamp_str;
+    int RETURN_VALUE = 1;
     for (int icol = 0; icol < ncol; icol++)
     {
         std::string col_name = rs->getMetaData()->getColumnName(icol + 1);
         std::string cont = rs->getString(col_name);
-        std::cout << (boost::format("%2d : %s = %s\n") % icol % col_name % cont).str();
-
-        if (col_name == "runtime")
+    //    std::cout << (boost::format("%2d : %s = %s\n") % icol % col_name % cont).str();
+        if(col_name == "runtype")
         {
-            _runtime = std::stod(cont);
+            if(cont!="physics")
+            {
+                std::cout<<"No Phyics run"<<std::endl;
+                return -1;
+            }
+        }
+        if (col_name == "brtimestamp")
+        {
+            brtimestamp_str = cont;
+        }
+        if (col_name == "ertimestamp")
+        {
+            ertimestamp_str = cont;
+        }
+        if(col_name == "eventsinrun")
+        {
+            _nevents = std::stoi(cont);;
         }
     }
-
+    _runtime = getTimeDifferenceInSeconds(brtimestamp_str,ertimestamp_str);
     std::cout << "Runtime value: " << _runtime << std::endl;
 
     delete rs;
     delete stmt;
-    return 1;
+    return RETURN_VALUE;
 }
+int InttQAEval::getTimeDifferenceInSeconds(const std::string& brtimestamp_str, const std::string& ertimestamp_str) {
+    std::tm brtm = {};
+    std::tm ertm = {};
+
+    std::istringstream brss(brtimestamp_str);
+    std::istringstream erss(ertimestamp_str);
+
+    brss >> std::get_time(&brtm, "%Y-%m-%d %H:%M:%S");
+    erss >> std::get_time(&ertm, "%Y-%m-%d %H:%M:%S");
+
+    auto brtime = std::chrono::system_clock::from_time_t(std::mktime(&brtm));
+    auto ertime = std::chrono::system_clock::from_time_t(std::mktime(&ertm));
+
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(ertime - brtime);
+    
+    return duration.count();
+}
+
 
 void InttQAEval::SaveTreeToFile(const std::string& filename)
 {

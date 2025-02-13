@@ -33,6 +33,7 @@ public:
     void SetRunNumber(int runnumber) { _runnumber = runnumber; };
     int DoInttQA();
     void SaveTreeToFile(const std::string& filename);
+    int getTimeDifferenceInSeconds(const std::string& brtimestamp_str, const std::string& ertimestamp_str); 
     // BCO QA
     int DoBcoQA();
     double DoGoodChanQA();
@@ -40,10 +41,10 @@ public:
 
 private:
     int GetConnection();
-    std::string dbname{"intt"};
+    std::string dbname{"daq"};
     std::string dbowner{"phnxrc"};
     std::string dbpasswd{""};
-    std::string table{"intt_qa_expert"};
+    std::string table{"run"};
 
     std::string _inputdir = "/sphenix/data/data02/sphnxpro/QAhtml/aggregated";
     std::string _inputbasefile = "HIST_DST_TRKR_HIT";
@@ -58,8 +59,9 @@ private:
     bool _useHtml = false;
     void CreateTH2DFromTH3D(TH3D *hist3D, int felix_index);
     odbc::Connection *con = nullptr;
-    double _runtime;
-    int _runmode; 
+    int _runtime;
+    int _runmode;
+    int _nevents; 
 
     TTree* tree = nullptr; 
 };
