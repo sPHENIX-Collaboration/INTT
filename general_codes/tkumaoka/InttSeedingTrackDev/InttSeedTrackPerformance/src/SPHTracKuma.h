@@ -14,6 +14,9 @@ class tracKuma
       m_phi(0),
       m_theta(0),
       m_energy(0),
+      m_emcal_energy(0),
+      m_ihcal_energy(0),
+      m_ohcal_energy(0),
       m_p(0),
       m_pt(0),
       m_saggitaR(0),
@@ -67,6 +70,18 @@ class tracKuma
     void setTrackTheta(Double_t theta)
     {
         m_theta = theta;
+    }
+    void setEMCalE(Double_t energy)
+    {
+        m_emcal_energy = energy;
+    }
+    void setiHCalE(Double_t energy)
+    {
+        m_ihcal_energy = energy;
+    }
+    void setoHCalE(Double_t energy)
+    {
+        m_ohcal_energy = energy;
     }
     void setTrackE(Double_t energy)
     {
@@ -128,6 +143,16 @@ class tracKuma
     }
     Double_t getTrackE(){
         return m_energy;
+    
+    }
+    Double_t getTrackEemc(){
+        return m_emcal_energy;
+    }
+    Double_t getTrackEihcal(){
+        return m_ihcal_energy;
+    }
+    Double_t getTrackEohcal(){
+        return m_ohcal_energy;
     }
     Double_t getTrackPt(){
         return m_pt;
@@ -159,6 +184,9 @@ private:
     Double_t m_phi;
     Double_t m_theta;
     Double_t m_energy;
+    Double_t m_emcal_energy;
+    Double_t m_ihcal_energy;
+    Double_t m_ohcal_energy;
     Double_t m_p;
     Double_t m_pt;
     Double_t m_saggitaR;
