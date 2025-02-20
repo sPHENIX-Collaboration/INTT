@@ -205,21 +205,27 @@ void InttSeedTrackPerformance::HistInit(){
    // === E/p histograms  ==========
    m_HTruthPVsEOverP_InttEmcal = new TH2D( "m_HTruthPVsEOverP_InttEmcal", \
       "truth p vs delta pt;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
-		150, 0., 15., 60, 0., 3. );
+      150, 0., 15., 60, 0., 3. );
    m_HTruthPVsEOverP_MvtxInttEmcal = new TH2D( "m_HTruthPVsEOverP_MvtxInttEmcal", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
-		150, 0., 15., 60, 0., 3. );
+      150, 0., 15., 60, 0., 3. );
    m_HTruthPVsEemcOverP_InttEmcal = new TH2D( "m_HTruthPVsEemcOverP_InttEmcal", \
       "truth p vs delta pt;#it{p} [GeV/#it{c}];#it{Eemc}/#it{p}",
-		150, 0., 15., 60, 0., 3. );
+      150, 0., 15., 60, 0., 3. );
    m_HTruthPVsEemcOverP_MvtxInttEmcal = new TH2D( "m_HTruthPVsEemcOverP_MvtxInttEmcal", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{Eemc}/#it{p}",
-		150, 0., 15., 60, 0., 3. );
-      m_HTruthPVsEOverP_FitFunc = new TH2D( "m_HTruthPVsEOverP_FitFunc", \
+      150, 0., 15., 60, 0., 3. );
+   m_HTruthPVsEOverP_FitFunc = new TH2D( "m_HTruthPVsEOverP_FitFunc", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
-		150, 0., 15., 60, 0., 3. );
+      150, 0., 15., 60, 0., 3. );
 
-   // === Emcal HCal hsitograms ====
+   // === Emcal HCal histograms ====
+
+   m_HEnergyRatio_EMCal_iHCal_InttEmcal = new TH1D("m_HEnergyRatio_EMCal_iHCal_InttEmcal", "Energy ratio of EMCal to iHCal;E_{iHcal}/E_{EMcal};Count", 100, 0, 2);
+   m_HEnergyRatio_EMCal_iHCal_MvtxInttEmcal = new TH1D("m_HEnergyRatio_EMCal_iHCal_MvtxInttEmcal", "Energy ratio of EMCal to iHCal;E_{iHcal}/E_{EMcal};Count", 100, 0, 2);
+
+   m_HEnergyRatio_EMCal_p_InttEmcal = new TH2D("m_HEnergyRatio_EMCal_p_InttEmcal", "Energy ratio of EMCal to iHCal;E_{EMcal}/p;E_{iHcal}/E_{EMcal}", 100, 0, 2, 100, 0, 2);
+   m_HEnergyRatio_EMCal_p_MvtxInttEmcal = new TH2D("m_HEnergyRatio_EMCal_p_MvtxInttEmcal", "Energy ratio of EMCal to iHCal;E_{EMcal}/p;E_{iHcal}/E_{EMcal}", 100, 0, 2, 100, 0, 2);
 
 
    // === dVtx histograms  ==========
@@ -579,9 +585,10 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
       Double_t dPt = (recoPt - truthPt)/truthPt;
       m_HTruthPtVsSagittaPt_InttEmcal->Fill(truthPt, dPt, truthEta);
 
-      TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
-         m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsRecoP_InttEmcal, m_HTruthPVsEOverP_InttEmcal,m_HTruthPVsEemcOverP_InttEmcal,\
-            m_dVtxXY_InttEmcal, m_dVtxR_InttEmcal, m_dVtxZ_InttEmcal);
+      TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,
+                                 m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsRecoP_InttEmcal,
+                                 m_HTruthPVsEOverP_InttEmcal, m_HTruthPVsEemcOverP_InttEmcal, m_HEnergyRatio_EMCal_iHCal_InttEmcal, m_HEnergyRatio_EMCal_p_InttEmcal,
+                                 m_dVtxXY_InttEmcal, m_dVtxR_InttEmcal, m_dVtxZ_InttEmcal);
    }
    
    std::vector<Int_t > subDetIds_VtxInttEmcal = {0, 4, 5, 6};
@@ -608,10 +615,10 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
       m_HTruthPtVsSagittaPt_MvtxInttEmcal->Fill(truthPt, dPt, truthEta);
       // EventJudge(pubEvNum, dPt, -2., 2., false); //CheckumaDaYo!!!
 
-      TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
-         m_HTruthPVsTheta_MvtxInttEmcal, m_HTruthPVsPhi_MvtxInttEmcal,\
-         m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal,m_HTruthPVsEemcOverP_MvtxInttEmcal,\
-         m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
+      TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,
+                                 m_HTruthPVsTheta_MvtxInttEmcal, m_HTruthPVsPhi_MvtxInttEmcal,
+                                 m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal, m_HTruthPVsEemcOverP_MvtxInttEmcal, m_HEnergyRatio_EMCal_iHCal_MvtxInttEmcal, m_HEnergyRatio_EMCal_p_MvtxInttEmcal,
+                                 m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
 
       // std::cout << "recoPt, truthPt, dPt = " << recoPt << ", " << truthPt << ", " << dPt << std::endl;
       // CheckumaDaYo!!!
@@ -673,7 +680,8 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
 
 void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, tracKuma trk,\
    Double_t sagittaR, Double_t centerX, Double_t centerY, Double_t recoPt,\
-   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP,TH2D* hTruthPVsEOverP,TH2D* hTruthPVsEemcOverP,\
+   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP,\
+   TH2D* hTruthPVsEOverP,TH2D* hTruthPVsEemcOverP,TH1D* hTruthCalERatio, TH2D* hTruthCalRatio_p,\
    TH2D* hDVtxXY, TH1D* hDVtxR, TH1D* hDVtxZ){
    
    // Addtional class to use the function inside
