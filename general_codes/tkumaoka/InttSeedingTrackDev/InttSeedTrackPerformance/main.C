@@ -15,7 +15,8 @@ int main(int argc, char* argv[]){
   std::string fDir = "./";
   // std::string fInputName = fDir + "singleE1GeVMg14.root";
   // std::string fInputName = fDir + "input/singleE500to1500MeVEta0.root"; // 05, 1, 2, 5, 8, 10
-  std::string fInputName = fDir + "input/singleE0to10MeVEtaWide.root"; // 05, 1, 2, 5, 8, 10
+  //std::string fInputName = fDir + "input/ana457_Electron_5GeV_all.root"; // 05, 1, 2, 5, 8, 10
+  std::string fInputName = fDir + "input/ana457_Proton_5GeV_all.root"; // 05, 1, 2, 5, 8, 10
   // std::string fInputName = fDir + "input/singleE05GeV.root"; // 05, 1, 2, 5, 8, 10
 
   tc->Add(fInputName.c_str()); 
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]){
   // std::string fOutputName = fDir+"trackingWInttCal1GeVModifEcal";
   // std::string fOutputName = fDir+"/output/singleE05GeVTracking/trackingWInttCalEtaFull"; // 05, 1, 2, 5, 10
   // std::string fOutputName = fDir+"/output/trackingWInttCalClu10GeV_v2"; // 05, 1, 2, 5, 10
-  std::string fOutputName = fDir+"/output/trackingWInttCalClu0to10MeVEtaWide_v2"; // 05, 1, 2, 5, 10
+  std::string fOutputName = fDir+"/output/ana457_Proton_5GeV_all"; // 05, 1, 2, 5, 10
   // std::string fOutputName = fDir+"/t";
 
   TTree *tt = (TTree*)tc;

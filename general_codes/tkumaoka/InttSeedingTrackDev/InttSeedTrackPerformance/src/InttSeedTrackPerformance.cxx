@@ -10,7 +10,7 @@
 
 #include "SPHTracKuma.h"
 
-bool bCaloClu = false;
+bool bCaloClu = true;
 Int_t strockEvents = 1;
 
 void InttSeedTrackPerformance::Loop(Int_t runNum)
@@ -209,9 +209,18 @@ void InttSeedTrackPerformance::HistInit(){
    m_HTruthPVsEOverP_MvtxInttEmcal = new TH2D( "m_HTruthPVsEOverP_MvtxInttEmcal", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
 		150, 0., 15., 60, 0., 3. );
-   m_HTruthPVsEOverP_FitFunc = new TH2D( "m_HTruthPVsEOverP_FitFunc", \
+   m_HTruthPVsEemcOverP_InttEmcal = new TH2D( "m_HTruthPVsEemcOverP_InttEmcal", \
+      "truth p vs delta pt;#it{p} [GeV/#it{c}];#it{Eemc}/#it{p}",
+		150, 0., 15., 60, 0., 3. );
+   m_HTruthPVsEemcOverP_MvtxInttEmcal = new TH2D( "m_HTruthPVsEemcOverP_MvtxInttEmcal", \
+      "truth p vs delta p;#it{p} [GeV/#it{c}];#it{Eemc}/#it{p}",
+		150, 0., 15., 60, 0., 3. );
+      m_HTruthPVsEOverP_FitFunc = new TH2D( "m_HTruthPVsEOverP_FitFunc", \
       "truth p vs delta p;#it{p} [GeV/#it{c}];#it{E}/#it{p}",
 		150, 0., 15., 60, 0., 3. );
+
+   // === Emcal HCal hsitograms ====
+
 
    // === dVtx histograms  ==========
    m_dVtxXY_InttEmcal = new TH2D( "m_dVtxXY_InttEmcal", "vertexReso;d#it{X}_{(reco - truth)} [cm];d#it{Y}_{(reco - truth)} [cm];count", 1000, -50., 50.,  1000, -50., 50.);
@@ -571,7 +580,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
       m_HTruthPtVsSagittaPt_InttEmcal->Fill(truthPt, dPt, truthEta);
 
       TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
-         m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsRecoP_InttEmcal, m_HTruthPVsEOverP_InttEmcal,\
+         m_HTruthPVsTheta_InttEmcal, m_HTruthPVsPhi_InttEmcal, m_HTruthPVsRecoP_InttEmcal, m_HTruthPVsEOverP_InttEmcal,m_HTruthPVsEemcOverP_InttEmcal,\
             m_dVtxXY_InttEmcal, m_dVtxR_InttEmcal, m_dVtxZ_InttEmcal);
    }
    
@@ -601,7 +610,7 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
 
       TrackOtherPropertiesWTruth(truthP, trk, sagittaR, centerX, centerY, recoPt,\
          m_HTruthPVsTheta_MvtxInttEmcal, m_HTruthPVsPhi_MvtxInttEmcal,\
-         m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal,\
+         m_HTruthPVsRecoP_MvtxInttEmcal, m_HTruthPVsEOverP_MvtxInttEmcal,m_HTruthPVsEemcOverP_MvtxInttEmcal,\
          m_dVtxXY_MvtxInttEmcal, m_dVtxR_MvtxInttEmcal, m_dVtxZ_MvtxInttEmcal);
 
       // std::cout << "recoPt, truthPt, dPt = " << recoPt << ", " << truthPt << ", " << dPt << std::endl;
@@ -664,8 +673,10 @@ void InttSeedTrackPerformance::DeltaPtPerform(hitStruct truthP, tracKuma trk){
 
 void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, tracKuma trk,\
    Double_t sagittaR, Double_t centerX, Double_t centerY, Double_t recoPt,\
-   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP,TH2D* hTruthPVsEOverP,\
+   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP,TH2D* hTruthPVsEOverP,TH2D* hTruthPVsEemcOverP,\
    TH2D* hDVtxXY, TH1D* hDVtxR, TH1D* hDVtxZ){
+   
+   // Addtional class to use the function inside
    InttSeedTracking truckF;
 
    Double_t truthPt = truthP.pt;
@@ -678,6 +689,7 @@ void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, trac
    Double_t recoTheta = truckF.EstimateRecoTheta(trk, 0);
    
    Double_t trackE = trk.getTrackE();
+   Double_t trackEemc = trk.getTrackEemc();
    Double_t recoP = recoPt/sin(recoTheta);
 
    Double_t vtxX = 0.;
@@ -709,6 +721,7 @@ void InttSeedTrackPerformance::TrackOtherPropertiesWTruth(hitStruct truthP, trac
 
    // hTruthPVsRecoP->Fill(recoP, (recoP - )/recoP);
    hTruthPVsEOverP->Fill(truthPt, trackE/recoP);
+   hTruthPVsEemcOverP->Fill(truthPt, trackEemc/recoP);
    hTruthPVsPhi->Fill(truthPt, trkPhi - truthPhi);
 
    hDVtxXY->Fill(dVtxX, dVtxY);
@@ -1105,6 +1118,8 @@ void InttSeedTrackPerformance::WrightHists(){
 
    m_HTruthPVsEOverP_InttEmcal->Write();
    m_HTruthPVsEOverP_MvtxInttEmcal->Write();
+   m_HTruthPVsEemcOverP_InttEmcal->Write();
+   m_HTruthPVsEemcOverP_MvtxInttEmcal->Write();
    m_HTruthPVsEOverP_FitFunc->Write();
 
    m_HTruthPVsTheta_InttEmcal->Write();

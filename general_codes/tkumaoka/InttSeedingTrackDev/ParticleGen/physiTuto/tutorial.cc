@@ -586,7 +586,7 @@ int tutorial::prepareiHCalClus(PHCompositeNode * topNode) {
 
 
 int tutorial::prepareoHCalClus(PHCompositeNode * topNode) {
-    oHCal_cluster_cont = findNode::getClass <RawClusterContainer> (topNode, "CLUSTER_HCALIN");
+    oHCal_cluster_cont = findNode::getClass <RawClusterContainer> (topNode, "CLUSTER_HCALOUT");
 
     if (!oHCal_cluster_cont) {
         std::cout << "tutorial::process_event Could not find node " << ohcalClus_node_name << std::endl;

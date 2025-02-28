@@ -230,6 +230,8 @@ public :
 
    TH2D* m_HTruthPVsEOverP_InttEmcal;
    TH2D* m_HTruthPVsEOverP_MvtxInttEmcal;
+   TH2D* m_HTruthPVsEemcOverP_InttEmcal;
+   TH2D* m_HTruthPVsEemcOverP_MvtxInttEmcal;
    TH2D* m_HTruthPVsEOverP_FitFunc;
 
    TH2D* m_HTruthPVsTheta_InttEmcal;
@@ -329,7 +331,7 @@ public :
    void DeltaPtPerform(hitStruct truthP, tracKuma trk);
    void TrackOtherPropertiesWTruth(hitStruct truthP, tracKuma trk,\
    Double_t sagittaR, Double_t centerX, Double_t centerY, Double_t recoPt,\
-   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP, TH2D* hTruthPVsEOverP,\
+   TH2D* hTruthPVsTheta, TH2D* hTruthPVsPhi, TH2D* hTruthPVsRecoP, TH2D* hTruthPVsEOverP, TH2D* hTruthPVsEemcOverP,\
    TH2D* hDVtxXY, TH1D* hDVtxR, TH1D* hDVtxZ);
 
    void CaloEnergyQA(Int_t CalId, std::vector<hitStruct > calHits);

@@ -9,10 +9,12 @@ void run_INTTQA()
     eval->SetUseHtml(false);
 //    eval->SetQAhtmlInputDir("/sphenix/data/data02/sphnxpro/QAhtml/aggregated");
 //    eval->SetInputBaseFileName("HIST_DST_TRKR_HIT");
-    for (int i = 40874; i < 55030; i++)
+    // eval->SetRunNumber(40874);
+    // eval->FetchODBCInfo();    
+for (int i = 40874; i < 55030; i++)
     {
         eval->SetRunNumber(i);
         eval->DoInttQA();
     }
-    eval->SaveTreeToFile("InttQAEval.root");
+    eval->SaveTreeToFile("InttQAEval_2.root");
 }

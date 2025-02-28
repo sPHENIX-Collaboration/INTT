@@ -15,18 +15,23 @@ InttSeedTracking::InttSeedTracking(std::vector<tracKuma>& tracks,\
    std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHCalHits)
 {
    // reco way1
-   // HitMatching(tracks, vFMvtxHits, vSMvtxHits, vTMvtxHits, vIInttHits, vOInttHits,\
-   //    vEmcalHits, vIHCalHits, vOHCalHits);
-   // for(Int_t iTrk = 0; iTrk < tracks.size(); iTrk++){
-   //    TrackPropertiesEstimation(tracks.at(iTrk), vFMvtxHits, vSMvtxHits, vTMvtxHits);
-   // }
+   HitMatching(tracks, vFMvtxHits, vSMvtxHits, vTMvtxHits, vIInttHits, vOInttHits,\
+      vEmcalHits, vIHCalHits, vOHCalHits);
+   for(Int_t iTrk = 0; iTrk < tracks.size(); iTrk++){
+      TrackPropertiesEstimation(tracks.at(iTrk), vFMvtxHits, vSMvtxHits, vTMvtxHits);
+   }
+
+
+   // 2nd reco way is commented out -> debugging is needed
+   // Debugging status
+   // SagittaRByCircleFit() in the RefindCalHit function returns nan value
 
    // reco way2
-   RecoTracksInttSeed2(tracks, vFMvtxHits, vSMvtxHits, vTMvtxHits,\
-      vIInttHits, vOInttHits, vEmcalHits, vIHCalHits, vOHCalHits);
-   for(Int_t iTrk = 0; iTrk < tracks.size(); iTrk++){
-      TrackPropertiesEstimation2(tracks.at(iTrk));
-   }
+   // RecoTracksInttSeed2(tracks, vFMvtxHits, vSMvtxHits, vTMvtxHits,\
+   //    vIInttHits, vOInttHits, vEmcalHits, vIHCalHits, vOHCalHits);
+   // for(Int_t iTrk = 0; iTrk < tracks.size(); iTrk++){
+   //    TrackPropertiesEstimation2(tracks.at(iTrk));
+   // }
 
    // Vertex estimation using all tracks
    // VertexFinder(); // 
@@ -120,9 +125,16 @@ void InttSeedTracking::HitMatching(std::vector<tracKuma>& tracks,\
       tempTheta = 2*atan(std::exp(-vEmcalHits.at(matchEcalID).eta));
       trk.setHitTheta(6, tempTheta);
 
-      Double_t calE = vEmcalHits.at(matchEcalID).energy;
-      calE = AddHCalE(vEmcalHits.at(matchEcalID).phi, calE, vIHCalHits, vOHcalHits); // kuma???
+      Double_t EMCalE = vEmcalHits.at(matchEcalID).energy;
+      trk.setEMCalE(EMCalE);
+      Double_t iHcalE = 0.;
+      Double_t oHcalE = 0.;
+      //ReadHCal return -> EMCal+ihcal+ohcal
+      Double_t calE = ReadHCalE(vEmcalHits.at(matchEcalID).phi, EMCalE, vIHCalHits, vOHcalHits, iHcalE, oHcalE);
+      trk.setiHCalE(iHcalE);
+      trk.setoHCalE(oHcalE);
       trk.setTrackE(calE);
+//    calE = AddHCalE(vEmcalHits.at(matchEcalID).phi, calE, vIHCalHits, vOHcalHits); // kuma???
 
       tracks.push_back(trk);
       // m_tracks.push_back(trk);
@@ -313,6 +325,7 @@ void InttSeedTracking::RefindCalHit(tracKuma trk, std::vector<hitStruct > vEmcal
    Double_t tempHitIInttPhi = trk.getHitPhi(4);
    Double_t tempHitEmcalPhi = trk.getHitPhi(6);
    // ChecKuma!!! it does not work only sPHENIX server, but I do not know why
+   // The output of the function is nan somehow. Need investigation
    // SagittaRByCircleFit(cX, cY, sagittaR, vHitR, vHitsPhi, trk.getHitPhi(4), trk.getHitPhi(6));
 
    Double_t targetCalX = 0.;
@@ -495,7 +508,36 @@ Int_t InttSeedTracking::TempInttCalMatch(Int_t iInttID, Int_t oInttID,
    return matchiECalID;
 
 }
- 
+
+Double_t InttSeedTracking::ReadHCalE(Double_t emcalPhi, Double_t emcalE,\
+   std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHCalHits,\
+   Double_t& iHcalE, Double_t& oHcalE){
+   Int_t matchIhcalId = 99999;
+   Double_t closePhiIhcal = 99999;
+   for(Int_t iIhcal = 0; iIhcal < vIHCalHits.size(); iIhcal++){
+      if(closePhiIhcal > std::abs(vIHCalHits.at(iIhcal).phi - emcalPhi)){
+         closePhiIhcal = std::abs(vIHCalHits.at(iIhcal).phi - emcalPhi);
+         matchIhcalId = iIhcal;
+      }
+   }
+   Int_t matchOhcalId = 99999;
+   Double_t closePhiOhcal = 99999;
+   for(Int_t iOhcal = 0; iOhcal < vOHCalHits.size(); iOhcal++){
+      if(closePhiOhcal > std::abs(vOHCalHits.at(iOhcal).phi - emcalPhi)){
+         closePhiOhcal = std::abs(vOHCalHits.at(iOhcal).phi - emcalPhi);
+         matchOhcalId = iOhcal;
+      }
+   }
+   
+   if(matchIhcalId != 99999) iHcalE = vIHCalHits.at(matchIhcalId).energy;
+   if(matchOhcalId != 99999) oHcalE = vOHCalHits.at(matchOhcalId).energy;
+
+   Double_t calE = emcalE + iHcalE + oHcalE;
+
+   return calE;
+}
+
+
 
 Double_t InttSeedTracking::AddHCalE(Double_t emcalPhi, Double_t emcalE,\
    std::vector<hitStruct > vIHCalHits, std::vector<hitStruct > vOHCalHits){
