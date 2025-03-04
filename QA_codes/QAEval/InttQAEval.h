@@ -53,6 +53,7 @@ private:
     const int _streaming_bco = 23;
     int _runnumber = -1;
     double _goodchanratio = -1;
+    double _goodchanratio_wo_deadch = -1;
     int _intt_bco_diff_qa = -999;
     TH2D *_hist2D[8][14] = {nullptr};
     bool _hasValidHist3D = false;
@@ -62,7 +63,9 @@ private:
     int _runtime;
     int _runmode;
     int _nevents; 
-
+    int _N_dead;
+    int _N_cold;
+    int _N_hot;
     TTree* tree = nullptr; 
 };
 

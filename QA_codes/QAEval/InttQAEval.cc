@@ -32,6 +32,9 @@ InttQAEval::InttQAEval()
     tree->Branch("runmode", &_runmode, "runmode/I");
     tree->Branch("nevents", &_nevents, "nevents/I");
     tree->Branch("goodchanratio", &_goodchanratio, "goodchanratio/D");
+    tree->Branch("N_dead", &_N_dead, "N_dead/I");
+    tree->Branch("N_cold", &_N_cold, "N_cold/I");
+    tree->Branch("N_hot", &_N_hot, "N_hot/I");
     tree->Branch("intt_bco_diff_qa", &_intt_bco_diff_qa, "intt_bco_diff_qa/I");
     GetConnection();
 }
@@ -75,7 +78,7 @@ void InttQAEval::LoadQAFileFromhtml()
     std::string runnumber_str = std::to_string(_runnumber);
     std::regex file_pattern(_inputbasefile + "_.*" + runnumber_str + ".*\\.root");
 
-    for (const auto& entry : std::filesystem::directory_iterator(_inputdir))
+    for (const auto &entry : std::filesystem::directory_iterator(_inputdir))
     {
         if (entry.is_regular_file())
         {
@@ -108,7 +111,7 @@ int InttQAEval::DoInttQA()
         std::cout << "Set Runnumber with SetRunNumber(int runnumber)" << std::endl;
         return -999;
     }
-    
+
     if (_useHtml)
     {
         if (!_file)
@@ -123,7 +126,7 @@ int InttQAEval::DoInttQA()
         }
     }
     int ODBCflag = FetchODBCInfo();
-    if(ODBCflag != 1) 
+    if (ODBCflag != 1)
     {
         std::cout << "No Physics or no info for Run " << _runnumber << std::endl;
         return -999;
@@ -138,7 +141,7 @@ int InttQAEval::DoInttQA()
     }
     // BCO QA
     _intt_bco_diff_qa = DoBcoQA();
-    if (_intt_bco_diff_qa==1)
+    if (_intt_bco_diff_qa == 1)
     {
         std::cout << "INTT BCO diff QA passed for Run " << _runnumber << std::endl;
     }
@@ -170,9 +173,9 @@ int InttQAEval::DoBcoQA()
     }
     else
     {
-        if(_debug)
+        if (_debug)
         {
-            std::cout<<"INTT BCO MAP : "<<intt_bco_calib_dir<<std::endl;
+            std::cout << "INTT BCO MAP : " << intt_bco_calib_dir << std::endl;
         }
         CDBTTree *cdbttree = new CDBTTree(intt_bco_calib_dir);
         cdbttree->LoadCalibrations();
@@ -199,7 +202,7 @@ int InttQAEval::DoBcoQA()
             if (StdDev != 0)
                 intt_bco_diff_qa = 0;
         }
-        delete cdbttree; 
+        delete cdbttree;
     }
     return intt_bco_diff_qa;
 }
@@ -213,6 +216,9 @@ double InttQAEval::DoGoodChanQA()
     rc->set_StringFlag("CDB_GLOBALTAG", "ProdA_2024");
     rc->set_uint64Flag("TIMESTAMP", _runnumber);
     uint64_t N = 0;
+    _N_dead = 0;
+    _N_cold = 0;
+    _N_hot = 0;
     std::string intt_good_chan_dir = CDBInterface::instance()->getUrl("INTT_HotMap");
     if (intt_good_chan_dir.empty())
     {
@@ -234,21 +240,31 @@ double InttQAEval::DoGoodChanQA()
             std::cout << intt_good_chan_dir << std::endl;
         cdbttree->LoadCalibrations();
         N = cdbttree->GetSingleIntValue("size");
-        // for (uint64_t n = 0; n < N; ++n)
-        // {
-        //     int chip_id = cdbttree->GetIntValue(n, "chip_id");
-        //     int chan_id = cdbttree->GetIntValue(n, "chan_id");
-        //     int status = cdbttree->GetIntValue(n, "status");
-        //     if (status != 1)
-        //     {
-        //         // Handle non-good channels
-        //     }
-        // }
+        for (uint64_t n = 0; n < N; ++n)
+        {
+            // int felix_server = cdbttree->GetIntValue(n, "felix_server");
+            // int felix_channel = cdbttree->GetIntValue(n, "felix_channel");
+            // int chip = cdbttree->GetIntValue(n, "chip");
+            // int chan = cdbttree->GetIntValue(n, "channel");
+            int flag = cdbttree->GetIntValue(n, "flag");
+            if (flag == 1)
+            {
+                _N_dead++;
+            }
+            else if (flag == 4)
+            {
+                _N_cold++;
+            }
+            else if (flag == 8)
+            {
+               _N_hot++;
+            }
+        }
         delete cdbttree;
     }
-    if(N==0)
+    if (N == 0)
     {
-        std::cout<<"Not INTT runs" << std::endl;
+        std::cout << "Not INTT runs" << std::endl;
         return -1;
     }
     goodchanratio = (1.0 - (double)N / (128 * 26 * 14 * 8)) * 100;
@@ -261,17 +277,17 @@ void InttQAEval::LoadFile()
 
     if (_file && _file->IsOpen())
     {
-        if(_debug)
+        if (_debug)
         {
             _file->Print();
             _file->ls();
         }
 
-        // h_InttRawHitQA_intt{0~7} 
+        // h_InttRawHitQA_intt{0~7}
         for (int i = 0; i < 8; ++i)
         {
             std::string hist_name = "h_InttRawHitQA_intt" + std::to_string(i);
-            TH3D* hist3D = dynamic_cast<TH3D*>(_file->Get(hist_name.c_str()));
+            TH3D *hist3D = dynamic_cast<TH3D *>(_file->Get(hist_name.c_str()));
             if (hist3D)
             {
                 CreateTH2DFromTH3D(hist3D, i);
@@ -287,7 +303,7 @@ void InttQAEval::LoadFile()
 
 void InttQAEval::SaveLoadedFile()
 {
-    TFile* new_file = TFile::Open("saved_TH2D.root", "RECREATE");
+    TFile *new_file = TFile::Open("saved_TH2D.root", "RECREATE");
     if (!new_file || !new_file->IsOpen())
     {
         std::cerr << "Failed to create new file for saving TH2D objects." << std::endl;
@@ -309,9 +325,9 @@ void InttQAEval::SaveLoadedFile()
     delete new_file;
 }
 
-void InttQAEval::CreateTH2DFromTH3D(TH3D* hist3D, int intt_index)
+void InttQAEval::CreateTH2DFromTH3D(TH3D *hist3D, int intt_index)
 {
-    int x_bins = hist3D->GetXaxis()->GetNbins();  
+    int x_bins = hist3D->GetXaxis()->GetNbins();
     int y_bins = hist3D->GetYaxis()->GetNbins();
     int z_bins = hist3D->GetZaxis()->GetNbins();
 
@@ -323,9 +339,9 @@ void InttQAEval::CreateTH2DFromTH3D(TH3D* hist3D, int intt_index)
     for (int xbin = 1; xbin <= x_bins; xbin++)
     {
         TString hist2D_name = Form("h_InttRawHitQA_intt%d_fee%d", intt_index, xbin - 1);
-        _hist2D[intt_index][xbin - 1] = new TH2D(hist2D_name, hist2D_name+";chip_id;chan_id", y_bins, y_min, y_max, z_bins, z_min, z_max);
+        _hist2D[intt_index][xbin - 1] = new TH2D(hist2D_name, hist2D_name + ";chip_id;chan_id", y_bins, y_min, y_max, z_bins, z_min, z_max);
 
-        TH1D* tempYZ = hist3D->ProjectionY("tempYZ", xbin, xbin);
+        TH1D *tempYZ = hist3D->ProjectionY("tempYZ", xbin, xbin);
 
         for (int ybin = 1; ybin <= y_bins; ybin++)
         {
@@ -342,27 +358,27 @@ void InttQAEval::CreateTH2DFromTH3D(TH3D* hist3D, int intt_index)
 
 int InttQAEval::GetConnection()
 {
-  if (con)
-  {
-    return 0;
-  }
-  try
-  {
-    con = odbc::DriverManager::getConnection(dbname.c_str(), dbowner.c_str(), dbpasswd.c_str());
-  }
-  catch (odbc::SQLException &e)
-  {
-    std::cout << " Exception caught during DriverManager::getConnection" << std::endl;
-    std::cout << "Message: " << e.getMessage() << std::endl;
     if (con)
     {
-      delete con;
-      con = nullptr;
+        return 0;
     }
-    return -1;
-  }
-  std::cout << "opened DB connection" << std::endl;
-  return 0;
+    try
+    {
+        con = odbc::DriverManager::getConnection(dbname.c_str(), dbowner.c_str(), dbpasswd.c_str());
+    }
+    catch (odbc::SQLException &e)
+    {
+        std::cout << " Exception caught during DriverManager::getConnection" << std::endl;
+        std::cout << "Message: " << e.getMessage() << std::endl;
+        if (con)
+        {
+            delete con;
+            con = nullptr;
+        }
+        return -1;
+    }
+    std::cout << "opened DB connection" << std::endl;
+    return 0;
 }
 
 int InttQAEval::FetchODBCInfo()
@@ -404,12 +420,12 @@ int InttQAEval::FetchODBCInfo()
     {
         std::string col_name = rs->getMetaData()->getColumnName(icol + 1);
         std::string cont = rs->getString(col_name);
-    //    std::cout << (boost::format("%2d : %s = %s\n") % icol % col_name % cont).str();
-        if(col_name == "runtype")
+        //    std::cout << (boost::format("%2d : %s = %s\n") % icol % col_name % cont).str();
+        if (col_name == "runtype")
         {
-            if(cont!="physics")
+            if (cont != "physics")
             {
-                std::cout<<"No Phyics run"<<std::endl;
+                std::cout << "No Phyics run" << std::endl;
                 return -1;
             }
         }
@@ -421,19 +437,21 @@ int InttQAEval::FetchODBCInfo()
         {
             ertimestamp_str = cont;
         }
-        if(col_name == "eventsinrun")
+        if (col_name == "eventsinrun")
         {
-            _nevents = std::stoi(cont);;
+            _nevents = std::stoi(cont);
+            ;
         }
     }
-    _runtime = getTimeDifferenceInSeconds(brtimestamp_str,ertimestamp_str);
+    _runtime = getTimeDifferenceInSeconds(brtimestamp_str, ertimestamp_str);
     std::cout << "Runtime value: " << _runtime << std::endl;
 
     delete rs;
     delete stmt;
     return RETURN_VALUE;
 }
-int InttQAEval::getTimeDifferenceInSeconds(const std::string& brtimestamp_str, const std::string& ertimestamp_str) {
+int InttQAEval::getTimeDifferenceInSeconds(const std::string &brtimestamp_str, const std::string &ertimestamp_str)
+{
     std::tm brtm = {};
     std::tm ertm = {};
 
@@ -447,20 +465,18 @@ int InttQAEval::getTimeDifferenceInSeconds(const std::string& brtimestamp_str, c
     auto ertime = std::chrono::system_clock::from_time_t(std::mktime(&ertm));
 
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(ertime - brtime);
-    
+
     return duration.count();
 }
 
-
-void InttQAEval::SaveTreeToFile(const std::string& filename)
+void InttQAEval::SaveTreeToFile(const std::string &filename)
 {
-    TFile* outputFile = TFile::Open(filename.c_str(), "RECREATE");
+    TFile *outputFile = TFile::Open(filename.c_str(), "RECREATE");
     if (!outputFile || !outputFile->IsOpen())
     {
         std::cerr << "Failed to create output file for TTree." << std::endl;
         return;
     }
-
     tree->Write();
     outputFile->Close();
     delete outputFile;

@@ -3,9 +3,13 @@
 #include <TH1D.h>
 #include <TCanvas.h>
 #include <TGraph.h>
+#include <TTreeReader.h>
+#include <TTreeReaderValue.h>
 #include <iostream>
 #include "sPhenixStyle.C"
 
+bool withoutdeadchan = false;
+const int total_channel = 372736;
 void drawplot()
 {
     SetsPhenixStyle();
@@ -25,19 +29,16 @@ void drawplot()
         return;
     }
 
-    int runnumber;
-    int runtime;
-    int runmode;
-    int nevents;
-    double goodchanratio;
-    int intt_bco_diff_qa;
-
-    tree->SetBranchAddress("runnumber", &runnumber);
-    tree->SetBranchAddress("runtime", &runtime);
-    tree->SetBranchAddress("runmode", &runmode);
-    tree->SetBranchAddress("nevents", &nevents);
-    tree->SetBranchAddress("goodchanratio", &goodchanratio);
-    tree->SetBranchAddress("intt_bco_diff_qa", &intt_bco_diff_qa);
+    TTreeReader reader(tree);
+    TTreeReaderValue<int> runnumber(reader, "runnumber");
+    TTreeReaderValue<int> runtime(reader, "runtime");
+    TTreeReaderValue<int> runmode(reader, "runmode");
+    TTreeReaderValue<int> nevents(reader, "nevents");
+    TTreeReaderValue<double> goodchanratio(reader, "goodchanratio");
+    TTreeReaderValue<int> intt_bco_diff_qa(reader, "intt_bco_diff_qa");
+    TTreeReaderValue<int> N_dead(reader, "N_dead");
+    TTreeReaderValue<int> N_cold(reader, "N_cold");
+    TTreeReaderValue<int> N_hot(reader, "N_hot");
 
     // 히스토그램 생성
     TH1D* hist1 = new TH1D("hist1", "All runs", 100, 0, 4000);
@@ -66,66 +67,68 @@ void drawplot()
     Long64_t Q_num = 0;
     int N_QRun2 = 0;
     Long64_t Q_num2 = 0;
-    Long64_t nentries = tree->GetEntries();
-    for (Long64_t i = 0; i < nentries; ++i)
-    {
 
-        tree->GetEntry(i);
-        if (runnumber >= 46560)
+    while (reader.Next())
+    {
+        double deadratio =0.;
+        if (withoutdeadchan)
+            deadratio = *N_dead *100/ (double)total_channel;
+        std::cout<<deadratio<<std::endl;
+        if (*runnumber >= 46560)
         {
             N_totalRun++;
-            total_num += nevents;
-            if(runtime<300)
+            total_num += *nevents;
+            if(*runtime < 300)
             {
                 N_QRun++;
-                Q_num += nevents;
+                Q_num += *nevents;
             }
-            if(runtime>=300 && intt_bco_diff_qa == 1 && goodchanratio >= 90.0)
+            if(*runtime >= 300 && *intt_bco_diff_qa == 1 && *goodchanratio >= 90.0)
             {
                 N_GoodRun++;
-                Good_num += nevents;
+                Good_num += *nevents;
             }
-            if(runtime>=300 && intt_bco_diff_qa == 1 && goodchanratio  < 90.0 && goodchanratio >= 80.0)
+            if(*runtime >= 300 && *intt_bco_diff_qa == 1 && *goodchanratio < 90.0 && *goodchanratio >= 80.0)
             {
                 N_QRun2++;
-                Q_num2 += nevents;
+                Q_num2 += *nevents;
             }
             
-            if (runtime >= 300 && (intt_bco_diff_qa == 0 || goodchanratio < 80.0))
+            if (*runtime >= 300 && (*intt_bco_diff_qa == 0 || *goodchanratio < 80.0))
             {
                 N_BadRun++;
-                Bad_num += nevents;
+                Bad_num += *nevents;
             }
            
-            hist1->Fill(runtime);
-            if (intt_bco_diff_qa == 1 && runtime >= 300)
+            hist1->Fill(*runtime);
+            if (*intt_bco_diff_qa == 1 && *runtime >= 300)
             {
-                hist2->Fill(runtime);
-                if (runtime >= 300 && goodchanratio > 80.0)
+                hist2->Fill(*runtime);
+                if (*runtime >= 300 && *goodchanratio > 80.0)
                 {
-                    hist3->Fill(runtime);
+                    hist3->Fill(*runtime);
                 }
-                if (runmode == 0 && runnumber < 54000)
+                if (*runmode == 0 && *runnumber < 54000)
                 {
-                    runnumbers_mode0.push_back(runnumber);
-                    goodchanratios_mode0.push_back(goodchanratio);
+                    runnumbers_mode0.push_back(*runnumber);
+                    goodchanratios_mode0.push_back(*goodchanratio+deadratio);
                 }
-                else if (runmode == 1 && runnumber < 54000)
+                else if (*runmode == 1 && *runnumber < 54000)
                 {
-                    runnumbers_mode1.push_back(runnumber);
-                    goodchanratios_mode1.push_back(goodchanratio);
+                    runnumbers_mode1.push_back(*runnumber);
+                    goodchanratios_mode1.push_back(*goodchanratio+deadratio);
                 }
-                else if(runnumber > 54000)
+                else if(*runnumber > 54000)
                 {
-                    runnumbers_AuAu.push_back(runnumber);
-                    goodchanratios_AuAu.push_back(goodchanratio);
+                    runnumbers_AuAu.push_back(*runnumber);
+                    goodchanratios_AuAu.push_back(*goodchanratio+deadratio);
 
                 }
-                runnumbers_all.push_back(runnumber);
-                goodchanratios_all.push_back(goodchanratio);
+                runnumbers_all.push_back(*runnumber);
+                goodchanratios_all.push_back(*goodchanratio+deadratio);
             }
-            runnumbers_all_nocut.push_back(runnumber);
-            goodchanratios_all_nocut.push_back(goodchanratio);
+            runnumbers_all_nocut.push_back(*runnumber);
+            goodchanratios_all_nocut.push_back(*goodchanratio+deadratio);
         }
     }
 
@@ -237,20 +240,7 @@ void drawplot()
     fitFunc_all->SetLineColor(kRed);
     graph_all->Fit(fitFunc_all, "RSC rob=0.95");
 
-    // TCanvas* can5 = new TCanvas("canvas5", "Good Channel Ratio vs Runnumber", 1500, 1500);
-    // can5->cd();
-    // graph_mode0->Draw("AP");
-    // can5->SaveAs("good_channel_ratio_mode0.png");
-
-    // TCanvas* can6 = new TCanvas("canvas6", "Good Channel Ratio vs Runnumber", 1500, 1500);
-    // can6->cd();
-    // graph_mode1->Draw("AP");
-    // can6->SaveAs("good_channel_ratio_mode1.png");
-
-    // TCanvas* can7 = new TCanvas("canvas7", "Good Channel Ratio vs Runnumber", 1500, 1500);
-    // can7->cd();
-    // graph_all->Draw("AP");
-    // can7->SaveAs("good_channel_ratio_all.png");
+    double p0_value = fitFunc_all->GetParameter(0);
 
     TCanvas* can8 = new TCanvas("canvas8", "Good Channel Ratio (BCOQA = GOOD & runtime > 300s)", 1500, 1000);
     can8->cd();
@@ -268,10 +258,11 @@ void drawplot()
     leg->AddEntry(graph_mode0, "INTT #it{p+p Trigger Mode}", "PL");
     leg->AddEntry(graph_mode1, "INTT #it{p+p Streaming Mode}", "PL");
     leg->AddEntry(graph_AuAu, "INTT #it{Au+Au Trigger Mode}", "PL");
-    leg->AddEntry(fitFunc_all, "Robust (h=0.95) / p0 = 95.7715 ", "L");
+    leg->AddEntry(fitFunc_all, Form("Robust (h=0.95) / p0 = %.4f", p0_value), "L");
     leg->SetTextSize(0.03);
     leg->Draw("SAME");
     can8->SaveAs("good_channel_ratio_bcoqa.png");
+    can8->SaveAs("good_channel_ratio_bcoqa.root");
     TFile* sfile = new TFile("golden_runs.root", "RECREATE");
     hist3->Write();
     hist2->Write();
