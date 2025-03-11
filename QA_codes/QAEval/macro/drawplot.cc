@@ -6,10 +6,12 @@
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <iostream>
+#include <fstream>
 #include "sPhenixStyle.C"
 
 bool withoutdeadchan = false;
 const int total_channel = 372736;
+bool CreateGoodRunList = true;
 void drawplot()
 {
     SetsPhenixStyle();
@@ -68,6 +70,13 @@ void drawplot()
     int N_QRun2 = 0;
     Long64_t Q_num2 = 0;
 
+    // 분류된 runnumber를 저장할 벡터
+    std::vector<int> goodRuns_mode0;
+    std::vector<int> goodRuns_mode1;
+    std::vector<int> goodRuns_AuAu;
+    std::vector<std::pair<int, std::string>> qRuns;
+    std::vector<int> badRuns;
+
     while (reader.Next())
     {
         double deadratio =0.;
@@ -82,22 +91,37 @@ void drawplot()
             {
                 N_QRun++;
                 Q_num += *nevents;
+                qRuns.push_back(std::make_pair(*runnumber, "runtime < 300"));
             }
             if(*runtime >= 300 && *intt_bco_diff_qa == 1 && *goodchanratio >= 90.0)
             {
                 N_GoodRun++;
                 Good_num += *nevents;
+                if (*runmode == 0)
+                {
+                    goodRuns_mode0.push_back(*runnumber);
+                }
+                else if (*runmode == 1)
+                {
+                    goodRuns_mode1.push_back(*runnumber);
+                }
+                else if (*runnumber > 54000)
+                {
+                    goodRuns_AuAu.push_back(*runnumber);
+                }
             }
             if(*runtime >= 300 && *intt_bco_diff_qa == 1 && *goodchanratio < 90.0 && *goodchanratio >= 80.0)
             {
                 N_QRun2++;
                 Q_num2 += *nevents;
+                qRuns.push_back(std::make_pair(*runnumber, "goodchanratio < 90.0 && >= 80.0"));
             }
             
             if (*runtime >= 300 && (*intt_bco_diff_qa == 0 || *goodchanratio < 80.0))
             {
                 N_BadRun++;
                 Bad_num += *nevents;
+                badRuns.push_back(*runnumber);
             }
            
             hist1->Fill(*runtime);
@@ -131,6 +155,36 @@ void drawplot()
             goodchanratios_all_nocut.push_back(*goodchanratio+deadratio);
         }
     }
+
+    // README.md 파일에 분류된 runnumber 출력
+    std::ofstream readmeFile("README.md");
+    readmeFile << "# Run Classification\n\n";
+    readmeFile << "## Good Runs (Trigger Mode)\n";
+    for (const auto& run : goodRuns_mode0)
+    {
+        readmeFile << run << "\n";
+    }
+    readmeFile << "\n## Good Runs (Streaming Mode)\n";
+    for (const auto& run : goodRuns_mode1)
+    {
+        readmeFile << run << "\n";
+    }
+    readmeFile << "\n## Good Runs (AuAu Mode)\n";
+    for (const auto& run : goodRuns_AuAu)
+    {
+        readmeFile << run << "\n";
+    }
+    readmeFile << "\n## Questionable Runs\n";
+    for (const auto& run : qRuns)
+    {
+        readmeFile << run.first << " (" << run.second << ")\n";
+    }
+    readmeFile << "\n## Bad Runs\n";
+    for (const auto& run : badRuns)
+    {
+        readmeFile << run << "\n";
+    }
+    readmeFile.close();
 
     TH1D* ratioHist = (TH1D*)hist2->Clone("ratioHist");
     ratioHist->SetTitle("Ratio");
