@@ -1,4 +1,6 @@
 # Run Classification
+This README.md files includes Run2024 pp(trigger and streaming) good run list and AuAu Good run list based on criteria below:
+Good Chan ratio > 90% && runtime > 300s && BCOQA == GOOD
 
 ## Good Runs (Trigger Mode)
 46723
