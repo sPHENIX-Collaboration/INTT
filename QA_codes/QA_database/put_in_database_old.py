@@ -45,7 +45,7 @@ def process_run_file(hot_file_path):
     Hot = 0
     if os.path.isfile(hot_file_path):
         file_hot = ROOT.TFile.Open(hot_file_path)
-        tree_hot = file_hot.Get("tree")
+        tree_hot = file_hot.Get("Multiple")
         if tree_hot:
             nEvent = tree_hot.GetEntries()
             i = 0
