@@ -1,48 +1,44 @@
 AUTOMAKE_OPTIONS = foreign
 
-lib_LTLIBRARIES = \
-    libinttqvector.la
-
-AM_LDFLAGS = \
-  -L$(libdir) \
-  -L$(OFFLINE_MAIN)/lib
-
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
-  -isystem`root-config --incdir`
+  -I$(ROOTSYS)/include
 
-#ROOTDICTS = \
-  InttEvent_Dict.cc \
-  InttOfflineEvent_Dict.cc \
-  InttOfflineCluster_Dict.cc
-
-#pcmdir = $(libdir)
-
-#nobase_dist_pcm_DATA = \
-  InttEvent_Dict_rdict.pcm \
-  InttOfflineEvent_Dict_rdict.pcm \
-  InttOfflineCluster_Dict_rdict.pcm
-
-pkginclude_HEADERS = \
-  InttQvector.h
-
-libinttqvector_la_SOURCES = \
-  InttQvector.cc
-
-libinttqvector_la_LDFLAGS = \
+AM_LDFLAGS = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib \
-  -lcalo_io \
+  -L$(OFFLINE_MAIN)/lib64
+
+pkginclude_HEADERS = \
+  InttMbdv2.h
+
+lib_LTLIBRARIES = \
+  libInttMbdv2.la
+
+libInttMbdv2_la_SOURCES = \
+  InttMbdv2.cc
+
+libInttMbdv2_la_LIBADD = \
+  -lphool \
+  -lffaobjects \
+  -lffarawobjects \
+  -lSubsysReco \
+  -lcentrality \
+  -lcalotrigger \
+  -ltrackbase_historic_io \
+  -ltrack_io \
+  -lmbd_io \
+  -lepd_io \
+  -leventplaneinfo_io
+
+libInttMbdv2_la_LDFLAGS = \
+  -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib \
+  -I$(ROOTSYS)/include \
   -lfun4all \
-  -lg4detectors_io \
-  -lphg4hit \
-  -lg4dst \
-  -lg4eval 
-
-
-################################################
-# linking tests
+  -lg4eval \
+  -lcentrality_io
 
 BUILT_SOURCES = testexternals.cc
 
@@ -50,7 +46,7 @@ noinst_PROGRAMS = \
   testexternals
 
 testexternals_SOURCES = testexternals.cc
-testexternals_LDADD = libinttqvector.la
+testexternals_LDADD   = libInttMbdv2.la
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@
@@ -59,12 +55,5 @@ testexternals.cc:
 	echo "  return 0;" >> $@
 	echo "}" >> $@
 
-#%_Dict.cc: %.h %LinkDef.h
-#	rootcling -f $@ -c $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $^
-
-#just to get the dependency
-#%_Dict_rdict.pcm: %_Dict.cc ;
-
-
 clean-local:
-	rm -f *Dict* $(BUILT_SOURCES) *.pcm
+	rm -f $(BUILT_SOURCES)
