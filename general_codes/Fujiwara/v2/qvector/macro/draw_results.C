@@ -13,9 +13,12 @@
 
 using namespace std;
 
+// how many seperate area by multiplicity
 const int nq = 20;
+// number of histgrams
 const int N = 21;
 
+// RP
 TH1F *intt_psi[N];
 TH1F *intt_psi_rec[N];
 TH1F *intt_psi_flat[N];
@@ -38,15 +41,18 @@ TH1F *epd_psi_south[N];
 TH1F *epd_psi_flat_south[N];
 TH1F *epd_psi_north[N];
 TH1F *epd_psi_flat_north[N];
+// number of cluster
 TH1F *intt_nclus[N];
 TH1F *intt_nclus_south[N];
 TH1F *intt_nclus_north[N];
+// charge
 TH1F *mbd_charge[N];
 TH1F *mbd_charge_south[N];
 TH1F *mbd_charge_north[N];
 TH1F *epd_charge[N];
 TH1F *epd_charge_south[N];
 TH1F *epd_charge_north[N];
+// tprofile to calcurate resolution
 TProfile *intt_epds;
 TProfile *intts_epds;
 TProfile *inttn_epds;
@@ -62,6 +68,7 @@ TProfile *intts_mbdn;
 TProfile *inttn_mbdn;
 TProfile *mbds_mbdn;
 TProfile *intts_inttn;
+// observed v2
 TProfile *v2_intt_mbd;
 TProfile *v2_intt_mbds;
 TProfile *v2_intt_mbdn;
@@ -71,6 +78,7 @@ TProfile *v2_intts_mbdn;
 TProfile *v2_inttn_mbd;
 TProfile *v2_inttn_mbds;
 TProfile *v2_inttn_mbdn;
+// resolution
 TGraphErrors *reso_3sub_intt_epd;
 TGraphErrors *reso_3sub_intts_epd;
 TGraphErrors *reso_3sub_inttn_epd;
@@ -82,6 +90,7 @@ TGraphErrors *reso_3sub_intt_cross_mbd;
 TGraphErrors *reso_2sub_mbd;
 TGraphErrors *reso_2sub_epd;
 TGraphErrors *reso_2sub_intt;
+// corrected v2
 TGraphErrors *v2_cor_intt_mbd;
 TGraphErrors *v2_cor_intt_mbds;
 TGraphErrors *v2_cor_intt_mbdn;
@@ -97,12 +106,15 @@ TGraphErrors *v2_cor_inttn_mbds;
 TGraphErrors *v2_cor_inttn_mbds_cross;
 TGraphErrors *v2_cor_inttn_mbdn;
 TGraphErrors *v2_cor_inttn_mbdn_cross;
+// corrected v2 (plot in master thesis)
 TGraphErrors *v2_cor_diff_intt_mbds;
 TGraphErrors *v2_cor_diff_intt_mbdn;
+// eta vs v2 (for compare with phobos result)
+TGraphErrors *v2_eta;
+// phobos result
 TGraphAsymmErrors *phobosresult;
 TBox *phoboserror;
 
-// ブランチの変数定義
 // std::vector<int> *LiveTrigger_Vec = nullptr;
 float EPD_south_charge_sum, EPD_north_charge_sum, EPD_charge_sum;
 // std::vector<float> *EPDPhi_south = nullptr, *EPDPhi_north = nullptr;
@@ -156,6 +168,8 @@ void fill_3Prof_v2(int j, double psi, TProfile *prof_, TProfile *prof_s, TProfil
 void correct_v2(TGraphErrors *v2_cor_graph, TProfile *v2, TGraphErrors *reso_prof);
 void v2_graph_diff(TGraphErrors *v2_base, TGraphErrors *v2_err, TGraphErrors *v2_diff);
 void SaveToFile();
+void draw_phobosresult();
+void set_point_eta_v2(TFile *ifile, TGraphErrors *reso_prof, vector<double> binEdges, TArrayD bins,TGraphErrors*eta_vs_v2);
 
 void draw_results()
 {
@@ -246,9 +260,9 @@ void draw_results()
   cal_3sub_reso(inttn_epds, intts_epdn, epds_epdn, reso_3sub_intt_cross_epd, binEdges);
   cal_3sub_reso(inttn_mbds, intts_mbdn, mbds_mbdn, reso_3sub_intt_cross_mbd, binEdges);
 
-  cal_2sub_reso(mbds_mbdn,reso_2sub_mbd,binEdges);
-  cal_2sub_reso(epds_epdn,reso_2sub_epd,binEdges);
-  cal_2sub_reso(intts_inttn,reso_2sub_intt,binEdges);
+  cal_2sub_reso(mbds_mbdn, reso_2sub_mbd, binEdges);
+  cal_2sub_reso(epds_epdn, reso_2sub_epd, binEdges);
+  cal_2sub_reso(intts_inttn, reso_2sub_intt, binEdges);
 
   correct_v2(v2_cor_intt_mbd, v2_intt_mbd, reso_3sub_intt_epd);
   correct_v2(v2_cor_intt_mbds, v2_intt_mbds, reso_3sub_intt_epd);
@@ -366,6 +380,7 @@ void draw_results()
   c1->Print(pdfname.c_str());
   c1->Clear();
 
+  // print corrected v2
   c1->Divide(3, 5);
   c1->cd(1);
   v2_cor_intt_mbd->Draw("AP");
@@ -397,6 +412,19 @@ void draw_results()
   v2_cor_inttn_mbdn->Draw("AP");
   c1->cd(15);
   v2_cor_inttn_mbdn_cross->Draw("AP");
+  c1->Print(pdfname.c_str());
+  c1->Clear();
+
+  v2_eta = new TGraphErrors();
+  v2_eta->SetTitle("eta vs v2");
+  draw_phobosresult();
+  set_point_eta_v2(file, reso_3sub_intt_cross_epd, binEdges,bins,v2_eta);
+  v2_eta->SetMarkerStyle(20);
+  v2_eta->SetMarkerColor(kRed);
+  v2_eta->SetMarkerSize(2);
+  v2_eta->SetLineWidth(2);
+
+  v2_eta->Draw("P");
   c1->Print(pdfname.c_str());
   c1->Clear();
 
@@ -763,11 +791,11 @@ void newgraph_reso()
   reso_3sub_inttn_mbd->SetTitle("3sub Reso INTT north MBD");
   reso_3sub_intt_cross_mbd = new TGraphErrors();
   reso_3sub_intt_cross_mbd->SetTitle("3sub Reso INTT half MBD");
-  reso_2sub_mbd=new TGraphErrors();
+  reso_2sub_mbd = new TGraphErrors();
   reso_2sub_mbd->SetTitle("2sub Reso MBD");
-  reso_2sub_epd=new TGraphErrors();
+  reso_2sub_epd = new TGraphErrors();
   reso_2sub_mbd->SetTitle("2sub Reso sEPD");
-  reso_2sub_intt=new TGraphErrors();
+  reso_2sub_intt = new TGraphErrors();
   reso_2sub_mbd->SetTitle("2sub Reso INTT");
 }
 void newgraph_v2_cor()
@@ -967,7 +995,7 @@ void cal_2sub_reso(TProfile *bs_bn, TGraphErrors *reso, vector<double> binEdges)
     double mean = bs_bn->GetBinContent(i);
     double yerr = bs_bn->GetBinError(i);
     double transformed = std::sqrt(2 * mean);
-    
+
     if (!isnan(transformed))
     {
       // グラフにポイントを追加
@@ -1174,9 +1202,9 @@ void v2_graph_diff(TGraphErrors *v2_base, TGraphErrors *v2_err, TGraphErrors *v2
     v2_base->GetPoint(i, v2_diff_x, v2_diff_y);
     v2_err_y = v2_err->GetY()[i];
     v2_diff_err = abs(v2_diff_y - v2_err_y);
-    //cout<<"v2_base (x,y) = ("<<v2_diff_x<<" , "<<v2_diff_y<<")"<<endl;
-    //cout<<"v2_err y = "<<v2_err_y<<endl;
-    
+    // cout<<"v2_base (x,y) = ("<<v2_diff_x<<" , "<<v2_diff_y<<")"<<endl;
+    // cout<<"v2_err y = "<<v2_err_y<<endl;
+
     if (!isnan(v2_diff_x) && !isnan(v2_diff_err))
     {
       v2_diff->SetPoint(v2_diff->GetN(), v2_diff_x, v2_diff_y);
@@ -1286,9 +1314,9 @@ void SaveToFile()
   saveGraphs(reso_3sub_inttn_mbd, "reso_3sub_inttn_mbd");
   saveGraphs(reso_3sub_intt_cross_mbd, "reso_3sub_intt_cross_mbd");
 
-  saveGraphs(reso_2sub_mbd,"reso_2sub_mbd");
-  saveGraphs(reso_2sub_epd,"reso_2sub_epd");
-  saveGraphs(reso_2sub_intt,"reso_2sub_intt");
+  saveGraphs(reso_2sub_mbd, "reso_2sub_mbd");
+  saveGraphs(reso_2sub_epd, "reso_2sub_epd");
+  saveGraphs(reso_2sub_intt, "reso_2sub_intt");
 
   saveGraphs(v2_cor_intt_mbd, "v2_cor_intt_mbd");
   saveGraphs(v2_cor_intt_mbds, "v2_cor_intt_mbds");
@@ -1308,9 +1336,111 @@ void SaveToFile()
   saveGraphs(v2_cor_diff_intt_mbds, "v2_cor_diff_intt_mbds");
   saveGraphs(v2_cor_diff_intt_mbdn, "v2_cor_diff_intt_mbdn");
 
+  saveGraphs(v2_eta, "eta_vs_v2");
   // TGraphAsymmErrorsを保存
   saveAsymmGraphs(phobosresult, "phobosresult");
 
   file->Write();
   file->Close();
+}
+
+void draw_phobosresult()
+{
+  if (!phobosresult || phobosresult->GetN() == 0)
+  {
+    std::cout << "Creating a new TGraph..." << std::endl;
+    delete phobosresult; // 既存のオブジェクトを削除
+    phobos_result();
+  }
+
+  phobosresult->GetXaxis()->SetLimits(-6, 6);
+  phobosresult->GetYaxis()->SetRangeUser(0, 0.05);
+
+  phobosresult->SetMarkerStyle(26);
+  phobosresult->SetMarkerSize(2);
+
+  phobosresult->Draw("AP");
+  phobos_systematic_error();
+}
+
+void set_point_eta_v2(TFile *ifile, TGraphErrors *reso_prof, vector<double> binEdges, TArrayD bins,TGraphErrors*eta_vs_v2)
+{
+  TProfile *intts_mbdn_ = new TProfile("", "", binEdges.size() - 1, bins.GetArray());
+  TProfile *intts_mbds_ = new TProfile("", "", binEdges.size() - 1, bins.GetArray());
+  TProfile *inttn_mbdn_ = new TProfile("", "", binEdges.size() - 1, bins.GetArray());
+  TProfile *inttn_mbds_ = new TProfile("", "", binEdges.size() - 1, bins.GetArray());
+
+  double x, reso;
+  for (int i = 0; i < nq; i++)
+  {
+    TTree *itree = (TTree *)ifile->Get(Form("EventTree_%d", i));
+    setBranchAdresses(itree);
+    Long64_t nEntries = itree->GetEntries();
+    reso_prof->GetPoint(i+1, x, reso);
+    if (reso > 1)
+    {
+      reso = 1.0;
+    }
+    else if (reso <= 0)
+    {
+      continue;
+    }
+
+    cout<<"reso "<<i+1 <<" = "<<reso<<endl;
+
+    for (Long64_t k = 0; k < nEntries; k++)
+    {
+      itree->GetEntry(k);
+      if (Adcfiltered_NClus != 0 && !isnan(psi_flat))
+      {
+        for (int j = 0; j < MBD_phi->size(); j++)
+        {
+          double phi = (*MBD_phi)[j];
+          double v2_raw_south, v2_raw_north;
+          double psi_phi_south, psi_phi_north;
+
+          // psi_phi=atan(tan(phi-psi_flat));
+          psi_phi_south = phi - psi_flat_south;
+          psi_phi_north = phi - psi_flat_north;
+
+          fix_phi_psi(psi_phi_south);
+          fix_phi_psi(psi_phi_north);
+
+          v2_raw_south = cos(2 * psi_phi_south);
+          v2_raw_north = cos(2 * psi_phi_north);
+
+          double v2_reco_south = v2_raw_south / reso;
+          double v2_reco_north = v2_raw_north / reso;
+          float pmt_q = (*MBD_pmt_q)[j];
+          if (reso <= 1.0 && !isnan(reso))
+          {
+            if (!isnan(v2_reco_south) && !isnan(Adcfiltered_NClus) && !isnan(pmt_q))
+            {
+              if (j < 64)
+                intts_mbds_->Fill(Adcfiltered_NClus, v2_reco_south, pmt_q);
+              if (j >= 64)
+                intts_mbdn_->Fill(Adcfiltered_NClus, v2_reco_south, pmt_q);
+            }
+
+            if (!isnan(v2_reco_north) && !isnan(Adcfiltered_NClus) && !isnan(pmt_q))
+            {
+              if (j < 64)
+                inttn_mbds_->Fill(Adcfiltered_NClus, v2_reco_north, pmt_q);
+              if (j >= 64)
+                inttn_mbdn_->Fill(Adcfiltered_NClus, v2_reco_north, pmt_q);
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  cout<<"v2 intts mbds = "<<intts_mbds_->GetMean(2)<<"  v2 inttn mbds = "<<inttn_mbds_->GetMean(2)<<endl;
+  cout<<"v2 intts mbdn = "<<intts_mbdn_->GetMean(2)<<"  v2 inttn mbdn = "<<inttn_mbdn_->GetMean(2)<<endl;
+
+  eta_vs_v2->SetPoint(eta_vs_v2->GetN(),-4.06,inttn_mbds_->GetMean(2));
+  eta_vs_v2->SetPointError(eta_vs_v2->GetN()-1,0,abs(inttn_mbds_->GetMean(2)-intts_mbds_->GetMean(2)));
+  eta_vs_v2->SetPoint(eta_vs_v2->GetN(),4.06,intts_mbdn_->GetMean(2));
+  eta_vs_v2->SetPointError(eta_vs_v2->GetN()-1,0,abs(inttn_mbdn_->GetMean(2)-intts_mbdn_->GetMean(2)));
 }
