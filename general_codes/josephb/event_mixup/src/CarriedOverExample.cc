@@ -1,136 +1,164 @@
-//____________________________________________________________________________..
-//
-// This is a template for a Fun4All SubsysReco module with all methods from the
-// $OFFLINE_MAIN/include/fun4all/SubsysReco.h baseclass
-// You do not have to implement all of them, you can just remove unused methods
-// here and in CarriedOverExample.h.
-//
-// CarriedOverExample(const std::string &name = "CarriedOverExample")
-// everything is keyed to CarriedOverExample, duplicate names do work but it makes
-// e.g. finding culprits in logs difficult or getting a pointer to the module
-// from the command line
-//
-// CarriedOverExample::~CarriedOverExample()
-// this is called when the Fun4AllServer is deleted at the end of running. Be
-// mindful what you delete - you do loose ownership of object you put on the node tree
-//
-// int CarriedOverExample::Init(PHCompositeNode *topNode)
-// This method is called when the module is registered with the Fun4AllServer. You
-// can create historgrams here or put objects on the node tree but be aware that
-// modules which haven't been registered yet did not put antyhing on the node tree
-//
-// int CarriedOverExample::InitRun(PHCompositeNode *topNode)
-// This method is called when the first event is read (or generated). At
-// this point the run number is known (which is mainly interesting for raw data
-// processing). Also all objects are on the node tree in case your module's action
-// depends on what else is around. Last chance to put nodes under the DST Node
-// We mix events during readback if branches are added after the first event
-//
-// int CarriedOverExample::process_event(PHCompositeNode *topNode)
-// called for every event. Return codes trigger actions, you find them in
-// $OFFLINE_MAIN/include/fun4all/Fun4AllReturnCodes.h
-//   everything is good:
-//     return Fun4AllReturnCodes::EVENT_OK
-//   abort event reconstruction, clear everything and process next event:
-//     return Fun4AllReturnCodes::ABORT_EVENT; 
-//   proceed but do not save this event in output (needs output manager setting):
-//     return Fun4AllReturnCodes::DISCARD_EVENT; 
-//   abort processing:
-//     return Fun4AllReturnCodes::ABORT_RUN
-// all other integers will lead to an error and abort of processing
-//
-// int CarriedOverExample::ResetEvent(PHCompositeNode *topNode)
-// If you have internal data structures (arrays, stl containers) which needs clearing
-// after each event, this is the place to do that. The nodes under the DST node are cleared
-// by the framework
-//
-// int CarriedOverExample::EndRun(const int runnumber)
-// This method is called at the end of a run when an event from a new run is
-// encountered. Useful when analyzing multiple runs (raw data). Also called at
-// the end of processing (before the End() method)
-//
-// int CarriedOverExample::End(PHCompositeNode *topNode)
-// This is called at the end of processing. It needs to be called by the macro
-// by Fun4AllServer::End(), so do not forget this in your macro
-//
-// int CarriedOverExample::Reset(PHCompositeNode *topNode)
-// not really used - it is called before the dtor is called
-//
-// void CarriedOverExample::Print(const std::string &what) const
-// Called from the command line - useful to print information when you need it
-//
-//____________________________________________________________________________..
-
 #include "CarriedOverExample.h"
 
 #include <fun4all/Fun4AllReturnCodes.h>
 
-#include <phool/PHCompositeNode.h>
+#include <ffarawobjects/InttRawHitContainerv2.h>
+#include <ffarawobjects/InttRawHitv2.h>
 
-//____________________________________________________________________________..
+#include <phool/PHCompositeNode.h>
+#include <phool/getClass.h>
+#include <phool/phool.h> // PHWHERE
+
+#include <iomanip> // for setw
+#include <sstream>
+
 CarriedOverExample::CarriedOverExample(const std::string &name):
  SubsysReco(name)
 {
-  std::cout << "CarriedOverExample::CarriedOverExample(const std::string &name) Calling ctor" << std::endl;
+  // Do nothing
 }
 
-//____________________________________________________________________________..
 CarriedOverExample::~CarriedOverExample()
 {
-  std::cout << "CarriedOverExample::~CarriedOverExample() Calling dtor" << std::endl;
+  for (auto* rawhit_container : m_prev_rawhit_containers)
+  {
+    delete rawhit_container;
+  }
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::Init(PHCompositeNode *topNode)
 {
-  std::cout << "CarriedOverExample::Init(PHCompositeNode *topNode) Initializing" << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::InitRun(PHCompositeNode *topNode)
 {
-  std::cout << "CarriedOverExample::InitRun(PHCompositeNode *topNode) Initializing for Run XXX" << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::process_event(PHCompositeNode *topNode)
 {
-  std::cout << "CarriedOverExample::process_event(PHCompositeNode *topNode) Processing Event" << std::endl;
+  get_intt_rawhit_nodes(topNode);
+
+  Print();
+
+  // Increment our reference event counter
+  ++m_event;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::ResetEvent(PHCompositeNode *topNode)
 {
-  std::cout << "CarriedOverExample::ResetEvent(PHCompositeNode *topNode) Resetting internal structures, prepare for next event" << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::EndRun(const int runnumber)
 {
-  std::cout << "CarriedOverExample::EndRun(const int runnumber) Ending Run for Run " << runnumber << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::End(PHCompositeNode *topNode)
 {
-  std::cout << "CarriedOverExample::End(PHCompositeNode *topNode) This is the End..." << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int CarriedOverExample::Reset(PHCompositeNode *topNode)
 {
- std::cout << "CarriedOverExample::Reset(PHCompositeNode *topNode) being Reset" << std::endl;
+  // Do nothing
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 void CarriedOverExample::Print(const std::string &what) const
 {
-  std::cout << "CarriedOverExample::Print(const std::string &what) const Printing info for " << what << std::endl;
+  std::cout
+    << PHWHERE << "\n";
+  for (unsigned int n = 0, N = m_prev_rawhit_containers.size(); n < N; ++n)
+  {
+    std::cout
+      << "\tEvent: " << std::setw(8) << m_event - n
+	  << "\tHits: " << std::setw(8) << m_prev_rawhit_containers[n]->get_nhits() << "\n"
+      << std::flush;
+  }
+}
+
+std::vector<std::string> const CarriedOverExample::m_intt_rawhit_container_node_names =
+{
+  // If all the rawhits have been grouped in a single node in your DSTs
+  // "INTTRAWHIT",
+
+  // Otherwise, by server:
+  "INTTRAWHIT_0",
+  "INTTRAWHIT_1",
+  "INTTRAWHIT_2",
+  "INTTRAWHIT_3",
+  "INTTRAWHIT_4",
+  "INTTRAWHIT_5",
+  "INTTRAWHIT_6",
+  "INTTRAWHIT_7",
+};
+
+void CarriedOverExample::get_intt_rawhit_nodes(PHCompositeNode *topNode)
+{
+  auto* tmp_rawhit_container = new InttRawHitContainerv2;
+
+  std::stringstream verbosity_printout;
+  verbosity_printout << PHWHERE << "\n";
+
+  // Get hits from all the raw hit container nodes
+  for (auto const& node_name : m_intt_rawhit_container_node_names)
+  {
+    auto* intt_rawhit_container = dynamic_cast<InttRawHitContainerv2*>(findNode::getClass<InttRawHitContainer>(topNode, node_name));
+    if (!intt_rawhit_container) {
+      std::cout
+        << PHWHERE << "\n"
+        << "\tCouldn't get node:\n"
+        << "\t" << node_name << "\n"
+        << "\tExiting\n"
+        << std::flush;
+      exit(1);
+    }
+
+    verbosity_printout << "\tGot node " << node_name;
+	verbosity_printout << "\twith " << std::setw(4) << intt_rawhit_container->get_nhits() << " hits";
+	if (intt_rawhit_container->get_nhits())
+	{
+      verbosity_printout << "\tleading BCO " << std::setw(10) << std::hex << intt_rawhit_container->get_hit(0)->get_bco() << std::dec;
+	}
+	verbosity_printout << "\n";
+
+    for (unsigned int n = 0, N = intt_rawhit_container->get_nhits(); n < N; ++n)
+    {
+      auto* tmp_rawhit = tmp_rawhit_container->AddHit();
+      *tmp_rawhit = *intt_rawhit_container->get_hit(n);
+    }
+  }
+
+  // Note we are contain all the raw hits from all the rawhit nodes
+  m_prev_rawhit_containers.insert(m_prev_rawhit_containers.begin(), tmp_rawhit_container);
+
+  // Keep the program image size from growing too large
+  for (unsigned int n = m_max_size, N = m_prev_rawhit_containers.size(); n < N; ++n)
+  {
+    delete m_prev_rawhit_containers[n];
+    m_prev_rawhit_containers.pop_back();
+  }
+
+  // At this point, the contents of m_prev_rawhit_containers
+  // are hit containers which have the hits from the past m_max_size events
+  // m_prev_rawhit_containers[0] = this event's hits
+  // m_prev_rawhit_containers[1] = prev event's hits
+  // ...
+  // m_prev_rawhit_containers[n] = hits from n events ago
+
+  if (0 < Verbosity())
+  {
+    std::cout
+      << verbosity_printout.str()
+      << std::flush;
+  }
 }

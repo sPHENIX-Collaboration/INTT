@@ -21,6 +21,7 @@ libCarriedOverExample_la_SOURCES = \
 
 libCarriedOverExample_la_LIBADD = \
   -lphool \
+  -lffarawobjects \
   -lSubsysReco
 
 BUILT_SOURCES = testexternals.cc
