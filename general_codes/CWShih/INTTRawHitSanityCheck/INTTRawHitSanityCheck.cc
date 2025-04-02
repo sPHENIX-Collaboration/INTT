@@ -83,6 +83,7 @@ INTTRawHitSanityCheck::INTTRawHitSanityCheck(
 
   const bool HaveGL1_in,
   const bool Get_InttRawHit_ntuple_in,
+  const bool CountHitsBack_in,
 
   const std::vector<int> adc_conversion_vec_in
 ):
@@ -98,6 +99,7 @@ INTTRawHitSanityCheck::INTTRawHitSanityCheck(
   check_clone_hit_tag(check_clone_hit_in),
   HaveGL1_tag(HaveGL1_in),
   Get_InttRawHit_ntuple(Get_InttRawHit_ntuple_in),
+  CountHitsBack(CountHitsBack_in),
   adc_conversion_vec(adc_conversion_vec_in),
   inttcont(nullptr),
   gl1(nullptr)
@@ -290,6 +292,12 @@ int INTTRawHitSanityCheck::PrepareOutFile()
   h2D_NInttHit_TrigSpikeSize = new TH2D("h2D_NInttHit_TrigSpikeSize","h2D_NInttHit_TrigSpikeSize;NInttHits (Trig Bin-1 + TrigBin + TrigBin+1);Trigger Bin content ratio", 400, 0, 40000, 200, 0, 1.2);
 
   h1D_SemiClusPhiSize = new TH1D("h1D_SemiClusPhiSize","h1D_SemiClusPhiSize;h1D_SemiClusPhiSize;ClusPhiSize (single cell);Entries", 128,0,128);
+
+  h2D_BcoSpace_NCarriedHits_corr = new TH2D("h2D_BcoSpace_NCarriedHits_corr","h2D_BcoSpace_NCarriedHits_corr;Event BCO space;N Carried over hits",150,0,150,200,0,10000);
+
+  h2D_NInttHitInner_NInttHitOuter_corr = new TH2D("h2D_NInttHitInner_NInttHitOuter_corr","h2D_NInttHitInner_NInttHitOuter_corr;NHits (inner);NHits (outer)", 400, 0, 10000, 400, 0, 10000);
+
+  evt_this_INTTHitBco = new TH1D("evt_this_INTTHitBco", "evt_this_INTTHitBco;INTT BCO", 128, -0.5, 127.5);
 
   h1D_nChipHit_map.clear();
 
@@ -664,6 +672,7 @@ int INTTRawHitSanityCheck::PrepareINTT(PHCompositeNode *topNode)
     int felix_id = std::stoi( bco_removed_key.substr(bco_removed_key.find("_F")+2,bco_removed_key.find("_Fch") - bco_removed_key.find("_F")-2) );
     int felix_ch = std::stoi( bco_removed_key.substr(bco_removed_key.find("_Fch")+4,bco_removed_key.find("_Chip") - bco_removed_key.find("_Fch")-4) );
     int chip_id = std::stoi( bco_removed_key.substr(bco_removed_key.find("_Chip")+5,bco_removed_key.size() - bco_removed_key.find("_Chip")-5) );
+    int hit_bco = std::stoi( evt_ChipHit_count_map_key.substr(evt_ChipHit_count_map_key.find("_HitBco")+7,evt_ChipHit_count_map_key.size() - evt_ChipHit_count_map_key.find("_HitBco")-7) );
 
     if (h1D_nChipHit_map.find(bco_removed_key) == h1D_nChipHit_map.end())
     {
@@ -674,7 +683,7 @@ int INTTRawHitSanityCheck::PrepareINTT(PHCompositeNode *topNode)
     h1D_nChipHit_map[bco_removed_key]->Fill(pair.second);
 
     
-    INTTRawHitSanityCheck::chip_clu_info clusters = SemiChipClustering(felix_id, felix_ch, chip_id);
+    INTTRawHitSanityCheck::chip_clu_info clusters = SemiChipClustering(felix_id, felix_ch, chip_id, hit_bco);
     for (auto &size : clusters.size_vec){
       h1D_SemiClusPhiSize -> Fill(size);
     }
@@ -906,6 +915,12 @@ int INTTRawHitSanityCheck::ResetEvent(PHCompositeNode *topNode)
 //____________________________________________________________________________..
 int INTTRawHitSanityCheck::EndRun(const int runnumber)
 {
+
+  if (CountHitsBack){
+    Func_CountHitsBack();
+  }
+  
+
   file_out->cd();
 
   for (int i = 0; i < int(all_felix_BcoDiffHist_vec.size()); i++)
@@ -916,6 +931,8 @@ int INTTRawHitSanityCheck::EndRun(const int runnumber)
   h2D_NInttHitInner_NInttHitOuter -> Write();
   h2D_NInttHit_TrigSpikeSize -> Write();
   h1D_SemiClusPhiSize -> Write();
+  h2D_NInttHitInner_NInttHitOuter_corr -> Write();
+  h2D_BcoSpace_NCarriedHits_corr -> Write();
 
   tree_out->Write();
   if (Get_InttRawHit_ntuple){tree_out_RawHit -> Write();}
@@ -958,14 +975,14 @@ void INTTRawHitSanityCheck::Print(const std::string &what) const
 }
 
 
-INTTRawHitSanityCheck::chip_clu_info INTTRawHitSanityCheck::SemiChipClustering(int FELIX_in, int FELIX_ch_in, int chip_in)
+INTTRawHitSanityCheck::chip_clu_info INTTRawHitSanityCheck::SemiChipClustering(int FELIX_in, int FELIX_ch_in, int chip_in, int hit_bco_in)
 {
   h1_chip_hit_container->Reset("ICESM");
 
   std::map<double,int> channel_id_map; channel_id_map.clear();
   for (auto &pair : evt_inttHits_map){
     inttHitstr hit = pair.second;
-    if (hit.hit_server == FELIX_in && hit.hit_felix_ch == FELIX_ch_in && hit.hit_chip == chip_in){
+    if (hit.hit_server == FELIX_in && hit.hit_felix_ch == FELIX_ch_in && hit.hit_chip == chip_in && hit.hit_bco == hit_bco_in){
       channel_id_map.insert(std::make_pair(double(hit.hit_channel), hit.hit_adc));
     }
   }
@@ -1089,7 +1106,7 @@ double INTTRawHitSanityCheck::CoM_cluster_pos(TH1D * hist_in, double edge_l, dou
 
 void INTTRawHitSanityCheck::GetInttRawHitInfo(PHCompositeNode *topNode)
 {
-    std::cout << "Get InttRawHit info." << std::endl;
+    // std::cout << "Get InttRawHit info." << std::endl;
 
     for (int DST_felix_i = 0; DST_felix_i < 8; DST_felix_i++)// note : FELIX server
     {
@@ -1122,4 +1139,174 @@ void INTTRawHitSanityCheck::GetInttRawHitInfo(PHCompositeNode *topNode)
     }
 
     NInttRawHits_ = int(InttRawHit_bco_.size());    
+}
+
+void INTTRawHitSanityCheck::Func_CountHitsBack()
+{
+  int total_carried_Nhits = 0;
+  int total_carried_Nhits_inner = 0;
+  int total_carried_Nhits_outer = 0;
+  
+  int triggered_BcoDiff_n1 = (triggered_BcoDiff - 1 + 128) % 128;
+  int triggered_BcoDiff_p1 = (triggered_BcoDiff + 1 + 128) % 128;
+
+  std::map<std::string, std::vector<std::tuple<int, int>>> map_Next_HitBCOvec; // note : <"pid_fee", {layer, hit_BCO}>
+  map_Next_HitBCOvec.clear();
+
+  std::cout << "In EndRun, Func_CountHitsBack, Total entries: " << tree_out_RawHit -> GetEntries() << std::endl;
+    for (int i = 0; i < tree_out_RawHit -> GetEntries(); i++)
+    // for (int i = 0; i < 1000000; i++)
+    {
+        tree_out_RawHit -> GetEntry(i);
+        
+        if (i % 10000 == 0) {std::cout << "Processing " << i << "th event" << std::endl;}
+
+        evt_this_INTTHitBco -> Reset("ICESM");
+        int this_NHitInner = 0;
+        int this_NHitOuter = 0;
+        map_Next_HitBCOvec.clear();
+
+        if (HaveGL1_tag && out_MBDNS_tight_vtx10cm != 1) {continue;}
+        if (NInttRawHits_ == 0){
+            std::cout<<"--------------- eID: "<<i<<", bad_evt, NInttRawHits: "<<NInttRawHits_<<std::endl;
+            continue;
+        }
+
+        long long this_BCO = InttRawHit_bco_.at(0);
+
+
+        for (int hit_i = 0; hit_i < NInttRawHits_; hit_i++)
+        {
+            InttMap::RawData_s rawdata;
+            rawdata.pid = InttRawHit_packetid_.at(hit_i);
+            rawdata.fee = InttRawHit_fee_.at(hit_i);
+            rawdata.chp = (InttRawHit_chip_id_.at(hit_i) - 1) % 26;
+            rawdata.chn = InttRawHit_channel_id_.at(hit_i);
+
+            InttMap::Offline_s offlinedata = m_feemap.ToOffline(rawdata);
+            if (offlinedata.layer != 3 && offlinedata.layer != 4 && offlinedata.layer != 5 && offlinedata.layer != 6){
+                std::cout << "pid: "<< rawdata.pid << ", fee: " << rawdata.fee << ", chp: " << rawdata.chp << ", chn: " << rawdata.chn << std::endl;
+                std::cout << "layer: " << offlinedata.layer << ", ladder_phi: " << offlinedata.ladder_phi << ", ladder_z: " << offlinedata.ladder_z << ", strip_z: " << offlinedata.strip_z << ", strip_phi: " << offlinedata.strip_phi << std::endl;
+                std::cout<<std::endl;
+                continue;
+            }
+
+            int bco_diff = (InttRawHit_FPHX_BCO_.at(hit_i) - (InttRawHit_bco_.at(0) & 0x7fU) + 128) % 128;
+
+            if (bco_diff != triggered_BcoDiff_n1 && bco_diff != triggered_BcoDiff && bco_diff != triggered_BcoDiff_p1) {continue;}
+
+            if (offlinedata.layer == 3 || offlinedata.layer == 4)
+            {
+                this_NHitInner++;
+            }
+            else if (offlinedata.layer == 5 || offlinedata.layer == 6)
+            {
+                this_NHitOuter++;
+            }
+
+            evt_this_INTTHitBco->Fill(InttRawHit_FPHX_BCO_.at(hit_i));
+        }
+
+        int selected_total_hit = this_NHitInner + this_NHitOuter;
+        int this_HitBco_peak = evt_this_INTTHitBco->GetBinCenter(evt_this_INTTHitBco->GetMaximumBin());
+        int this_bco_diff_peak = (this_HitBco_peak - (InttRawHit_bco_.at(0) & 0x7fU) + 128) % 128;
+
+        if (this_bco_diff_peak != triggered_BcoDiff) {
+            std::cout<<"--------------- eID: "<<i<<", bad_evt, NInttRawHits: "<<NInttRawHits_<<", selected_totalHit: "<<selected_total_hit<<", inner&outer: {"<<this_NHitInner<<","<<this_NHitOuter<<", this_bco_diff_peak: "<<this_bco_diff_peak<<", HitBcoPeak: "<<this_HitBco_peak<<std::endl;
+            continue;
+        }
+
+        total_carried_Nhits = 0;
+        total_carried_Nhits_inner = 0;
+        total_carried_Nhits_outer = 0;
+        long long next_BCO = 0;
+
+        if (i != tree_out_RawHit -> GetEntries() - 1)
+        {
+            tree_out_RawHit -> GetEntry(i + 1);
+
+            if (NInttRawHits_ == 0){
+                std::cout<<"--0HitNextEvt, eID: "<<i+1<<", bad_evt, NInttRawHits: "<<NInttRawHits_<<std::endl;
+
+                h2D_NInttHitInner_NInttHitOuter_corr->Fill(this_NHitInner + total_carried_Nhits_inner, this_NHitOuter + total_carried_Nhits_outer);
+                continue;
+            }
+
+            next_BCO = InttRawHit_bco_.at(0);
+            if ((next_BCO - this_BCO) > 127) {
+              
+              h2D_NInttHitInner_NInttHitOuter_corr->Fill(this_NHitInner + total_carried_Nhits_inner, this_NHitOuter + total_carried_Nhits_outer);
+              continue;
+            }
+            
+        }
+
+        
+        if (i != tree_out_RawHit -> GetEntries() - 1)
+        {
+            tree_out_RawHit -> GetEntry(i + 1);
+            if (NInttRawHits_ == 0){
+                std::cout<<"--0HitNextEvt, eID: "<<i+1<<", bad_evt, NInttRawHits: "<<NInttRawHits_<<std::endl;
+                continue;
+            }
+            next_BCO = InttRawHit_bco_.at(0);
+
+            for (int hit_i = 0; hit_i < NInttRawHits_; hit_i++)
+            {
+                InttMap::RawData_s rawdata;
+                rawdata.pid = InttRawHit_packetid_.at(hit_i);
+                rawdata.fee = InttRawHit_fee_.at(hit_i);
+                rawdata.chp = (InttRawHit_chip_id_.at(hit_i) - 1) % 26;
+                rawdata.chn = InttRawHit_channel_id_.at(hit_i);
+
+                InttMap::Offline_s offlinedata = m_feemap.ToOffline(rawdata);
+                if (offlinedata.layer != 3 && offlinedata.layer != 4 && offlinedata.layer != 5 && offlinedata.layer != 6){
+                    std::cout << "In Next! pid: "<< rawdata.pid << ", fee: " << rawdata.fee << ", chp: " << rawdata.chp << ", chn: " << rawdata.chn << std::endl;
+                    std::cout << "In Next! layer: " << offlinedata.layer << ", ladder_phi: " << offlinedata.ladder_phi << ", ladder_z: " << offlinedata.ladder_z << ", strip_z: " << offlinedata.strip_z << ", strip_phi: " << offlinedata.strip_phi << std::endl;
+                    std::cout<<std::endl;
+                    continue;
+                }
+                
+                map_Next_HitBCOvec[Form("%d_%d", InttRawHit_packetid_.at(hit_i), InttRawHit_fee_.at(hit_i))].push_back(
+                    std::make_tuple(
+                        offlinedata.layer,
+                        InttRawHit_FPHX_BCO_.at(hit_i)
+                    )
+                );
+                // if (good_evt){evt_next_INTTHitBco->Fill(InttRawHit_FPHX_BCO_.at(hit_i));}
+            }
+
+            // int next_HitBco_peak = evt_next_INTTHitBco->GetBinCenter(evt_next_INTTHitBco->GetMaximumBin());
+            
+            for (auto pair : map_Next_HitBCOvec)
+            {
+                for (int next_hit_i = 0; next_hit_i < int(pair.second.size()); next_hit_i++)
+                {
+                    int next_hit_layer = std::get<0>(pair.second[next_hit_i]);
+                    int next_hit_bco = std::get<1>(pair.second[next_hit_i]);
+
+                    if (next_hit_bco == this_HitBco_peak) {
+                        if (next_hit_layer == 3 || next_hit_layer == 4) {total_carried_Nhits_inner++;}
+                        else if (next_hit_layer == 5 || next_hit_layer == 6) {total_carried_Nhits_outer++;}
+                        total_carried_Nhits++;
+                    }
+                    else {break;}
+                }
+            }
+            
+            tree_out_RawHit -> GetEntry(i);
+
+
+            h2D_NInttHitInner_NInttHitOuter_corr->Fill(this_NHitInner + total_carried_Nhits_inner, this_NHitOuter + total_carried_Nhits_outer);
+
+            if (total_carried_Nhits > 0){
+                std::cout<<"eID: "<<i<<", good_evt & eoi, NInttRawHits: "<<NInttRawHits_<<", selected_totalHit: "<<selected_total_hit<<", total_carried_Nhits: "<<total_carried_Nhits<<", inner&outer: {"<<total_carried_Nhits_inner<<","<<total_carried_Nhits_outer<<", next_bco - this_bco = "<<next_BCO - this_BCO<<std::endl;
+
+                h2D_BcoSpace_NCarriedHits_corr->Fill(next_BCO - this_BCO, total_carried_Nhits);
+
+            }
+
+        }
+    }
+
 }

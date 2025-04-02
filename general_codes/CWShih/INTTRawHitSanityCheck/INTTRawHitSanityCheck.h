@@ -66,6 +66,7 @@ class INTTRawHitSanityCheck : public SubsysReco
 
         const bool HaveGL1_in = true,
         const bool Get_InttRawHit_ntuple_in = true,
+        const bool CountHitsBack_in = true,
 
         const std::vector<int> adc_conversion_vec_in = {35, 45, 60, 90, 120, 150, 180, 210}
     );
@@ -138,6 +139,7 @@ class INTTRawHitSanityCheck : public SubsysReco
     bool check_clone_hit_tag;
     bool HaveGL1_tag;
     bool Get_InttRawHit_ntuple;
+    bool CountHitsBack;
     std::vector<int> adc_conversion_vec;
 
     long long eID_count;
@@ -256,6 +258,9 @@ class INTTRawHitSanityCheck : public SubsysReco
     TH2D * h2D_NInttHit_TrigSpikeSize;
     TH1D * h1D_SemiClusPhiSize;
 
+    TH2D * h2D_NInttHitInner_NInttHitOuter_corr;
+    TH2D * h2D_BcoSpace_NCarriedHits_corr;
+
     std::map<std::string, int> evt_ChipHit_count_map;
     std::map<std::string, TH1D*> h1D_nChipHit_map;
 
@@ -273,9 +278,13 @@ class INTTRawHitSanityCheck : public SubsysReco
         int largest_size;
     };
     TH1D * h1_chip_hit_container;
-    INTTRawHitSanityCheck::chip_clu_info SemiChipClustering(int FELIX_in, int FELIX_ch_in, int chip_in);
+    INTTRawHitSanityCheck::chip_clu_info SemiChipClustering(int FELIX_in, int FELIX_ch_in, int chip_in, int hit_bco_in);
     INTTRawHitSanityCheck::chip_clu_info find_Ngroup(TH1D * hist_in);
     double CoM_cluster_pos(TH1D * hist_in, double edge_l, double edge_r);
+
+    // note : -------------------------------- For counting hits back --------------------------------
+    TH1D * evt_this_INTTHitBco;
+    void Func_CountHitsBack();
 
     // note : -------------------------------- trigger_table --------------------------------
     static const int MBDNS_loose_inclusive = 11; // note : MBD N&S >= 1

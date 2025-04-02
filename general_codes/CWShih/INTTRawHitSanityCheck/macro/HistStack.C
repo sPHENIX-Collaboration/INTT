@@ -2,10 +2,10 @@ int HistStack()
 {
     std::string input_directory = "/sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_54280_CW_Mar252025_INTTQA/completed";
     std::string input_file_name = "BcoDiffNtuple_54280_clonehitremoveBCO_hotchannelremove_hitQA_checkclonehit";
-    int Nfiles = 1000;
+    int Nfiles = 800;
 
     std::string output_directory = input_directory;
-    std::string output_file_name = "HistStack.root";
+    std::string output_file_name = "HistStack_withCorrBack.root";
 
     // std::vector<std::string> h1D_name_vec = {
     //     "all_felix_BcoDiffHist_0",
@@ -40,7 +40,7 @@ int HistStack()
         int job_index_len = 5;
         job_index.insert(0, job_index_len - job_index.size(), '0');
 
-        TFile* f = new TFile(Form("%s/%s_%s.root", input_directory.c_str(), input_file_name.c_str(), job_index.c_str()), "READ");
+        TFile* f = TFile::Open(Form("%s/%s_%s.root", input_directory.c_str(), input_file_name.c_str(), job_index.c_str()));
         if (!f->IsOpen())
         {
             std::cout << "Error: cannot open file " << Form("%s/%s_%s.root", input_directory.c_str(), input_file_name.c_str(), job_index.c_str()) << std::endl;
@@ -98,15 +98,17 @@ int HistStack()
     }
 
     TFile *fout = new TFile(Form("%s/%s", output_directory.c_str(), output_file_name.c_str()), "RECREATE");
+    for (int i = 0; i < h2Dstack_vec.size(); i++)
+    {
+        ((TH2D*)h2Dstack_vec[i]->GetStack()->Last()) -> Write(Form("h2Dstack_%s", h2D_name_vec[i].c_str()));
+    }
+    
     for (int i = 0; i < h1Dstack_vec.size(); i++)
     {
         ((TH1D*)h1Dstack_vec[i]->GetStack()->Last()) -> Write(Form("h1Dstack_%s", h1D_name_vec[i].c_str()));
     }
 
-    for (int i = 0; i < h2Dstack_vec.size(); i++)
-    {
-        ((TH2D*)h2Dstack_vec[i]->GetStack()->Last()) -> Write(Form("h2Dstack_%s", h2D_name_vec[i].c_str()));
-    }
+    
 
     fout->Close();
 
