@@ -299,6 +299,11 @@ int INTTRawHitSanityCheck::PrepareOutFile()
 
   evt_this_INTTHitBco = new TH1D("evt_this_INTTHitBco", "evt_this_INTTHitBco;INTT BCO", 128, -0.5, 127.5);
 
+  h1D_HitBco_BcoFullM1 = new TH1D("h1D_HitBco_BcoFullM1", "h1D_HitBco_BcoFullM1;Hit_bco - BcoFull&0x7FU_{ThisEvt - 1}", 128, -0.5, 127.5);
+  h1D_HitBco_BcoFullM2 = new TH1D("h1D_HitBco_BcoFullM2", "h1D_HitBco_BcoFullM2;Hit_bco - BcoFull&0x7FU_{ThisEvt - 2}", 128, -0.5, 127.5);
+  h1D_HitBco_BcoFullM3 = new TH1D("h1D_HitBco_BcoFullM3", "h1D_HitBco_BcoFullM3;Hit_bco - BcoFull&0x7FU_{ThisEvt - 3}", 128, -0.5, 127.5);
+  h1D_HitBco_BcoFullM4 = new TH1D("h1D_HitBco_BcoFullM4", "h1D_HitBco_BcoFullM4;Hit_bco - BcoFull&0x7FU_{ThisEvt - 4}", 128, -0.5, 127.5);
+
   h1D_nChipHit_map.clear();
 
   for (int felix_i = 0; felix_i < nFELIX; felix_i++){
@@ -916,8 +921,12 @@ int INTTRawHitSanityCheck::ResetEvent(PHCompositeNode *topNode)
 int INTTRawHitSanityCheck::EndRun(const int runnumber)
 {
 
-  if (CountHitsBack){
+  if (Get_InttRawHit_ntuple && CountHitsBack){
     Func_CountHitsBack();
+  }
+  if (Get_InttRawHit_ntuple)
+  {
+    Func_HitBcoDiff();
   }
   
 
@@ -933,6 +942,11 @@ int INTTRawHitSanityCheck::EndRun(const int runnumber)
   h1D_SemiClusPhiSize -> Write();
   h2D_NInttHitInner_NInttHitOuter_corr -> Write();
   h2D_BcoSpace_NCarriedHits_corr -> Write();
+
+  h1D_HitBco_BcoFullM1 -> Write();
+  h1D_HitBco_BcoFullM2 -> Write();
+  h1D_HitBco_BcoFullM3 -> Write();
+  h1D_HitBco_BcoFullM4 -> Write();
 
   tree_out->Write();
   if (Get_InttRawHit_ntuple){tree_out_RawHit -> Write();}
@@ -1309,4 +1323,65 @@ void INTTRawHitSanityCheck::Func_CountHitsBack()
         }
     }
 
+}
+
+
+void INTTRawHitSanityCheck::Func_HitBcoDiff()
+{
+  long long bco_full_m1 = -999;
+  long long bco_full_m2 = -999;
+  long long bco_full_m3 = -999;
+  long long bco_full_m4 = -999;
+
+  for (int i = 4; i < tree_out_RawHit -> GetEntries(); i++)
+  {
+    tree_out_RawHit -> GetEntry(i);
+
+    if (out_MBDNS_tight_vtx30cm == 0) {continue;}
+
+    tree_out_RawHit -> GetEntry(i-1);
+    bco_full_m1 = (NInttRawHits_ == 0) ? -999 : InttRawHit_bco_.at(0);
+
+    tree_out_RawHit -> GetEntry(i-2);
+    bco_full_m2 = (NInttRawHits_ == 0) ? -999 : InttRawHit_bco_.at(0);
+
+    tree_out_RawHit -> GetEntry(i-3);
+    bco_full_m3 = (NInttRawHits_ == 0) ? -999 : InttRawHit_bco_.at(0);
+
+    tree_out_RawHit -> GetEntry(i-4);
+    bco_full_m4 = (NInttRawHits_ == 0) ? -999 : InttRawHit_bco_.at(0);
+
+
+    tree_out_RawHit -> GetEntry(i);
+
+    for (int j = 0; j < NInttRawHits_; j++)
+    {
+      
+      if (bco_full_m1 != -999) {
+
+        int this_bco_diff = (InttRawHit_FPHX_BCO_.at(j) - (bco_full_m1 & 0x7fU) + 128) % 128;
+        h1D_HitBco_BcoFullM1 -> Fill(this_bco_diff);
+      }
+      
+      if (bco_full_m2 != -999) {
+
+        int this_bco_diff = (InttRawHit_FPHX_BCO_.at(j) - (bco_full_m2 & 0x7fU) + 128) % 128;
+        h1D_HitBco_BcoFullM2 -> Fill(this_bco_diff);
+      }
+      
+      if (bco_full_m3 != -999) {
+
+        int this_bco_diff = (InttRawHit_FPHX_BCO_.at(j) - (bco_full_m3 & 0x7fU) + 128) % 128;
+        h1D_HitBco_BcoFullM3 -> Fill(this_bco_diff);
+      }
+      
+      if (bco_full_m4 != -999) {
+
+        int this_bco_diff = (InttRawHit_FPHX_BCO_.at(j) - (bco_full_m4 & 0x7fU) + 128) % 128;
+        h1D_HitBco_BcoFullM4 -> Fill(this_bco_diff);
+      }
+    }
+
+
+  }
 }

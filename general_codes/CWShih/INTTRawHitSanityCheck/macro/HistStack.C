@@ -2,7 +2,7 @@ int HistStack()
 {
     std::string input_directory = "/sphenix/tg/tg01/commissioning/INTT/work/cwshih/seflgendata/run_54280_CW_Mar252025_INTTQA/completed";
     std::string input_file_name = "BcoDiffNtuple_54280_clonehitremoveBCO_hotchannelremove_hitQA_checkclonehit";
-    int Nfiles = 800;
+    int Nfiles = 600;
 
     std::string output_directory = input_directory;
     std::string output_file_name = "HistStack_withCorrBack.root";
