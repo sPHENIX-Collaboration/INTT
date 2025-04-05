@@ -57,7 +57,7 @@ class INTTRawHitSanityCheck : public SubsysReco
         const int runnumber_in = 0,
         const std::string output_directory_in = "no_directory",
         
-        const std::string hotchannel_full_directory_in = "no_directory",
+        const std::string hotchannel_full_directory_in = "no_directory", // note : bad channel map 
         const int triggered_BcoDiff_in = 55, // note : -1 for streaming (maybe)
         const bool apply_hotchannel_in = true,
         const bool clone_hit_remove_BCO_in = true,
@@ -65,7 +65,7 @@ class INTTRawHitSanityCheck : public SubsysReco
         const bool check_clone_hit_in = true,
 
         const bool HaveGL1_in = true,
-        const bool Get_InttRawHit_ntuple_in = true,
+        const bool Get_InttRawHit_ntuple_in = true, // note : haas to be true
         const bool CountHitsBack_in = true,
 
         const std::vector<int> adc_conversion_vec_in = {35, 45, 60, 90, 120, 150, 180, 210}
@@ -261,6 +261,11 @@ class INTTRawHitSanityCheck : public SubsysReco
     TH2D * h2D_NInttHitInner_NInttHitOuter_corr;
     TH2D * h2D_BcoSpace_NCarriedHits_corr;
 
+    TH1D * h1D_HitBco_BcoFullM1;
+    TH1D * h1D_HitBco_BcoFullM2;
+    TH1D * h1D_HitBco_BcoFullM3;
+    TH1D * h1D_HitBco_BcoFullM4;
+
     std::map<std::string, int> evt_ChipHit_count_map;
     std::map<std::string, TH1D*> h1D_nChipHit_map;
 
@@ -285,6 +290,7 @@ class INTTRawHitSanityCheck : public SubsysReco
     // note : -------------------------------- For counting hits back --------------------------------
     TH1D * evt_this_INTTHitBco;
     void Func_CountHitsBack();
+    void Func_HitBcoDiff();
 
     // note : -------------------------------- trigger_table --------------------------------
     static const int MBDNS_loose_inclusive = 11; // note : MBD N&S >= 1
