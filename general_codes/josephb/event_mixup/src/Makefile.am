@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
-  -I$(ROOTSYS)/include
+  -isystem$(ROOTSYS)/include
 
 AM_LDFLAGS = \
   -L$(libdir) \
@@ -11,34 +11,18 @@ AM_LDFLAGS = \
   -L$(OFFLINE_MAIN)/lib64
 
 pkginclude_HEADERS = \
-  InttMbdv2.h
+  CarriedOverExample.h
 
 lib_LTLIBRARIES = \
-  libInttMbdv2.la
+  libCarriedOverExample.la
 
-libInttMbdv2_la_SOURCES = \
-  InttMbdv2.cc
+libCarriedOverExample_la_SOURCES = \
+  CarriedOverExample.cc
 
-libInttMbdv2_la_LIBADD = \
+libCarriedOverExample_la_LIBADD = \
   -lphool \
-  -lffaobjects \
   -lffarawobjects \
-  -lSubsysReco \
-  -lcentrality \
-  -lcalotrigger \
-  -ltrackbase_historic_io \
-  -ltrack_io \
-  -lmbd_io \
-  -lepd_io \
-  -leventplaneinfo_io
-
-libInttMbdv2_la_LDFLAGS = \
-  -L$(libdir) \
-  -L$(OFFLINE_MAIN)/lib \
-  -I$(ROOTSYS)/include \
-  -lfun4all \
-  -lg4eval \
-  -lcentrality_io
+  -lSubsysReco
 
 BUILT_SOURCES = testexternals.cc
 
@@ -46,7 +30,7 @@ noinst_PROGRAMS = \
   testexternals
 
 testexternals_SOURCES = testexternals.cc
-testexternals_LDADD   = libInttMbdv2.la
+testexternals_LDADD   = libCarriedOverExample.la
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@

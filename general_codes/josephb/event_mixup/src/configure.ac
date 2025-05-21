@@ -1,4 +1,4 @@
-AC_INIT(inttmbdv2,[1.00])
+AC_INIT(carriedoverexample,[1.00])
 AC_CONFIG_SRCDIR([configure.ac])
 
 AM_INIT_AUTOMAKE
