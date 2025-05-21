@@ -56,6 +56,8 @@ filter_background (
 	background_cuts.push_back(sideband_cut);
 	std::cout << sideband_cut << std::endl;
 
+	return;
+
 	// Output
 	TFile* background_file = TFile::Open("background.root", "RECREATE");
 	TTree* background_tree = new TTree("DecayTree", "DecayTree");
