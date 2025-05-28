@@ -119,11 +119,13 @@ public:
   std::vector<float> track_pt;
   std::vector<float> track_chi2ndf;
   std::vector<float> track_crossing;
-  std::vector<int> trackcluster_trackid;
-  std::vector<int> trackcluster_type;
-  std::vector<float> trackcluster_x;
-  std::vector<float> trackcluster_y;
-  std::vector<float> trackcluster_z;
+  
+  TTree *SiClusTree = nullptr;
+  std::vector<int> SiClus_trackid;
+  std::vector<int> SiClus_layer;
+  std::vector<float> SiClus_x;
+  std::vector<float> SiClus_y;
+  std::vector<float> SiClus_z;
   std::vector<int> track_charge;
   std::vector<int> track_nmaps;
   std::vector<int> track_nintt;

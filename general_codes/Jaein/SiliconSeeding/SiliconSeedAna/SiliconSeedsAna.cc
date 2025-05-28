@@ -43,11 +43,6 @@ int SiliconSeedsAna::InitRun(PHCompositeNode * /*unused*/)
   trackTree->Branch("innerintt", &track_innerintt);
   trackTree->Branch("outerintt", &track_outerintt);
   trackTree->Branch("crossing", &track_crossing);
-  trackTree->Branch("trackcluster_trackid", &trackcluster_trackid);
-  trackTree->Branch("trackcluster_x", &trackcluster_x);
-  trackTree->Branch("trackcluster_y", &trackcluster_y);
-  trackTree->Branch("trackcluster_z", &trackcluster_z);
-
 
   trackTree->Branch("x_emc", &track_x_emc);
   trackTree->Branch("y_emc", &track_y_emc);
@@ -55,6 +50,14 @@ int SiliconSeedsAna::InitRun(PHCompositeNode * /*unused*/)
   trackTree->Branch("eta_emc", &track_eta_emc);
   trackTree->Branch("phi_emc", &track_phi_emc);
   trackTree->Branch("pt_emc", &track_pt_emc);
+
+  SiClusTree = new TTree("SiClusTree", "Silicon Cluster Data");
+  SiClusTree->Branch("evt", &evt, "evt/I");
+  SiClusTree->Branch("Siclus_trackid", &SiClus_trackid);
+  SiClusTree->Branch("Siclus_layer", &SiClus_layer);
+  SiClusTree->Branch("Siclus_x", &SiClus_x);
+  SiClusTree->Branch("Siclus_y", &SiClus_y);
+  SiClusTree->Branch("Siclus_z", &SiClus_z);
 
   caloTree = new TTree("caloTree", "Calo Data");
   caloTree->Branch("calo_evt", &calo_evt, "calo_evt/I");
@@ -176,11 +179,11 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
   track_phi_emc.clear();
   track_pt_emc.clear();
 
-  trackcluster_trackid.clear();
-  trackcluster_type.clear();
-  trackcluster_x.clear();
-  trackcluster_y.clear();
-  trackcluster_z.clear();
+  SiClus_trackid.clear();
+  SiClus_layer.clear();
+  SiClus_x.clear();
+  SiClus_y.clear();
+  SiClus_z.clear();
 
   for (auto &iter : *trackmap)
   {
@@ -229,14 +232,22 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
         }
         Acts::Vector3 global(0., 0., 0.);
         global = geometry->getGlobalPosition(cluster_key, trkrCluster);
-        trackcluster_trackid.push_back(track->get_id());
-        trackcluster_type.push_back(TrkrDefs::getTrkrId(cluster_key));
-        trackcluster_x.push_back(global[0]);
-        trackcluster_y.push_back(global[1]);
-        trackcluster_z.push_back(global[2]);
+        SiClus_trackid.push_back(track->get_id());
+        SiClus_x.push_back(global[0]);
+        SiClus_y.push_back(global[1]);
+        SiClus_z.push_back(global[2]);
+        int layer = TrkrDefs::getLayer(cluster_key);
+        h_nlayer->Fill(layer);
+        if (layer == 3 || layer == 4)
+          t_inner++;
+        if (layer == 5 || layer == 6)
+          t_outer++;
+        SiClus_layer.push_back(layer);
       }
-      track_nmaps.push_back(n_mvtx_clusters);
-      track_nintt.push_back(n_intt_clusters);
+      track_nmaps.push_back(t_nmaps);
+      track_nintt.push_back(t_nintt);
+    track_innerintt.push_back(t_inner);
+    track_outerintt.push_back(t_outer);
     }
     track_id.push_back(t_id);
     track_x.push_back(t_x);
@@ -247,10 +258,6 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
     track_pt.push_back(t_pt);
     track_chi2ndf.push_back(t_chi2ndf);
     track_charge.push_back(t_charge);
-    track_nmaps.push_back(t_nmaps);
-    track_nintt.push_back(t_nintt);
-    track_innerintt.push_back(t_inner);
-    track_outerintt.push_back(t_outer);
     track_crossing.push_back(t_crossing);
     if (false)
       std::cout << "track_x : " << t_x << ", track_y: " << t_y << ", track_z: " << t_z << ", track_eta: " << t_eta << ", track_phi: " << t_phi << ", track_pt: " << t_pt << std::endl;
@@ -314,10 +321,11 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
   }
   std::cout << "Track vector sizes: id=" << track_id.size()
             << ", x=" << track_x.size()
-            << ", cluster_x=" << trackcluster_x.size()
+            << ", cluster_x=" << SiClus_x.size()
             << ", emc_x=" << track_x_emc.size()
             << std::endl;
   trackTree->Fill();
+  SiClusTree->Fill();
   h_ntrack_isfromvtx->SetBinContent(1, h_ntrack_isfromvtx->GetBinContent(1) + ntrack_isfromvtx.first);
   h_ntrack_isfromvtx->SetBinContent(2, h_ntrack_isfromvtx->GetBinContent(2) + ntrack_isfromvtx.second);
   h_ntrack_IsPosCharge->SetBinContent(1, h_ntrack_IsPosCharge->GetBinContent(1) + ntrack_isposcharge.first);
@@ -446,6 +454,10 @@ int SiliconSeedsAna::EndRun(const int /*runnumber*/)
   if (trackTree)
   {
     trackTree->Write();
+  }
+  if(SiClusTree)
+  {
+    SiClusTree->Write();
   }
   if (caloTree)
   {
