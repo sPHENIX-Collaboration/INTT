@@ -279,7 +279,7 @@ int Fun4All_G4_sPHENIX(
   // Write the DST
   //======================
 
-  //Enable::DSTOUT = true;
+  Enable::DSTOUT = true;
   Enable::DSTOUT_COMPRESS = false;
   DstOut::OutputDir = outdir;
   DstOut::OutputFile = outputFile;
@@ -682,6 +682,8 @@ int Fun4All_G4_sPHENIX(
   {
     string FullOutFile = DstOut::OutputDir + "/" + DstOut::OutputFile;
     Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", FullOutFile);
+    out->AddNode("TRKR_HITSET");
+    out->AddNode("TRKR_CLUSTER");
     if (Enable::DSTOUT_COMPRESS)
     {
       ShowerCompress();

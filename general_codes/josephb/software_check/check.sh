@@ -33,5 +33,6 @@ ${LD_LIBRARY_PATH}
 ---------------------------------------------
 
 EOF
-root -q -b Fun4All_G4_sPHENIX.C
-root -q -b check.C
+# root -q -b Fun4All_G4_sPHENIX.C | tee Fun4All_G4_sPHENIX.out
+# root -q -b check.C | tee check.out
+root -q -b do_round_trip.C | tee do_round_trip.out
