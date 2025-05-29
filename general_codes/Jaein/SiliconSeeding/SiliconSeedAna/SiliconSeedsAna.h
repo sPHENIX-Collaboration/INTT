@@ -73,6 +73,13 @@ public:
   void setClusterContainerName(const std::string &name) { m_clusterContainerName = name; }
   void setEMCalClusterContainerName(const std::string &name) { m_emcalClusName = name; }
   void setEMcalRadius(float radius) { _caloRadiusEMCal = radius; }
+  void setTopoCluster(bool topo)
+  {
+    if (topo)
+    {
+      setClusterContainerName("TOPOCLUSTER_EMCAL");
+    }
+  }
   void createTree();
   void setMC(bool input) { isMC = input; }
   void setVtxSkip(bool input) { b_skipvtx = input; }
@@ -86,6 +93,13 @@ public:
   void processTrackMap(PHCompositeNode *topNode);
   void processCaloClusters(PHCompositeNode *topNode);
   void processVertexMap(PHCompositeNode *topNode);
+
+  // Utility functions for track vector management and EMCal state
+  void clearTrackVectors();
+  void fillEMCalState(SvtxTrackState* state);
+  void initTrackTreeBranches();
+  void clearCaloVectors();
+  void initCaloTreeBranches();
 
   std::string m_clusterContainerName = "TRKR_CLUSTER";
   std::string m_actsgeometryName = "ActsGeometry";
@@ -110,34 +124,32 @@ public:
   std::vector<float> truth_pt, truth_eta, truth_phi;
   TTree *trackTree = nullptr;
   int evt = 0;
-  std::vector<int> track_id;
-  std::vector<float> track_x;
-  std::vector<float> track_y;
-  std::vector<float> track_z;
-  std::vector<float> track_eta;
-  std::vector<float> track_phi;
-  std::vector<float> track_pt;
+  std::vector<unsigned int> track_id;
+  std::vector<float> track_px, track_py, track_pz;
+  std::vector<float> track_x, track_y, track_z;
+  std::vector<float> track_pt,track_eta,track_phi;
   std::vector<float> track_chi2ndf;
-  std::vector<float> track_crossing;
-  
-  TTree *SiClusTree = nullptr;
-  std::vector<int> SiClus_trackid;
-  std::vector<int> SiClus_layer;
-  std::vector<float> SiClus_x;
-  std::vector<float> SiClus_y;
-  std::vector<float> SiClus_z;
+  std::vector<short int> track_crossing;
   std::vector<int> track_charge;
   std::vector<int> track_nmaps;
   std::vector<int> track_nintt;
   std::vector<int> track_innerintt;
   std::vector<int> track_outerintt;
 
+  std::vector<float> track_px_emc, track_py_emc, track_pz_emc;
   std::vector<float> track_x_emc;
   std::vector<float> track_y_emc;
   std::vector<float> track_z_emc;
   std::vector<float> track_eta_emc;
   std::vector<float> track_phi_emc;
   std::vector<float> track_pt_emc;
+
+  TTree *SiClusTree = nullptr;
+  std::vector<int> SiClus_trackid;
+  std::vector<int> SiClus_layer;
+  std::vector<float> SiClus_x;
+  std::vector<float> SiClus_y;
+  std::vector<float> SiClus_z;
 
   TTree *caloTree = nullptr;
   int calo_evt = 0;
