@@ -5,6 +5,9 @@
 * Intermediate ROOT files, which contain histograms to be plotted, are generated so that you don't need to take time to just make plots again.
 * Plots can be uploaded to [the INTT homepage](https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/intt/). Go to Commissioing plots -> each year to check the plots.
 
+##
+* 2025/5/29 linked directories (hp, data) are removed from the github since they makes errors on git.  These directories are needed to be re-linked by hand after git clone. The linked directories are written in linkdir.txt
+
 ## Tutorials
 
 ### Dependencies
