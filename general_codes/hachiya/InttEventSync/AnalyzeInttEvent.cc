@@ -207,7 +207,7 @@ int Process_event (InttEvent* inttEvent)
   return 0;
 }
 
-int RunAnalysis(const char *rootFileList)
+int RunAnalysis(const char *rootFileList, int nevents)
 {
   TDirectory* gDir = gDirectory;
 
@@ -258,6 +258,10 @@ int RunAnalysis(const char *rootFileList)
 
     delete inttEvt;
     inttEvt = NULL;
+    if(nevents>0&&ievt>=nevents) {
+        cout<<"Max event "<<ievt<<". quit"<<endl;
+        break;
+    }
     //--if(ievt>=100000) {
     //--    cout<<"Max event 100000. quit"<<endl;
     //--    break;

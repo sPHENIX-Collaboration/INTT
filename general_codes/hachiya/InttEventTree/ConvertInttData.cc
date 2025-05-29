@@ -70,7 +70,8 @@ int Process_event (InttPacket * p)
     for(int iladder=0; iladder<14; iladder++){
       inttEvt->evtSeq = p->getEventNum(iladder);
       inttEvt->bco    = p->getBCO(iladder);
-      if(inttEvt->evtSeq>=0) break;
+      inttEvt->bcoArray[iladder]= p->getBCO(iladder);
+      //if(inttEvt->evtSeq>=0) break;
     }
     if(debug)
         cout<<" "<<inttEvt->evtSeq<<" "<<hex<<inttEvt->bco<<" "<<p->getBCO()<<dec<<endl;

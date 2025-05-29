@@ -16,10 +16,10 @@
 #include <ffarawobjects/Gl1RawHit.h>
 #include <trackbase/InttEventInfo.h>
 
-#include <intt/InttBadChannelMapv1.h>
+#include <intt/InttBadChannelMap.h>
 #include <intt/InttBCOMap.h>
 #include <intt/InttMap.h>
-#include <intt/InttFeeMapv1.h>
+#include <intt/InttFeeMap.h>
 
 #include <ffarawobjects/Gl1RawHit.h>
 #include <ffarawobjects/Gl1Packet.h>

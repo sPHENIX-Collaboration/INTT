@@ -90,6 +90,7 @@ void Fun4All_Intt_RecoCluster(int nevents=0,
           i_file.c_str()
           );
 	//inttraw->SetHotMapFile("hotchannel_run25566.txt");
+	inttraw->SetHotMapFile("hotdead_20869.txt");
 	inttraw->SetDACfile(dac_file.c_str());
 	inttraw->SetBCOfile(bco_file.c_str());
 	inttraw->SetAdc7RemovalFlag(adc7flag);

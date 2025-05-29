@@ -65,7 +65,8 @@ double calculateZvertex(
       info.pos = TVector3(itrC->x, itrC->y, itrC->z);
 
       double phi = atan2(itrC->y, itrC->x);
-      int iphi = (phi + TMath::Pi())/TMath::PiOver4();
+      //int iphi = (phi + TMath::Pi())/TMath::PiOver4();
+      int iphi = 0;
       if(iphi<0)  iphi+=8;
       iphi%=8;
       //cout<<"phi : "<<phi<<" "<<iphi<<endl;
@@ -97,7 +98,7 @@ double calculateZvertex(
                 double p2_ang = atan2(p2.y(), p2.x());
                 double d_ang = p2_ang - p1_ang;
 
-                if(fabs(d_ang)>0.2 ) continue;
+                //if(fabs(d_ang)>0.2 ) continue;
 
                 TVector3 u = p2 - p1;
                 double unorm = sqrt(u.x()*u.x()+u.y()*u.y());
@@ -212,7 +213,8 @@ void sync_mbd_intt()
   ///////////
   //
 
-  TFile *f_mbd  = TFile::Open("/sphenix/user/chiu/sphenix_bbc/run2023/beam_mbd-00020708-0000_mbd.root");
+  //TFile *f_mbd  = TFile::Open("/sphenix/user/chiu/sphenix_bbc/run2023/beam_mbd-00020708-0000_mbd.root");
+  TFile *f_mbd  = TFile::Open("/sphenix/user/chiu/sphenix_bbc/run2023/goodruns/beam_seb18-00020869-0000_mbd.root");
   gDirectory=gDir;
 
   TTree *t_mbd = (TTree*)f_mbd->Get("t");
@@ -223,7 +225,8 @@ void sync_mbd_intt()
 
   ///////////////////
   //TFile *f_intt = TFile::Open("/gpfs/mnt/gpfs02/sphenix/user/hachiya/tutorial/tutorials/AnaTutorial/macro/AnaTutorial.root");
-  TFile *f_intt = TFile::Open("/gpfs/mnt/gpfs02/sphenix/user/hachiya/tutorial/tutorials/AnaTutorial/macro/AnaTutorial_run20708_100k.root");
+  //TFile *f_intt = TFile::Open("/gpfs/mnt/gpfs02/sphenix/user/hachiya/tutorial/tutorials/AnaTutorial/macro/AnaTutorial_run20708_100k.root");
+  TFile *f_intt = TFile::Open("/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/F4AInttRead/macro2/AnaTutorial_run20869.root");
   gDirectory=gDir;
   TTree *t_intt = (TTree*)f_intt->Get("ntp_clus");
   cout<<" "<<t_intt<<endl;
@@ -238,7 +241,7 @@ void sync_mbd_intt()
   
   gDirectory = gDir;
 
-  TFile *froot = new TFile("sync.root", "recreate");
+  TFile *froot = new TFile("sync_run20869.root", "recreate");
 
   TH2F *h_qmbd_nintt = new TH2F("h_qmbd_nintt", "Intt N vs BbcQ ", 100, 0, 2000, 100, 0, 10000);
 
@@ -267,6 +270,7 @@ void sync_mbd_intt()
 
   int iIntt=0;
   for(int i=0; i<t_mbd->GetEntries(); i++){
+  //for(int i=0; i<15000; i++){
     mbdt.LoadTree(i+mbd_evt_offset);
     mbdt.GetEntry(i+mbd_evt_offset);
 
@@ -312,7 +316,7 @@ void sync_mbd_intt()
 
     h_zvtxseed_->Reset();
 
-    //if(vCluster.vclus.size()<5000)
+    if(vCluster.vclus.size()<500)
     {
 
        double zcenter=-999,zrms=-999,zmean=-999;

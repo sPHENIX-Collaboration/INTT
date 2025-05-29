@@ -3,6 +3,6 @@
 
 
 int InitAnalysis (const char* outRootfile); //++CINT 
-int RunAnalysis (const char* rootFileList); //++CINT 
+int RunAnalysis (const char* rootFileList, int nevents=0); //++CINT 
 
 #endif /* __ANALYZEINTTEVENT_H__ */

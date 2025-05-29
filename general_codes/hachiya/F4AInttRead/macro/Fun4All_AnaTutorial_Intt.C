@@ -52,7 +52,7 @@ R__LOAD_LIBRARY(libinttread.so)
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
 
 int Fun4All_AnaTutorial_Intt(
-    const int nEvents = 100, //600000, //100, //100000, //20000, // 5000, //5,
+    const int nEvents = 600000, //100, //100000, //20000, // 5000, //5,
     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const string &outputFile = "G4sPHENIX.root",
     const string &embed_input_file = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
@@ -508,7 +508,8 @@ int Fun4All_AnaTutorial_Intt(
   //  "/sphenix/lustre01/sphnxpro/commissioning/INTT/tmp/beam_inttall-00020766-0000_event_base_ana.root"
   //  "/sphenix/lustre01/sphnxpro/commissioning/INTT/tmp/beam_inttall-00023613-0000_event_base_ana.root" // FF
   //"/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/InttEventSync/beam_inttall-00020708-0000_event_base_ana.root"
-  "/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/InttEventSync/beam_inttall-00020869-0000_event_base_ana.root"
+  //"/sphenix/user/hachiya/INTT/INTT/general_codes/hachiya/InttEventSync/beam_inttall-00020869-0000_event_base_ana.root"
+  "/sphenix/tg/tg01/commissioning/INTT/merged_root_files/cosmics_inttall-00026960-0000_event_base_ana.root"
   );
   //inttraw->SetHotMapFile("hotchannel_run25566.txt");
   se->registerSubsystem(inttraw);

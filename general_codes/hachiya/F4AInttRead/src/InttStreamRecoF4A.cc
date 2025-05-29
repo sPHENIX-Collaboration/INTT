@@ -1,4 +1,4 @@
-#include "InttStreamReco.h"
+#include "InttStreamRecoF4A.h"
 
 /// Cluster/Calorimeter includes
 
@@ -43,7 +43,7 @@ using namespace std;
 /**
  * Constructor of module
  */
-InttStreamReco::InttStreamReco(const std::string &name)
+InttStreamRecoF4A::InttStreamRecoF4A(const std::string &name)
   : SubsysReco(name)
 {
 //  m_badmap = new InttBadChannelMapv1();
@@ -54,7 +54,7 @@ InttStreamReco::InttStreamReco(const std::string &name)
 /**
  * Destructor of module
  */
-InttStreamReco::~InttStreamReco()
+InttStreamRecoF4A::~InttStreamRecoF4A()
 {
 //  delete m_badmap;
 //  delete m_bcomap;
@@ -63,26 +63,26 @@ InttStreamReco::~InttStreamReco()
 /**
  * Initialize the module and prepare looping over events
  */
-int InttStreamReco::Init(PHCompositeNode * /*topNode*/)
+int InttStreamRecoF4A::Init(PHCompositeNode * /*topNode*/)
 {
   if (Verbosity() > 5)
   {
-    std::cout << "Beginning Init in InttStreamReco" << std::endl;
+    std::cout << "Beginning Init in InttStreamRecoF4A" << std::endl;
   }
 
   return 0;
 }
 
-int InttStreamReco::InitRun(PHCompositeNode * topNode)
+int InttStreamRecoF4A::InitRun(PHCompositeNode * topNode)
 {
   if (Verbosity() > 5)
   {
-    std::cout << "Beginning InitRun in InttStreamReco" << std::endl;
+    std::cout << "Beginning InitRun in InttStreamRecoF4A" << std::endl;
   }
 
   if(!topNode)
   {
-	  std::cout << "InttStreamReco::InitRun(PHCompositeNode* topNode)" << std::endl;
+	  std::cout << "InttStreamRecoF4A::InitRun(PHCompositeNode* topNode)" << std::endl;
 	  std::cout << "\tCould not retrieve topNode; doing nothing" << std::endl;
 
 	  return -1;
@@ -91,44 +91,69 @@ int InttStreamReco::InitRun(PHCompositeNode * topNode)
   // init calib
   //m_feemap->LoadFromCDB();
 
-/*
-
-  TrkrHitSetContainer* trkr_hit_set_container = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
-*/
-
   for(int i=0; i<8; i++){
-    h_bcodiff[i] = new TH2F(Form("h_bcodiff_%d", i), Form("bcodiff_%d", i), 26*14, 0, 26*14, 140, -7, 133);
-    h_bco[i]     = new TH2F(Form("h_bco_%d", i),     Form("bco_%d", i),     26*14, 0, 26*14, 140, -7, 133);
-    h_hit[i]     = new TH2F(Form("h_hit_%d", i),     Form("hit_%d", i),     26*14, 0, 26*14, 128,  0, 128);
+    h_bcodiff[i] = new TH2D(Form("h_bcodiff_%d", i), Form("bcodiff_%d", i), 26*14, 0, 26*14, 140, -7, 133);
+    h_bco[i]     = new TH2D(Form("h_bco_%d", i),     Form("bco_%d", i),     26*14, 0, 26*14, 140, -7, 133);
+    h_hit[i]     = new TH2D(Form("h_hit_%d", i),     Form("hit_%d", i),     26*14, 0, 26*14, 128,  0, 128);
 
-    h_bcoreco_evt_diff[i] = new TH1F(Form("h_bcoreco_evt_diff_%d", i), Form("bcoreco evt diff_%d", i), 540, -270, 270);
-    h_bcorecointt_evt_diff[i] = new TH1F(Form("h_bcorecointt_evt_diff_%d", i), Form("bcoreco intt evt diff_%d", i), 540, -270, 270);
+   
+    // RecoBCO - GL1BCO
+    h_bcoreco_diff[i]     = new TH1D(Form("h_bcoreco_diff_%d", i), Form("bcoreco diff_%d", i), 540, -270, 270);
+    h_bcoreco_evt_diff[i] = new TH1D(Form("h_bcoreco_evt_diff_%d", i), Form("bcoreco evt diff_%d", i), 540, -270, 270);
 
-    h_bco_felix[i]= new TH1F(Form("h_bco_felix_%d", i), Form("bcofelix_%d", i), 128,  0, 128);
-    h_bcogl1diff_felix[i]= new TH1F(Form("h_bcogl1diff_felix_%d", i), Form("bcogl1diff_felix_%d", i), 256,  -128, 128);
+    // RecoBCO - StrobeBCO, same as FPHX BCO
+    h_bcorecointt_diff[i] = new TH1D(Form("h_bcorecointt_diff_%d", i), Form("bcoreco intt diff_%d", i), 540, -270, 270);
 
-    h_bunch[i] = new TH1F(Form("h_bunch_%d", i), Form("bunch @ trigger_%d", i), 150, -15, 135);
+    // ChipBCO
+    h_bco_felix[i]= new TH1D(Form("h_bco_felix_%d", i), Form("bcofelix_%d", i), 128,  0, 128);
+
+    // StrobeBCO - GL1BCO
+    h_bcogl1diff_felix[i]= new TH1D(Form("h_bcogl1diff_felix_%d", i), Form("bcogl1diff_felix_%d", i), 1024, -512, 512);
+
+
+    h_bunch[i] = new TH1D(Form("h_bunch_%d", i), Form("bunch @ trigger_%d", i), 150, -15, 135);
+
+    h_bunch_strb[i] = new TH1D(Form("h_bunch_strb_%d", i), Form("bunch @ strobe_%d", i), 150, -15, 135);
+
+    // RecoBCO - Gl1BCO, vs  bunch, to see the peak
+    h_bunch_evt_bcodiff[i] = new TH2F(Form("h_bunch_evt_bcodiff_%d", i), Form("bunch @ strobe_%d", i),
+                                      750, -250, 500, 150, -15, 135);
+
+    //ChipBCO vs Bunch to check the linear correlation
+    h_bunch_bco[i] = new TH2D(Form("h_bunch_bco_%d", i), Form("bunch vs BCO %d", i),
+                                      150, 0, 150, 150, -15, 135);
+
+    // StrobeBCO - Prev StrobeBCO
+    h_bcoprediff[i] = new TH1D(Form("h_bcoprediff_%d", i), Form("BCO - PreBCO %d", i), 1000, 0, 1000);
+    //
+    // StrobeBCO variation in an event
+    h_bco_variation[i] = new TH1D(Form("h_bco_variation%d", i), Form("BCO BCOref %d", i), 1000, -500, 500);
   }
-  h_bco_all= new TH1F("h_bco_all", "bcoall", 128,  0, 128);
-  h_bunch_all = new TH1F("h_bunch_all", "bunch @ evt all felix", 150, -15, 135);
-  h_bunch_gl1 = new TH1F("h_bunch_gl1", "bunch @ gl1", 150, -15, 135);
-  h_bunch_all_trig = new TH1F("h_bunch_all_trig", "bunch @ evt all felix trig", 150, -15, 135);
-  h_bunch_gl1_trig = new TH1F("h_bunch_gl1_trig", "bunch @ gl1 trig", 150, -15, 135);
 
-  h_bcointtgl1_diff = new TH1F("h_bcointtgl1_diff", "bco intt gl1 diff_", 540, -270, 270);
+  h_bco_all= new TH1D("h_bco_all", "bcoall", 128,  0, 128);
+  h_bunch_all = new TH1D("h_bunch_all", "bunch @ evt all felix", 150, -15, 135);
+  h_bunch_gl1 = new TH1D("h_bunch_gl1", "bunch @ gl1", 150, -15, 135);
+  h_bunch_all_trig = new TH1D("h_bunch_all_trig", "bunch @ evt all felix trig", 150, -15, 135);
+  h_bunch_gl1_trig = new TH1D("h_bunch_gl1_trig", "bunch @ gl1 trig", 150, -15, 135);
+
+  h_bcoreco_evt_diff_all = new TH1D("h_bcoreco_evt_diff_all", "bcoreco evt diff_all", 540, -270, 270);
+  h_bcointtgl1_diff = new TH1D("h_bcointtgl1_diff", "bco intt gl1 diff_", 540, -270, 270);
+  h_bcogl1pre_diff = new TH1D("h_bcogl1pre_diff", "bco gl1 pre diff_", 1000, 0, 1000);
 
   return Fun4AllReturnCodes::EVENT_OK;
+
+
+
 }
 
 /**
  * Main workhorse function where each event is looped over and
  * data from each event is collected from the node tree for analysis
  */
-int InttStreamReco::process_event(PHCompositeNode* topNode)
+int InttStreamRecoF4A::process_event(PHCompositeNode* topNode)
 {
   static int event=0;
   static int nskip=0;
-  static int mode =0; // 0: e-by-e, 1:bcodiff=not 600, 2:entry>1
 
   //Gl1RawHit* gl1  = findNode::getClass<Gl1RawHit>(topNode, "GL1RAWHIT");
   //Gl1Packet* gl1p = findNode::getClass<Gl1Packet>(topNode, "GL1Packet");
@@ -161,14 +186,14 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   //uint64_t prebcointt1 = 0;
 
   if( bco_gl1 == std::numeric_limits<uint64_t>::max() ){
-    cout<<"StreamReco bco is max. not valid"<<endl;
+    cout<<"StreamRecoF4A bco is max. not valid"<<endl;
   }
   if( bcointt == std::numeric_limits<uint64_t>::max() ){
-    cout<<"StreamReco bco is max. not valid"<<endl;
+    cout<<"StreamRecoF4A bco is max. not valid"<<endl;
   }
   if(bcointt1 == std::numeric_limits<uint64_t>::max() ) 
   {
-    cout<<"StreamReco inttbco1 is max. no intt1 data valid. skip nth: "<<nskip<<endl;
+    cout<<"StreamRecoF4A inttbco1 is max. no intt1 data valid. skip nth: "<<nskip<<endl;
     nskip++;
     //return Fun4AllReturnCodes::ABORTEVENT;
   }
@@ -207,12 +232,6 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   //}
   event++;
 
-  if(mode==1&&bcodiff==600) {
-    prebcointt  = bcointt;
-  //prebcointt1 = bcointt1;
-    return Fun4AllReturnCodes::EVENT_OK;
-  }
-
   if(rawhitmap==nullptr) {
     cout<<"pointer is null"<<endl;
     return false;
@@ -242,14 +261,25 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   uint nhit = rawhitmap->get_nhits();
 
   set<uint> vUnique[8];
-  set<uint> vchipbco[8];
+  map<uint, int> vchipbco[8]; // key, ihit
 
+
+  uint64_t bcointt_now[8]={0};
+  static uint64_t bcointt_pre_felix[8]={0};
+  static uint64_t bco_gl1_pre = 0;
+
+
+  h_bcogl1pre_diff->Fill(bco_gl1 - bco_gl1_pre);
+
+
+
+  // loop nhits with checking copy hit
   for(uint ihit=0; ihit<nhit; ihit++){
     InttRawHit *hit = rawhitmap->get_hit(ihit);
 
     int ifelix = hit->get_packetid() - 3001;
     int bco    = hit->get_FPHX_BCO(); // 7bit
-    uint64_t bcofull= (hit->get_bco()&0xFFFFFFFFFF); // 7bit
+    uint64_t bcofull= (hit->get_bco()&0xFFFFFFFFFF); // 40bit
 
     int ladder = hit->get_fee();        // 0-13 (4bit)
     int chip   = (hit->get_chip_id()-1)%26;    // 0-26 (5bit)
@@ -283,11 +313,23 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
     int64_t bcogl1diff = bcofull - bco_gl1;
     //cout<<"bco-gl1diff " <<bcogl1diff<<endl;
     h_bcogl1diff_felix[ifelix]->Fill(bcogl1diff);
+    
+    // bco - preBCO for felix
+    if(bcointt_pre_felix[ifelix]>0){
+      int64_t bcoprediff = bcofull - bcointt_pre_felix[ifelix];
+      h_bcoprediff[ifelix]->Fill(bcoprediff);
+
+      //--if(bcoprediff!=120) cout<<"diff : "<<hex<<bcoprediff<<" "<<bcofull<<" "<<bcointt_pre_felix[ifelix]<<dec<<endl;
+    }
+    bcointt_now[ifelix] = bcofull;
+
+    // bco variation
+    h_bco_variation[ifelix]->Fill(bcofull - bcointt);
 
     if(vUnique[ifelix].find(key)==vUnique[ifelix].end()) {
       vUnique[ifelix].insert(key);
       uint chipbcokey = ((ladder&0xF)<<22)|((chip&0x1F)<<17)|(bco&0x7F) ;
-      vchipbco[ifelix].insert(chipbcokey);
+      vchipbco[ifelix].insert(std::make_pair(chipbcokey, ihit));
 
       h[ifelix]->Fill(bco);
       float x = ladder + (int)((chip)/13) + 0.5;
@@ -311,33 +353,43 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
     //cout<<"    hit : "<<ihit<<" "<<ifelix<<" 0x"<<hex<<bco<<dec<<endl;
   }
 
-  map<int, int> vbco_all;
+  map<int, int> vbcodiff_felix[8];
   h_bco_all->Reset();
   for(int ifelix=0; ifelix<8; ifelix++){
    
-    for(uint val : vchipbco[ifelix]){
-      int bco = (val)&0x7F;
+    for(auto val : vchipbco[ifelix]){
+      int bco = (val.first)&0x7F;
       h_bco_felix[ifelix]->Fill(bco);
+
+      InttRawHit *hit = rawhitmap->get_hit(val.second);
+
+      uint64_t bcofull= (hit->get_bco()&0xFFFFFFFFFF); // 7bit
 
       // trigger mode
       //uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
 
       // stream mode
-      uint64_t bcofull_reco = bco + bcointt;
+      //uint64_t bcofull_reco = bco + bcointt;
+      int bcofull_reco = bco + bcofull;
 
-      int64_t  bcointtgl1_diff = bcofull_reco - bco_gl1;
-      int64_t  bcointthit_diff = bcofull_reco - bcointt;
+      int  bcointtgl1_diff = bcofull_reco - bco_gl1;
+      int  bcointthit_diff = bcofull_reco - bcointt;
       //bcointtgl1_diff += 128;
       //bcointtgl1_diff %= 128;
 
       //--bcointthit_diff += 128;
       //--bcointthit_diff %= 128;
+      //
+      h_bcorecointt_diff[ifelix]->Fill(bcointthit_diff);
+      h_bcoreco_diff[ifelix]->Fill(bcointtgl1_diff);
 
-      auto bco_itr = vbco_all.find(bco);
-      if(bco_itr==vbco_all.end()) {
-        vbco_all.insert(make_pair(bco,1));
-         h_bcoreco_evt_diff[ifelix]->Fill(bcointtgl1_diff);
-         h_bcorecointt_evt_diff[ifelix]->Fill(bcointthit_diff);
+      h_bunch_bco[ifelix]->Fill(bco, bunch_gl1);
+      h_bunch_evt_bcodiff[ifelix]->Fill(bcointtgl1_diff, bunch_gl1);
+
+      auto bco_itr = vbcodiff_felix[ifelix].find(bcointtgl1_diff);
+      if(bco_itr==vbcodiff_felix[ifelix].end()) {
+        vbcodiff_felix[ifelix].insert(make_pair(bcointtgl1_diff,1));
+        h_bcoreco_evt_diff[ifelix]->Fill(bcointtgl1_diff);
       } else {
         bco_itr->second += 1;
       }
@@ -345,30 +397,33 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
     h_bco_all->Add(h_bco_felix[ifelix]);
   }
 
-  for(auto& val : vbco_all){
-    int bco = val.first;
-    int count = val.second;
+  map<int, int> vbcodiff_all;
 
-    // streaming
-    uint64_t bcofull_reco = bco + bcointt;
+  for(int ifelix=0; ifelix<8; ifelix++){
+    for(auto& val : vbcodiff_felix[ifelix]){
+      int bcointtgl1_diff = val.first;
+      //int count           = val.second;
 
-    // trigger
-    //uint64_t bcofull_reco = bco | (bcointt&0xFFFFFFFF80);
+      //cout<<"             recobco diff : "<<bcointtgl1_diff<<" "<<count<<" "<<ifelix<<endl;
 
-    int64_t bcointtgl1_diff = bcofull_reco - bco_gl1;
-    // for triggermode
-    //-bcointtgl1_diff += 128;
-    //-bcointtgl1_diff %= 128;
+      auto bco_all_itr = vbcodiff_all.find(bcointtgl1_diff);
+      if(bco_all_itr==vbcodiff_all.end()) {
+        vbcodiff_all.insert(make_pair(bcointtgl1_diff,1));
+        h_bcoreco_evt_diff_all->Fill(bcointtgl1_diff);
+        //
+        //if(bcointtgl1_diff==20)
+        //if(bcointtgl1_diff==11)
+        //if(bcointtgl1_diff==12)
+        if(bcointtgl1_diff==23)
+        {
+          h_bunch_all->Fill(bunch_gl1);
+          if(isZok) h_bunch_all_trig->Fill(bunch_gl1);
+        }
 
-    cout<<"             recobco 0x"<<hex<<bcofull_reco<<dec<<" "<<bco<<" "<<count<<" "<<bcointtgl1_diff<<endl;
+      } else {
+        bco_all_itr->second += 1;
+      }
 
-    //if(bcointtgl1_diff==20)
-    //if(bcointtgl1_diff==11)
-    if(bcointtgl1_diff==10)
-    //if(bcointtgl1_diff==12)
-    {
-      h_bunch_all->Fill(bunch_gl1);
-      if(isZok) h_bunch_all_trig->Fill(bunch_gl1);
     }
   }
 
@@ -376,91 +431,12 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
   prebcointt  = bcointt;
   preevtcnt   = evtcnt;
   //prebcointt1 = bcointt1;
-  //
-  int maxhit=0 ;
-  if(mode==2){
-    for(int i=0; i<8; i++){
-      if(h[i]->GetMaximum()>maxhit) maxhit = h[i]->GetMaximum()>maxhit;
-    }
+
+  for(int ifelix=0; ifelix<8; ifelix++){
+    bcointt_pre_felix[ifelix] = bcointt_now[ifelix];
   }
-  if(mode==2) cout<<"   maxhit : "<<maxhit<<endl;
-  if(mode==2&&maxhit<=1) return Fun4AllReturnCodes::EVENT_OK;
+  bco_gl1_pre = bco_gl1;
 
-
-/*
-  //////////////////////////
-  //  drawing
-  //
-  static TLatex *lat = nullptr;
-  if(lat==nullptr) {
-    lat = new TLatex();
-    lat->SetTextSize(0.07);
-  }
-
-  int bcoline = (bcointt + bcooffset)&0x7F;
-  //int bcofull_corr7=bcofull_corr&0x7F;
-
-  static TLine *line  =nullptr;
-  static TLine *linec7=nullptr;
-  static TCanvas* c1=nullptr;
-  if(c1==nullptr) {
-    c1=new TCanvas("c1", "c1", 1200, 800);
-    c1->Divide(4,4, 0.005, 0.005);
-    line = new TLine();
-    line->SetLineColor(2);
-    linec7 = new TLine();
-    linec7->SetLineColor(4);
-  }
-  for(int i=0; i<8; i++){
-    c1->cd(i+1);
-    h[i]->Draw();
-    line->DrawLine(bcoline, 0, bcoline,  h[i]->GetMaximum()*1.05);
-    //linec7->DrawLine(bcofull_corr7, 0, bcofull_corr7,  h[i]->GetMaximum()*1.05);
-
-    int ich=0;
-    for(auto& key1 : vUnique[i]){
-      int ladder = (key1>>22)&0xF;
-      int chip   = (key1>>17)&0x1F;
-      int chan   = (key1>>10)&0x7F;
-      //int adc    = (key>> 7)&0x7;
-      int bco    = (key1    )&0x7F;
-      //cout<<"ich : "<<ich<<" "<<key1<<" "<<ladder<<" "<<chip<<" "<<chan<<endl;
-      lat->DrawLatexNDC(0.1, (0.85-0.1*ich), Form("%2d %2d %3d 0x%2x", ladder, chip, chan, bco));
-      ich++;
-    }
-
-    c1->cd(i+1+8);
-   // h2[i]->Draw("colz");
-    //h_bcodiff[i]->Draw("colz");
-    h_bco_felix[i]->Draw();
-    line->DrawLine(bcoline, 0, bcoline,  h_bco_felix[i]->GetMaximum()*1.05);
-    //linec7->DrawLine(bcofull_corr7, 0, bcofull_corr7,  h_bco_felix[i]->GetMaximum()*1.05);
-  }
-  c1->Modified();
-  c1->Update();
-
-  static TCanvas* c2=nullptr;
-  if(c2==nullptr) {
-    c2=new TCanvas("c2", "c2", 600, 400);
-  }
-
-  c2->cd();
-  h_bco_all->Draw();
-  line->DrawLine(bcoline, 0, bcoline,  h_bco_all->GetMaximum()*1.05);
-  //linec7->DrawLine(bcofull_corr7, 0, bcofull_corr7,  h_bco_all->GetMaximum()*1.05);
-  c2->Modified();
-  c2->Update();
-*/
-
-  /////////////////
-  //char a;
-  //cin>>a;
-
-  //if(a=='q')  return Fun4AllReturnCodes::ABORTRUN;
-  //else if(a=='a')  mode=0;
-  //else if(a=='b')  mode=1;
-  //else if(a=='e')  mode=2;
-  //else             mode=0;
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -469,40 +445,51 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
  * End the module and finish any data collection. Clean up any remaining
  * loose ends
  */
-int InttStreamReco::End(PHCompositeNode * /*topNode*/)
+int InttStreamRecoF4A::End(PHCompositeNode * /*topNode*/)
 {
   if (Verbosity() > 1)
   {
-    std::cout << "Ending InttStreamReco analysis package" << std::endl;
+    std::cout << "Ending InttStreamRecoF4A analysis package" << std::endl;
   }
 
-  TFile *froot = TFile::Open("hdiffout.root","recreate");
+  TFile *froot = TFile::Open("streamrecof4a.root","recreate");
   for(int i=0; i<8; i++){
     h_bcodiff[i]->Write();
     h_bco[i]->Write();
     h_hit[i]->Write();
     h_bco_felix[i]->Write();
     h_bunch[i]->Write();
+    h_bcoreco_diff[i]->Write();
     h_bcoreco_evt_diff[i]->Write();
-    h_bcorecointt_evt_diff[i]->Write();
+    h_bcorecointt_diff[i]->Write();
     h_bcogl1diff_felix[i]->Write();
+
+    h_bunch_strb[i]->Write();
+    h_bunch_evt_bcodiff[i]->Write();
+    h_bunch_bco[i]->Write();
+    h_bcoprediff[i]->Write();
+
+    h_bco_variation[i]->Write();
   }
+  h_bcoreco_evt_diff_all->Write();
   h_bco_all->Write();
   h_bunch_all->Write();
   h_bunch_gl1->Write();
   h_bunch_all_trig->Write();
   h_bunch_gl1_trig->Write();
   h_bcointtgl1_diff->Write();
+  h_bcogl1pre_diff->Write();
+
   froot->Close();
 
   return 0;
 }
 
-//void InttStreamReco::SetBadChannelMap(const std::string& file){
+//void InttStreamRecoF4A::SetBadChannelMap(const std::string& file){
 //  //m_badmap->LoadFromFile(file);
 //}
 
-void InttStreamReco::SetBcoMap(const std::string& file){
+void InttStreamRecoF4A::SetBcoMap(const std::string& file){
   m_bcomap->LoadFromFile(file);
 
   for(int ifelix=0; ifelix<8; ifelix++){
@@ -518,7 +505,7 @@ void InttStreamReco::SetBcoMap(const std::string& file){
   }
 }
 
-int InttStreamReco::LoadHotChannelMapLocal(std::string const& filename)
+int InttStreamRecoF4A::LoadHotChannelMapLocal(std::string const& filename)
 {
   if (filename.empty())
   {

@@ -8,6 +8,7 @@
 
 #include <g4detectors/PHG4CylinderGeomContainer.h>
 #include <intt/CylinderGeomIntt.h>
+#include <intt/CylinderGeomInttHelper.h>
 
 #include <trackbase/ActsGeometry.h>
 #include <trackbase/InttDefs.h>
@@ -132,7 +133,8 @@ int GetGeom::process_event(PHCompositeNode *topNode)
       auto genhitkeyintt = InttDefs::genHitSetKey(lyr,type,ladder_index,time_bucket);
       auto surfintt = m_tGeometry->maps().getSiliconSurface(genhitkeyintt);
       double ladderLocation[3] = {0.,0.,0.};
-      m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      CylinderGeomInttHelper::find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      //m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
       //cout << "ladderLocationA=(" << ladderLocation[0] << "," << ladderLocation[1] << "," << ladderLocation[2] << ")" << endl;
 
       ladderALocationX.push_back(ladderLocation[0]);
@@ -146,7 +148,8 @@ int GetGeom::process_event(PHCompositeNode *topNode)
       auto genhitkeyintt = InttDefs::genHitSetKey(lyr,type,ladder_index,time_bucket);
       auto surfintt = m_tGeometry->maps().getSiliconSurface(genhitkeyintt);
       double ladderLocation[3] = {0.,0.,0.};
-      m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      CylinderGeomInttHelper::find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      //m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
       //cout << "ladderLocationA=(" << ladderLocation[0] << "," << ladderLocation[1] << "," << ladderLocation[2] << ")" << endl;
 
       ladderALocationX.push_back(ladderLocation[0]);
@@ -161,7 +164,8 @@ int GetGeom::process_event(PHCompositeNode *topNode)
       auto genhitkeyintt = InttDefs::genHitSetKey(lyr,type,ladder_index,time_bucket);
       auto surfintt = m_tGeometry->maps().getSiliconSurface(genhitkeyintt);
       double ladderLocation[3] = {0.,0.,0.};
-      m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      CylinderGeomInttHelper::find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      //m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
       //cout << "ladderLocationB=(" << ladderLocation[0] << "," << ladderLocation[1] << "," << ladderLocation[2] << ")" << endl;
 
       ladderBLocationX.push_back(ladderLocation[0]);
@@ -176,7 +180,8 @@ int GetGeom::process_event(PHCompositeNode *topNode)
       auto genhitkeyintt = InttDefs::genHitSetKey(lyr,type,ladder_index,time_bucket);
       auto surfintt = m_tGeometry->maps().getSiliconSurface(genhitkeyintt);
       double ladderLocation[3] = {0.,0.,0.};
-      m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      CylinderGeomInttHelper::find_segment_center(surfintt,m_tGeometry,ladderLocation);
+      //m_geom->find_segment_center(surfintt,m_tGeometry,ladderLocation);
       //cout << "ladderLocationB=(" << ladderLocation[0] << "," << ladderLocation[1] << "," << ladderLocation[2] << ")" << endl;
 
       ladderBLocationX.push_back(ladderLocation[0]);

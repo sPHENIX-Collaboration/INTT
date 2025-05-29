@@ -124,6 +124,13 @@ InttEvent* InttEventSync::getNextEvent()
 
             mergedEvt->evtSeq = thisEvt->evtSeq;
             mergedEvt->bco    = thisEvt->bco;
+
+            //cout<<itree<<", bco : "<<hex<<thisEvt->bco<<" "<<mergedEvt->bco<<dec<<endl;
+            for(int ilad=0; ilad<14; ilad++){
+              mergedEvt->bcoArray[itree*14 + ilad]   = thisEvt->bcoArray[ilad];
+              //cout<<"   "<<itree<<" "<<ilad<<" , bco : "<<hex<<thisEvt->bcoArray[ilad]<<" "<<mergedEvt->bcoArray[itree*14+ilad]<<dec<<endl;
+            }
+
             for(int ihit=0; ihit<thisEvt->getNHits(); ihit++){
                 InttHit* hitnew = mergedEvt->addHit();
                 InttHit* hit    = thisEvt->getHit(ihit);

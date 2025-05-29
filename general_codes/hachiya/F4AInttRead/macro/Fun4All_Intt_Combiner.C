@@ -1,6 +1,6 @@
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllInputManager.h>
-#include <fun4allraw/SingleInttInput.h>
+//#include <fun4allraw/SingleInttInput.h>
 #include <fun4allraw/SingleInttPoolInput.h>
 //#include <fun4allraw/Fun4AllEvtInputPoolManager.h>
 #include <fun4allraw/Fun4AllStreamingInputManager.h>
@@ -15,7 +15,7 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libinttread.so)
 
-SingleInttInput *sngl[9]{};
+//SingleInttInput *sngl[9]{};
 
 void Fun4All_Intt_Combiner(int nEvents = 10000,
 		      const string &input_file00 = "intt0.list",

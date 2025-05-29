@@ -36,13 +36,15 @@ pkginclude_HEADERS = \
   InttDummyData.h \
   InttOfflineDummyData.h \
   InttAna.h \
+  InttClusAna.h \
   InttSaveTree.h \
   GetGeom.h \
   InttHotMap.h \
   InttCombinedRawDataConverterEB.h \
   InttEvent.h \
   InttOfflineEvent.h \
-  InttOfflineCluster.h
+  InttOfflineCluster.h \
+  MyTimer.h
 
 libinttread_la_SOURCES = \
   $(ROOTDICTS) \
@@ -57,13 +59,15 @@ libinttread_la_SOURCES = \
   InttDummyData.cc  \
   InttOfflineDummyData.cc  \
   InttAna.cc \
+  InttClusAna.cc \
   InttSaveTree.cc \
   GetGeom.cc \
   InttHotMap.cc \
   InttCombinedRawDataConverterEB.cc \
   InttEvent.cc \
   InttOfflineEvent.cc \
-  InttOfflineCluster.cc
+  InttOfflineCluster.cc \
+  MyTimer.cc
 
 libinttread_la_LDFLAGS = \
   -L$(libdir) \

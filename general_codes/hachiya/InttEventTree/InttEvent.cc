@@ -133,6 +133,9 @@ void InttEvent::copy(InttEvent* org) {
 
   evtSeq = org->evtSeq;
   bco    = org->bco;
+  for(int ilad=0; ilad<112; ilad++){
+    bcoArray[ilad]    = org->bcoArray[ilad];
+  }
 
   for(int ihit=0; ihit<org->getNHits(); ihit++){
       InttHit* hitnew = addHit();

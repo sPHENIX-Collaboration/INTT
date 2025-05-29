@@ -67,10 +67,11 @@ class InttEvent : public TObject {
   //protected:
     int           evtSeq;
     Long64_t      bco;
+    Long64_t      bcoArray[112];
     int           fNhits;
     TClonesArray* fhitArray;
  
-    ClassDef(InttEvent, 2)
+    ClassDef(InttEvent, 3)
 
 };
 

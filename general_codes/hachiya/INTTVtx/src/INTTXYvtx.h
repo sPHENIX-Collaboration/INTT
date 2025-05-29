@@ -62,17 +62,17 @@ class INTTXYvtx {
     };
 
     public:
-        INTTXYvtx(string               run_type, 
-                  string               out_folder_directory,
-                  pair<double, double> beam_origin, 
-                  double               phi_diff_cut       = 0.11, 
-                  pair<double, double> DCA_cut            = {-1,1}, 
-                  int                  N_clu_cutl         = 20, 
-                  int                  N_clu_cut          = 10000, 
-                  double               angle_diff_new_l   = 0.0, 
-                  double               angle_diff_new_r   = 3, 
-                  double               peek               = 3.32405, 
-                  bool                 print_message_opt  = true);
+        INTTXYvtx(string               runType, 
+                  string               outFolderDirectory,
+                  pair<double, double> beamOrigin, 
+                  double               phiDiffCut       = 0.11, 
+                  pair<double, double> DCACut           = {-1,1}, 
+                  int                  NCluCutl         = 20, 
+                  int                  NCluCut          = 10000, 
+                  double               angleDiffNew_l   = 0.0, 
+                  double               angleDiffNew_r   = 3, 
+                  double               peekCut          = 3.32405, 
+                  bool                 printMessageOpt  = true);
 
         virtual ~INTTXYvtx();
 
@@ -306,28 +306,28 @@ class INTTXYvtx {
 
 };
 
-INTTXYvtx::INTTXYvtx(string              run_type, 
-                     string              out_folder_directory, 
-                     pair<double,double> beam_origin, 
-                     double              phi_diff_cut, 
-                     pair<double,double> DCA_cut, 
-                     int                 N_clu_cutl, 
-                     int                 N_clu_cut, 
-                     double              angle_diff_new_l, 
-                     double              angle_diff_new_r, 
-                     double              peek, 
-                     bool                print_message_opt)
-    : run_type(run_type)
-    , out_folder_directory(out_folder_directory)
-    , beam_origin(beam_origin)
-    , phi_diff_cut(phi_diff_cut)
-    , DCA_cut(DCA_cut)
-    , N_clu_cutl(N_clu_cutl)
-    , N_clu_cut(N_clu_cut)
-    , angle_diff_new_l(angle_diff_new_l)
-    , angle_diff_new_r(angle_diff_new_r)
-    , peek(peek)
-    , print_message_opt(print_message_opt)
+INTTXYvtx::INTTXYvtx(string              runType, 
+                     string              outFolderDirectory, 
+                     pair<double,double> beamOrigin, 
+                     double              phiDiffCut, 
+                     pair<double,double> DCACut, 
+                     int                 NCluCutl, 
+                     int                 NCluCut, 
+                     double              angleDiffNew_l, 
+                     double              angleDiffNew_r, 
+                     double              peekCut, 
+                     bool                printMessageOpt)
+    : run_type(runType)
+    , out_folder_directory(outFolderDirectory)
+    , beam_origin(beamOrigin)
+    , phi_diff_cut(phiDiffCut)
+    , DCA_cut(DCACut)
+    , N_clu_cutl(NCluCutl)
+    , N_clu_cut(NCluCut)
+    , angle_diff_new_l(angleDiffNew_l)
+    , angle_diff_new_r(angleDiffNew_r)
+    , peek(peekCut)
+    , print_message_opt(printMessageOpt)
 {
     gErrorIgnoreLevel = kWarning; // note : To not print the "print plot info."
 

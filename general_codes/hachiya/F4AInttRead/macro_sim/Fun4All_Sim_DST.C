@@ -55,9 +55,9 @@ Fun4AllServer* se = nullptr;
 
 
 void Fun4All_Sim_DST(int nevents=5001 //1001, 
-       , std::string i_file = "SimDST_Upsilon.root"
+//       , std::string i_file = "SimDST_Upsilon.root"
 //       , std::string i_file = "SimDST_Single_jpsi.root"
-//       , std::string i_file = "G4sPHENIX.root"
+       , std::string i_file = "G4sPHENIX.root"
 //       , std::string i_file = "SimDST_Single_pip_100.root"
 //       , std::string i_file = "SimDST_Single_ep_100.root"
 //       , std::string i_file = "SimDST_Single_k0s.root"

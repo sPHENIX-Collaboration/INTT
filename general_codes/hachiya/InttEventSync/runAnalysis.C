@@ -6,7 +6,7 @@ using namespace std;
 //R__LOAD_LIBRARY(libInttEvent.so)
 R__LOAD_LIBRARY(libAnalyzeInttEvent.so)
 
-void runAnalysis(const char * listfilename)
+void runAnalysis(const char * listfilename, int nevents=0)
 {
   //std::string save_dir = "/home/phnxrc/INTT/commissioning_5_23/hit_files/";
   std::string save_dir = "./";
@@ -33,7 +33,7 @@ void runAnalysis(const char * listfilename)
     {
       InitAnalysis(out_file_name.Data());
       std::cout<<listfilename<<std::endl;
-      RunAnalysis(listfilename);
+      RunAnalysis(listfilename, nevents);
     }
 
 }
