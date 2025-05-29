@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-class TMVAHelper {
+class TmvaHelper {
 public:
 	// Gets a TTree from a file, while doing normal error checking
 	static TTree* get_tree (std::string const&, std::string const&);
@@ -34,6 +34,10 @@ public:
 	void branch (TMVA::DataLoader*) const;
 	void branch (TMVA::Reader*);
 
+	void  make_branches (TTree*);
+
+	void* get_branch (std::string const&);
+
 	// To computing the training variables from the branches variables
 	int  eval ();
 	void show () const;
@@ -47,7 +51,11 @@ private:
 	std::vector<std::string> m_training_names;
 	std::vector<std::string> m_cuts_names;
 
-	std::map<std::string, Float_t> m_branches_map;
+	std::map<std::string, Float_t> m_branches_map_f;
+	std::map<std::string, Int_t>   m_branches_map_i;
+	std::map<std::string, UInt_t>  m_branches_map_u;
+	// ...
+
 	std::map<std::string, Float_t> m_training_map;
 	std::map<std::string, Float_t> m_cuts_map;
 

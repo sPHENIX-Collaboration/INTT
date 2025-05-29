@@ -64,7 +64,7 @@ output             = ${PWD}/out/${ARGS}.out
 log                = /tmp/${USR}_${ARGS}.log
 
 initialdir         = ${PWD}
-request_memory     = 1024MB
+request_memory     = 8192MB
 PeriodicHold       = (NumJobStarts >= 1 && JobStatus == 1)
 concurrency_limits = CONCURRENCY_LIMIT_DEFAULT:100
 
