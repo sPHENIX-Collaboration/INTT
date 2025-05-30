@@ -1,164 +1,200 @@
 import ROOT
-import numpy as np
-import glob
 import os
 import pyodbc
-import csv
-import collections
-import math
-from datetime import datetime
+import sys
 
 ROOT.gROOT.SetBatch(True)
 
-def get_run_events():
-    """Query database for run events"""
+def create_table():
+    """Create intt_qa_expert table if it does not exist"""
     connection_string = (
         'DRIVER={PostgreSQL};'
-        'SERVER=sphnxdaqdbreplica;'
-        'DATABASE=daq;'
-        'PORT=5432;'
-    )
-    with pyodbc.connect(connection_string) as conn:
-        cursor = conn.cursor()
-        cursor.execute("select * from run where runtype = 'physics' order by runnumber;")
-        return cursor.fetchall()
-
-def insert_data(runnum, dead_count, runtime, bco_stdev, bco_peak,hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7):
-    """Insert data into the database"""
-    connection_string = (
-        'DRIVER={PostgreSQL};'
-        'SERVER=sphnxdbmaster;'
+        'HOST=sphnxdbmaster;'
         'DATABASE=intt;'
         'PORT=5432;'
     )
-    with pyodbc.connect(connection_string) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO intt_qa_expert (runnumber, deadch, runtime, bco_stddev, bco_peak, hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-            (runnum, dead_count, runtime, bco_stdev, bco_peak,hitrate0,hitrate1,hitrate2,hitrate3,hitrate4,hitrate5,hitrate6,hitrate7)
-        )
+    
+    create_table_sql = """
+    CREATE TABLE intt_qa_expert (
+        runnumber INT PRIMARY KEY,
+        runtime INT,
+        runmode INT,
+        nevents INT,
+        goodchanratio DOUBLE PRECISION,
+        N_dead INT,
+        N_cold INT,
+        N_hot INT,
+        intt_bco_diff_qa INT
+    );
+    """
+    
+    try:
+        with pyodbc.connect(connection_string) as conn:
+            cursor = conn.cursor()
+            cursor.execute(create_table_sql)
+            conn.commit()
+        print("✅ Table 'intt_qa_expert' checked/created successfully.")
+    except Exception as e:
+        print(f"❌ Error creating table: {e}")
+
+def init_into_runtriage():
+    column = "INTT"
+    conn = pyodbc.connect("DSN=Production_write")
+    cur = conn.cursor()
+    query = f"UPDATE goodruns SET {column.lower()} = (?, ?) WHERE runnumber = ?"
+    for runnumber in range(42733, 54975):
+        cur.execute(query, ("BAD", "", runnumber))
         conn.commit()
 
-def process_run_file(hot_file_path):
-    Dead = 0
-    Cold = 0
-    Hot = 0
-    if os.path.isfile(hot_file_path):
-        file_hot = ROOT.TFile.Open(hot_file_path)
-        tree_hot = file_hot.Get("Multiple")
-        if tree_hot:
-            nEvent = tree_hot.GetEntries()
-            i = 0
-            while i < nEvent:
-                tree_hot.GetEvent(i)
-                if tree_hot.Iflag == 1:
-                    Dead += 1
-                elif tree_hot.Iflag == 4:
-                    Cold += 1
-                elif tree_hot.Iflag == 8:
-                    Hot += 1
-                i += 1
-        if not tree_hot:
-            return None
-    if not os.path.isfile(hot_file_path):
-        return None
+
+
+def insert_into_runtriage(runnumber, runclass, runnote):
+    column = "INTT"
+    conn = pyodbc.connect("DSN=Production_write")
+    cur = conn.cursor()
+    query = f"UPDATE goodruns SET {column.lower()} = (?, ?) WHERE runnumber = ?"
+    cur.execute(query, (runclass, runnote, runnumber))
+    conn.commit()
+
+def insert_into_inttdb(runnum, runtime, runmode, nevents, goodchanratio, N_dead, N_cold, N_hot, intt_bco_diff_qa,runclass, runnote):
+    """Insert data into the database"""
+    connection_string = (
+        'DRIVER={PostgreSQL};'
+        'HOST=sphnxdbmaster;'
+        'DATABASE=intt;'
+        'PORT=5432;'
+    )
     
-    tree_single = file_hot.Get("Single")
-    tree_single.GetEntry(0)
-    Dmean0 = tree_single.Dmean0    
-    Dmean1 = tree_single.Dmean1    
-    Dmean2 = tree_single.Dmean2
-    Dmean3 = tree_single.Dmean3
-    Dmean4 = tree_single.Dmean4
-    Dmean5 = tree_single.Dmean5
-    Dmean6 = tree_single.Dmean6
-    Dmean7 = tree_single.Dmean7    
-    return [Dead, Cold, Hot, Dmean0, Dmean1, Dmean2, Dmean3, Dmean4, Dmean5, Dmean6, Dmean7]
-
-def process_bco_file(bco_file_path):
-    BCO_stdev = 0
-    BCO_peak = 0
-    counter = []
-    if os.path.isfile(bco_file_path):
-        file_bco = ROOT.TFile.Open(bco_file_path)
-        tree_bco_multi = file_bco.Get("Multiple")
-        tree_bco_single = file_bco.Get("Single")
-        if tree_bco_multi:
-            nEvent = tree_bco_multi.GetEntries()
-            i = 0
-            while i < nEvent:
-                tree_bco_multi.GetEvent(i)
-                counter.append(tree_bco_multi.Ibco_diff)
-                i += 1
-            c = collections.Counter(counter)
-            BCO_peak = c.most_common()[0][0]
-            if BCO_peak == -1:
-                if len(c.most_common()) > 1:
-                    BCO_peak = c.most_common()[1][0]
-        if not tree_bco_multi:
-            return None
-
-        if tree_bco_single:
-            nEvent = tree_bco_single.GetEntries()
-            i = 0
-            while i < nEvent:
-                tree_bco_single.GetEvent(i)
-                BCO_stdev = tree_bco_single.DStdDev
-                if math.isnan(BCO_stdev):
-                    BCO_stdev = -1
-                i += 1
-        if not tree_bco_single:
-            return None
-    if not os.path.isfile(bco_file_path):
-        return None
-    return [BCO_stdev, BCO_peak]
-
-def calculate_runtime(brtimestamp, ertimestamp):
-    """Calculate runtime in minutes"""
-    if not brtimestamp or not ertimestamp:
-        return -1
     try:
-        if isinstance(brtimestamp, datetime) and isinstance(ertimestamp, datetime):
-            start_time = brtimestamp
-            end_time = ertimestamp
-        else:
-            start_time = datetime.strptime(brtimestamp, '%Y-%m-%d %H:%M:%S')
-            end_time = datetime.strptime(ertimestamp, '%Y-%m-%d %H:%M:%S')
+        with pyodbc.connect(connection_string) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO intt_qa_expert 
+                (runnumber, runtime, runmode, nevents, goodchanratio, N_dead, N_cold, N_hot, intt_bco_diff_qa) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """,
+                (runnum, int(runtime), int(runmode), int(nevents), float(goodchanratio), 
+                 int(N_dead), int(N_cold), int(N_hot), int(intt_bco_diff_qa))
+            )
+            conn.commit()
+        print(f"✅ Run {runnum} inserted successfully")
+    except Exception as e:
+        print(f"❌ Error inserting run {runnum}: {e}")
+
+def process_root_file(root_file_path):
+    if not os.path.isfile(root_file_path):
+        print(f"❌ Error: File {root_file_path} not found.")
+        return None
+
+    file_root = ROOT.TFile.Open(root_file_path)
+    if not file_root or file_root.IsZombie():
+        print(f"❌ Error: Unable to open ROOT file {root_file_path}.")
+        return None
+
+    tree = file_root.Get("tree")
+    if not tree:
+        print(f"❌ Error: TTree 'tree' not found in {root_file_path}.")
+        return None
+
+    results = []
+    runclass = []
+    runnote = []
+    n_entries = tree.GetEntries()
+    print(f"🔄 Processing {n_entries} entries in {root_file_path}...")
+
+    for i in range(n_entries):
+        tree.GetEntry(i)
+        runnum = int(tree.runnumber)
+        runtime = int(tree.runtime)
+        runmode = int(tree.runmode)  
+        nevents = int(tree.nevents)
+        goodchanratio = float(tree.goodchanratio)
+        N_dead = int(tree.N_dead)
+        N_cold = int(tree.N_cold)
+        N_hot = int(tree.N_hot)
+        intt_bco_diff_qa = int(tree.intt_bco_diff_qa)  # float → int
         
-        runtime = (end_time - start_time).total_seconds() / 60
-        return int(runtime)
-    except ValueError:
-        return -1    
-    
-    
+        runclass, runnote = classify_run(runnum, runtime, runmode, nevents, goodchanratio, intt_bco_diff_qa, N_dead, N_cold + N_hot)
+        results.append((runnum, runtime, runmode, nevents, goodchanratio, N_dead, N_cold, N_hot, intt_bco_diff_qa,runclass,runnote))
+    return results
+
+def classify_run(runnumber, runtime, runmode, nevents, goodchanratio, intt_bco_diff_qa, N_dead, total_channel):
+    runclass = "BAD"
+    runnote = ""
+    print(runnumber, runtime, runmode, nevents, goodchanratio, intt_bco_diff_qa, N_dead, total_channel)
+    if runnumber >= 46560:
+        if runtime < 300:
+            runclass = "QUESTIONABLE"
+            runnote = "Short run < 300s"
+        elif runtime >= 300 and intt_bco_diff_qa == 1 and goodchanratio >= 90.0:
+            if runmode == 0:
+                runclass = "GOLDEN"
+                if runnumber <=54000:
+                    runnote = "pp trigger (BCO GOOD , Good chan ratio > 90%)"
+                else:
+                    runnote = "AuAu (BCO GOOD , Good chan ratio > 90%)"
+            elif runmode == 1:
+                runclass = "GOLDEN"
+                runnote = "pp streaming (BCO GOOD , Good chan ratio > 90%)"
+        elif runtime >= 300 and intt_bco_diff_qa == 1 and 80.0 <= goodchanratio < 90.0:
+            runclass = "QUESTIONABLE"
+            runnote = "GOOD BCO alignment but 80<good ch ratio <90"
+        elif runtime >= 300 and (intt_bco_diff_qa == 0 or goodchanratio < 80.0):
+            runclass = "BAD"
+            runnote = "BAD BCO alignment or/and good ch ratio <80"
+
+    return runclass, runnote
+
+def print_help():
+    print("""
+Usage:
+- create_inttdb: Creates the INTT database table.
+- insert_into_inttdb: Inserts data from the ROOT file into the INTT database.
+- insert_into_runtriage: Inserts data from the ROOT file into the Run Triage table.
+- init_runtriage: Initializes the Run Triage table.
+- help: Displays this help message.
+    """)
+
 def main():
-    rows = get_run_events()
-    rownum = len(rows)
-    i = 6
-    while i < rownum:
-        runnum = str(rows[i][0])
-        brtimestamp = rows[i][2]
-        ertimestamp = rows[i][3]
-        runtime = calculate_runtime(brtimestamp, ertimestamp)
-        file_paths = f'/sphenix/user/jaein213/macros/inttcalib/test/hotmap_cdb_1106/hotmap_run_{runnum.zfill(8)}.root'
-        bco_file_paths = f'/sphenix/user/jaein213/macros/inttcalib/test/bcomap_cdb_1106/bcomap_run_{runnum.zfill(8)}.root'
-        if file_paths and bco_file_paths:
-            result = process_run_file(file_paths)
-            bco_result = process_bco_file(bco_file_paths)
-            if result and bco_result:
-                Dead, Cold, Hot, Dmean0 ,Dmean1, Dmean2, Dmean3, Dmean4, Dmean5, Dmean6, Dmean7= result
-                BCO_stdev, BCO_peak = bco_result
-                BCO_stdev = round(BCO_stdev, 4)
-                insert_data(runnum, Dead, runtime, BCO_stdev, BCO_peak,Dmean0,Dmean1,Dmean2,Dmean3,Dmean4,Dmean5,Dmean6,Dmean7) 
-                print(runnum)
-                print(f"Dead: {Dead}, Cold: {Cold}, Hot: {Hot}, Runtime: {runtime} minutes, BCO_stdev: {BCO_stdev}, BCO_peak: {BCO_peak}")
+    while True:
+        command = input("Enter the task to execute (create_inttdb / insert_into_inttdb / insert_into_runtriage / init_runtriage / help / exit): ").strip()
+
+        if command == "create_inttdb":
+            create_table()
+        elif command == "insert_into_inttdb":
+            root_file_path = "/sphenix/user/jaein213/INTT_Jaein/INTT/QA_codes/QAEval/macro/InttQAEval_2.root"
+            results = process_root_file(root_file_path)
+
+            if results:
+                for result in results:
+                    insert_into_inttdb(*result)
+                    print(f"Run {result[0]}: {runclass} ({runnote})")
             else:
-                print(f"run {runnum} is missing")
+                print("❌ No data to insert.")
+        elif command == "insert_into_runtriage":
+            root_file_path = "/sphenix/user/jaein213/INTT_Jaein/INTT/QA_codes/QAEval/macro/InttQAEval_2.root"
+            results = process_root_file(root_file_path)
+
+            if results:
+                for result in results:
+                    insert_into_runtriage(result[0], result[9], result[10])
+                    print(f"Run {result[0]}: {result[9]} ({result[10]})")
+            else:
+                print("❌ No data to insert.")
+        elif command == "init_runtriage":
+            # Functionality for init_runtriage goes here
+            print("Initializing Run Triage...")
+            init_into_runtriage()
+            print("Init Done!")
+        elif command == "help":
+            print_help()
+        elif command == "exit":
+            print("Exiting... Goodbye!")
+            sys.exit(0)  # Program exits
         else:
-            print(f"run {runnum} is missing")
-        i += 1
-        # if(i==10):
-        #     break
+            print("❌ Unknown command. Please try again.")
+            continue  # Repeat the loop if the command is incorrect
 
 if __name__ == "__main__":
     main()
