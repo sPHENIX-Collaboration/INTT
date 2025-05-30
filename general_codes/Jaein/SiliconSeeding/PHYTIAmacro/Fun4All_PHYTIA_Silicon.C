@@ -8,6 +8,7 @@
 #include <G4_Mbd.C>
 #include <GlobalVariables.C>
 #include <QA.C>
+#include <G4_TopoClusterReco.C>
 #include <Trkr_Clustering.C>
 #include <Trkr_LaserClustering.C>
 #include <Trkr_Reco.C>
@@ -90,11 +91,15 @@ const std::string calofilename = "DST_CALO_CLUSTER_pythia8_Detroit-0000000022-00
 const std::string truthfilename = "DST_TRUTH_pythia8_Detroit-0000000022-00000.root";
 int Fun4All_PHYTIA_Silicon(std::string processID = "0")
 {
-  const int nEvents = 100;
+  const int nEvents = 1000;
 
   std::ostringstream pid;
   pid << std::setw(6) << std::setfill('0') << std::stoi(processID);
   std::string pid_str = pid.str();
+
+  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
+  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
+  bool useTopologicalCluster = false;
 
   std::string trkrclusterfilename = "DST_TRKR_CLUSTER_pythia8_Detroit-0000000022-" + pid_str + ".root";
   std::string calofilename = "DST_CALO_CLUSTER_pythia8_Detroit-0000000022-" + pid_str + ".root";
@@ -153,6 +158,7 @@ int Fun4All_PHYTIA_Silicon(std::string processID = "0")
   // ClusterBuilder->set_UseTowerInfo(1); // just use towerinfo
   // //    ClusterBuilder->set_UseTowerInfo(1); // to use towerinfo objects rather than old RawTower
   // se->registerSubsystem(ClusterBuilder);
+  TopoClusterReco();
 
   auto silicon_Seeding = new PHActsSiliconSeeding;
   // silicon_Seeding->set_track_map_name("SvtxTrackSeedContainer");
@@ -232,8 +238,27 @@ int Fun4All_PHYTIA_Silicon(std::string processID = "0")
   auto projection = new PHActsTrackProjection("CaloProjection");
   se->registerSubsystem(projection);
 
-  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
-  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
+  // std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
+  // std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
+  // Ensure output directories exist
+  auto ensure_dir = [](const std::string &path)
+  {
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0)
+    {
+      std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
+      mkdir(path.c_str(), 0777);
+    }
+    else if (!(info.st_mode & S_IFDIR))
+    {
+      std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
+      exit(1);
+    }
+  };
+
+  ensure_dir(outDir);
+  ensure_dir(outDir2);
+  ensure_dir(outDir + "/qa");
   std::string outputName = outDir + "/DST_SiliconOnly_PHYTIA_";
   outputName += "Info_" + processID + ".root";
   std::string outputName2 = outDir2 + "/ana_" + processID + ".root";
@@ -261,6 +286,7 @@ int Fun4All_PHYTIA_Silicon(std::string processID = "0")
   siana->setMC(true);
   siana->setTrackMapName("SvtxTrackMap");
   siana->setVertexMapName("SvtxVertexMap");
+  siana->setTopoCluster(useTopologicalCluster);
   // siana->setVtxSkip(true);
   siana->setOutputFileName(outputName2);
   int startnumber = nEvents * std::stoi(processID);

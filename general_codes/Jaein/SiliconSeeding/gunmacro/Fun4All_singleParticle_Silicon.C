@@ -64,6 +64,11 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
 {
   const int nEvents = 100;
 
+  std::string particle_name = "e-";
+  std::string particle_name_tag = (particle_name == "J/psi") ? "jpsi" : particle_name;
+  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
+  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
+  bool useTopologicalCluster = false;
   Fun4AllServer *se = Fun4AllServer::instance();
   se->Verbosity(10);
 
@@ -75,8 +80,6 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   Input::SIMPLE = true;
   InputInit();
 
-  std::string particle_name = "J/psi";
-  std::string particle_name_tag = (particle_name == "J/psi") ? "jpsi" : particle_name;
   if (Input::SIMPLE)
   {
     INPUTGENERATOR::SimpleEventGenerator[0]->add_particles(particle_name, 1);
@@ -130,18 +133,18 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   // Enable::CEMC_EVAL =  false;
   // Enable::CEMC_QA =  false;
 
-  // Enable::HCALIN = false;
-  // Enable::HCALIN_ABSORBER = false;
-  // Enable::HCALIN_CELL =  false;
-  // Enable::HCALIN_TOWER =  false;
-  // Enable::HCALIN_CLUSTER =  false;
-  // Enable::HCALIN_EVAL =  false;
-  // Enable::HCALIN_QA =  false;
+   Enable::HCALIN = true;
+   Enable::HCALIN_ABSORBER = true;
+   Enable::HCALIN_CELL =  true;
+   Enable::HCALIN_TOWER =  true;
+  // Enable::HCALIN_CLUSTER =  true;
+  // Enable::HCALIN_EVAL =  true;
+  // Enable::HCALIN_QA =  true;
 
-  // Enable::HCALOUT = false;
-  // Enable::HCALOUT_ABSORBER = true;
-  // Enable::HCALOUT_CELL =  false;
-  // Enable::HCALOUT_TOWER =  false;
+   Enable::HCALOUT = true;
+   Enable::HCALOUT_ABSORBER = true;
+   Enable::HCALOUT_CELL =  true;
+   Enable::HCALOUT_TOWER =  true;
   // Enable::HCALOUT_CLUSTER = false;
   // Enable::HCALOUT_EVAL =  false;
   // Enable::HCALOUT_QA =  false;
@@ -174,12 +177,12 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   CEMC_Cells();
   CEMC_Towers();
   CEMC_Clusters();
-
-  //   HCALInner_Cells();
-  //   HCALOuter_Cells();
-  //   HCALInner_Towers();
-  //  HCALInner_Clusters();
-  //  HCALOuter_Towers();
+  TopoClusterReco();
+  HCALInner_Cells();
+  HCALOuter_Cells();
+  HCALInner_Towers();
+ // HCALInner_Clusters();
+  HCALOuter_Towers();
   //  HCALOuter_Clusters();
 
   auto silicon_Seeding = new PHActsSiliconSeeding;
@@ -244,8 +247,6 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   // }
   /////////////////////////////////
   bool runTruth = false;
-  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
-  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
   auto ensure_dir = [](const std::string &path)
   {
     struct stat info;
@@ -270,7 +271,7 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   else
     outputName += "reconstructed";
   outputName += "Info_" + processID + ".root";
-  std::string outputName2 = outDir2 + "/ana_" + processID + ".root";
+  std::string outputName2 = outDir2 + "/topo_ana_" + processID + ".root";
 
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputName);
   se->registerOutputManager(out);
@@ -283,6 +284,7 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   auto siana = new SiliconSeedsAna("SiliconSeedsAna");
   siana->setMC(true);
   siana->setVtxSkip(true);
+  siana->setTopoCluster(useTopologicalCluster);
   siana->setOutputFileName(outputName2);
   int startnumber = nEvents * std::stoi(processID);
   siana->setStartEventNumber(startnumber);
