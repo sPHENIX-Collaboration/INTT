@@ -72,7 +72,7 @@ Stores per-track information from the silicon tracker and projections to EMCal.
 
 ### 🔥 `caloTree` – Calorimeter Hit Information
 
-Stores calorimeter hit positions and energy deposits per event.
+Stores calorimeter cluster positions and energy deposits per event.
 
 **Branches:**
 - `calo_evt` — Event number (`int`)
@@ -84,7 +84,7 @@ Stores calorimeter hit positions and energy deposits per event.
 
 ### 🟪 `SiClusTree` – Silicon Cluster Information
 
-Clusters associated with silicon tracker hits.
+Clusters associated with silicon tracks.
 
 **Branches:**
 - `evt` — Event number (`int`)
