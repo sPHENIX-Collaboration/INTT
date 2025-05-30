@@ -12,21 +12,17 @@ EOF
 	exit 0
 fi
 
-# source /opt/sphenix/core/bin/sphenix_setup.sh -n new
-# if [ "$1" -eq 1 ]; then
-# 	export MYINSTALL2="/sphenix/user/jbertaux/MYINSTALL2"
-# 	source /opt/sphenix/core/bin/setup_local.sh ${MYINSTALL2}
-# else
-# 	source /opt/sphenix/core/bin/setup_local.sh
-# fi
+source /opt/sphenix/core/bin/sphenix_setup.sh -n new
+if [ "$1" -eq 1 ]; then
+	export MYINSTALL2="/sphenix/user/jbertaux/MYINSTALL2"
+	source /opt/sphenix/core/bin/setup_local.sh ${MYINSTALL2}
+else
+	source /opt/sphenix/core/bin/setup_local.sh
+fi
 
 # Prepend the install location of our libraries;
 # in this case, it's local "install" subdirectory
-echo "${BASH_SOURCE[0]}"
-# SCRIPT_DIR="$( cd "$(dirname "$(readlink -- "${BASH_SOURCE[0]}")")" &> /dev/null && pwd )"
-SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. &> /dev/null && pwd )"
-echo ${SCRIPT_DIR}
-exit 0
+SCRIPT_DIR="$( cd "$(dirname "$(readlink -- "${BASH_SOURCE[0]}")")" &> /dev/null && pwd )"
 
 export CPLUS_INCLUDE_PATH="${SCRIPT_DIR}/install/include:${CPLUS_INCLUDE_PATH}"
 export LD_LIBRARY_PATH="${SCRIPT_DIR}/install/lib:${LD_LIBRARY_PATH}"
@@ -40,7 +36,6 @@ ${CPLUS_INCLUDE_PATH}
 LD_LIBRARY_PATH is:
 ${LD_LIBRARY_PATH}
 ---------------------------------------------
-
 
 EOF
 

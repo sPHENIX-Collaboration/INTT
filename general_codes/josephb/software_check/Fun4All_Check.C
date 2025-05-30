@@ -25,9 +25,6 @@ Fun4All_Check (
 	SimpleDstCheck* simple_dst_check = new SimpleDstCheck;
 	se->registerSubsystem(simple_dst_check);
 
-	// auto reco_consts_instance = recoConsts::instance();
-	// reco_consts_instance->set_IntFlag("RUNNUMBER", 12345);
-
 	se->run(n_events);
 	se->End();
 }

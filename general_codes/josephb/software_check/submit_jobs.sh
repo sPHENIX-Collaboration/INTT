@@ -16,12 +16,11 @@ mkdir -p out
 mkdir -p job 
 
 mkdir -p "check_$1"
-cp check.sh "check_$1/."
-cp Fun4All_G4_sPHENIX.C "check_$1/."
-cp Fun4All_Check.C "check_$1/."
-cp G4Setup_sPHENIX.C "check_$1/."
-cp check.C "check_$1/."
-cp do_round_trip.C "check_$1/."
+ln -sf "$(pwd)/check.sh" "$(pwd)/check_$1/."
+for MACRO in $(ls *.C); do
+	ln -sf "$(pwd)/${MACRO}" "$(pwd)/check_$1/."
+done
+exit 0
 
 JOB="job/job_$1.txt"
 cat << EOF > ${JOB}
