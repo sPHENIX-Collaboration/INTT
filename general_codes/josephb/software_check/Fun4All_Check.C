@@ -10,8 +10,9 @@ R__LOAD_LIBRARY(libSimpleDstCheck.so)
 
 void
 Fun4All_Check (
-	int n_events = 100,
-	std::string const& dst_in_path = "G4sPHENIX.root"
+	// std::string const& dst_in_path = "G4sPHENIX.root",
+	std::string const& dst_in_path = "dstout.root",
+	int n_events = 0
 ) {
 	gSystem->Load("libg4dst");
 

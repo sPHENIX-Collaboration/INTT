@@ -40,11 +40,18 @@ ${LD_LIBRARY_PATH}
 EOF
 
 # Simulation
-# root -q -b Fun4All_G4_sPHENIX.C | tee Fun4All_G4_sPHENIX.out
-# root -q -b check.C | tee check.out
+root -q -b Fun4All_G4_sPHENIX.C | tee Fun4All_G4_sPHENIX.out
+root -q -b "Fun4All_Check.C(\"G4sPHENIX.root\")" | tee sim_check.out
 
 # Tracking production
+root -q -b Fun4All_PRDFReconstruction.C | tee Fun4All_PRDFReconstruction.out
+root -q -b "Fun4All_Check.C(\"dstout.root\")" | tee prdf_check.out
 
+# Calibration check
+root -q -b calib_check.C | tee calib_check.out
 
-# DST Check
-root -q -b Fun4All_Check.C | tee Fun4All_Check.out
+# Arborist check
+root -q -b arborist_check.C | tee arborist_check.out
+
+# Direct mapping check
+root -q -b round_trip_check.C | tee round_trip_check.out

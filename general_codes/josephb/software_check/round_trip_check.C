@@ -1,5 +1,5 @@
-#ifndef DO_ROUND_TRIP_C
-#define DO_ROUND_TRIP_C
+#ifndef ROUND_TRIP_CHECK_C
+#define ROUND_TRIP_CHECK_C
 
 #include <intt/InttMapping.h>
 R__LOAD_LIBRARY(libintt.so)
@@ -34,9 +34,8 @@ print (
 }
 
 void
-do_round_trip (
+round_trip_check (
 ) {
-
 	for (int felix_server = 0; felix_server < 8; ++felix_server) {
 		for (int felix_channel = 0; felix_channel < 14; ++felix_channel) {
 			for (int chip = 0; chip < 26; ++chip) {
@@ -77,4 +76,4 @@ do_round_trip (
 	}
 }
 
-#endif//DO_ROUND_TRIP_C
+#endif//ROUND_TRIP_CHECK_C
