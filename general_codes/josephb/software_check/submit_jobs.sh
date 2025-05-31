@@ -12,8 +12,6 @@ for I in {0..1}; do
 	done
 done
 
-exit 0
-
 JOB="job/job.txt"
 cat << EOF > ${JOB}
 universe           = vanilla
