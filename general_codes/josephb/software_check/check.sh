@@ -22,17 +22,36 @@ fi
 
 # Prepend the install location of our libraries;
 # in this case, it's local "install" subdirectory
-# SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd )"
-# export LD_LIBRARY_PATH="${SCRIPT_DIR}/install:${LD_LIBRARY_PATH}"
+SCRIPT_DIR="$( cd "$(dirname "$(readlink -- "${BASH_SOURCE[0]}")")" &> /dev/null && pwd )"
+
+export CPLUS_INCLUDE_PATH="${SCRIPT_DIR}/install/include:${CPLUS_INCLUDE_PATH}"
+export LD_LIBRARY_PATH="${SCRIPT_DIR}/install/lib:${LD_LIBRARY_PATH}"
 
 cat << EOF
 
+---------------------------------------------
+CPLUS_INCLUDE_PATH is:
+${CPLUS_INCLUDE_PATH}
 ---------------------------------------------
 LD_LIBRARY_PATH is:
 ${LD_LIBRARY_PATH}
 ---------------------------------------------
 
 EOF
-# root -q -b Fun4All_G4_sPHENIX.C | tee Fun4All_G4_sPHENIX.out
-# root -q -b check.C | tee check.out
-root -q -b do_round_trip.C | tee do_round_trip.out
+
+# Simulation
+root -q -b Fun4All_G4_sPHENIX.C | tee Fun4All_G4_sPHENIX.out
+root -q -b "Fun4All_Check.C(\"G4sPHENIX.root\")" | tee sim_check.out
+
+# Tracking production
+root -q -b Fun4All_PRDFReconstruction.C | tee Fun4All_PRDFReconstruction.out
+root -q -b "Fun4All_Check.C(\"dstout.root\")" | tee prdf_check.out
+
+# Calibration check
+root -q -b calib_check.C | tee calib_check.out
+
+# Arborist check
+root -q -b arborist_check.C | tee arborist_check.out
+
+# Direct mapping check
+root -q -b round_trip_check.C | tee round_trip_check.out

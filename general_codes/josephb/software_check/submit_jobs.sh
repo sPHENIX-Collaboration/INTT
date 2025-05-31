@@ -1,46 +1,39 @@
 #! /bin/bash
 
-if [[ -z "$1" || ("$1" -ne 0 && "$1" -ne 1) ]]; then
-cat << EOF
-
-	usage:
-		$0 [0 or 1]
-		0 for default (do NOT source setup_local with custom install)
-		1 for custom (source setup_local with custom install)
-
-EOF
-	exit 0
-fi
-
 mkdir -p out
 mkdir -p job 
 
-mkdir -p "check_$1"
-cp check.sh "check_$1/."
-cp Fun4All_G4_sPHENIX.C "check_$1/."
-cp G4Setup_sPHENIX.C "check_$1/."
-cp check.C "check_$1/."
-cp do_round_trip.C "check_$1/."
+for I in {0..1}; do
+	mkdir -p "check_$I"
+	ln -sf "$(pwd)/check.sh" "$(pwd)/check_$I/."
+	ln -sf "$(pwd)/list" "$(pwd)/check_$I/."
+	for MACRO in $(ls *.C); do
+		ln -sf "$(pwd)/${MACRO}" "$(pwd)/check_$I/."
+	done
+done
 
-JOB="job/job_$1.txt"
+exit 0
+
+JOB="job/job.txt"
 cat << EOF > ${JOB}
 universe           = vanilla
-executable         = $(pwd)/check_$1/check.sh
-arguments          = $1
-initialdir         = $(pwd)/check_$1
+initialdir         = $(pwd)/check_\$(process)
+executable         = $(pwd)/check_\$(process)/check.sh
+arguments          = \$(process)
 
 notification       = Never
 
-output             = $(pwd)/out/out_$1.txt
-error              = $(pwd)/out/out_$1.txt
-log                = /tmp/${USER}_check_$1.log
+output             = $(pwd)/out/out_\$(process).txt
+error              = $(pwd)/out/out_\$(process).txt
+log                = /tmp/${USER}_check_\$(process).log
 
 request_memory     = 8192MB
 PeriodicHold       = (NumJobStarts >= 1 && JobStatus == 1)
 concurrency_limits = CONCURRENCY_LIMIT_DEFAULT:100
+
+queue 2
 EOF
 condor_submit ${JOB}
-
 
 cat << EOF
 
