@@ -444,6 +444,8 @@ int INTTRawHitSanityCheck::PrepareINTT(PHCompositeNode *topNode)
   out_total_nHit = -999;
   out_total_nHit_post = -999;
 
+  long long temp_total_nHit = 0;
+
   // note : <bco_diff, count>
   std::map<int,int> NTrigHit_inner_map; NTrigHit_inner_map.clear();
   std::map<int,int> NTrigHit_outer_map; NTrigHit_outer_map.clear();
@@ -469,11 +471,11 @@ int INTTRawHitSanityCheck::PrepareINTT(PHCompositeNode *topNode)
       exit(1);
     }
 
-    out_total_nHit = inttcont->get_nhits();
-    if (out_total_nHit == 0) {
-      out_INTT_bcofull = -999;
-      std::cout << "eID: "<< eID_count <<" INTTRawHitSanityCheck::PrepareINTT - no INTT hit found" << std::endl;
-      return Fun4AllReturnCodes::EVENT_OK;
+    temp_total_nHit += inttcont->get_nhits();
+    if (inttcont->get_nhits() == 0) {
+      // out_INTT_bcofull = 
+      std::cout << "eID: "<< eID_count <<" INTTRawHitSanityCheck::PrepareINTT, FELIX: "<< DST_felix_i <<" - no INTT hit found" << std::endl;
+      continue;
     }
 
     for (unsigned int i = 0; i < inttcont->get_nhits(); i++)
@@ -567,6 +569,8 @@ int INTTRawHitSanityCheck::PrepareINTT(PHCompositeNode *topNode)
 
   } // note: done with all the FELIX servers
 
+
+  out_total_nHit = temp_total_nHit;
   out_total_nHit_post = evt_inttHits_map.size();
 
   for (const auto& pair : evt_inttHits_map) // note : total hits post HitQA, BadChannelMask, CloneHitRemoval, if selected
