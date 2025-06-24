@@ -56,6 +56,8 @@
 
 #include <simqa_modules/QAG4SimulationTracking.h>
 #include <stdio.h>
+#include <sys/stat.h>   // stat, mkdir
+#include <limits.h>     // PATH_MAX
 
 #pragma GCC diagnostic push
 
@@ -83,6 +85,26 @@ R__LOAD_LIBRARY(libtpcqa.so)
 R__LOAD_LIBRARY(libsiliconseedsana.so)
 // For HepMC Hijing
 // try inputFile = /sphenix/sim/sim01/sphnxpro/sHijing_HepMC/sHijing_0-12fm.dat
+void ensure_dir(const std::string& path)
+{
+  struct stat info;
+
+  if (stat(path.c_str(), &info) != 0)
+  {
+    std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
+    if (mkdir(path.c_str(), 0777) != 0)
+    {
+      std::cerr << "Failed to create directory " << path << std::endl;
+      exit(1);
+    }
+  }
+  else if (!(info.st_mode & S_IFDIR))
+  {
+    std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
+    exit(1);
+  }
+};
+
 const std::string trkrdir = "/sphenix/lustre01/sphnxpro/mdc2/js_pp200_signal/nopileup/trkrcluster/run0022/detroit/";
 const std::string calodir = "/sphenix/lustre01/sphnxpro/mdc2/js_pp200_signal/nopileup/calocluster/run0022/detroit/";
 const std::string truthdir = "/sphenix/lustre01/sphnxpro/mdc2/js_pp200_signal/nopileup/trkrhit/run0022/detroit/";
@@ -91,14 +113,28 @@ const std::string calofilename = "DST_CALO_CLUSTER_pythia8_Detroit-0000000022-00
 const std::string truthfilename = "DST_TRUTH_pythia8_Detroit-0000000022-00000.root";
 int Fun4All_PHYTIA_Silicon(std::string processID = "0")
 {
-  const int nEvents = 1000;
+  const int nEvents = 10;
 
   std::ostringstream pid;
   pid << std::setw(6) << std::setfill('0') << std::stoi(processID);
   std::string pid_str = pid.str();
 
-  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
-  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
+  char cwd[PATH_MAX];
+  if (getcwd(cwd, sizeof(cwd)) == nullptr)
+  {
+	std::cerr << "Failed to get current working directory!" << std::endl;
+	return 1;
+  }
+
+  std::string baseDir(cwd);
+  std::string outDir  = baseDir + "/DST";
+  std::string outDir2 = baseDir + "/ana";
+//  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
+//  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
+  ensure_dir(outDir);
+  ensure_dir(outDir + "/qa");
+  ensure_dir(outDir2);
+
   bool useTopologicalCluster = false;
 
   std::string trkrclusterfilename = "DST_TRKR_CLUSTER_pythia8_Detroit-0000000022-" + pid_str + ".root";
@@ -238,27 +274,10 @@ int Fun4All_PHYTIA_Silicon(std::string processID = "0")
   auto projection = new PHActsTrackProjection("CaloProjection");
   se->registerSubsystem(projection);
 
-  // std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/DST";
-  // std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/PYTHIA/macro/ana";
   // Ensure output directories exist
-  auto ensure_dir = [](const std::string &path)
-  {
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-    {
-      std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
-      mkdir(path.c_str(), 0777);
-    }
-    else if (!(info.st_mode & S_IFDIR))
-    {
-      std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
-      exit(1);
-    }
-  };
 
-  ensure_dir(outDir);
-  ensure_dir(outDir2);
-  ensure_dir(outDir + "/qa");
+
+
   std::string outputName = outDir + "/DST_SiliconOnly_PHYTIA_";
   outputName += "Info_" + processID + ".root";
   std::string outputName2 = outDir2 + "/ana_" + processID + ".root";
