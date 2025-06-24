@@ -2,6 +2,7 @@
 #define MACRO_FUN4ALLG4SPHENIX_C
 
 #include <sys/stat.h>
+#include <limits.h>     // PATH_MAX
 #include <unistd.h>
 #include <GlobalVariables.C>
 
@@ -60,15 +61,54 @@ R__LOAD_LIBRARY(libsimqa_modules.so)
 R__LOAD_LIBRARY(libsiliconseedsana.so)
 R__LOAD_LIBRARY(libtrack_reco.so)
 
+void ensure_dir(const std::string& path)
+{
+  struct stat info;
+
+  if (stat(path.c_str(), &info) != 0)
+  {
+    std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
+    if (mkdir(path.c_str(), 0777) != 0)
+    {
+      std::cerr << "Failed to create directory " << path << std::endl;
+      exit(1);
+    }
+  }
+  else if (!(info.st_mode & S_IFDIR))
+  {
+    std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
+    exit(1);
+  }
+};
+
+
+bool useTopologicalCluster = false;
+
 int Fun4All_singleParticle_Silicon(std::string processID = "0")
 {
-  const int nEvents = 100;
+  const int nEvents = 5;
 
   std::string particle_name = "e-";
   std::string particle_name_tag = (particle_name == "J/psi") ? "jpsi" : particle_name;
-  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
-  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
-  bool useTopologicalCluster = false;
+  std::ostringstream pid;
+  pid << std::setw(6) << std::setfill('0') << std::stoi(processID);
+  std::string pid_str = pid.str();
+
+  char cwd[PATH_MAX];
+  if (getcwd(cwd, sizeof(cwd)) == nullptr)
+  {
+	std::cerr << "Failed to get current working directory!" << std::endl;
+	return 1;
+  }
+
+//  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
+//  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
+  std::string baseDir(cwd);
+  std::string outDir  = baseDir + "/DST_" + particle_name_tag;
+  std::string outDir2 = baseDir + "/ana_" + particle_name_tag;
+  ensure_dir(outDir);
+  ensure_dir(outDir2);
+  ensure_dir(outDir + "/qa");
   Fun4AllServer *se = Fun4AllServer::instance();
   se->Verbosity(10);
 
@@ -82,30 +122,30 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
 
   if (Input::SIMPLE)
   {
-    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles(particle_name, 1);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_function(PHG4SimpleEventGenerator::Gaus,
-                                                                              PHG4SimpleEventGenerator::Gaus,
-                                                                              PHG4SimpleEventGenerator::Gaus);
-    // INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_mean(0., 0., 0.);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0.01, 0.01, 5.);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0, 0, 0);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.1, 1.1);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(-M_PI, M_PI);
-    // INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.1, 20.);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.3, 20.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->add_particles(particle_name, 1);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_function(PHG4SimpleEventGenerator::Gaus,
+		PHG4SimpleEventGenerator::Gaus,
+		PHG4SimpleEventGenerator::Gaus);
+	// INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_mean(0., 0., 0.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0.01, 0.01, 5.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0, 0, 0);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.1, 1.1);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(-M_PI, M_PI);
+	// INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.1, 20.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.3, 20.);
   }
 
   InputRegister();
 
   if (!Input::READHITS)
   {
-    rc->set_IntFlag("RUNNUMBER", 1);
+	rc->set_IntFlag("RUNNUMBER", 1);
 
-    SyncReco *sync = new SyncReco();
-    se->registerSubsystem(sync);
+	SyncReco *sync = new SyncReco();
+	se->registerSubsystem(sync);
 
-    HeadReco *head = new HeadReco();
-    se->registerSubsystem(head);
+	HeadReco *head = new HeadReco();
+	se->registerSubsystem(head);
   }
   FlagHandler *flag = new FlagHandler();
   se->registerSubsystem(flag);
@@ -133,18 +173,18 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   // Enable::CEMC_EVAL =  false;
   // Enable::CEMC_QA =  false;
 
-   Enable::HCALIN = true;
-   Enable::HCALIN_ABSORBER = true;
-   Enable::HCALIN_CELL =  true;
-   Enable::HCALIN_TOWER =  true;
+  Enable::HCALIN = true;
+  Enable::HCALIN_ABSORBER = true;
+  Enable::HCALIN_CELL =  true;
+  Enable::HCALIN_TOWER =  true;
   // Enable::HCALIN_CLUSTER =  true;
   // Enable::HCALIN_EVAL =  true;
   // Enable::HCALIN_QA =  true;
 
-   Enable::HCALOUT = true;
-   Enable::HCALOUT_ABSORBER = true;
-   Enable::HCALOUT_CELL =  true;
-   Enable::HCALOUT_TOWER =  true;
+  Enable::HCALOUT = true;
+  Enable::HCALOUT_ABSORBER = true;
+  Enable::HCALOUT_CELL =  true;
+  Enable::HCALOUT_TOWER =  true;
   // Enable::HCALOUT_CLUSTER = false;
   // Enable::HCALOUT_EVAL =  false;
   // Enable::HCALOUT_QA =  false;
@@ -163,8 +203,8 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   Mbd_Reco();
   Mvtx_Cells();
   Intt_Cells();
-  TPC_Cells();
-  Micromegas_Cells();
+  //TPC_Cells();
+  //Micromegas_Cells();
 
   // TrackingInit();
   ACTSGEOM::ActsGeomInit();
@@ -181,7 +221,7 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   HCALInner_Cells();
   HCALOuter_Cells();
   HCALInner_Towers();
- // HCALInner_Clusters();
+  // HCALInner_Clusters();
   HCALOuter_Towers();
   //  HCALOuter_Clusters();
 
@@ -215,10 +255,10 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   se->registerSubsystem(finder);
 
   Global_Reco(); // Definition is below..
-                 /////////////////////
-                 // void Global_Reco()
-                 // {
-                 //   int verbosity = std::max(Enable::VERBOSITY, Enable::GLOBAL_VERBOSITY);
+  /////////////////////
+  // void Global_Reco()
+  // {
+  //   int verbosity = std::max(Enable::VERBOSITY, Enable::GLOBAL_VERBOSITY);
 
   //   Fun4AllServer* se = Fun4AllServer::instance();
 
@@ -230,11 +270,11 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   // }
 
   build_truthreco_tables(); // Definition is below..
-                            //////////////////////////////////
-                            // void build_truthreco_tables()
-                            // {
-                            //   int verbosity = std::max(Enable::VERBOSITY, Enable::TRACKING_VERBOSITY);
-                            //   Fun4AllServer* se = Fun4AllServer::instance();
+  //////////////////////////////////
+  // void build_truthreco_tables()
+  // {
+  //   int verbosity = std::max(Enable::VERBOSITY, Enable::TRACKING_VERBOSITY);
+  //   Fun4AllServer* se = Fun4AllServer::instance();
 
   //   // this module builds high level truth track association table.
   //   // If this module is used, this table should be called before any evaluator calls.
@@ -249,27 +289,25 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   bool runTruth = false;
   auto ensure_dir = [](const std::string &path)
   {
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-    {
-      std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
-      mkdir(path.c_str(), 0777);
-    }
-    else if (!(info.st_mode & S_IFDIR))
-    {
-      std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
-      exit(1);
-    }
+	struct stat info;
+	if (stat(path.c_str(), &info) != 0)
+	{
+	  std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
+	  mkdir(path.c_str(), 0777);
+	}
+	else if (!(info.st_mode & S_IFDIR))
+	{
+	  std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
+	  exit(1);
+	}
   };
 
-  ensure_dir(outDir);
-  ensure_dir(outDir2);
-  ensure_dir(outDir + "/qa");
+
   std::string outputName = outDir + "/DST_SiliconOnly_single_" + particle_name_tag + "_vtxfixed_Caloevents_";
   if (runTruth)
-    outputName += "truth";
+	outputName += "truth";
   else
-    outputName += "reconstructed";
+	outputName += "reconstructed";
   outputName += "Info_" + processID + ".root";
   std::string outputName2 = outDir2 + "/topo_ana_" + processID + ".root";
 
@@ -304,7 +342,7 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   delete se;
   if (Enable::PRODUCTION)
   {
-    Production_MoveOutput();
+	Production_MoveOutput();
   }
 
   gSystem->Exit(0);
