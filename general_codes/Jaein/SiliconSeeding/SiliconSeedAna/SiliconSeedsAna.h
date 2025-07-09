@@ -158,6 +158,7 @@ public:
   std::vector<float> calo_z;
   std::vector<float> calo_r;
   std::vector<float> calo_phi;
+  std::vector<float> calo_eta;
   std::vector<float> calo_energy;
 
   double m_emcal_low_cut = 0.3;
@@ -196,3 +197,13 @@ public:
 };
 
 #endif  // SILICONSEEDSANA_H
+
+  // --- Matched EMCal cluster info for each track ---
+  std::vector<float> matched_calo_x;
+  std::vector<float> matched_calo_y;
+  std::vector<float> matched_calo_z;
+  std::vector<float> matched_calo_r;
+  std::vector<float> matched_calo_phi;
+  std::vector<float> matched_calo_eta;
+  std::vector<float> matched_calo_energy;
+  std::vector<float> matched_calo_dR;
