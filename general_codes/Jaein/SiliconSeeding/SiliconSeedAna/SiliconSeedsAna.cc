@@ -33,6 +33,15 @@ void SiliconSeedsAna::clearTrackVectors() {
   track_x_emc.clear(); track_y_emc.clear(); track_z_emc.clear();
   track_px_emc.clear(); track_py_emc.clear(); track_pz_emc.clear();
   track_eta_emc.clear(); track_phi_emc.clear(); track_pt_emc.clear();
+  // Clear matched calo vectors
+  matched_calo_x.clear();
+  matched_calo_y.clear();
+  matched_calo_z.clear();
+  matched_calo_r.clear();
+  matched_calo_phi.clear();
+  matched_calo_eta.clear();
+  matched_calo_energy.clear();
+  matched_calo_dR.clear();
 }
 
 void SiliconSeedsAna::clearCaloVectors() {
@@ -41,6 +50,7 @@ void SiliconSeedsAna::clearCaloVectors() {
   calo_z.clear();
   calo_r.clear();
   calo_phi.clear();
+  calo_eta.clear();
   calo_energy.clear();
 }
 
@@ -54,6 +64,45 @@ void SiliconSeedsAna::fillEMCalState(SvtxTrackState* state) {
   track_eta_emc.push_back(state ? state->get_eta() : NAN);
   track_phi_emc.push_back(state ? state->get_phi() : NAN);
   track_pt_emc.push_back(state ? state->get_pt() : NAN);
+
+  // --- EMCal cluster matching ---
+  // Find the closest EMCal cluster in eta/phi to this state
+  float best_dR = 9999.0;
+  int best_idx = -1;
+  float state_eta = state ? state->get_eta() : NAN;
+  float state_phi = state ? state->get_phi() : NAN;
+  // Use calo_eta/calo_phi/calo_x/etc. as the cluster list
+  for (size_t icl = 0; icl < calo_eta.size(); ++icl) {
+    float deta = state_eta - calo_eta[icl];
+    float dphi = state_phi - calo_phi[icl];
+    // Wrap dphi into [-pi, pi]
+    while (dphi > M_PI) dphi -= 2 * M_PI;
+    while (dphi < -M_PI) dphi += 2 * M_PI;
+    float dR = std::sqrt(deta * deta + dphi * dphi);
+    if (dR < best_dR) {
+      best_dR = dR;
+      best_idx = icl;
+    }
+  }
+  if (best_idx >= 0) {
+    matched_calo_x.push_back(calo_x[best_idx]);
+    matched_calo_y.push_back(calo_y[best_idx]);
+    matched_calo_z.push_back(calo_z[best_idx]);
+    matched_calo_r.push_back(calo_r[best_idx]);
+    matched_calo_phi.push_back(calo_phi[best_idx]);
+    matched_calo_eta.push_back(calo_eta[best_idx]);
+    matched_calo_energy.push_back(calo_energy[best_idx]);
+    matched_calo_dR.push_back(best_dR);
+  } else {
+    matched_calo_x.push_back(NAN);
+    matched_calo_y.push_back(NAN);
+    matched_calo_z.push_back(NAN);
+    matched_calo_r.push_back(NAN);
+    matched_calo_phi.push_back(NAN);
+    matched_calo_eta.push_back(NAN);
+    matched_calo_energy.push_back(NAN);
+    matched_calo_dR.push_back(NAN);
+  }
 }
 
 void SiliconSeedsAna::initTrackTreeBranches() {
@@ -85,6 +134,15 @@ void SiliconSeedsAna::initTrackTreeBranches() {
   trackTree->Branch("eta_proj_emc", &track_eta_emc);
   trackTree->Branch("phi_proj_emc", &track_phi_emc);
   trackTree->Branch("pt_proj_emc", &track_pt_emc);
+  // Add matched EMCal cluster branches
+  trackTree->Branch("matched_calo_x", &matched_calo_x);
+  trackTree->Branch("matched_calo_y", &matched_calo_y);
+  trackTree->Branch("matched_calo_z", &matched_calo_z);
+  trackTree->Branch("matched_calo_r", &matched_calo_r);
+  trackTree->Branch("matched_calo_phi", &matched_calo_phi);
+  trackTree->Branch("matched_calo_eta", &matched_calo_eta);
+  trackTree->Branch("matched_calo_energy", &matched_calo_energy);
+  trackTree->Branch("matched_calo_dR", &matched_calo_dR);
   trackTree->SetBasketSize("*", 50000);
 }
 
@@ -96,6 +154,7 @@ void SiliconSeedsAna::initCaloTreeBranches() {
   caloTree->Branch("z", &calo_z);
   caloTree->Branch("r", &calo_r);
   caloTree->Branch("phi", &calo_phi);
+  caloTree->Branch("eta", &calo_eta);
   caloTree->Branch("energy", &calo_energy);
   caloTree->SetBasketSize("*",50000);
 }
@@ -136,8 +195,8 @@ int SiliconSeedsAna::InitRun(PHCompositeNode * /*unused*/)
 int SiliconSeedsAna::process_event(PHCompositeNode* topNode)
 {
   // fillTruthTree(topNode);
-  processTrackMap(topNode);
   processCaloClusters(topNode);
+  processTrackMap(topNode);
   processVertexMap(topNode);
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -404,7 +463,6 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
 void SiliconSeedsAna::processCaloClusters(PHCompositeNode* topNode)
 {
   auto EMCalClusmap = findNode::getClass<RawClusterContainer>(topNode, m_emcalClusName);
-  // vector 초기화 (이벤트 시작 시)
   clearCaloVectors();
   std::cout << "start calo map  EVENT " << calo_evt << " is OK" << std::endl;
   if (!b_skipcalo && EMCalClusmap)
@@ -423,10 +481,36 @@ void SiliconSeedsAna::processCaloClusters(PHCompositeNode* topNode)
       calo_z.push_back(clus->get_z());
       calo_r.push_back(clus->get_r());
       calo_phi.push_back(clus->get_phi());
+      float eta = -1.0;
+      float cx = clus->get_x();
+      float cy = clus->get_y();
+      float cz = clus->get_z();
+      float vx = 0.0, vy = 0.0, vz = 0.0;
+
+      if (!b_skipvtx)
+      {
+        auto vertexmap = findNode::getClass<SvtxVertexMap>(topNode, m_vertexMapName);
+        if (vertexmap && !vertexmap->empty())
+        {
+          SvtxVertex *vtx = vertexmap->begin()->second;
+          if (vtx)
+          {
+            vx = vtx->get_x();
+            vy = vtx->get_y();
+            vz = vtx->get_z();
+          }
+        }
+      }
+      float dx = cx - vx;
+      float dy = cy - vy;
+      float dz = cz - vz;
+      float dr = std::sqrt(dx * dx + dy * dy);
+      float theta = std::atan2(dr, dz);
+      eta = -std::log(std::tan(theta / 2.0));
+      calo_eta.push_back(eta);
       calo_energy.push_back(clus->get_energy());
-      std::cout << "EMCal x : " << calo_x.back() << ", EMCal y :  " << calo_y.back() << ", EMCal z : " << calo_z.back() << ", EMCal r : " << calo_r.back() << ", EMCal phi :  " << calo_phi.back() << ", EMcal E : " << calo_energy.back() << std::endl;
+      std::cout << "EMCal x : " << calo_x.back() << ", EMCal y :  " << calo_y.back() << ", EMCal z : " << calo_z.back() << ", EMCal r : " << calo_r.back() << ", EMCal phi :  " << calo_phi.back() << ", EMCal eta : " << calo_eta.back() << ", EMcal E : " << calo_energy.back() << std::endl;
     }
-    // 이벤트마다 한 번만 Fill
     caloTree->Fill();
   }
   else
