@@ -297,8 +297,7 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
     float t_pz = track->get_pz();
     int t_crossing = trkcrossing;
     int t_nmaps = 0, t_nintt = 0, t_inner = 0, t_outer = 0;
-    int n_mvtx_clusters = 0;
-    int n_intt_clusters = 0;
+
     if (!si_seed)
     {
       track_nmaps.push_back(0);
@@ -318,11 +317,11 @@ void SiliconSeedsAna::processTrackMap(PHCompositeNode* topNode)
         }
         if (TrkrDefs::getTrkrId(cluster_key) == TrkrDefs::TrkrId::mvtxId)
         {
-          n_mvtx_clusters++;
+          t_nmaps++;
         }
         if (TrkrDefs::getTrkrId(cluster_key) == TrkrDefs::TrkrId::inttId)
         {
-          n_intt_clusters++;
+          t_nintt++;
         }
         Acts::Vector3 global(0., 0., 0.);
         global = geometry->getGlobalPosition(cluster_key, trkrCluster);
