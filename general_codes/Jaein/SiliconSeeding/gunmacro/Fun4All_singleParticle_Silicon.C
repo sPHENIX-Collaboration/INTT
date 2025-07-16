@@ -37,7 +37,7 @@
 #include <ffamodules/HeadReco.h>
 #include <ffamodules/SyncReco.h>
 #include <ffamodules/CDBInterface.h>
-
+#include <fun4allutils/TimerStats.h>
 #include <fun4all/Fun4AllDstOutputManager.h>
 #include <fun4all/Fun4AllOutputManager.h>
 #include <fun4all/Fun4AllServer.h>
@@ -83,12 +83,13 @@ void ensure_dir(const std::string& path)
 
 
 bool useTopologicalCluster = false;
-
+bool jpsiTodielectronOnly = true;
 int Fun4All_singleParticle_Silicon(std::string processID = "0")
 {
-  const int nEvents = 5;
+  const int nEvents = 10;
 
-  std::string particle_name = "e-";
+  std::string particle_name = "J/psi";
+//  particle_name = "eta";
   std::string particle_name_tag = (particle_name == "J/psi") ? "jpsi" : particle_name;
   std::ostringstream pid;
   pid << std::setw(6) << std::setfill('0') << std::stoi(processID);
@@ -106,8 +107,10 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   std::string baseDir(cwd);
   std::string outDir  = baseDir + "/DST_" + particle_name_tag;
   std::string outDir2 = baseDir + "/ana_" + particle_name_tag;
+  std::string outDir3 = baseDir + "/jobtime_" + particle_name_tag;
   ensure_dir(outDir);
   ensure_dir(outDir2);
+  ensure_dir(outDir3);
   ensure_dir(outDir + "/qa");
   Fun4AllServer *se = Fun4AllServer::instance();
   se->Verbosity(10);
@@ -118,8 +121,11 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   recoConsts *rc = recoConsts::instance();
   Input::VERBOSITY = 0;
   Input::SIMPLE = true;
+  if(jpsiTodielectronOnly)
+  {
+    EVTGENDECAYER::DecayFile = "decayfile/JpsiDielectron.DEC";
+  }
   InputInit();
-
   if (Input::SIMPLE)
   {
 	INPUTGENERATOR::SimpleEventGenerator[0]->add_particles(particle_name, 1);
@@ -149,9 +155,11 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   }
   FlagHandler *flag = new FlagHandler();
   se->registerSubsystem(flag);
-
+  TimerStats *ts = new TimerStats();
+  std::string jobtimeFile = outDir3 + "/jobtime_" + processID + ".root";
+  ts->OutFileName(jobtimeFile);
+  se->registerSubsystem(ts);
   // Simulation setup
-
   Enable::MBDFAKE = true;
   Enable::PIPE = true;
   Enable::PIPE_ABSORBER = true;
@@ -309,7 +317,7 @@ int Fun4All_singleParticle_Silicon(std::string processID = "0")
   else
 	outputName += "reconstructed";
   outputName += "Info_" + processID + ".root";
-  std::string outputName2 = outDir2 + "/topo_ana_" + processID + ".root";
+  std::string outputName2 = outDir2 + "/ana_" + processID + ".root";
 
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outputName);
   se->registerOutputManager(out);

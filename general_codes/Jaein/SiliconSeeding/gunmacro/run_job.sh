@@ -8,11 +8,11 @@ echo ANA_build = $ANA_build
 #source /opt/sphenix/core/bin/sphenix_setup.sh -n ana.$ANA_build
 source /opt/sphenix/core/bin/sphenix_setup.sh 
 # Additional commands for my local environment
-export SPHENIX=/sphenix/user/jaein213/tracking/SiliconSeeding/SiliconSeedAna
+export SPHENIX=/sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/SiliconSeedAna
 export MYINSTALL=$SPHENIX/install
 source /opt/sphenix/core/bin/setup_local.sh $MYINSTALL
 
-cd /sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro
+cd /sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/gunmacro
 
 # if [ ! -d "$output_directory" ]; then
 #     mkdir -p $output_directory

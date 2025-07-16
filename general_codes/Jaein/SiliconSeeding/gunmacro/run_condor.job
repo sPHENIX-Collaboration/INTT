@@ -25,7 +25,7 @@ Requirements=(CPU_Speed >= 1)
 # rank.  Condor will give the job the machine with the highest rank.
 Rank=CPU_Speed
 
-Initialdir         = /sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro
+Initialdir         = /sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/gunmacro
 
 Executable         = $(Initialdir)/run_job.sh
 
