@@ -126,6 +126,14 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   PYTHIA8::config_file = "PYHTIA8_JPSI_DielectronOnly.cfg";
 
   InputInit();
+
+  // can only be set after InputInit() is called
+  // pythia6
+  if (Input::PYTHIA6)
+  {
+    //! Nominal collision geometry is selected by Input::BEAM_CONFIGURATION
+    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia6);
+  }
   // pythia8
   if (Input::PYTHIA8)
   {
@@ -138,11 +146,27 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
     INPUTGENERATOR::Pythia8->register_trigger(p8_trigger);
     INPUTGENERATOR::Pythia8->set_trigger_AND();
 
-    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia8);
-// You can change the beam setup via Input::BEAM_CONFIGURATION 
-    Input::BEAM_CONFIGURATION = Input::pp_COLLISION; 
-    //Input::BEAM_CONFIGURATION = Input::pp_ZEROANGLE; // 0mrad x-ing of sPHENIX
-    //Input::BEAM_CONFIGURATION = Input::AA_COLLISION; 
+    /////////////////////// Part to Tune the Phytia beam parameters started //////////////////// 
+    // Option 1) You can use some default configuration provided by sPHENIX
+    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia8, Input::pp_COLLISION);
+    //    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia8,Input::pp_ZEROANGLE);
+    //    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia8,Input::AA_COLLISION);
+
+    // Option 2) You can set the beam crossing or set the vertex_distribution_width at the INPUT generator level
+    if (false)
+    {
+      Input::beam_crossing = 1.;
+      double localbcross = Input::beam_crossing / 2. * 1e-3;
+      localbcross = Input::beam_crossing / 2. * 1e-3;
+      //  Xing angle is split among both beams, means set to 0.5 mRad
+      INPUTGENERATOR::Pythia8->set_beam_direction_theta_phi(localbcross, 0, M_PI - localbcross, 0); // 1.5mrad x-ing of sPHENIX
+      INPUTGENERATOR::Pythia8->set_vertex_distribution_width(
+        120e-4,         // approximation from past PHENIX data
+        120e-4,         // approximation from past PHENIX data
+        16,             // measured in 2024 for 1.5mrad Xing angle
+        20 / 29.9792);  // 20cm collision length / speed of light in cm/ns
+    }
+    /////////////////////// Part to Tune the Phytia beam parameters done //////////////////// 
   }
 
   if (Input::PILEUPRATE > 0)
@@ -150,6 +174,7 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
     //! Nominal collision geometry is selected by Input::BEAM_CONFIGURATION
     Input::ApplysPHENIXBeamParameter(INPUTMANAGER::HepMCPileupInputManager);
   }
+  // register all input generators with Fun4All
 
   InputRegister();
 
