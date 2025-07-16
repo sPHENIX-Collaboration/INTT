@@ -5,14 +5,13 @@ ANA_build=$2
 echo ID = $Process_ID
 echo ANA_build = $ANA_build
 
-#source /opt/sphenix/core/bin/sphenix_setup.sh -n ana.$ANA_build
 source /opt/sphenix/core/bin/sphenix_setup.sh 
 # Additional commands for my local environment
 export SPHENIX=/sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/SiliconSeedAna
 export MYINSTALL=$SPHENIX/install
 source /opt/sphenix/core/bin/setup_local.sh $MYINSTALL
 
-cd /sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/gunmacro
+cd /sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSeeding/PHYTIAgen
 
 # if [ ! -d "$output_directory" ]; then
 #     mkdir -p $output_directory
@@ -28,7 +27,7 @@ cd /sphenix/user/jaein213/tracking/buildtest/INTT/general_codes/Jaein/SiliconSee
 #     mkdir -p ${completed_foldername}
 # fi
 
-root.exe -q -b Fun4All_singleParticle_Silicon.C\(\"$Process_ID\"\)
+root.exe -q -b Fun4All_PYHTIAGen_Silicon.C\(\"$Process_ID\"\)
 
 echo all done
 
