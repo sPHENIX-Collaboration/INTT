@@ -23,7 +23,6 @@
 
 #include <Trkr_RecoInit.C>
 #include <Trkr_Clustering.C>
-#include <Trkr_LaserClustering.C>
 #include <Trkr_Reco.C>
 #include <Trkr_Eval.C>
 #include <Trkr_QA.C>
@@ -32,8 +31,6 @@
 #include <G4_User.C>
 #include <QA.C>
 #include <trackreco/PHActsTrackProjection.h>
-#include <phpythia8/PHPy8ParticleTrigger.h>
-#include <phpythia8/PHPy8JetTrigger.h>
 
 #include <ffamodules/FlagHandler.h>
 #include <ffamodules/HeadReco.h>
@@ -86,10 +83,13 @@ void ensure_dir(const std::string& path)
 
 bool useTopologicalCluster = false;
 bool jpsiTodielectronOnly = true;
-int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
+int Fun4All_singleParticle_Silicon(std::string processID = "0")
 {
-  const int nEvents = 20;
+  const int nEvents = 10;
 
+  std::string particle_name = "J/psi";
+//  particle_name = "eta";
+  std::string particle_name_tag = (particle_name == "J/psi") ? "jpsi" : particle_name;
   std::ostringstream pid;
   pid << std::setw(6) << std::setfill('0') << std::stoi(processID);
   std::string pid_str = pid.str();
@@ -97,16 +97,16 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   char cwd[PATH_MAX];
   if (getcwd(cwd, sizeof(cwd)) == nullptr)
   {
-    std::cerr << "Failed to get current working directory!" << std::endl;
-    return 1;
+	std::cerr << "Failed to get current working directory!" << std::endl;
+	return 1;
   }
 
-  //  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
-  //  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
+//  std::string outDir = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/DST/" + particle_name_tag;
+//  std::string outDir2 = "/sphenix/user/jaein213/tracking/SiliconSeeding/MC/macro/ana/" + particle_name_tag;
   std::string baseDir(cwd);
-  std::string outDir = baseDir + "/DST";
-  std::string outDir2 = baseDir + "/ana";
-  std::string outDir3 = baseDir + "/jobtime";
+  std::string outDir  = baseDir + "/DST_" + particle_name_tag;
+  std::string outDir2 = baseDir + "/ana_" + particle_name_tag;
+  std::string outDir3 = baseDir + "/jobtime_" + particle_name_tag;
   ensure_dir(outDir);
   ensure_dir(outDir2);
   ensure_dir(outDir3);
@@ -119,49 +119,38 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
 
   recoConsts *rc = recoConsts::instance();
   Input::VERBOSITY = 0;
-  //===============
-  // Input options
-  //===============
-  Input::PYTHIA8 = true;
-  PYTHIA8::config_file = "PYHTIA8_JPSI_DielectronOnly.cfg";
-
-  InputInit();
-  // pythia8
-  if (Input::PYTHIA8)
+  Input::SIMPLE = true;
+  if(jpsiTodielectronOnly)
   {
-    //! Nominal collision geometry is selected by Input::BEAM_CONFIGURATION
-
-    PHPy8ParticleTrigger *p8_trigger = new PHPy8ParticleTrigger();
-    p8_trigger->AddParticles(443); // J/psi
-    p8_trigger->SetStableParticleOnly(false);
-
-    INPUTGENERATOR::Pythia8->register_trigger(p8_trigger);
-    INPUTGENERATOR::Pythia8->set_trigger_AND();
-
-    Input::ApplysPHENIXBeamParameter(INPUTGENERATOR::Pythia8);
-// You can change the beam setup via Input::BEAM_CONFIGURATION 
-    Input::BEAM_CONFIGURATION = Input::pp_COLLISION; 
-    //Input::BEAM_CONFIGURATION = Input::pp_ZEROANGLE; // 0mrad x-ing of sPHENIX
-    //Input::BEAM_CONFIGURATION = Input::AA_COLLISION; 
+    EVTGENDECAYER::DecayFile = "decayfile/JpsiDielectron.DEC";
   }
-
-  if (Input::PILEUPRATE > 0)
+  InputInit();
+  if (Input::SIMPLE)
   {
-    //! Nominal collision geometry is selected by Input::BEAM_CONFIGURATION
-    Input::ApplysPHENIXBeamParameter(INPUTMANAGER::HepMCPileupInputManager);
+	INPUTGENERATOR::SimpleEventGenerator[0]->add_particles(particle_name, 1);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_function(PHG4SimpleEventGenerator::Gaus,
+		PHG4SimpleEventGenerator::Gaus,
+		PHG4SimpleEventGenerator::Gaus);
+	// INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_mean(0., 0., 0.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0.01, 0.01, 5.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_vertex_distribution_width(0, 0, 0);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.1, 1.1);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(-M_PI, M_PI);
+	// INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.1, 20.);
+	INPUTGENERATOR::SimpleEventGenerator[0]->set_pt_range(0.3, 20.);
   }
 
   InputRegister();
 
   if (!Input::READHITS)
   {
-    rc->set_IntFlag("RUNNUMBER", 1);
+	rc->set_IntFlag("RUNNUMBER", 1);
 
-    SyncReco *sync = new SyncReco();
-    se->registerSubsystem(sync);
+	SyncReco *sync = new SyncReco();
+	se->registerSubsystem(sync);
 
-    HeadReco *head = new HeadReco();
-    se->registerSubsystem(head);
+	HeadReco *head = new HeadReco();
+	se->registerSubsystem(head);
   }
   FlagHandler *flag = new FlagHandler();
   se->registerSubsystem(flag);
@@ -193,16 +182,16 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
 
   Enable::HCALIN = true;
   Enable::HCALIN_ABSORBER = true;
-  Enable::HCALIN_CELL = true;
-  Enable::HCALIN_TOWER = true;
+  Enable::HCALIN_CELL =  true;
+  Enable::HCALIN_TOWER =  true;
   // Enable::HCALIN_CLUSTER =  true;
   // Enable::HCALIN_EVAL =  true;
   // Enable::HCALIN_QA =  true;
 
   Enable::HCALOUT = true;
   Enable::HCALOUT_ABSORBER = true;
-  Enable::HCALOUT_CELL = true;
-  Enable::HCALOUT_TOWER = true;
+  Enable::HCALOUT_CELL =  true;
+  Enable::HCALOUT_TOWER =  true;
   // Enable::HCALOUT_CLUSTER = false;
   // Enable::HCALOUT_EVAL =  false;
   // Enable::HCALOUT_QA =  false;
@@ -221,8 +210,8 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   Mbd_Reco();
   Mvtx_Cells();
   Intt_Cells();
-  // TPC_Cells();
-  // Micromegas_Cells();
+  //TPC_Cells();
+  //Micromegas_Cells();
 
   // TrackingInit();
   ACTSGEOM::ActsGeomInit();
@@ -307,24 +296,25 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   bool runTruth = false;
   auto ensure_dir = [](const std::string &path)
   {
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-    {
-      std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
-      mkdir(path.c_str(), 0777);
-    }
-    else if (!(info.st_mode & S_IFDIR))
-    {
-      std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
-      exit(1);
-    }
+	struct stat info;
+	if (stat(path.c_str(), &info) != 0)
+	{
+	  std::cout << "Directory " << path << " does not exist. Creating..." << std::endl;
+	  mkdir(path.c_str(), 0777);
+	}
+	else if (!(info.st_mode & S_IFDIR))
+	{
+	  std::cerr << "Path " << path << " exists but is not a directory!" << std::endl;
+	  exit(1);
+	}
   };
 
-  std::string outputName = outDir + "/DST_SiliconOnly_PHYTIAGen_";
+
+  std::string outputName = outDir + "/DST_SiliconOnly_single_" + particle_name_tag + "_vtxfixed_Caloevents_";
   if (runTruth)
-    outputName += "truth";
+	outputName += "truth";
   else
-    outputName += "reconstructed";
+	outputName += "reconstructed";
   outputName += "Info_" + processID + ".root";
   std::string outputName2 = outDir2 + "/ana_" + processID + ".root";
 
@@ -346,7 +336,7 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   se->registerSubsystem(siana);
   se->run(nEvents);
 
-  std::string qaFile = outDir + "/qa/PHYTIAGen_JPSI" + processID + ".root";
+  std::string qaFile = outDir + "/qa/single_" + particle_name_tag + "_QA_VTXfixed" + processID + ".root";
   QAHistManagerDef::saveQARootFile(qaFile);
 
   //-----
@@ -359,7 +349,7 @@ int Fun4All_PYHTIAGen_Silicon(std::string processID = "0")
   delete se;
   if (Enable::PRODUCTION)
   {
-    Production_MoveOutput();
+	Production_MoveOutput();
   }
 
   gSystem->Exit(0);

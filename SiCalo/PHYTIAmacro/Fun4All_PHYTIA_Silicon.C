@@ -10,7 +10,6 @@
 #include <QA.C>
 #include <G4_TopoClusterReco.C>
 #include <Trkr_Clustering.C>
-#include <Trkr_LaserClustering.C>
 #include <Trkr_Reco.C>
 #include <Trkr_RecoInit.C>
 #include <Trkr_TpcReadoutInit.C>
