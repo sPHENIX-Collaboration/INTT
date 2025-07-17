@@ -23,7 +23,6 @@
 
 #include <Trkr_RecoInit.C>
 #include <Trkr_Clustering.C>
-#include <Trkr_LaserClustering.C>
 #include <Trkr_Reco.C>
 #include <Trkr_Eval.C>
 #include <Trkr_QA.C>
