@@ -284,6 +284,8 @@ int InttAna::process_event(PHCompositeNode *topNode)
 //  double mbdt0 = (mbdout!=nullptr) ?  mbdout->get_t0() : -9999;
   double mbdz  = (mbdout!=nullptr) ?  mbdout->get_zvtx() : -9999;
 
+  cout<<"mbdz : "<<mbdz<<endl;
+
   Gl1RawHit *gl1raw = findNode::getClass<Gl1RawHit>(topNode, "GL1RAWHIT");
   if(!gl1raw){
     cout<<"No Gl1Raw"<<endl;
