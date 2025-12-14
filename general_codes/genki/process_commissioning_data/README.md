@@ -1,6 +1,11 @@
 # process_commissioning_data
 A program to do some processes, i.e. decoding, transferring, making plots, etc, for INTT data taken in 1008.
 
+# before running the script, make the log directory
+# default log directory is following:
+#  log=/home/inttdev/INTT/log/inttdaq_cron/
+ln -s  /home/inttdev/INTT/log/inttdaq_cron/ log
+
 # How to use
 Run
 ```
