@@ -210,10 +210,11 @@ int InttCombinedRawDataConverterEB::process_event(PHCompositeNode* topNode)
   {
     InttRawHit* intthit = inttcont->get_hit(i);
 
-    raw.felix_server  = InttNameSpace::FelixFromPacket(intthit->get_packetid());
-    raw.felix_channel = intthit->get_fee();
-    raw.chip          = intthit->get_chip_id();
-    raw.channel       = intthit->get_channel_id();
+    //--raw.felix_server  = InttNameSpace::FelixFromPacket(intthit->get_packetid());
+    //--raw.felix_channel = intthit->get_fee();
+    //--raw.chip          = intthit->get_chip_id();
+    //--raw.channel       = intthit->get_channel_id();
+    raw = InttNameSpace::RawFromHit(intthit);
     onl = InttNameSpace::ToOnline(raw);
 
 

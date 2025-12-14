@@ -19,8 +19,8 @@
 
 #include <intt/InttBadChannelMap.h>
 #include <intt/InttBCOMap.h>
-#include <intt/InttMap.h>
-#include <intt/InttFeeMap.h>
+//#include <intt/InttMap.h>
+//#include <intt/InttFeeMap.h>
 
 
 
@@ -262,11 +262,11 @@ int InttStreamReco::process_event(PHCompositeNode* topNode)
     raw.chip = chip;
     raw.channel = hit->get_channel_id();
 
-    if (m_HotChannelSet.find(raw) != m_HotChannelSet.end())
-    {
-    //  std::cout<<"hotchan removed : "<<raw.felix_server<<" "<<raw.felix_channel<<" "<<raw.chip<<" "<<raw.channel<<std::endl;
-      continue;
-    }
+    //--if (m_HotChannelSet.find(raw) != m_HotChannelSet.end())
+    //--{
+    //--//  std::cout<<"hotchan removed : "<<raw.felix_server<<" "<<raw.felix_channel<<" "<<raw.chip<<" "<<raw.channel<<std::endl;
+    //--  continue;
+    //--}
 
     //InttMap::Offline_s offl = m_feemap->ToOffline(raw);
 
@@ -539,6 +539,7 @@ int InttStreamReco::LoadHotChannelMapLocal(std::string const& filename)
   // need to checkt for error exception
   cdbttree.LoadCalibrations();
 
+/*
   m_HotChannelSet.clear();
   uint64_t N = cdbttree.GetSingleIntValue("size");
   cout<<"LoadHotChannelMapLocal : "<<N<<endl;
@@ -560,6 +561,7 @@ int InttStreamReco::LoadHotChannelMapLocal(std::string const& filename)
                << "\t" << cdbttree.GetIntValue(n, "chip")
                << "\t" << cdbttree.GetIntValue(n, "channel") << std::endl;
   }
+*/
 
   return 0;
 }

@@ -18,8 +18,8 @@
 
 #include <intt/InttBadChannelMap.h>
 #include <intt/InttBCOMap.h>
-#include <intt/InttMap.h>
-#include <intt/InttFeeMap.h>
+//--#include <intt/InttMap.h>
+//--#include <intt/InttFeeMap.h>
 
 #include <ffarawobjects/Gl1RawHit.h>
 #include <ffarawobjects/Gl1Packet.h>
@@ -470,6 +470,7 @@ int InttBcoReco::LoadHotChannelMapLocal(std::string const& filename)
   // need to checkt for error exception
   cdbttree.LoadCalibrations();
 
+/*
   m_HotChannelSet.clear();
   uint64_t N = cdbttree.GetSingleIntValue("size");
   cout<<"LoadHotChannelMapLocal : "<<N<<endl;
@@ -491,6 +492,7 @@ int InttBcoReco::LoadHotChannelMapLocal(std::string const& filename)
                << "\t" << cdbttree.GetIntValue(n, "chip")
                << "\t" << cdbttree.GetIntValue(n, "channel") << std::endl;
   }
+*/
 
   return 0;
 }

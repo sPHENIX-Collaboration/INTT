@@ -61,8 +61,8 @@ class InttBcoReco : public SubsysReco
    InttBCOMap*        m_bcomap{nullptr};
    InttFeeMap*        m_feemap{nullptr};
 
-   typedef std::set<InttNameSpace::RawData_s, InttNameSpace::RawDataComparator> Set_t;
-   Set_t m_HotChannelSet;
+   //--typedef std::set<InttNameSpace::RawData_s, InttNameSpace::RawDataComparator> Set_t;
+   //--Set_t m_HotChannelSet;
 
    int m_bcopeak[8][14]{0};
 
