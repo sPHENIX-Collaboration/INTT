@@ -1,0 +1,20 @@
+Universe           = vanilla
+Initialdir         = /sphenix/tg/tg01/commissioning/INTT/work/ryotaro/commissioning25/TimingScan/macro
+Executable         = run_job.sh
+PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
+concurrency_limits = CONCURRENCY_LIMIT_DEFAULT:100
+request_memory     = 4GB
+Priority           = 20
+job_lease_duration = 86400
+
+runnumber          = 82400
+nEvents            = -1
+job_offset         = 0
+process_shift      = $(Process) + $(job_offset) 
+output_directory   = /sphenix/tg/tg01/commissioning/INTT/work/ryotaro/commissioning25/TimingScan/output
+
+Output             = $(output_directory)/condor/condor_$(runnumber).out
+Error              = $(output_directory)/condor/condor_$(runnumber).err
+Log                = $(output_directory)/condor/condor_$(runnumber).log
+Arguments          = "$INT(process_shift) $(runnumber) $(nEvents)"
+Queue 1
