@@ -7,11 +7,13 @@
 #include <TH1F.h>
 #include <TGraph.h>
 #include <TArc.h>
+#include <TArrow.h>
 #include <TBox.h>
 
 //
 // Variables for Event Display
 //
+const float PI = 3.141592;
 
 string idatafile;   //filename of the input data file
 int NmaxEvent;      // # of events in the data file
@@ -100,7 +102,6 @@ TBox *hitsRZ[nMax];
 static int nhits = 0;
 static int nhitsRZ = 0;
 
-
 // ZVTX maker
 TArrow *ZvtxMarker = nullptr;
 
@@ -111,13 +112,17 @@ TArrow *seedtrkRZ[nMaxTrk];
 static int ntrks = 0;
 static int ntrksRZ = 0;
 
+// buffer for EMC-INTT tracklet orbit
+vector<TArc*> vEmcINTTorbitL;   //Local Orbit
+vector<TArc*> vEmcINTTorbitG;   //Global Orbit
+
 // constants
 const float pt0min=0.5; // GeV/c. minimum pT0 for tracks
 const float EMScale=0.14;  //EMC hit scaling factor
 
 // RZ slice angle
 static float phiSlice = 3.141592/2;
-const float DphiSlice = 0.15;
+const float DphiSlice = 0.3;
 static float Rmax = 12.0;
 static TArc *dphiArc = nullptr;
 
@@ -126,18 +131,21 @@ static TArc *dphiArc = nullptr;
 //
 struct EmcINTTtriplet {
   int iEmc;       //index in vEMr, vEMphi, vEMz
-  int iINTT0;     //index in vINTT0.r, vINTT0.phi, vINTT0z
-  int iINTT1;     //index in vINTT1.r, vINTT1.phi, vINTT1z
+  int iINTT0;     //index in vINTT0r, vINTT0phi, vINTT0z
+  int iINTT1;     //index in vINTT1r, vINTT1phi, vINTT1z
 };
 
-struct EmcINTT_Mvtx {
-  int iEmc;       //index in vEMr, vEMphi, vEMz
-  int iINTT0;     //index in vINTT0.r, vINTT0.phi, vINTT0z
-  int iINTT1;     //index in vINTT1.r, vINTT1.phi, vINTT1z
-  vector<int> iMVTX;
-};
-
-vector<EmcINTTtriplet> vEmcINTT;
+// Emc-INTT1-INTT0 triplet
+vector<EmcINTTtriplet> vEmcINTT;  //triplet
+vector<int> vEmcINTT_Mvtx1;  //index of Mvtx1 hit assciated with triplet
+vector<int> vEmcINTT_Mvtx2;  //index of Mvtx2 hit assciated with triplet
+vector<int> vEmcINTT_Mvtx3;  //index of Mvtx3 hit assciated with triplet
+vector<float> vEmcINTT_R;    //local radius of EmcINTT tracklet orbit (circle)
+vector<float> vEmcINTT_xO;   // x of the center of the tracklet orbit
+vector<float> vEmcINTT_yO;   // y of the center of the tracklet orbit
+vector<float> vEmcINTT_R_EI; //local radius of EmcINTT tracklet orbit (circle)
+vector<float> vEmcINTT_xO_EI;// x of the center of the tracklet orbit
+vector<float> vEmcINTT_yO_EI;// y of the center of the tracklet orbit
 
 vector<float> vEMr;
 vector<float> vEMphi;
@@ -154,7 +162,10 @@ vector<float> vINTT1z;
 
 vector<float> vMVTXr;
 vector<float> vMVTXphi;
+vector<float> vMVTXx;
+vector<float> vMVTXy;
 vector<float> vMVTXz;
+
 
 void LoadData(string filename);
 void GetEvent(int ievent);
@@ -175,16 +186,15 @@ void display_data(void){
 
 
   // open data file and load the data
-  //  LoadData("data/52077/ana_52077_00346.root");//zero field and very old
-  //  LoadData("data/53018/ana_53018_00089.root");//field ON but old format
 
   //input data file
-  idatafile ="run2pp/53876/ana_53876_00102.root";
-  // idatafile ="JYtaskonRIKEN/ana_53879_100kevt_topo_eh_default.root";
+  //  idatafile = "run3pp/79516_old/ana_79516_00000.root";
+  idatafile = "run2pp/53876/ana_53876_00001.root";
+  // idatafile ="ana_53879_1kevt_4evtdisplay.root";
 
   // type of the data
   idata_Type = 1;  // Hachiya nDST
-  // idata_Type = 2;  // Jingy's new nDST
+  //  idata_Type = 2;  // Jingy's new nDST
     
   LoadData(idatafile.c_str());  //field ON and new
   NmaxEvent = evtTree->GetEntries();
@@ -218,19 +228,15 @@ void display_data(void){
       //      cout << "event = "<<i << endl;
       GetEvent(i);
       AnalyzeEvent();
+      if(vEmcINTT.size()>0) {
+	cout <<"ievent="<<i<<" # of triplet="<<vEmcINTT.size()<<endl<<endl;
+      }
       if(i%1000 == 0) cout << i << endl;
     }//for
     AnalyzeEnd();
   } else if(imode == 2 ) { // Event Display
     gStyle->SetCanvasPreferGL();
 
-    // select frame. This is asked only once at the beginning
-    if(iframe==-1) {
-      cout << "select frame (0 or 1)" << endl;
-      cin >> iframe;
-      if(iframe != 0) iframe=1;
-      cout << "iframe="<<iframe<<endl;
-    }
     AnalyzeInit();
     for(int i=0;i<MaxLoop;i++) {
       EventSelection( ievent);
@@ -319,7 +325,8 @@ void LoadData(string filename) {
     caloTree->SetBranchAddress("Calo_Clus_phi",&emc_phi);
     caloTree->SetBranchAddress("Calo_Clus_r",&emc_r);
     caloTree->SetBranchAddress("Calo_Clus_z",&emc_z);
-
+  }
+  // now Hachiya data includes topoTree
     topoTree->SetBranchAddress("clus_e",&top_e);
     topoTree->SetBranchAddress("clus_x",&top_x);
     topoTree->SetBranchAddress("clus_y",&top_y);
@@ -330,7 +337,6 @@ void LoadData(string filename) {
     topoTree->SetBranchAddress("clus_emcal_e",&emc_e);
     topoTree->SetBranchAddress("clus_ihcal_e",&ihc_e);
     topoTree->SetBranchAddress("clus_ohcal_e",&ohc_e);
-  }
 
   //data in SiClusTree
   SiClusTree->SetBranchAddress("Siclus_layer",&layer);
@@ -372,7 +378,40 @@ void EventDisplay(void){
   
   if(nEmcClust>nMax) nEmcClust=nMax;
 
-  //  cout << "nhits="<<nhits<<endl;
+  // Draw hits (EMC and Silicon) and seedtrk in c1
+
+  { // select frame.
+    int new_frame;
+    cout << "select frame (0 or 1)" << endl;
+    cin >> new_frame;
+    if(new_frame != 0) new_frame=1;
+    if(new_frame != iframe) {
+      cout << "frame is changed to "<<new_frame<<endl;
+      iframe = new_frame;
+      if(c1==nullptr){
+	c1 = new TCanvas("c1","XY View",800.,800.);
+      } else {
+	c1->cd();
+      }
+      if(iframe==0) {
+	frame1 = c1->DrawFrame(-160.,-160.,160.,160.);
+      } else if(iframe==1) {
+	frame1 = c1->DrawFrame(-16.,-16.,16.,16.);
+      }
+      
+      if(c2==nullptr){
+	c2= new TCanvas("c2","RZ Slice",800,270);
+      } else {
+	c2->cd();
+      }
+      if(iframe==0) {
+	frame2 = c2->DrawFrame(-240.,0.,240.,160.);
+      } else if(iframe==1) {
+	frame2 = c2->DrawFrame(-24.,0.,24.,16.);
+      }
+    }
+  }
+
   if(nhits>0) {
     for(int ihit=0;ihit<nhits;ihit++) {
       hits[ihit]->Delete();
@@ -453,9 +492,12 @@ void EventDisplay(void){
       nhits++;
 
       if(abs(emc_phi->at(j)-phiSlice)<DphiSlice) {
-	float Remc = sqrt(x[j]*x[j]+y[j]*y[j]);
+	float Remc = emc_r->at(j);
 	float Zemc = emc_z->at(j);
-	if(iframe == 1) Zemc = EMScale*Zemc;
+	if(iframe == 1) {
+	  Remc = EMScale*Remc;
+	  Zemc = EMScale*Zemc;
+	}
 	hitsRZ[nhitsRZ]=new TBox(Zemc-sE,Remc-sE,Zemc+sE,Remc+sE);
 	hitsRZ[nhitsRZ]->SetFillColor(kBlue);
 	nhitsRZ++;
@@ -557,19 +599,37 @@ void EventDisplay(void){
     }
   }
 
-  // Draw hits (EMC and Silicon) and seedtrk in c1
-  // create or select c1
-  if(c1==nullptr){
-    c1 = new TCanvas("c1","XY View",800.,800.);
-    if(iframe==0) {
-      frame1 = c1->DrawFrame(-160.,-160.,160.,160.);
-    } else if(iframe==1) {
-      frame1 = c1->DrawFrame(-16.,-16.,16.,16.);
+  // Create Orbit of EmcINTT tracklet if EmcINTT triplet exsits
+  if(vEmcINTT.size()>0) {
+    cout <<"EmcINTT tracklet found: # of tracklet = "<<vEmcINTT.size()<<endl;
+    // clear previously existed track orbit;
+    for(int io=0;io<vEmcINTTorbitL.size();io++) {
+      vEmcINTTorbitL.at(io)->Delete();
     }
-  } else {
-    c1->cd();
+    vEmcINTTorbitL.clear();
+
+    for(int io=0;io<vEmcINTTorbitG.size();io++) {
+      vEmcINTTorbitG.at(io)->Delete();
+    }
+    vEmcINTTorbitG.clear();
+    
+    for(int i=0;i<vEmcINTT.size();i++) {
+      TArc *orbitL = new TArc(vEmcINTT_xO.at(i),vEmcINTT_yO.at(i),
+			     vEmcINTT_R.at(i),0.,360.);
+      orbitL->SetFillStyle(0);
+      orbitL->SetLineColor(kGreen);
+      vEmcINTTorbitL.push_back(orbitL);
+
+      TArc *orbitG = new TArc(vEmcINTT_xO_EI.at(i),vEmcINTT_yO_EI.at(i),
+			     vEmcINTT_R_EI.at(i),0.,360.);
+      orbitG->SetFillStyle(0);
+      orbitG->SetLineColor(kBlue);
+      vEmcINTTorbitG.push_back(orbitG);
+    }
   }
+
   // Draw X-Y view
+  c1->cd();
   for(int kk=0;kk<nhits;kk++){
     hits[kk]->Draw();
   }
@@ -606,29 +666,21 @@ void EventDisplay(void){
   Circle4->Draw();
   Circle8->Draw();
   Circle10->Draw();
+
+  for(int i=0;i<vEmcINTT.size();i++) {
+    vEmcINTTorbitL.at(i)->Draw();
+    vEmcINTTorbitG.at(i)->Draw();
+  }
   
   c1->Draw();
   c1->Modified();
   c1->Update();
-  cout<<endl;
+  //  cout<<endl;
 
-  // Draw vertical R-Z slice
-  // create or select c2
-  if(c2==nullptr) {//set up frame
-    c2= new TCanvas("c2","RZ Slice",800,270);
-    if(iframe==0) {
-      frame2 = c2->DrawFrame(-240.,0.,240.,160.);
-    } else if(iframe==1) {
-      frame2 = c2->DrawFrame(-24.,0.,24.,16.);
-    }
-  } else {
-    c2->cd();
-  }
-
-  //Draw ZvtxMarker in c2
-  ZvtxMarker->Draw();
-  
   //Draw RZ slice
+  c2->cd();
+
+  ZvtxMarker->Draw();
   for(int kk=0;kk<nhitsRZ;kk++){
     hitsRZ[kk]->Draw();
   }
@@ -657,19 +709,28 @@ TH2F* hdphiM;
 TH2F* hdphiM2;
 TH2F* hdphiM3;
 
-TH2F* hdphi10_MVTX;
+TH2F* hdphiMvtx_r;
+TH1F* hdphiMvtx1;
+TH1F* hdphiMvtx2;
+TH1F* hdphiMvtx3;
+
+TH1F* hRorbit;
+TH1F* hpT;
 
 TH1F* hzvtx;
 TH1F* hzvtxINTT;
 
+const float xBC= -0.018; //  -0.018;
+const float yBC=0.126; //0.126;
+  
 void AnalyzeInit(void) {
   cout << "AnalyzeInit()"<<endl;
-  hdphi1=new TH1F("hdphi1","dphi1",100,-0.2,0.2);
-  hdphi0=new TH1F("hdphi0","dphi0",100,-0.2,0.2);
+  hdphi1=new TH1F("hdphi1","dphi1",100,-0.5,0.5);
+  hdphi0=new TH1F("hdphi0","dphi0",100,-0.5,0.5);
   hdeta1=new TH1F("hdeta1","eta1-EMCeta",150,-0.03,0.03);
   hdeta0=new TH1F("hdeta0","eta1-EMCeta",150,-0.03,0.03);
   hdphi1_0=new TH1F("hdphi1_0","phi1-phi0",100,-0.1,0.1);
-  hdphi1t=new TH1F("hdphi1t","dphi1 (tight)",100,-0.2,0.2);
+  hdphi1t=new TH1F("hdphi1t","dphi1 (tight)",100,-0.5,0.5);
   hdeta1t=new TH1F("hdeta1t","eta1-EMCeta (tight)",150,-0.03,0.03);
   
   hEMe = new TH1F("hEMe","EMC energy (inclusive)",250,0.,5.0);
@@ -681,8 +742,14 @@ void AnalyzeInit(void) {
   hdphiM2 = new TH2F("hdphiM2","EMphi-INTT1phi vs INTT1phi-INTT0phi Rotate",100,-0.2,0.2,100,-0.025,0.025);
   hdphiM3 = new TH2F("hdphiM3","EMphi-INTT1phi vs INTT1phi-INTT0phi Rot, Tight",100,-0.2,0.2,100,-0.025,0.025);
 
-  hdphi10_MVTX = new TH2F("hdphi10_MVTX","INTT0phi-MVTXphi vs INTT1phi-INTT0phi",100,-0.02,0.02,100,-0.02,0.02);
-  
+  hdphiMvtx_r = new TH2F("hdphiMvtx_r","dphi(MVTX) vs rMVTX",100,1.5,5.5,100,-0.05,0.05);
+
+  hdphiMvtx1 = new TH1F("hdphiMvtx1","dphi(MVTX) 2.5<r<3.5",100,-0.05,0.05);
+  hdphiMvtx2 = new TH1F("hdphiMvtx2","dphi(MVTX) 3.5<r<4.3",100,-0.05,0.05);
+  hdphiMvtx3 = new TH1F("hdphiMvtx3","dphi(MVTX) 4.3<r<5.5",100,-0.05,0.05);
+
+  hRorbit   = new TH1F("hRorbit","track orbit radius",200,0.,400);
+  hpT       = new TH1F("hpT","track pT",100,0.,5.0);
   hzvtx     = new TH1F("hzvtx","zvtx in evtTree",41,-20.5,20.5);
   hzvtxINTT = new TH1F("hzvtxINTT","zvtx by INTT",41,-20.5,20.5);
   
@@ -747,8 +814,22 @@ void AnalyzeEnd(void) {
   hdeta1t->Draw();
 
   TCanvas *c15=new TCanvas("c15");
-  hdphi10_MVTX->Draw();
+  hdphiMvtx_r->Draw();
 
+  TCanvas *c16=new TCanvas("c16");
+  f1->SetParameters(600,0.,0.007,50);
+  hdphiMvtx1->Draw();
+  hdphiMvtx1->Fit("f1","","",-0.03,0.03);
+  
+  TCanvas *c17=new TCanvas("c17");
+  f1->SetParameters(700,0.,0.005,50);
+  hdphiMvtx2->Draw();
+  hdphiMvtx2->Fit("f1","","",-0.03,0.03);
+
+  TCanvas *c18=new TCanvas("c18");
+  f1->SetParameters(500,0.,0.003,50);
+  hdphiMvtx3->Draw();
+  hdphiMvtx3->Fit("f1","","",-0.03,0.03);
 
   TFile *file = new TFile("AnaEvent.root","RECREATE");
   hdphi1->Write();
@@ -766,7 +847,13 @@ void AnalyzeEnd(void) {
   hdphiM->Write();
   hdphiM2->Write();
   hdphiM3->Write();
-  hdphi10_MVTX->Write();
+  hdphiMvtx_r->Write();
+  hdphiMvtx1->Write();
+  hdphiMvtx2->Write();
+  hdphiMvtx3->Write();
+  hRorbit->Write();
+  hpT->Write();
+  
   hzvtx->Write();
   hzvtxINTT->Write();
   
@@ -788,6 +875,8 @@ void LoadTrackerData(void) {
 
   vMVTXr.clear();
   vMVTXphi.clear();
+  vMVTXx.clear();
+  vMVTXy.clear();
   vMVTXz.clear();
 
   vINTT0r.clear();
@@ -810,14 +899,16 @@ void LoadTrackerData(void) {
 
   //Fill vector of MVTX and INTT data
   for(int i=0;i<nSiA;i++) {
-    float xhit = a_si_x->at(i);
-    float yhit = a_si_y->at(i);
+    float xhit = a_si_x->at(i)-xBC;
+    float yhit = a_si_y->at(i)-yBC;
     float zhit = a_si_z->at(i);
     float phi_hit = atan2(yhit,xhit);
     float rhit = sqrt(xhit*xhit+yhit*yhit);
     if(a_layer->at(i)<3) {       // MVTX
       vMVTXr.push_back(rhit);
       vMVTXphi.push_back(phi_hit);
+      vMVTXx.push_back(xhit);
+      vMVTXy.push_back(yhit);
       vMVTXz.push_back(zhit);
     }
     else if(a_layer->at(i)< 5) { //INTT0
@@ -847,7 +938,7 @@ float rz2eta(float r,float z) {
 
 void FindEmcINTTtriplet(void) {
   // constants for cuts
-  const float dPhi = 0.2;         //dphi from EMC hit to search INTT hit
+  const float dPhi = 0.5;         //dphi from EMC hit to search INTT hit
   const float deta_match = 0.03;  //0.03 deta cut between EMC hit and INTT hit
   const float deta_match2 = 0.01; //tighter deta cut
   const float dphi1_0match = 0.02;   // acceptance range of INTT1phi - INTT0phi
@@ -866,6 +957,16 @@ void FindEmcINTTtriplet(void) {
   hzvtx->Fill(zvtx);
 
   vEmcINTT.clear();
+  vEmcINTT_Mvtx1.clear();
+  vEmcINTT_Mvtx2.clear();
+  vEmcINTT_Mvtx3.clear();
+  vEmcINTT_R.clear();
+  vEmcINTT_xO.clear();
+  vEmcINTT_yO.clear();
+  vEmcINTT_R_EI.clear();
+  vEmcINTT_xO_EI.clear();
+  vEmcINTT_yO_EI.clear();
+  
   // search for INTT hits that matches with EMC in phi and eta
   for(int iemc=0;iemc<vEMphi.size();iemc++) {
     INTT0m.clear();
@@ -876,7 +977,7 @@ void FindEmcINTTtriplet(void) {
     INTT1detam.clear();
     INTT0dphim.clear();
     INTT1dphim.clear();
-
+    
     hEMe->Fill(vEMe.at(iemc));
     float EMCeta = rz2eta(vEMr.at(iemc),vEMz.at(iemc)-zvtx);
 
@@ -958,26 +1059,156 @@ void FindEmcINTTtriplet(void) {
 void FindEmcINTT_Mvtx(void) {
   // Search for MVTX hits that matches EmcINTTtriplet, and add the
   // matched hits
-
-  const float dphi_MVTX_INTT0 = 0.05;
+  if(imode == 2) {
+    cout << "# of triplet ="<<vEmcINTT.size()<<endl;
+  }
   
-  //  cout << ": # of triplet found:"<<vEmcINTT.size()<<endl;
+  const float dphi_MVTX_INTT0 = 0.05;  // rough angle cut
+  const float dphiMvtx1 = 0.016;
+  const float dphiMvtx2 = 0.012;
+  const float dphiMvtx3 = 0.009;
+  
+  for(int i=0;i<vEmcINTT.size();i++){
+    vEmcINTT_Mvtx1.push_back(-1);
+    vEmcINTT_Mvtx2.push_back(-1);
+    vEmcINTT_Mvtx3.push_back(-1);
+    vEmcINTT_R.push_back(0);
+    vEmcINTT_xO.push_back(0);
+    vEmcINTT_yO.push_back(0);
+    vEmcINTT_R_EI.push_back(0);
+    vEmcINTT_xO_EI.push_back(0);
+    vEmcINTT_yO_EI.push_back(0);
+  }
+
+  const float r_ave = 6.0; // average r of Silicon tracker
   for(int i=0;i<vEmcINTT.size();i++) {
-    cout << "EMphi = " <<vEMphi.at((vEmcINTT.at(i)).iEmc);
-    cout <<" INTT1phi= "<<vINTT1phi.at((vEmcINTT.at(i)).iINTT1);
-    cout <<" INTT0phi= "<<vINTT0phi.at((vEmcINTT.at(i)).iINTT0)<<endl;
     float phi0 =vINTT0phi.at((vEmcINTT.at(i)).iINTT0);
+    float r0   =vINTT0r.at((vEmcINTT.at(i)).iINTT0);
     float phi1 =vINTT1phi.at((vEmcINTT.at(i)).iINTT1);
+    float r1   =vINTT1r.at((vEmcINTT.at(i)).iINTT1);
     float rEmc =vEMr.at((vEmcINTT.at(i)).iEmc);
     float zEmc =vEMz.at((vEmcINTT.at(i)).iEmc);
+
+    float a=(phi1-phi0)/(r1*r1-r0*r0);
+    float R_orbit = 1/sqrt(abs(2*a));
+    float phi00 = phi0 - a*r0*r0;
+    hRorbit->Fill(R_orbit);
+    hpT->Fill(0.42*R_orbit/100);
+
+    //Local orbit. There parameters are good in Si tracker region
+    float phi00c = phi0 - r_ave/R_orbit;
+    float phiO = phi00c+PI/2.0;
+    float xO = R_orbit*cos(phiO);
+    float yO = R_orbit*sin(phiO);
+    // store parameters of local orbit
+    vEmcINTT_R.at(i)=R_orbit;
+    vEmcINTT_xO.at(i)=xO;
+    vEmcINTT_yO.at(i)=yO;
+    cout <<"R(local)="<<R_orbit<<endl;
     
+    // Global orbit. A circule that go through
+    // INTT0, INTT1, Emc
+    {
+      int iEmc = (vEmcINTT.at(i)).iEmc;
+      int iINTT0 = (vEmcINTT.at(i)).iINTT0;
+      int iINTT1 = (vEmcINTT.at(i)).iINTT1;
+
+      float r2   = vEMr.at(iEmc);
+      float phi2 = vEMphi.at(iEmc);
+      float x2   = r2*cos(phi2);
+      float y2   = r2*sin(phi2);
+      //      cout <<"r2="<<r2<<" phi2="<<phi2<<endl;
+
+      float r1   = vINTT1r.at(iINTT1);
+      float phi1 = vINTT1phi.at(iINTT1);
+      float x1   = r1*cos(phi1);
+      float y1   = r1*sin(phi1);
+      //      cout <<"r1="<<r1<<" phi1="<<phi1<<endl;
+      
+      float r0   = vINTT0r.at(iINTT0);
+      float phi0 = vINTT0phi.at(iINTT0);
+      float x0   = r0*cos(phi0);
+      float y0   = r0*sin(phi0);
+      //      cout <<"r0="<<r0<<" phi0="<<phi0<<endl;
+      
+      float r12 = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+      float r01 = sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
+      float R_EmcINTT = 0.5*(x2-x0)/((y2-y1)/r12 - (y1-y0)/r01);
+
+      float xO_EmcINTT = 0.5*(x1+x0)-R_EmcINTT*(y1-y0)/r01;
+      float yO_EmcINTT = 0.5*(y1+y0)+R_EmcINTT*(x1-x0)/r01;
+
+      vEmcINTT_R_EI.at(i)=abs(R_EmcINTT);
+      vEmcINTT_xO_EI.at(i)=xO_EmcINTT;
+      vEmcINTT_yO_EI.at(i)=yO_EmcINTT;
+
+      cout << "R_EI = "<<abs(R_EmcINTT)<<endl;
+    }
+    
+    //
+    //
+    // find the closest Mvtx hits to the tracklet orbit
+    // for each of the three layers of Mvtx
+    //
+    float Mvtx1m_dphi=0.1;
+    float Mvtx2m_dphi=0.1;
+    float Mvtx3m_dphi=0.1;
     for(int iMvtx=0;iMvtx<vMVTXr.size();iMvtx++) {// vMVTX
       float MVTXphi = vMVTXphi.at(iMvtx);
+      float xMvtx = vMVTXx.at(iMvtx) - xBC;
+      float yMvtx = vMVTXy.at(iMvtx) - yBC;
+      float rMvtx = sqrt(xMvtx*xMvtx+yMvtx*yMvtx);
+
+      // Mvtx1 (inner-most layer)
       if( abs(MVTXphi - phi0) < dphi_MVTX_INTT0) {
-	hdphi10_MVTX->Fill(phi1-phi0,phi0-MVTXphi);
+	float dphiMvtx = MVTXphi-phi00-a*rMvtx*rMvtx;
+	hdphiMvtx_r->Fill(rMvtx,dphiMvtx);
+	if(2.5< rMvtx && rMvtx <3.5) {
+	  hdphiMvtx1->Fill(dphiMvtx);
+	  if(abs(dphiMvtx)<dphiMvtx1) {
+	    if(abs(dphiMvtx)<abs(Mvtx1m_dphi)) {
+	      Mvtx1m_dphi = dphiMvtx;
+	      vEmcINTT_Mvtx1.at(i)=iMvtx;
+	    }
+	  }
+	}
+	// Mvtx2 (middle layer)
+	if(3.5< rMvtx && rMvtx <4.3) {
+	  hdphiMvtx2->Fill(dphiMvtx);
+	  if(abs(dphiMvtx)<dphiMvtx2) {
+	    if(abs(dphiMvtx)<abs(Mvtx2m_dphi)) {
+	      Mvtx2m_dphi = dphiMvtx;
+	      vEmcINTT_Mvtx2.at(i)=iMvtx;
+	    }
+	  }
+	}
+	// Mvtx3 (outer-most layer)
+	if(4.3< rMvtx && rMvtx <5.5) {
+	  hdphiMvtx3->Fill(dphiMvtx);	
+	  if(abs(dphiMvtx)<abs(Mvtx3m_dphi)) {
+	    Mvtx3m_dphi = dphiMvtx;
+	    vEmcINTT_Mvtx3.at(i)=iMvtx;
+	  }
+	}
       }
-    }// for(vMVTX);
-  }
+    }// for(iMVTX);
+    //
+    // Now, for each of vEmcINTT triplet, Mvtx hits closest to the track
+    // orbit are assocated
+    //
+    if(imode==2) {
+      cout << "EMphi = " <<vEMphi.at((vEmcINTT.at(i)).iEmc);
+      cout <<" INTT1phi= "<<vINTT1phi.at((vEmcINTT.at(i)).iINTT1);
+      cout <<" INTT0phi= "<<vINTT0phi.at((vEmcINTT.at(i)).iINTT0)<<endl;
+      cout <<" R_orbit = "<< R_orbit;
+      cout <<" phi00 = "<< phi00 << endl;
+      cout << "xO="<<xO<<" yO="<<yO<<" phiO="<<phiO<<endl;
+      cout << " Mvtx1 = "<<vEmcINTT_Mvtx1.at(i)<<" dphi= "<<Mvtx1m_dphi;
+      cout << " Mvtx2 = "<<vEmcINTT_Mvtx2.at(i)<<" dphi= "<<Mvtx2m_dphi;
+      cout << " Mvtx3 = "<<vEmcINTT_Mvtx3.at(i)<<" dphi= "<<Mvtx3m_dphi;
+      cout <<endl;
+    }
+  }// for(i)   loop over vEmcINTT
 }
 void INTT_zvtx_Finder(float &zvtxINTT){
   // 2026/05/23
