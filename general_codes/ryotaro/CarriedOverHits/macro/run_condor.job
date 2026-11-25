@@ -1,0 +1,23 @@
+Universe           = vanilla
+Initialdir         = /sphenix/tg/tg01/commissioning/INTT/work/ryotaro/commissioning25/CarriedOverHits_v2/macro
+Executable         = run_job.sh
+PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
+concurrency_limits = CONCURRENCY_LIMIT_DEFAULT:100
+request_memory     = 1GB
+Priority           = 20
+job_lease_duration = 86400
+
+runnumber          = 75519
+nEvents            = 2000
+file_path_to_hot_channel_map = /sphenix/user/ChengWei/SelfINTTProduction/2025_Oct_20/jaein_decode_calib/cdb_00082391hot.root
+save_tree          = true
+job_offset         = 0
+process_shift      = $(Process) + $(job_offset) 
+output_directory = /sphenix/user/ryotaro/CarriedOverHits_v2/output
+
+
+Output             = $(output_directory)/condor_$(runnumber)_$INT(process_shift).out
+Error              = $(output_directory)/condor_$(runnumber)_$INT(process_shift).err
+Log                = /tmp/ryotaro/CarriedOverHits_v2/condor_$(runnumber)_$INT(process_shift).log
+Arguments          = "$INT(process_shift) $(runnumber) $(nEvents) $(file_path_to_hot_channel_map) $(save_tree)"
+Queue 4646
